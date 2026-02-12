@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dominus FX: Silicon Valley Sim</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Heads Up Display (HUD) -->
+    <div id="ui-hud">
+        <div class="hud-item">
+            <span class="hud-label">ROLE</span>
+            <span id="stat-role" class="hud-value">Intern</span>
+        </div>
+        <div class="hud-item">
+            <span class="hud-label">XP</span>
+            <span id="stat-xp" class="hud-value">0</span>
+        </div>
+        <div class="hud-item">
+            <span class="hud-label">LOCATION</span>
+            <span class="hud-value">Silicon Valley HQ</span>
+        </div>
+    </div>
+
+    <!-- Main Game View -->
+    <main id="game-stage">
+        <!-- Background Layer -->
+        <div id="bg-layer" class="parallax-bg"></div>
+        
+        <!-- Interactive Layer -->
+        <div id="npc-container">
+            <!-- NPCs injected by JS -->
+        </div>
+
+        <!-- Foreground/Floor -->
+        <div id="floor-layer"></div>
+    </main>
+
+    <!-- Modal Interface -->
+    <div id="challenge-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="m-title">Title</span>
+            </div>
+            <div id="m-body" class="modal-body">
+                Question text...
+            </div>
+            <div id="m-options" class="modal-options">
+                <!-- Buttons injected by JS -->
+            </div>
+            <div id="m-feedback" class="modal-feedback">
+                <p id="m-feedback-text"></p>
+                <button id="m-next-btn" class="btn-primary">Continuar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/game.js"></script>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GARAGE | Aventura Side-Scroller</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <!-- ========== SCREEN: TITLE (ARCADE RETRO) ========== -->
+    <div id="screen-title" class="screen active">
+        <div class="arcade-scanlines"></div>
+        <div class="arcade-container">
+            <div class="arcade-content">
+                <div class="arcade-top-text">- AVENTURA NO VALE DO SILICIO -</div>
+                <div class="arcade-logo">
+                    <span class="arcade-logo-bracket">[</span>
+                    GARAGE
+                    <span class="arcade-logo-bracket">]</span>
+                </div>
+                <div class="arcade-tagline">&lt;/&gt; TODA BIG TECH TEM UM INICIO &lt;/&gt;</div>
+                <div class="arcade-divider">════════════════════════</div>
+                <div class="arcade-description">
+                    DE HELLO WORLD A ENGENHEIRO DISTINTO<br>
+                    CORRA PELO VALE DO SILICIO . ENCONTRE MENTORES . RESOLVA DESAFIOS
+                </div>
+                <div class="arcade-insert blink">&gt;&gt;&gt; PRESSIONE START &lt;&lt;&lt;</div>
+                <button class="arcade-btn" onclick="SFX.menuConfirm(); UI.showScreen('screen-onboarding')">
+                    <span class="arcade-btn-icon">&#9654;</span> 1 JOGADOR INICIAR
+                </button>
+                <div class="arcade-credits">
+                    <div>RECORDE ............. 999999</div>
+                    <div>CREDITO(S) .......... 1</div>
+                </div>
+            </div>
+            <div class="arcade-footer">
+                DESENVOLVIDO POR BIO CODE TECHNOLOGY<br>
+                ENGENHARIA DE SOFTWARE - TODOS OS DIREITOS RESERVADOS 2026<br>
+                GARAGE - TECNOLOGIA NA QUEBRADA
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== SCREEN: ONBOARDING ========== -->
+    <div id="screen-onboarding" class="screen">
+        <div class="onboarding-panel">
+            <h2>CRIAR PERSONAGEM</h2>
+            <p class="subtitle">Defina sua identidade para entrar no Vale do Silicio.</p>
+
+            <label>1. AVATAR</label>
+            <div class="avatar-grid" id="avatarGrid">
+                <div class="avatar-card selected" data-index="0" data-gender="male" data-ethnicity="white"
+                    onclick="UI.selectAvatar(this)">
+                    <div class="char-sprite-preview s0"></div>
+                    <span>Dev Boy 1</span>
+                </div>
+                <div class="avatar-card" data-index="2" data-gender="male" data-ethnicity="white"
+                    onclick="UI.selectAvatar(this)">
+                    <div class="char-sprite-preview s2"></div>
+                    <span>Dev Boy 2</span>
+                </div>
+                <div class="avatar-card" data-index="1" data-gender="female" data-ethnicity="black"
+                    onclick="UI.selectAvatar(this)">
+                    <div class="char-sprite-preview s1"></div>
+                    <span>Dev Girl 1</span>
+                </div>
+                <div class="avatar-card" data-index="3" data-gender="female" data-ethnicity="black"
+                    onclick="UI.selectAvatar(this)">
+                    <div class="char-sprite-preview s3"></div>
+                    <span>Dev Girl 2</span>
+                </div>
+            </div>
+
+            <label>2. SEU NOME</label>
+            <input type="text" id="playerName" placeholder="Ex: Ada Lovelace" maxlength="50">
+
+            <label>3. LINGUAGEM BACKEND</label>
+            <p class="hint">Define o contexto dos desafios. Nao altera dificuldade.</p>
+            <select id="playerLang">
+                <option value="Java">Java</option>
+                <option value="Python">Python</option>
+                <option value="C">C</option>
+                <option value="C++">C++</option>
+                <option value="C#">C#</option>
+                <option value=".NET">.NET</option>
+                <option value="Ruby">Ruby</option>
+                <option value="Rust">Rust</option>
+                <option value="Go">Go</option>
+            </select>
+
+            <button class="btn-primary" onclick="Game.start()">ENTRAR NO VALE</button>
+        </div>
+    </div>
+
+    <!-- ========== SCREEN: GAME WORLD (2D Canvas) ========== -->
+    <div id="screen-world" class="screen">
+        <!-- HUD (Arcade Retro) -->
+        <div class="hud" id="worldHUD">
+            <div class="hud-block">
+                <span class="hud-icon">&#9733;</span>
+                <div>
+                    <div class="hud-label">JOGADOR</div>
+                    <div class="hud-value" id="hudName">---</div>
+                </div>
+            </div>
+            <div class="hud-sep">|</div>
+            <div class="hud-block">
+                <span class="hud-icon">&#9670;</span>
+                <div>
+                    <div class="hud-label">CARGO</div>
+                    <div class="hud-value hud-stage" id="hudStage">Estagiario</div>
+                </div>
+            </div>
+            <div class="hud-sep">|</div>
+            <div class="hud-block">
+                <span class="hud-icon">&#9679;</span>
+                <div>
+                    <div class="hud-label">PONTOS</div>
+                    <div class="hud-value hud-score" id="hudScore">0</div>
+                </div>
+            </div>
+            <div class="hud-sep">|</div>
+            <div class="hud-block">
+                <span class="hud-icon hud-icon-red">&#9829;</span>
+                <div>
+                    <div class="hud-label">VIDAS</div>
+                    <div class="hud-value hud-errors" id="hudErrors">0 / 3</div>
+                </div>
+            </div>
+            <div class="hud-sep">|</div>
+            <div class="hud-block">
+                <span class="hud-icon hud-icon-book">&#9776;</span>
+                <div>
+                    <div class="hud-label">LIVROS</div>
+                    <div class="hud-value hud-books" id="hudBooks">0 / 16</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Interaction Hint -->
+        <div id="interactHint" class="interact-hint">
+            <span class="key-cap">ENTER</span> <span id="interactText">FALAR</span>
+        </div>
+
+        <!-- Mobile Controls -->
+        <div class="mobile-controls">
+            <div class="mobile-left">
+                <button class="ctrl-btn" id="btnLeft">&#9664;</button>
+                <button class="ctrl-btn" id="btnRight">&#9654;</button>
+            </div>
+            <div class="mobile-right">
+                <button class="ctrl-btn ctrl-jump" id="btnJump">PULAR</button>
+                <button class="ctrl-btn ctrl-action" id="btnAction">FALAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== DIALOG BOX ========== -->
+    <div id="dialogBox" class="dialog-box">
+        <div class="dialog-header">
+            <div class="dialog-avatar" id="dAvatar"></div>
+            <div>
+                <div id="dName" class="dialog-name">MENTOR</div>
+                <div id="dRole" class="dialog-role">ENGENHEIRO</div>
+            </div>
+        </div>
+        <div id="dContent" class="dialog-content"></div>
+        <div class="dialog-actions">
+            <button class="btn-dialog" onclick="World.closeDialog()">CONTINUAR [ENTER]</button>
+        </div>
+    </div>
+
+    <!-- ========== CHALLENGE OVERLAY ========== -->
+    <div id="challengeOverlay" class="challenge-overlay">
+        <div class="challenge-panel">
+            <div class="challenge-header">
+                <div class="challenge-mentor" id="challengeMentor">THE CRAFTSMAN</div>
+                <div class="challenge-title" id="challengeTitle">---</div>
+                <div class="challenge-region" id="challengeRegion">Apple Garage</div>
+            </div>
+            <div class="challenge-body">
+                <div class="challenge-description" id="challengeDesc">---</div>
+                <pre class="challenge-code" id="challengeCode"></pre>
+            </div>
+            <div class="challenge-options" id="challengeOptions"></div>
+            <div class="challenge-feedback" id="challengeFeedback"></div>
+            <div class="challenge-actions" id="challengeActions" style="display:none;">
+                <button class="btn-primary" onclick="Game.nextChallenge()">CONTINUAR</button>
+                <button class="btn-secondary" onclick="Game.returnToWorld()">VOLTAR AO MUNDO</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== SCREEN: GAME OVER ========== -->
+    <div id="screen-gameover" class="screen">
+        <div class="gameover-panel">
+            <h1>FIM DE JOGO</h1>
+            <p>3 erros atingidos. Retornando ao inicio do estagio atual.</p>
+            <p>Seu historico de aprendizado foi preservado.</p>
+            <div class="gameover-stats" id="gameoverStats"></div>
+            <button class="btn-primary" onclick="Game.recover()">TENTAR NOVAMENTE</button>
+        </div>
+    </div>
+
+    <!-- ========== SCREEN: VICTORY ========== -->
+    <div id="screen-victory" class="screen">
+        <div class="victory-panel">
+            <h1>ENGENHEIRO DISTINTO</h1>
+            <p>Voce se tornou alguem capaz de construir software que nao quebra quando o mundo muda.</p>
+            <div class="victory-stats" id="victoryStats"></div>
+            <button class="btn-secondary" onclick="location.reload()">MENU PRINCIPAL</button>
+        </div>
+    </div>
+
+    <!-- ========== PROMOTION ========== -->
+    <div id="promotionOverlay" class="promotion-overlay" style="display:none;">
+        <div class="promotion-card">
+            <h2>PROMOCAO</h2>
+            <p id="promotionMessage"></p>
+            <p class="promotion-stage" id="promotionStage"></p>
+            <button class="btn-primary" onclick="UI.hidePromotion()">CONTINUAR</button>
+        </div>
+    </div>
+
+    <!-- ========== BOOK POPUP ========== -->
+    <div id="bookPopup" class="book-popup">
+        <div class="book-popup-card">
+            <div class="book-icon-large">&#128214;</div>
+            <h3 id="bookTitle" class="book-popup-title">---</h3>
+            <p id="bookAuthor" class="book-popup-author">---</p>
+            <p id="bookSummary" class="book-popup-summary">---</p>
+            <p id="bookLesson" class="book-popup-lesson">---</p>
+            <button class="btn-primary" onclick="World.closeBookPopup()">CONTINUAR</button>
+        </div>
+    </div>
+
+    <!-- ========== IDE CODING CHALLENGE ========== -->
+    <div id="ideOverlay" class="ide-overlay">
+        <div class="ide-container">
+            <!-- IDE Top Bar -->
+            <div class="ide-topbar">
+                <div class="ide-topbar-dots">
+                    <span class="ide-dot ide-dot-red"></span>
+                    <span class="ide-dot ide-dot-yellow"></span>
+                    <span class="ide-dot ide-dot-green"></span>
+                </div>
+                <div class="ide-topbar-title" id="ideFileName">Main.java</div>
+                <div class="ide-topbar-right">
+                    <span class="ide-stage-badge" id="ideStage">INTERN</span>
+                </div>
+            </div>
+
+            <!-- IDE Main Area -->
+            <div class="ide-main">
+                <!-- Sidebar: file tree -->
+                <div class="ide-sidebar">
+                    <div class="ide-sidebar-header">EXPLORADOR</div>
+                    <div class="ide-file active" id="ideSideFile">
+                        <span class="ide-file-icon">&#9658;</span>
+                        <span id="ideSideFileName">Main.java</span>
+                    </div>
+                    <div class="ide-sidebar-section">DESAFIO</div>
+                    <div class="ide-challenge-info">
+                        <div class="ide-challenge-title" id="ideChallengeTitle">Hello World</div>
+                        <div class="ide-challenge-desc" id="ideChallengeDesc">---</div>
+                    </div>
+                    <div class="ide-sidebar-section">CONCEITO</div>
+                    <div class="ide-concept-tag" id="ideConceptTag">Syntax</div>
+                </div>
+
+                <!-- Code Editor -->
+                <div class="ide-editor-area">
+                    <!-- Line numbers + code input -->
+                    <div class="ide-editor">
+                        <div class="ide-line-numbers" id="ideLineNumbers">
+                            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                            <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+                        </div>
+                        <textarea class="ide-code-input" id="ideCodeInput" spellcheck="false" autocomplete="off"
+                            autocorrect="off" autocapitalize="off"></textarea>
+                    </div>
+
+                    <!-- Terminal output -->
+                    <div class="ide-terminal">
+                        <div class="ide-terminal-header">
+                            <span>TERMINAL</span>
+                            <span class="ide-terminal-status" id="ideTermStatus">Pronto</span>
+                        </div>
+                        <div class="ide-terminal-output" id="ideTermOutput">
+                            <span class="ide-prompt">&gt;</span> Aguardando codigo...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IDE Bottom Bar: Characters + Actions -->
+            <div class="ide-bottombar">
+                <!-- Player character (left) -->
+                <div class="ide-char ide-char-left">
+                    <canvas id="idePlayerCanvas" width="48" height="80"></canvas>
+                    <div class="ide-char-name" id="idePlayerName">JOGADOR</div>
+                </div>
+
+                <!-- Action buttons (center) -->
+                <div class="ide-actions">
+                    <button class="ide-btn ide-btn-run" id="ideRunBtn" onclick="IDE.runCode()">
+                        <span class="ide-btn-icon">&#9654;</span> EXECUTAR
+                    </button>
+                    <button class="ide-btn ide-btn-help" id="ideHelpBtn" onclick="IDE.askHelp()">
+                        <span class="ide-btn-icon">&#128273;</span> VER SOLUCAO
+                    </button>
+                    <button class="ide-btn ide-btn-skip" onclick="IDE.skip()" id="ideSkipBtn" style="display:none;">
+                        <span class="ide-btn-icon">&#9654;&#9654;</span> PULAR
+                    </button>
+                </div>
+
+                <!-- NPC mentor (right) -->
+                <div class="ide-char ide-char-right">
+                    <canvas id="ideMentorCanvas" width="48" height="80"></canvas>
+                    <div class="ide-char-name" id="ideMentorName">MENTOR</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help overlay (inside IDE) -->
+        <div class="ide-help-overlay" id="ideHelpOverlay" style="display:none;">
+            <div class="ide-help-card">
+                <div class="ide-help-header">
+                    <span class="ide-help-icon">&#128273;</span>
+                    <span class="ide-help-mentor" id="ideHelpMentor">Robert C. Martin</span>
+                </div>
+                <div class="ide-help-content" id="ideHelpContent">---</div>
+                <button class="ide-btn ide-btn-run" onclick="IDE.closeHelp()">ENTENDI, VOU COPIAR</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/game.js"></script>
+</body>
+
+</html>

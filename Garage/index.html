@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GARAGE | Silicon Valley Adventure</title>
+
+<!-- THREE.JS & DEPENDENCIES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- Using OrbitControls for Third Person view dev -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<style>
+  :root { --primary: #3b82f6; --accent: #8b5cf6; --bg: #0f172a; --text: #f8fafc; }
+  * { box-sizing: border-box; user-select: none; }
+  body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', 'Roboto', sans-serif; }
+  
+  /* ARCADE SCANLINE EFFECT (Subtle) */
+  .scanlines { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.05), rgba(0,0,0,0.05) 1px, transparent 1px, transparent 2px); pointer-events: none; z-index: 9999; opacity: 0.2; }
+  
+  /* GAME UI OVERLAY */
+  #game-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display:none; }
+  
+  /* ROADMAP INTRO SCREEN */
+  #screen-roadmap { position: fixed; inset: 0; background: #111; z-index: 300; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 1s; }
+  .roadmap-container { width: 80%; display: flex; align-items: center; gap: 40px; overflow-x: auto; padding: 50px 20px; mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent); }
+  .roadmap-node { min-width: 200px; height: 250px; background: #1e1e1e; border: 2px solid #333; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; transition: 0.5s; opacity: 0.3; transform: scale(0.9); }
+  .roadmap-node.active { border-color: var(--primary); opacity: 1; transform: scale(1.1); box-shadow: 0 0 30px rgba(59, 130, 246, 0.4); z-index: 2; background: #0f172a; }
+  .roadmap-year { font-size: 40px; font-weight: 900; color: #64748b; margin-bottom: 10px; }
+  .roadmap-node.active .roadmap-year { color: #fff; text-shadow: 0 0 10px var(--primary); }
+  .roadmap-title { font-size: 16px; color: var(--primary); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+  
+  /* INTERACT HINT */
+  .interact-hint { position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; border-radius: 50px; font-weight: bold; border: 2px solid #fff; opacity: 0; transition: 0.2s; display: flex; align-items: center; gap: 10px; font-size: 18px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+  .interact-hint.visible { opacity: 1; bottom: 20%; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .key-cap { background: #fff; color: #000; padding: 4px 10px; border-radius: 6px; font-size: 14px; font-weight: 900; box-shadow: 0 2px 0 #999; }
+
+  /* CHARACTER SELECTION */
+  #modalStart { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+  #modalStart.visible { display: flex; }
+  
+  .char-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+  .char-opt { background: #1e293b; border: 2px solid #334155; padding: 10px; cursor: pointer; text-align: center; border-radius: 8px; transition: 0.2s; color:#94a3b8; font-weight:bold; }
+  .char-opt:hover { border-color: #fff; color:#fff; transform: translateY(-2px); }
+  .char-opt.selected { border-color: var(--primary); background: rgba(59, 130, 246, 0.2); color:var(--primary); box-shadow: 0 0 15px rgba(59,130,246,0.3); }
+  
+  /* AVATAR SPRITES */
+  .char-sprite { width: 100px; height: 200px; background-image: url('static/img.png'); background-size: 600% 100%; border-radius: 8px; transition: 0.2s; cursor: pointer; border: 3px solid transparent; }
+  .char-sprite:hover { transform: scale(1.05); border-color: #fff; }
+  .char-sprite.selected { border-color: var(--primary); box-shadow: 0 0 20px var(--primary); transform: scale(1.1); }
+  
+  /* SPRITE POSITIONS (0-5) */
+  /* For N=6, steps are 0, 20, 40, 60, 80, 100% */
+  .s0 { background-position: 0% 0; }
+  .s1 { background-position: 20% 0; }
+  .s2 { background-position: 40% 0; }
+  .s3 { background-position: 60% 0; }
+  .s4 { background-position: 80% 0; }
+  .s5 { background-position: 100% 0; }
+
+  /* TECH BADGE */
+  .tech-badge { background: var(--primary); color: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; margin-top: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+
+  /* DIALOG BOX (RPG STYLE) */
+  .dialog-box { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 700px; background: #fff; border: 4px solid #000; padding: 20px; border-radius: 12px; display: none; color: #000; z-index:100; pointer-events:none; box-shadow: 0 10px 30px rgba(0,0,0,0.3); font-family: 'Consolas', monospace; }
+  .dialog-box.open { display: flex; animation: slideUp 0.3s; pointer-events:auto; }
+  .dialog-avatar { width: 80px; height: 80px; background: #eee; margin-right: 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; border-radius: 8px; border: 2px solid #000; }
+  
+  @keyframes slideUp { from { transform: translate(-50%, 50px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+  @keyframes blink { 50% { opacity: 0; } }
+  @keyframes popIn { 0% { transform: translateX(-50%) scale(0.5); } 100% { transform: translateX(-50%) scale(1); } }
+
+  /* VIRTUAL CONTROLS (TOUCH/MOUSE) */
+  .virtual-controls { position: fixed; bottom: 20px; width: 100%; height: 0px; z-index: 500; display: flex; justify-content: space-between; padding: 0 40px; pointer-events: none; }
+  
+  /* D-PAD (LEFT) */
+  .d-pad { pointer-events: auto; width: 140px; height: 140px; position: relative; transform: translateY(-160px); }
+  .d-btn { position: absolute; width: 45px; height: 45px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: 0.1s; backdrop-filter: blur(4px); }
+  .d-btn:active, .d-btn.active { background: var(--primary); border-color: #fff; transform: scale(0.95); box-shadow: 0 0 10px var(--primary); }
+  
+  .d-up { top: 0; left: 47.5px; }
+  .d-down { bottom: 0; left: 47.5px; }
+  .d-left { top: 47.5px; left: 0; }
+  .d-right { top: 47.5px; right: 0; }
+
+  /* ACTION PAD (RIGHT) */
+  .action-pad { pointer-events: auto; width: 100px; height: 140px; position: relative; transform: translateY(-160px); display: flex; align-items: center; justify-content: flex-end; }
+  .a-btn { width: 70px; height: 70px; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.5); border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.5); transition: 0.1s; backdrop-filter: blur(4px); }
+  .a-btn:active { transform: translateY(4px); box-shadow: none; background: #fff; color: #000; }
+</style>
+</head>
+<body>
+
+<div class="scanlines"></div>
+
+<!-- ROADMAP SYSTEM -->
+<div id="screen-roadmap">
+  <!-- COVER IMAGE -->
+  <img src="static/img.png" style="max-width: 600px; width: 80%; max-height: 40vh; object-fit: contain; margin-bottom: 20px; border-radius: 12px; box-shadow: 0 0 40px rgba(59, 130, 246, 0.4);">
+
+  <h1 style="color:#fff; letter-spacing:10px; font-size:60px; margin-bottom:10px; text-shadow: 0 0 20px var(--primary);">GARAGE</h1>
+  <div style="color:var(--primary); font-size:24px; margin-bottom:30px; font-weight:bold; letter-spacing: 2px;">TODA BIG TECH TEVE UM COMEÇO</div>
+  
+  <div class="roadmap-container" id="roadmapTrack">
+      <!-- Generated by JS -->
+  </div>
+  
+  <div id="roadmapPrompt" style="margin-top:50px; color:#fff; font-size:18px; font-weight:bold; animation: blink 1s infinite;">
+      PRESSIONE [ENTER] PARA INICIAR JORNADA
+  </div>
+</div>
+
+<!-- GAME HUD -->
+<div id="game-ui">
+  <div id="interactLabel" class="interact-hint">
+    <span class="key-cap">ENTER</span> <span id="interactText">INTERAGIR</span>
+  </div>
+
+  <div style="position:absolute; top:30px; left:30px; background: rgba(0,0,0,0.6); padding: 15px; border-radius: 10px; color: #fff;">
+    <div style="font-size:12px; color:#ccc;">LOCALIZAÇÃO</div>
+    <div id="hudLoc" style="font-size:24px; font-weight:bold; text-transform:uppercase;">SILICON VALLEY</div>
+    <div id="hudYear" style="color:var(--primary); font-size:18px;">DIA 1 - 1975</div>
+  </div>
+  
+  <div style="position:absolute; top:30px; right:30px; text-align:right; background: rgba(0,0,0,0.6); padding: 15px; border-radius: 10px; color: #fff;">
+    <div style="font-size:12px; color:#ccc;">META BUGS RESOLVIDOS</div>
+    <div id="hudXp" style="font-size:28px; font-weight:bold; color:#fcd34d;">0 / 100</div>
+  </div>
+
+  <!-- VIRTUAL CONTROLS -->
+  <div class="virtual-controls">
+      <!-- D-PAD -->
+      <div class="d-pad">
+          <div class="d-btn d-up" onmousedown="setKey('w', true)" onmouseup="setKey('w', false)" ontouchstart="setKey('w', true)" ontouchend="setKey('w', false)">⬆️</div>
+          <div class="d-btn d-left" onmousedown="setKey('a', true)" onmouseup="setKey('a', false)" ontouchstart="setKey('a', true)" ontouchend="setKey('a', false)">⬅️</div>
+          <div class="d-btn d-right" onmousedown="setKey('d', true)" onmouseup="setKey('d', false)" ontouchstart="setKey('d', true)" ontouchend="setKey('d', false)">➡️</div>
+          <div class="d-btn d-down" onmousedown="setKey('s', true)" onmouseup="setKey('s', false)" ontouchstart="setKey('s', true)" ontouchend="setKey('s', false)">⬇️</div>
+      </div>
+      <!-- ACTION BUTTON -->
+      <div class="action-pad">
+          <div class="a-btn" onclick="simEnter()">A</div>
+      </div>
+  </div>
+</div>
+
+<!-- CHARACTER SELECT -->
+<div id="modalStart">
+  <div style="background:#0f172a; padding:40px; border-radius:12px; border:1px solid #333; width:600px; max-height: 90vh; overflow-y: auto;">
+    <h2 style="color:#fff; margin:0 0 10px 0;">CRIAR PERSONAGEM</h2>
+    <p style="color:#94a3b8; margin-bottom:30px; font-size: 14px;">Defina sua identidade para entrar no Vale.</p>
+    
+    <label style="color:#fff; display:block; margin-bottom:10px; font-weight:bold;">1. ESCOLHA SEU AVATAR</label>
+    <div class="char-grid" id="skinGrid" style="grid-template-columns: repeat(3, 1fr); gap: 15px;">
+        <!-- Sprites from img.png -->
+        <div class="char-sprite s0 selected" onclick="selectSkin(0, this)"></div>
+        <div class="char-sprite s1" onclick="selectSkin(1, this)"></div>
+        <div class="char-sprite s2" onclick="selectSkin(2, this)"></div>
+        <div class="char-sprite s3" onclick="selectSkin(3, this)"></div>
+        <div class="char-sprite s4" onclick="selectSkin(4, this)"></div>
+        <div class="char-sprite s5" onclick="selectSkin(5, this)"></div>
+    </div>
+    
+    <label style="color:#fff; display:block; margin-top:20px; margin-bottom:10px; font-weight:bold;">2. SEU NOME DE ENGENHEIRO</label>
+    <input type="text" id="pName" placeholder="Ex: Cezi Cola" style="width:100%; padding:15px; background:#1e293b; border:2px solid #334155; border-radius:8px; color:#fff; font-size:16px; font-weight:bold; outline:none;">
+
+    <label style="color:#fff; display:block; margin-top:20px; margin-bottom:10px; font-weight:bold;">3. BACKEND STACK (SUA ESPECIALIDADE)</label>
+    <div style="font-size:12px; color:#64748b; margin-bottom:10px;">Isso define os desafios técnicos que você enfrentará.</div>
+    <select id="pLang" style="width:100%; padding:15px; background:#1e293b; border:2px solid #334155; border-radius:8px; color:#fff; font-size:16px; font-weight:bold; outline:none;" onchange="State.stack = this.value">
+        <option value="Java (Spring Boot)" selected>Java (Spring Boot) - Enterprise Standard</option>
+        <option value="Python (FastAPI)">Python (FastAPI) - AI & Data</option>
+        <option value="C# (.NET Core)">C# (.NET Core) - Corporate</option>
+        <option value="Go (Gin)">Go (Gin) - High Performance</option>
+        <option value="Node.js (NestJS)">Node.js (NestJS) - Startup Speed</option>
+        <option value="Rust (Actix)">Rust (Actix) - Systems Programming</option>
+    </select>
+
+    <div style="margin-top: 30px; padding: 15px; background: #000; border-radius: 8px; border: 1px dashed #333; display: flex; align-items: center; gap: 15px;">
+        <div style="font-size: 30px;">👕</div>
+        <div>
+            <div style="color: #fff; font-weight: bold;">GARAGE DEV-TEE</div>
+            <div style="color: #64748b; font-size: 12px;">Uniforme Padrão (Preto)</div>
+        </div>
+    </div>
+    
+    <button onclick="confirmChar()" style="width:100%; margin-top:30px; padding:15px; background:var(--primary); border:none; color:#fff; font-weight:bold; cursor:pointer; font-size:18px; border-radius:8px; transition: 0.2s;">ENTRAR NO MUNDO 🚀</button>
+  </div>
+</div>
+
+<!-- DIALOG INTERFACE (ENHANCED FOR LECTURES) -->
+<div id="dialogBox" class="dialog-box" style="width: 800px; max-height: 80vh; flex-direction: column;">
+  
+  <!-- Header -->
+  <div style="display:flex; align-items:center; border-bottom: 2px solid #eee; padding-bottom:10px; margin-bottom:10px; width:100%;">
+    <div class="dialog-avatar" id="dAvatar" style="margin-right:15px; background-size: cover; background-position: center;">😎</div>
+    <div>
+        <div id="dName" style="color:#000; font-weight:bold; text-transform:uppercase; font-size: 18px;">MENTOR</div>
+        <div id="dRole" style="color:var(--primary); font-size: 12px; font-weight:bold;">PRINCIPAL ENGINEER</div>
+    </div>
+  </div>
+
+  <!-- Content Area (Scrollable) -->
+  <div id="dContent" style="flex:1; overflow-y: auto; padding-right: 10px; margin-bottom: 20px; font-size: 15px; line-height: 1.6; color: #333; white-space: pre-line;">
+     <!-- Text goes here -->
+  </div>
+
+  <!-- Actions -->
+  <div id="dActions" style="display:flex; justify-content: flex-end; gap: 10px; border-top: 2px solid #eee; padding-top: 15px; width: 100%;">
+     <button id="btnAction" class="tech-btn" style="background:#000; color:#fff; padding:10px 20px; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">CONTINUAR</button>
+  </div>
+</div>
+
+<style>
+  /* Markdown-like styling for game text */
+  .lecture-title { font-size: 18px; font-weight: bold; color: #000; margin-top: 15px; border-bottom: 2px solid var(--primary); display:inline-block; }
+  .lecture-code { background: #f1f5f9; padding: 10px; border-radius: 6px; font-family: 'Consolas', monospace; font-size: 13px; border: 1px solid #cbd5e1; margin: 10px 0; color: #334155; }
+  .lecture-list { padding-left: 20px; }
+  .lecture-highlight { color: #dc2626; font-weight: bold; }
+  
+  .quiz-opt { background: #f8fafc; border: 2px solid #e2e8f0; padding: 15px; margin-bottom: 10px; cursor: pointer; border-radius: 8px; font-weight: bold; transition: 0.2s; }
+  .quiz-opt:hover { border-color: var(--primary); background: #eff6ff; }
+  .quiz-opt.wrong { border-color: #ef4444; background: #fef2f2; }
+</style>
+
+<script>
+/* ==========================================================================
+   GARAGE 3D: SILICON VALLEY ADVENTURE (TPS UPGRADE)
+   Engine: Three.js
+   Mode: Third Person (Follow Camera)
+   ========================================================================== */
+
+// --- GAME STATE ---
+const State = {
+    screen: 'roadmap', // Back to Title Screen
+    playerName: 'Unknown Engineer',
+    stack: 'Java (Spring Boot)',
+    xp: 0,
+    interactionTarget: null,
+    avatar: 0, // 0-5 index
+    playerPos: new THREE.Vector3(0,0,0)
+};
+
+const TIMELINE = [
+    { year: 1975, title: "HOMEBREW ERA", loc: "GARAGE LAB", tech: "💾 ASM" },
+    { year: 1980, title: "PC REVOLUTION", loc: "IBM OFFICE", tech: "⚡ C/C++" },
+    { year: 1995, title: "DOT COM", loc: "WEB 1.0", tech: "🌐 HTML" },
+    { year: 2005, title: "SOCIAL", loc: "THE CAMPUS", tech: "📱 PHP/JS" },
+    { year: 2024, title: "AI AGE", loc: "NEURAL NET", tech: "🧠 PY/CUDA" }
+];
+
+// --- THREE.JS SETUP ---
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x3b82f6); // DEEP SKY BLUE (Silicon Valley Day)
+scene.fog = new THREE.Fog(0x3b82f6, 100, 1000);
+
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+camera.position.set(0, 80, 120); // High angle intro view
+camera.lookAt(0,0,0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+// --- LIGHTING (Sunny Day) ---
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
+hemiLight.color.setHSL(0.6, 1, 0.6);
+hemiLight.groundColor.setHSL(0.095, 1, 0.75);
+hemiLight.position.set(0, 50, 0);
+scene.add(hemiLight);
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+dirLight.position.set(50, 100, 50);
+dirLight.castShadow = true;
+dirLight.shadow.mapSize.width = 4096;
+dirLight.shadow.mapSize.height = 4096;
+const d = 200;
+dirLight.shadow.camera.left = -d;
+dirLight.shadow.camera.right = d;
+dirLight.shadow.camera.top = d;
+dirLight.shadow.camera.bottom = -d;
+scene.add(dirLight);
+
+// --- PLAYER (AVATAR: SPRITE BASED) ---
+let playerGroup = new THREE.Group();
+
+function createAvatarMesh() {
+    scene.remove(playerGroup);
+    playerGroup = new THREE.Group();
+
+    // Load Texture
+    const tex = new THREE.TextureLoader().load('static/img.png');
+    // 6 characters in one row
+    tex.repeat.set(1/6, 1); 
+    tex.offset.x = (State.avatar || 0) * (1/6);
+    
+    // Create Sprite (Billboard)
+    const spriteMat = new THREE.SpriteMaterial({ map: tex });
+    const sprite = new THREE.Sprite(spriteMat);
+    // Aspect ratio of one character slice (W/6 : H)
+    // Assuming original image is e.g. 3000x1000 -> Single char is 500x1000 -> 1:2
+    sprite.scale.set(10, 20, 1); 
+    sprite.position.y = 10; // Center is at 0, so move up by half height
+    
+    playerGroup.add(sprite);
+    
+    // Add shadow text/blob at feet since Sprites don't cast shadows easily
+    const shadowGeo = new THREE.CircleGeometry(4, 32);
+    const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.3, transparent: true });
+    const shadow = new THREE.Mesh(shadowGeo, shadowMat);
+    shadow.rotation.x = -Math.PI / 2;
+    shadow.position.y = 0.1;
+    playerGroup.add(shadow);
+
+    scene.add(playerGroup);
+}
+
+// --- NPC SYSTEM (LIVING WORLD) ---
+const NPC_ROSTER = [
+    { id: 0, role: "Intern", name: "Alex (Intern)", loc: {x: 20, z: -80}, skin: 0, dialog: "Estou aprendendo sobre Cache Miss. Você sabia que LinkedList é ruim na prática?" },
+    { id: 1, role: "Junior", name: "Mayara (Dev)", loc: {x: -30, z: 120}, skin: 1, dialog: "Pare de usar Setters! Objetos devem nascer válidos e imutáveis." },
+    { id: 2, role: "Pleno", name: "Kenji (Eng)", loc: {x: 100, z: 250}, skin: 2, dialog: "Spring é detalhe. Se seu domínio depende do framework, você já perdeu." },
+    { id: 3, role: "Senior", name: "Sarah (Lead)", loc: {x: -150, z: 400}, skin: 3, dialog: "Código é para humanos. Escreva pensando que será auditado num tribunal." },
+    { id: 4, role: "Principal", name: "David (Staff)", loc: {x: 50, z: 600}, skin: 4, dialog: "Performance é arquitetura. Não otimize loops, desenhe fluxos assíncronos." },
+    { id: 5, role: "Fellow", name: "Elena (Architect)", loc: {x: 0, z: 800}, skin: 5, dialog: "Não resolva o problema de hoje. Crie o contrato para o futuro." }
+];
+
+function initNPCs() {
+    const tex = new THREE.TextureLoader().load('static/img.png');
+    tex.repeat.set(1/6, 1); // 6 characters in sheet
+
+    NPC_ROSTER.forEach(npc => {
+        // Clone texture to offset per character
+        const charTex = tex.clone();
+        charTex.offset.x = npc.skin * (1/6);
+        charTex.needsUpdate = true;
+
+        const mat = new THREE.SpriteMaterial({ map: charTex });
+        const sprite = new THREE.Sprite(mat);
+        sprite.scale.set(12, 24, 1);
+        sprite.position.set(npc.loc.x, 12, npc.loc.z);
+        
+        // Add minimal "breathing" animation data
+        sprite.userData = { 
+            isInteractable: true, 
+            name: npc.name, 
+            type: 'NPC',
+            role: npc.role,
+            baseY: 12,
+            animOffset: Math.random() * 10
+        };
+        
+        // Name Tag
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 256; canvas.height = 64;
+        ctx.fillStyle = "rgba(0,0,0,0.6)";
+        ctx.fillRect(0,0,256,64);
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 24px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(npc.role.toUpperCase(), 128, 40);
+        
+        const labelTex = new THREE.CanvasTexture(canvas);
+        const labelMat = new THREE.SpriteMaterial({ map: labelTex });
+        const label = new THREE.Sprite(labelMat);
+        label.scale.set(10, 2.5, 1);
+        label.position.set(0, 14, 0); // Above head
+        sprite.add(label);
+
+        scene.add(sprite);
+        colliders.push(sprite);
+    });
+}
+
+    // 1. GROUND (Grass)
+    const groundGeo = new THREE.PlaneGeometry(5000, 5000);
+    const groundMat = new THREE.MeshLambertMaterial({ color: 0x4ade80 }); // Bright Grass
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // 2. BUILDINGS (Better looking)
+    // Garage
+    createBuilding(0, 0, -100, 150, 60, 150, 0xef4444, "GARAGE - LEVEL 1"); // Red Brick Garage
+    
+    // Spawn NPCs
+    initNPCs();
+    
+    // Silicon Valley Backdrop
+    for(let i=0; i<50; i++) {
+        const x = (Math.random() - 0.5) * 2000;
+        const z = (Math.random() - 0.5) * 2000;
+        if(Math.abs(x) < 200 && Math.abs(z) < 200) continue; // Clear spawn
+
+        const h = 50 + Math.random() * 200;
+        const color = Math.random() > 0.5 ? 0xcbd5e1 : 0x94a3b8; // Office Colors
+        createBuilding(x, 0, z, 60 + Math.random()*40, h, 60 + Math.random()*40, color, "OFFICE");
+    }
+
+    // 3. DECORATION (Trees)
+    for(let i=0; i<100; i++) {
+        const x = (Math.random() - 0.5) * 2000;
+        const z = (Math.random() - 0.5) * 2000;
+        if(Math.abs(x) < 200 && Math.abs(z) < 200) continue;
+        
+        createTree(x, z);
+    }
+    
+    // 4. INTERACTABLES
+    createProp(0, 15, -60, 40, 20, 20, 0xffd700, "APPLE_I_PROTOTYPE");
+}
+
+function createBuilding(x, y, z, w, h, d, color, type) {
+    const geo = new THREE.BoxGeometry(w, h, d);
+    const mat = new THREE.MeshPhongMaterial({ color: color });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(x, h/2, z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+    
+    // Windows logic (Simple textures)
+    if(type === "OFFICE") {
+        const winGeo = new THREE.BoxGeometry(w+1, h*0.8, d+1);
+        const winMat = new THREE.MeshLambertMaterial({ color: 0x3b82f6, opacity: 0.3, transparent: true });
+        const windows = new THREE.Mesh(winGeo, winMat);
+        windows.position.copy(mesh.position);
+        scene.add(windows);
+    }
+    
+    colliders.push(mesh); // Add to collisions
+}
+
+function createTree(x, z) {
+    const trunkGeo = new THREE.CylinderGeometry(4, 4, 20);
+    const trunkMat = new THREE.MeshLambertMaterial({ color: 0x8b4513 });
+    const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+    trunk.position.set(x, 10, z);
+    trunk.castShadow = true;
+    scene.add(trunk);
+    
+    const leavesGeo = new THREE.DodecahedronGeometry(15);
+    const leavesMat = new THREE.MeshLambertMaterial({ color: 0x22c55e });
+    const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+    leaves.position.set(x, 30, z);
+    leaves.castShadow = true;
+    scene.add(leaves);
+}
+
+function createProp(x, y, z, w, h, d, color, name) {
+    const geo = new THREE.BoxGeometry(w, h, d);
+    const mat = new THREE.MeshPhongMaterial({ color: color, emissive: color, emissiveIntensity: 0.5 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(x, y, z);
+    mesh.userData = { isInteractable: true, name: name };
+    scene.add(mesh);
+    colliders.push(mesh);
+}
+
+
+// --- INTERACTION ---
+function checkInteraction() {
+    const pPos = playerGroup.position;
+    let closestDist = 50; // Interact radius
+    let closestObj = null;
+
+    scene.traverse(obj => {
+        if(obj.userData && obj.userData.isInteractable) {
+            const dist = pPos.distanceTo(obj.position);
+            if(dist < closestDist) {
+                closestObj = obj;
+            }
+        }
+    });
+
+    if(closestObj) {
+        State.interactionTarget = closestObj;
+        document.getElementById('interactLabel').classList.add('visible');
+        document.getElementById('interactText').textContent = "EXAMINAR " + closestObj.userData.name.replace(/_/g, ' ');
+    } else {
+        State.interactionTarget = null;
+        document.getElementById('interactLabel').classList.remove('visible');
+    }
+}
+
+function tryInteract() {
+    if(!State.interactionTarget) return;
+    
+    const target = State.interactionTarget.userData.name;
+    let text = "Dispositivo desconhecido.";
+    let speaker = "SISTEMA";
+
+    if(target.includes("APPLE")) {
+        speaker = "STEVE WOZNIAK (NOTE)";
+        text = "A placa mãe está exposta... É o início de tudo. <br>Linguagem detectada: <b>BINARY/ASSEMBLY</b>.<br>Você está pronto para evoluir?";
+    }
+
+    showDialog(speaker, text);
+}
+
+// --- GAME LOGIC (CEZI COLA STANDARD: ULTIMATE EDITION) ---
+
+// 1. KNOWLEDGE BASE (The Cezi Cola Curriculum)
+const KNOWLEDGE = {
+    intern: {
+        title: "LEVEL 1: O MINDSET DO ENGENHEIRO",
+        lectures: [
+            {
+                title: "JAVA: O CONTRATO COM O FUTURO",
+                text: `<b>O que é Java?</b>\nNão é uma linguagem para scripts. É um contrato.\n\nQuando escrevo Java, não resolvo o problema de hoje. Crio algo que:\n1. Outro engenheiro manterá em 3 anos.\n2. Rodará sob carga e falhas.\n3. Será auditado em tribunal.\n\nA pergunta nunca é "Como implemento?".\nA pergunta é: <b>"O que NÃO pode quebrar quando isso mudar?"</b>`
+            },
+            {
+                title: "ARRAYLIST VS LINKEDLIST (A VERDADE)",
+                text: `<b>Em entrevista:</b> "LinkedList é boa para inserir no meio".\n<b>Na realidade (Uber/Big Tech):</b> LinkedList causa Cache Miss de CPU.\n\nO processador busca blocos contíguos de memória. LinkedList espalha nós no heap.\nResultado? ArrayList vence em 99% dos casos reais.`
+            }
+        ],
+        quiz: [
+            {
+                q: "Qual a prioridade número 1 ao escrever uma classe Java segundo o padrão Cezi Cola?",
+                options: [
+                    "Escrever o código mais curto possível (One-liner)",
+                    "Garantir que seja um contrato imutável e auditável para o futuro",
+                    "Usar a versão mais recente e moderna da syntax"
+                ],
+                a: 1
+            },
+            {
+                q: "Por que LinkedList geralmente reprova em testes de performance reais?",
+                options: [
+                    "Porque consome muito pouca memória",
+                    "Porque tem complexidade O(n^2)",
+                    "Porque sofre de Cache Miss (falta de localidade de referência)"
+                ],
+                a: 2
+            }
+        ]
+    },
+    junior: {
+        title: "LEVEL 2: DOMÍNIO E ESTADO",
+        lectures: [
+            {
+                title: "EU NÃO PROGRAMO FEATURES",
+                text: `Juniores pensam em telas e endpoints. <b>Engenheiros modelam o domínio.</b>\n\n❌ "Método transferir()"\n✅ "O que é uma transferência? Quem autoriza? Estados inválidos?"\n\nSe um objeto nasce inválido, você errou. Se ele tem setters demais, ele mente sobre sua responsabilidade.`
+            },
+            {
+                title: "ESTADO É O INIMIGO",
+                text: `Objeto com muitos setters = Bug de concorrência esperando acontecer.\n\n<b>Regras de Ouro:</b>\n1. Prefira imutabilidade.\n2. Passe dependências no construtor.\n3. Trate mutação como evento, não detalhe.\n\nQuando você controla o estado, threads deixam de ser um pesadelo.`
+            }
+        ],
+        quiz: [
+            {
+                q: "O que indica um objeto cheio de métodos 'set' públicos?",
+                options: [
+                    "É um Java Bean perfeitamente flexível",
+                    "É uma estrutura de dados anêmica mentindo sobre responsabilidade",
+                    "É ideal para injeção de dependência"
+                ],
+                a: 1
+            },
+            {
+                q: "Como um Engenheiro Sênior começa a resolver um problema?",
+                options: [
+                    "Criando o Controller e o Banco de Dados",
+                    "Procurando um Framework que resolva tudo",
+                    "Modelando e nomeando o vocabulário do Domínio Puro"
+                ],
+                a: 2
+            }
+        ]
+    },
+    pleno: {
+        title: "LEVEL 3: ARQUITETURA E AUDITORIA",
+        lectures: [
+            {
+                title: "CÓDIGO DE TRIBUNAL",
+                text: `Sistemas financeiros exigem auditoria.\nSe seu código for lido por um juiz, ele entenderá o que houve com o dinheiro?\n\nNomes precisos > Nomes curtos.\nLógica explicita > Lógica 'esperta'.\n\n<b>Frameworks são detalhes.</b> Spring não é arquitetura. O domínio deve compilar e testar sem banco e sem Spring.`
+            },
+            {
+                title: "ALGORITMOS REAIS: HASHMAP VS TREEMAP",
+                text: `Não decore estruturas. Entenda o custo.\n\n<b>HashMap (O(1)):</b> Lookup rápido, sem ordem. (Cache, Sessão)\n<b>TreeMap (O(log n)):</b> Ordenado. (Rate Limiter, Agendamento)\n\nUsar TreeMap sem precisar de ordem é queimar CPU à toa.`
+            }
+        ],
+        quiz: [
+            {
+                q: "System Design: Você precisa criar um Rate Limiter por janela de tempo. Qual estrutura?",
+                options: [
+                    "HashMap, pois é mais rápido sempre",
+                    "TreeMap, para buscar intervalos (range queries) de timestamps",
+                    "ArrayList, para guardar tudo em ordem"
+                ],
+                a: 1
+            },
+            {
+                q: "Qual a relação correta entre Domínio e Framework?",
+                options: [
+                    "O Domínio depende do Framework",
+                    "Eles são a mesma coisa",
+                    "O Framework é um detalhe que aponta para dentro do Domínio"
+                ],
+                a: 2
+            }
+        ]
+    },
+    senior: {
+        title: "LEVEL 4: UBER-SCALE & SYSTEM DESIGN",
+        lectures: [
+            {
+                title: "PERFORMANCE É DESENHO",
+                text: `Otimizar 'for loop' é amadorismo. Performance real vem de:\n1. Menos alocações (GC Pressure).\n2. Fluxos assíncronos (Non-blocking).\n3. Saber onde a latência explode.\n\n<b>Latência > Throughput.</b> O p99 importa mais que a média.`
+            },
+            {
+                title: "LIVE CODING SURVIVAL",
+                text: `Top 3 Testes Uber:\n1. <b>Two Sum:</b> Use HashSet para O(n).\n2. <b>Valid Parentheses:</b> Use Stack/Deque.\n3. <b>LRU Cache:</b> HashMap + DoublyLinkedList.\n\nNão tente ser genial. Seja claro, explique o Trade-off e trate os Edge Cases.`
+            }
+        ],
+        quiz: [
+            {
+                q: "Você precisa filtrar duplicatas de um stream de eventos de alta velocidade. O que usa?",
+                options: [
+                    "List.contains() (Complexidade O(n^2))",
+                    "HashSet (Complexidade O(1) média)",
+                    "Sort + Binary Search (Complexidade O(n log n))"
+                ],
+                a: 1
+            },
+            {
+                q: "O que é mais crítico em sistemas distribuídos de pagamentos?",
+                options: [
+                    "Ser o mais rápido possível (Latência zero)",
+                    "Idempotência e Consistência (Não cobrar 2x)",
+                    "Usar a stack mais moderna (Rust/Go)"
+                ],
+                a: 1
+            }
+        ]
+    },
+    principal: {
+        title: "LEVEL 5: THE CEZI COLA STANDARD",
+        lectures: [
+            {
+                title: "A VERDADE FINAL",
+                text: `Java não forma programadores rápidos, forma engenheiros disciplinados.\n\nCódigo é consequência do pensamento.\nSe você muda como pensa, seu código muda sozinho.\n\nEngenharia é responsabilidade. Software move dinheiro e vidas. Bem-vindo ao nível Principal.`
+            }
+        ],
+        quiz: [
+            {
+                q: "Você está pronto para assumir a responsabilidade de Principal Engineer?",
+                options: [
+                    "Sim. Entendo que Clareza > Genialidade.",
+                    "Não. Prefiro apenas codar features.",
+                    "Talvez, depende do salário."
+                ],
+                a: 0
+            }
+        ]
+    }
+};
+
+// --- NPC SYSTEM & PROGRESSION ---
+const NPC_ROSTER = [
+    // The Mentors
+    { id: 0, role: "intern", name: "ALEX (INTERN)", loc: {x: 20, z: -80}, skin: 0, dialog: "Preciso passar na entrevista. Dizem que perguntam sobre ArrayList..." },
+    
+    // THE LEADERS (ICONS)
+    { id: 1, role: "junior", name: "UNCLE BOB", loc: {x: -50, z: 150}, skin: 2, dialog: "Bem-vindo. Aqui nós limpamos o código. Seus testes passam?" },
+    
+    { id: 2, role: "pleno", name: "KENT BECK", loc: {x: 80, z: 350}, skin: 3, dialog: "Simplicidade é arte. Você testou antes de codar? TDD é vida." },
+    
+    { id: 3, role: "senior", name: "MARTIN FOWLER", loc: {x: -100, z: 600}, skin: 4, dialog: "Qualquer tolo escreve código que computador entende. Bons programadores escrevem para humanos." },
+    
+    // THE BOSS
+    { id: 4, role: "principal", name: "CEZI COLA", loc: {x: 0, z: 900}, skin: 5, dialog: "Eu sou o guardião do Padrão. Você prova seu valor modelando o domínio, não usando frameworks. Vamos conversar." }
+];
+
+function initNPCs() {
+    const tex = new THREE.TextureLoader().load('static/img.png');
+    tex.repeat.set(1/6, 1); 
+
+    NPC_ROSTER.forEach(npc => {
+        const charTex = tex.clone();
+        charTex.offset.x = npc.skin * (1/6);
+        charTex.needsUpdate = true;
+
+        const mat = new THREE.SpriteMaterial({ map: charTex });
+        const sprite = new THREE.Sprite(mat);
+        sprite.scale.set(15, 30, 1); // Bigger sprites
+        sprite.position.set(npc.loc.x, 15, npc.loc.z);
+        
+        // Animation Data
+        sprite.userData = { 
+            isInteractable: true, 
+            name: npc.name, 
+            type: 'NPC',
+            role: npc.role,
+            baseY: 15,
+            animOffset: Math.random() * 10,
+            animSpeed: 2 + Math.random()
+        };
+        
+        // RPG Name Tag
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 300; canvas.height = 80;
+        ctx.fillStyle = "rgba(0,0,0,0.8)";
+        ctx.fillRect(0,0,300,80);
+        // Border
+        ctx.strokeStyle = npc.role === 'principal' ? '#fcd34d' : '#fff';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(0,0,300,80);
+        
+        ctx.fillStyle = npc.role === 'principal' ? '#fcd34d' : '#fff';
+        ctx.font = "bold 28px Consolas";
+        ctx.textAlign = "center";
+        ctx.fillText(npc.name, 150, 50);
+        
+        const labelTex = new THREE.CanvasTexture(canvas);
+        const labelMat = new THREE.SpriteMaterial({ map: labelTex });
+        const label = new THREE.Sprite(labelMat);
+        label.scale.set(12, 3.2, 1);
+        label.position.set(0, 18, 0); 
+        sprite.add(label);
+
+        scene.add(sprite);
+        
+        // Add specific visual aura for High level NPCs
+        if(npc.role === 'principal' || npc.role === 'senior') {
+             const geo = new THREE.RingGeometry(10, 11, 32);
+             const mat = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide, transparent:true, opacity:0.5 });
+             const ring = new THREE.Mesh(geo, mat);
+             ring.rotation.x = -Math.PI/2;
+             ring.position.y = -14;
+             sprite.add(ring);
+        }
+    });
+}
+
+// --- WORLD GENERATION & ENGINE ---
+const colliders = []; // Physics/Interaction objects
+
+function initWorld() {
+    // 1. GROUND (Silicon Valley Lawn)
+    const groundGeo = new THREE.PlaneGeometry(10000, 10000);
+    const groundMat = new THREE.MeshLambertMaterial({ color: 0x4ade80 }); // Fresh Start Green
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // 2. TECH CAMPUSES (The "Levels")
+    
+    // STARTING GARAGE (Level 1)
+    createBuilding(0, 0, -100, 200, 60, 200, 0xef4444, "HP_GARAGE");
+    createLabel("HP GARAGE (START)", 0, 70, -100);
+
+    // GOOGLEPLEX (Level 2/3 - Algorithm Land)
+    createBuilding(500, 0, -500, 400, 100, 300, 0x4285F4, "GOOGLEPLEX");
+    createLabel("GOOGLEPLEX HQ", 500, 120, -500);
+    
+    // META/FACEBOOK (Level 4 - Graph Land)
+    createBuilding(-500, 0, -500, 400, 120, 200, 0x1877F2, "META_HQ");
+    createLabel("META CAMPUS", -500, 140, -500);
+    
+    // APPLE PARK (Design/Audit Land) - Approximated as Hexagon
+    for(let i=0; i<6; i++) {
+        const angle = (i/6) * Math.PI * 2;
+        const x = Math.cos(angle) * 300;
+        const z = Math.sin(angle) * 300 + 600; // Offset Z
+        createBuilding(x, 0, z, 150, 80, 50, 0xA3AAAE, "APPLE_RING");
+    }
+    createLabel("APPLE PARK (AUDIT)", 0, 100, 600);
+
+    // 3. DECORATION (Trees)
+    for(let i=0; i<200; i++) {
+        const x = (Math.random() - 0.5) * 4000;
+        const z = (Math.random() - 0.5) * 4000;
+        if(Math.abs(x) < 300 && Math.abs(z) < 300) continue; // Keep spawn clear
+        createTree(x, z);
+    }
+}
+
+function createLabel(text, x, y, z) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 512; canvas.height = 128;
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillRect(0,0,512,128);
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 60px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText(text, 256, 85);
+    
+    const tex = new THREE.CanvasTexture(canvas);
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex }));
+    sprite.scale.set(100, 25, 1);
+    sprite.position.set(x, y, z);
+    scene.add(sprite);
+}
+
+function createBuilding(x, y, z, w, h, d, color, type) {
+    const geo = new THREE.BoxGeometry(w, h, d);
+    const mat = new THREE.MeshPhongMaterial({ color: color });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(x, h/2, z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.userData = { isInteractable: false, type: 'BUILDING' };
+    scene.add(mesh);
+    colliders.push(mesh);
+}
+
+function createTree(x, z) {
+    const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(5, 5, 20),
+        new THREE.MeshLambertMaterial({ color: 0x8b4513 })
+    );
+    trunk.position.set(x, 10, z);
+    scene.add(trunk);
+    
+    // Low Poly bushy top
+    const leaves = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(20),
+        new THREE.MeshLambertMaterial({ color: 0x22c55e })
+    );
+    leaves.position.set(x, 35, z);
+    scene.add(leaves);
+}
+
+// --- INTERACTION ---
+function checkInteraction() {
+    if(!playerGroup) return;
+    const pPos = playerGroup.position;
+    let closestDist = 60; // Interaction Range
+    let closestObj = null;
+
+    scene.children.traverse(obj => {
+        if(obj.userData && obj.userData.isInteractable) {
+            const dist = pPos.distanceTo(obj.position);
+            if(dist < closestDist) {
+                closestObj = obj;
+            }
+        }
+    });
+
+    if(closestObj) {
+        State.interactionTarget = closestObj;
+        document.getElementById('interactLabel').classList.add('visible');
+        document.getElementById('interactText').textContent = "FALAR COM " + closestObj.userData.name;
+    } else {
+        State.interactionTarget = null;
+        document.getElementById('interactLabel').classList.remove('visible');
+    }
+}
+
+// --- ENGINE LOOP ---
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// START
+initWorld();
+initNPCs(); // Spawn the legends
+animate();
+
+// Animation definition
+function animate() {
+    requestAnimationFrame(animate);
+
+    if(State.screen === 'play' || State.screen === 'char_select') {
+        const delta = clock.getDelta(); 
+        const speed = 200 * delta; // Faster walking
+        const rotSpeed = 3 * delta;
+
+        if(keys.w) playerGroup.translateZ(speed);
+        if(keys.s) playerGroup.translateZ(-speed);
+        if(keys.a) playerGroup.rotateY(rotSpeed);
+        if(keys.d) playerGroup.rotateY(-rotSpeed);
+
+        // Simple Camera Follow
+        const idealOffset = new THREE.Vector3(0, 60, -80);
+        idealOffset.applyQuaternion(playerGroup.quaternion);
+        idealOffset.add(playerGroup.position);
+        
+        const lookAtPos = playerGroup.position.clone().add(new THREE.Vector3(0, 10, 0));
+        
+        camera.position.lerp(idealOffset, 0.1);
+        camera.lookAt(lookAtPos);
+
+        checkInteraction();
+    }
+    
+    renderer.render(scene, camera);
+}
+</script>
+</body>
+</html>

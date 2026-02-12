@@ -1,0 +1,438 @@
+GARAGE
+Toda Big Tech tem um início
+VISÃO GERAL DO PRODUTO
+Nome do jogo
+
+GARAGE – Toda Big Tech tem um início
+
+O nome “GARAGE” representa o ponto zero da engenharia:
+o primeiro código, o primeiro erro, o primeiro sistema imperfeito —
+antes da escala, antes do sucesso, antes da fama.
+
+Objetivo central (imutável)
+
+Permitir que qualquer pessoa evolua de um simples Hello World até o nível de Senior Software Engineer, dominando fundamentos reais de engenharia de software, e não dependência de frameworks, modismos ou atalhos superficiais.
+
+O jogo não ensina “como usar tecnologia”.
+Ele ensina como pensar como engenheiro.
+
+Tipo de jogo
+
+Single Player
+
+Progressão por carreira
+
+Baseado em desafios técnicos reais
+
+Totalmente orientado a backend, lógica, dados e arquitetura
+
+Não há foco em UI chamativa.
+Não há mecânicas de distração.
+O desafio é intelectual, técnico e conceitual.
+
+Plataforma
+
+Web
+
+HTML / CSS / JavaScript apenas como camada de visualização
+
+Backend
+
+Python + FastAPI (núcleo do jogo)
+
+Banco de Dados
+
+Supabase (PostgreSQL + Auth + Storage)
+
+PRINCÍPIO FUNDAMENTAL (REGRA ABSOLUTA)
+
+Este não é um jogo de frontend.
+
+O frontend não decide nada.
+O frontend não valida nada.
+O frontend não possui regras de negócio.
+
+Tudo que importa acontece no backend.
+
+O frontend apenas renderiza o estado do jogo, exatamente como um cliente HTTP em um sistema real.
+
+Esse princípio educa o jogador desde o primeiro minuto sobre separação de responsabilidades e arquitetura correta.
+
+1. PERSONAGENS (DOMÍNIO CENTRAL)
+1.1 Personagens Jogáveis
+
+Os personagens seguem exatamente os arquétipos visuais apresentados, sem referência direta a pessoas reais.
+
+Masculino
+
+Negro
+
+Branco
+
+Oriental
+
+Feminino
+
+Negra
+
+Branca
+
+Oriental
+
+Regras de design (invioláveis)
+
+Aparência fixa (não customizável)
+
+Diferença exclusivamente visual
+
+Nenhum personagem possui vantagem técnica
+
+Nenhum bônus oculto
+
+O jogo reforça mérito técnico, não estética, gênero ou origem.
+
+Modelagem de domínio (backend)
+class Character:
+    id: UUID
+    gender: Gender
+    ethnicity: Ethnicity
+    avatar_url: str
+
+
+Nada além disso.
+
+Não existe:
+
+força
+
+inteligência
+
+habilidade especial
+
+Skill é do jogador.
+
+1.2 Escolhas Iniciais do Usuário (Onboarding)
+
+No início do jogo, o usuário escolhe:
+
+Personagem
+
+Linguagem backend principal:
+
+Linguagens disponíveis
+
+Java
+
+Python
+
+C
+
+C++
+
+C#
+
+.NET
+
+Ruby
+
+Rust
+
+Go
+
+Essa escolha define o caminho dos desafios, mas não reduz nem aumenta a dificuldade.
+
+Todos os caminhos exigem pensamento de engenheiro sênior.
+
+2. MAPA DO JOGO – O VALE DO SILÍCIO
+Conceito
+
+O jogo acontece em um cenário único:
+uma representação do Vale do Silício, apresentada como um:
+
+Mapa do Tesouro da Engenharia de Software
+
+Cada ponto do mapa representa:
+
+Uma empresa
+
+Um momento histórico
+
+Um tipo específico de desafio técnico
+
+Regiões do Mapa
+Região	Tema
+Xerox PARC	Origem da computação moderna
+Apple Garage	Produto e simplicidade
+Microsoft	Sistemas operacionais e escala
+Google	Algoritmos, dados e sistemas distribuídos
+Facebook	Escala social e consistência
+Amazon	E-commerce → Cloud
+PayPal	Pagamentos e segurança
+Tesla / SpaceX	Engenharia extrema
+Cloud Valley	Sistemas distribuídos modernos
+3. PROGRESSÃO DE CARREIRA (CORE GAME LOOP)
+3.1 Estágios de Carreira
+
+Estagiário
+
+Júnior
+
+Pleno
+
+Sênior
+
+Staff
+
+Principal
+
+Distinguished Engineer (final)
+
+Cada nível desbloqueia novos tipos de problemas, não apenas mais difíceis, mas mais próximos da realidade de produção.
+
+3.2 Sistema de Erros (Regra Dura)
+
+Cada desafio permite 3 erros
+
+3 erros → Game Over
+
+Consequências do Game Over
+
+Retorno ao início do estágio atual
+
+Histórico mantido (aprendizado nunca é apagado)
+
+Não existe “pagar para continuar”
+
+O jogo ensina responsabilidade técnica e consequências reais.
+
+4. CHEFES (BOSSES)
+Regras Importantes
+
+Não usar nomes reais diretamente
+
+Utilizar arquétipos históricos
+
+Arquétipos de Chefes
+Boss	Representa
+The Visionary Founder	Jobs
+The Platform Builder	Gates
+The Search Architects	Google
+The Social Networker	Facebook
+The Cloud Strategist	Bezos
+The First Principles Engineer	Musk
+Tipo de desafio
+
+Não é combate
+
+Não é sorte
+
+É problema técnico real
+
+Falha não gera punição cega:
+gera explicação conceitual dura e direta.
+
+5. PROFESSORES (MENTORES)
+
+Os mentores aparecem ao longo da jornada, não como NPC decorativo.
+
+Eles:
+
+Explicam conceitos
+
+Avaliam decisões
+
+Reprovam sem concessão
+
+Arquétipos de Mentores
+Mentor	Ensinamento
+The Craftsman	Clean Code
+The Refactorer	Evolução segura
+The Simplifier	TDD
+The Pragmatist	Performance
+The Logician	Pensamento formal
+6. TIPOS DE DESAFIOS (GAMEPLAY REAL)
+6.1 Tipos Principais
+1. Lógica e Estruturas de Dados
+
+Two Sum
+
+Sliding Window
+
+Map / Set
+
+Stack / Queue
+
+2. Modelagem de Domínio
+
+Criação de entidades
+
+Proteção de invariantes
+
+Estados impossíveis de representar
+
+3. Arquitetura
+
+Separação de camadas
+
+Eventos
+
+Idempotência
+
+4. Sistemas Distribuídos (níveis avançados)
+
+Retry
+
+Consistência
+
+Latência
+
+Falhas
+
+6.2 Forma de Resposta do Jogador
+
+Nunca escreve código livre no browser
+
+Escolhe estratégias
+
+Analisa código existente
+
+Responde perguntas técnicas
+
+Decide trade-offs
+
+Isso elimina trapaça e força pensamento de engenharia.
+
+7. ARQUITETURA DO SISTEMA
+7.1 Backend (FastAPI)
+Estrutura de camadas
+app/
+ ├── domain/
+ │   ├── character.py
+ │   ├── player.py
+ │   ├── challenge.py
+ │   ├── invariant.py
+ │
+ ├── application/
+ │   ├── start_game.py
+ │   ├── submit_answer.py
+ │   ├── progress_stage.py
+ │
+ ├── infrastructure/
+ │   ├── repositories/
+ │   ├── supabase_client.py
+ │
+ ├── api/
+ │   ├── routes/
+ │
+ └── main.py
+
+Regra absoluta
+
+O domínio não conhece FastAPI, banco ou Supabase.
+
+7.2 Banco de Dados (Supabase)
+Tabelas principais
+
+users
+
+characters
+
+game_sessions
+
+challenges
+
+attempts
+
+progress
+
+game_events (auditoria)
+
+Cada tentativa é registrada.
+Nada se perde.
+Tudo é auditável.
+
+8. SISTEMA DE PONTOS
+
+Pontuação não mede velocidade.
+Mede qualidade de pensamento.
+
+Ação	Pontos
+Acerto direto	Alto
+Acerto após erro	Médio
+Justificativa correta	Bônus
+Escolha arquitetural errada	Penalidade
+Pensamento raso	Zero
+9. INTELIGÊNCIA ARTIFICIAL
+Papel da IA
+
+A IA:
+
+Gera variações de desafios
+
+Analisa respostas
+
+Ajusta dificuldade
+
+Atua como mentor técnico
+
+A IA não:
+
+Resolve pelo jogador
+
+Entrega código pronto
+
+Facilita o caminho
+
+Prompt base da IA
+
+“Avalie esta resposta como se você fosse um Staff Engineer em Big Tech.
+Identifique erros conceituais, trade-offs ignorados e riscos de produção.”
+
+10. CICLO DE DESENVOLVIMENTO DO JOGO
+Fase 1 – Fundação
+
+Modelagem de domínio
+
+Sistema de progressão
+
+Persistência
+
+Fase 2 – Gameplay
+
+Desafios
+
+Pontuação
+
+Game Over
+
+Fase 3 – Conteúdo
+
+Chefes
+
+Mentores
+
+Livros
+
+Fase 4 – IA
+
+Avaliação
+
+Personalização
+
+VERDADE FINAL
+
+GARAGE não forma programadores.
+GARAGE forma engenheiros.
+
+Quem conclui a jornada:
+
+Entende domínio
+
+Respeita estado
+
+Pensa em invariantes
+
+Não escreve código frágil
+
+O jogador não “ganha o jogo”.
+Ele se torna alguém capaz de construir software que não quebra quando o mundo muda.

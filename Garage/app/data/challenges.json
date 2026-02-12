@@ -1,0 +1,1262 @@
+[
+    {
+        "id": "intern_01_xerox_object_creation",
+        "title": "Nascimento do Objeto",
+        "description": "Ao criar um objeto de dominio, qual e a invariante mais importante a ser aplicada?",
+        "context_code": "// Qual abordagem esta correta?\n// A) new Account() e depois account.setId(...); account.setBalance(...);\n// B) new Account(id, initialBalance)  // validado no construtor",
+        "category": "domain_modeling",
+        "required_stage": "Intern",
+        "region": "Xerox PARC",
+        "mentor": "The Craftsman",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Objetos devem ser criados vazios e preenchidos via setters para flexibilidade",
+                "is_correct": false,
+                "explanation": "Um objeto com setters publicos pode existir em estado invalido. Isso e fonte de bugs em sistemas concorrentes."
+            },
+            {
+                "text": "Objetos devem nascer validos. Todo estado obrigatorio deve ser fornecido no momento da construcao.",
+                "is_correct": true,
+                "explanation": "Se um objeto pode existir em estado invalido, todo metodo precisa verificar validade. Validacao no construtor elimina essa classe inteira de bugs."
+            },
+            {
+                "text": "Depende do framework sendo utilizado",
+                "is_correct": false,
+                "explanation": "Regras de dominio nao dependem de frameworks. O principio de construcao valida se aplica independente da tecnologia."
+            }
+        ]
+    },
+    {
+        "id": "intern_02_xerox_naming",
+        "title": "Nomes Revelam Intencao",
+        "description": "Voce encontra uma variavel chamada 'd' no codigo. O que um engenheiro faz?",
+        "context_code": "int d; // tempo decorrido em dias\nvs.\nint elapsedTimeInDays;",
+        "category": "domain_modeling",
+        "required_stage": "Intern",
+        "region": "Xerox PARC",
+        "mentor": "The Craftsman",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Nomes curtos sao melhores porque digitamos menos",
+                "is_correct": false,
+                "explanation": "Codigo e lido 10x mais do que e escrito. Economia de digitacao custa horas de depuracao."
+            },
+            {
+                "text": "Use nomes que revelam intencao: 'elapsedTimeInDays' e autoexplicativo",
+                "is_correct": true,
+                "explanation": "Clean Code: nomes devem responder POR QUE existe, O QUE faz e COMO e usado. Se precisa de comentario para explicar, o nome esta errado."
+            },
+            {
+                "text": "Tanto faz, o compilador nao liga para nomes",
+                "is_correct": false,
+                "explanation": "O compilador nao liga, mas o engenheiro que mantem seu codigo as 3h da manha liga muito."
+            }
+        ]
+    },
+    {
+        "id": "intern_03_xerox_functions",
+        "title": "Funcoes Pequenas",
+        "description": "Uma funcao tem 200 linhas e faz 5 coisas diferentes. Qual o problema?",
+        "context_code": "void processOrder() {\n  // valida input (40 linhas)\n  // calcula preco (50 linhas)\n  // aplica desconto (30 linhas)\n  // salva no banco (40 linhas)\n  // envia email (40 linhas)\n}",
+        "category": "domain_modeling",
+        "required_stage": "Intern",
+        "region": "Xerox PARC",
+        "mentor": "The Craftsman",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Nenhum problema -- funcoes grandes sao mais eficientes",
+                "is_correct": false,
+                "explanation": "Funcoes grandes sao impossiveis de testar, reutilizar e entender. Sao a principal fonte de bugs em sistemas legados."
+            },
+            {
+                "text": "Viola o principio de responsabilidade unica: cada funcao deve fazer UMA coisa bem feita",
+                "is_correct": true,
+                "explanation": "Extraia 5 funcoes: validateInput(), calculatePrice(), applyDiscount(), saveOrder(), sendConfirmation(). Cada uma testavel isoladamente, reutilizavel e com nome que revela intencao."
+            },
+            {
+                "text": "So e problema se tiver mais de 500 linhas",
+                "is_correct": false,
+                "explanation": "Nao existe limiar magico. Se a funcao faz mais de uma coisa, ja esta errada. Funcoes ideais tem 5-20 linhas."
+            }
+        ]
+    },
+    {
+        "id": "intern_04_apple_hello_world",
+        "title": "O Primeiro Contrato",
+        "description": "Qual e o proposito principal de escrever codigo segundo a disciplina de engenharia?",
+        "context_code": null,
+        "category": "domain_modeling",
+        "required_stage": "Intern",
+        "region": "Apple Garage",
+        "mentor": "The Craftsman",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Escrever o codigo mais curto possivel (one-liners)",
+                "is_correct": false,
+                "explanation": "Brevidade nao e o objetivo. Clareza e manutenibilidade sao. Codigo e lido 10x mais do que e escrito."
+            },
+            {
+                "text": "Criar um contrato imutavel e auditavel para o futuro",
+                "is_correct": true,
+                "explanation": "Codigo e um contrato. Outro engenheiro vai mante-lo daqui a 3 anos. Precisa ser claro, testavel e resiliente a mudancas."
+            },
+            {
+                "text": "Usar a sintaxe mais moderna e os recursos mais recentes do framework",
+                "is_correct": false,
+                "explanation": "Frameworks mudam. Sintaxe evolui. Fundamentos permanecem. Projete para longevidade, nao para tendencias."
+            }
+        ]
+    },
+    {
+        "id": "intern_05_apple_data_structures",
+        "title": "ArrayList vs LinkedList",
+        "description": "Em um ambiente de producao de Big Tech, por que ArrayList geralmente supera LinkedList em performance?",
+        "context_code": "// Java\nList<User> users = new ArrayList<>();  // vs LinkedList<>()\nfor (User u : users) { process(u); }",
+        "category": "logic",
+        "required_stage": "Intern",
+        "region": "Apple Garage",
+        "mentor": "The Craftsman",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Porque ArrayList usa menos memoria no total",
+                "is_correct": false,
+                "explanation": "O uso de memoria sozinho nao determina performance. O fator chave e o comportamento do cache da CPU."
+            },
+            {
+                "text": "Porque ArrayList tem acesso aleatorio O(1) enquanto LinkedList tem O(n)",
+                "is_correct": false,
+                "explanation": "Embora a complexidade de acesso seja diferente, o impacto real em producao e a localidade de cache, nao apenas o Big-O."
+            },
+            {
+                "text": "Porque ArrayList se beneficia da localidade de cache da CPU (memoria contigua), reduzindo cache misses",
+                "is_correct": true,
+                "explanation": "A CPU busca memoria em cache lines (64 bytes). ArrayList armazena elementos de forma contigua, entao o prefetcher trabalha eficientemente. LinkedList espalha nos pelo heap, causando cache misses em cada travessia."
+            }
+        ]
+    },
+    {
+        "id": "intern_06_apple_types",
+        "title": "Tipos Primitivos vs Objetos",
+        "description": "Por que usar um Value Object 'Email' ao inves de uma String simples?",
+        "context_code": "// Abordagem A:\nString email = userInput;\n// Abordagem B:\nEmail email = new Email(userInput); // valida formato no construtor",
+        "category": "domain_modeling",
+        "required_stage": "Intern",
+        "region": "Apple Garage",
+        "mentor": "The Craftsman",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Nao faz diferenca, ambos armazenam texto",
+                "is_correct": false,
+                "explanation": "String aceita qualquer texto: 'gato', '123', vazio. Nao ha garantia de que e um email valido em nenhum ponto do sistema."
+            },
+            {
+                "text": "Value Object encapsula validacao: se existe, esta valido. Elimina bugs de estado invalido em todo o sistema.",
+                "is_correct": true,
+                "explanation": "Com Value Object, a validacao acontece UMA vez (no construtor). Todo codigo que recebe um Email sabe que e valido. Isso e o principio 'Make illegal states unrepresentable'."
+            },
+            {
+                "text": "E apenas uma questao de preferencia pessoal",
+                "is_correct": false,
+                "explanation": "Nao e preferencia. E engenharia. Primitive Obsession e um code smell documentado. Em sistemas financeiros, confundir 'id de conta' com 'string qualquer' causa bugs criticos."
+            }
+        ]
+    },
+    {
+        "id": "junior_01_microsoft_domain",
+        "title": "Dominio Primeiro",
+        "description": "Um desenvolvedor junior e solicitado a implementar uma funcionalidade de transferencia bancaria. O que ele deve fazer PRIMEIRO?",
+        "context_code": null,
+        "category": "domain_modeling",
+        "required_stage": "Junior",
+        "region": "Microsoft",
+        "mentor": "The Refactorer",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Criar o endpoint REST e as tabelas do banco de dados",
+                "is_correct": false,
+                "explanation": "Comecar pela infraestrutura acopla seu design a detalhes tecnicos. O dominio deve ser definido primeiro."
+            },
+            {
+                "text": "Encontrar um framework que lide com transferencias automaticamente",
+                "is_correct": false,
+                "explanation": "Frameworks resolvem problemas genericos. Suas regras de negocio sao especificas. Delegar sem entender e perigoso."
+            },
+            {
+                "text": "Modelar o dominio: O que e uma transferencia? Quem autoriza? Quais estados sao invalidos?",
+                "is_correct": true,
+                "explanation": "Engenheiros modelam o espaco do problema antes de escrever codigo. Quais sao as entidades? Quais sao as invariantes? Quais transicoes sao ilegais? Isso e Domain-Driven Design."
+            }
+        ]
+    },
+    {
+        "id": "junior_02_microsoft_immutability",
+        "title": "Estado e o Inimigo",
+        "description": "Uma classe tem 12 metodos setter publicos. O que isso indica sobre seu design?",
+        "context_code": "public class Order {\n    public void setId(String id) { ... }\n    public void setStatus(String status) { ... }\n    public void setCustomer(Customer c) { ... }\n    // ... mais 9 setters\n}",
+        "category": "domain_modeling",
+        "required_stage": "Junior",
+        "region": "Microsoft",
+        "mentor": "The Refactorer",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "E um JavaBean bem projetado com maxima flexibilidade",
+                "is_correct": false,
+                "explanation": "Flexibilidade sem restricoes e caos. Qualquer chamador pode colocar este objeto em estado invalido a qualquer momento."
+            },
+            {
+                "text": "E uma estrutura de dados anemica que mente sobre suas responsabilidades",
+                "is_correct": true,
+                "explanation": "Um objeto cheio de setters nao e um objeto -- e um saco de dados mutavel. Nao consegue proteger suas invariantes. Em sistemas concorrentes, isso leva a race conditions e corrupcao de dados."
+            },
+            {
+                "text": "E ideal para injecao de dependencias",
+                "is_correct": false,
+                "explanation": "Injecao de dependencias usa injecao via construtor para dependencias obrigatorias, nao mutacao baseada em setters."
+            }
+        ]
+    },
+    {
+        "id": "junior_03_microsoft_layers",
+        "title": "Camadas de Responsabilidade",
+        "description": "Onde as regras de negocio devem residir em um sistema bem arquitetado?",
+        "context_code": null,
+        "category": "architecture",
+        "required_stage": "Junior",
+        "region": "Microsoft",
+        "mentor": "The Refactorer",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Na camada Controller, perto da requisicao HTTP",
+                "is_correct": false,
+                "explanation": "Controllers sao adaptadores. Traduzem HTTP para chamadas de dominio. Regras de negocio em controllers nao podem ser reutilizadas ou testadas isoladamente."
+            },
+            {
+                "text": "Na camada de Dominio, independente de qualquer framework ou infraestrutura",
+                "is_correct": true,
+                "explanation": "A camada de dominio deve compilar e rodar sem nenhum framework. Este e o principio central da Arquitetura Hexagonal. Spring, FastAPI, Express -- todos sao detalhes."
+            },
+            {
+                "text": "Na camada de Banco de Dados, usando stored procedures",
+                "is_correct": false,
+                "explanation": "Banco de dados e infraestrutura. Regras de negocio presas em stored procedures nao podem ser testadas unitariamente, versionadas adequadamente ou migradas."
+            }
+        ]
+    },
+    {
+        "id": "junior_04_nubank_validation",
+        "title": "Validacao na Fronteira",
+        "description": "Um usuario envia um CPF invalido para a API. Onde e QUANDO a validacao deve acontecer?",
+        "context_code": "// POST /api/pix\n// { \"cpf\": \"000.000.000-00\", \"amount\": 150.00 }",
+        "category": "domain_modeling",
+        "required_stage": "Junior",
+        "region": "Nubank",
+        "mentor": "The Refactorer",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "No banco de dados, com uma constraint CHECK",
+                "is_correct": false,
+                "explanation": "Se o dado invalido chega ao banco, ja percorreu todo o sistema. Validacao deve ser fail-fast: na entrada."
+            },
+            {
+                "text": "Na fronteira de entrada (API/Controller), antes de entrar no dominio. Input invalido nunca deve cruzar o limite.",
+                "is_correct": true,
+                "explanation": "Input validation e a primeira linha de defesa. Na Arquitetura Hexagonal, o Adapter valida formato, o Domain valida regras de negocio. CPF invalido e rejeitado antes de consumir recursos."
+            },
+            {
+                "text": "No frontend apenas, para melhor experiencia do usuario",
+                "is_correct": false,
+                "explanation": "Frontend pode ser burlado. Um curl ou Postman ignora toda validacao de UI. O backend DEVE validar independentemente."
+            }
+        ]
+    },
+    {
+        "id": "junior_05_nubank_exceptions",
+        "title": "Tratamento de Erros",
+        "description": "Uma transferencia Pix falha porque o destinatario nao existe. Como o sistema deve responder?",
+        "context_code": "// O que retornar?\n// A) return null;\n// B) throw new RuntimeException(\"erro\");\n// C) return Result.failure(RecipientNotFound(cpf));",
+        "category": "domain_modeling",
+        "required_stage": "Junior",
+        "region": "Nubank",
+        "mentor": "The Refactorer",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Retornar null e deixar o chamador verificar",
+                "is_correct": false,
+                "explanation": "Null e ambiguo: significa erro? Vazio? Nao encontrado? E a maior fonte de NullPointerException em producao. Tony Hoare chamou null de 'erro de um bilhao de dolares'."
+            },
+            {
+                "text": "Usar o padrao Result/Either: retornar um objeto tipado que explica exatamente o que aconteceu",
+                "is_correct": true,
+                "explanation": "Result.failure(RecipientNotFound(cpf)) e explicito, tipado e forca o chamador a tratar o caso. Sem ambiguidade, sem excecoes silenciosas, sem logs perdidos."
+            },
+            {
+                "text": "Lancar uma excecao generica e capturar no handler global",
+                "is_correct": false,
+                "explanation": "Excecoes genericas perdem contexto. 'RuntimeException: erro' nao ajuda ninguem as 3h da manha. Erros devem ser especificos, rastreáveis e acionaveis."
+            }
+        ]
+    },
+    {
+        "id": "junior_06_nubank_testing",
+        "title": "O Que Testar Primeiro",
+        "description": "Voce tem 2 horas para escrever testes em um modulo novo de Pix. O que priorizar?",
+        "context_code": null,
+        "category": "architecture",
+        "required_stage": "Junior",
+        "region": "Nubank",
+        "mentor": "The Refactorer",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Testes de UI end-to-end para cobrir tudo de uma vez",
+                "is_correct": false,
+                "explanation": "Testes E2E sao lentos, frageis e caros de manter. A piramide de testes prioriza unitarios na base."
+            },
+            {
+                "text": "Testes unitarios nas regras de dominio: limites de transferencia, saldo insuficiente, CPF invalido",
+                "is_correct": true,
+                "explanation": "Regras de dominio sao o nucleo do valor. Testar que saldo insuficiente bloqueia transferencia, que limite diario e respeitado, que CPF invalido e rejeitado. Esses testes rodam em milissegundos e cobrem o que importa."
+            },
+            {
+                "text": "Testes de performance com JMeter",
+                "is_correct": false,
+                "explanation": "Performance e importante, mas sem testes de corretude primeiro, voce esta otimizando codigo que pode estar errado."
+            }
+        ]
+    },
+    {
+        "id": "mid_01_google_hashmap",
+        "title": "HashMap vs TreeMap",
+        "description": "Voce precisa implementar um Rate Limiter que verifica quantas requisicoes aconteceram nos ultimos 60 segundos. Qual estrutura de dados usar?",
+        "context_code": "// Requisitos:\n// - Rastrear timestamps de requisicoes por usuario\n// - Contar requisicoes em uma janela deslizante de 60 segundos\n// - Consultas por faixa O(log n) necessarias",
+        "category": "logic",
+        "required_stage": "Mid",
+        "region": "Google",
+        "mentor": "The Simplifier",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "HashMap -- e sempre mais rapido com busca O(1)",
+                "is_correct": false,
+                "explanation": "HashMap fornece busca pontual O(1), mas nao consegue fazer consultas por faixa. Voce precisa encontrar todos os timestamps entre agora-60s e agora. HashMap exige varrer todas as entradas."
+            },
+            {
+                "text": "TreeMap -- suporta consultas por faixa (subMap) para a janela deslizante",
+                "is_correct": true,
+                "explanation": "TreeMap mantem ordem classificada. subMap(agora-60s, agora) retorna todas as requisicoes na janela em O(log n). Esta e a estrutura correta para problemas de janela deslizante."
+            },
+            {
+                "text": "ArrayList -- apenas adicione timestamps e itere",
+                "is_correct": false,
+                "explanation": "ArrayList append e O(1) amortizado, mas encontrar a janela exige varredura O(n) ou busca binaria manual. TreeMap faz isso nativamente."
+            }
+        ]
+    },
+    {
+        "id": "mid_02_google_framework",
+        "title": "Framework vs Dominio",
+        "description": "Qual e a relacao correta entre a camada de Dominio e um Framework como Spring ou FastAPI?",
+        "context_code": "# Qual esta correto?\n# A) domain/ importa de fastapi\n# B) api/ importa de domain/\n# C) Ambos importam um do outro",
+        "category": "architecture",
+        "required_stage": "Mid",
+        "region": "Google",
+        "mentor": "The Simplifier",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "O Dominio depende do Framework",
+                "is_correct": false,
+                "explanation": "Se o dominio importa classes do framework, trocar de framework significa reescrever regras de negocio. Essa e a definicao de acoplamento forte."
+            },
+            {
+                "text": "Sao a mesma coisa",
+                "is_correct": false,
+                "explanation": "Confundir framework com arquitetura e um erro fundamental de design. O framework e uma ferramenta; o dominio e o valor."
+            },
+            {
+                "text": "O Framework e um detalhe que aponta para dentro, em direcao ao Dominio (Inversao de Dependencia)",
+                "is_correct": true,
+                "explanation": "Na Arquitetura Hexagonal, dependencias apontam para dentro. O dominio e o centro. Frameworks, bancos de dados e APIs sao adaptadores do lado de fora. O dominio deve compilar sem eles."
+            }
+        ]
+    },
+    {
+        "id": "mid_03_google_complexity",
+        "title": "Complexidade Algoritmica",
+        "description": "Voce tem um array de 1 milhao de elementos ordenados. Qual a forma mais eficiente de encontrar um elemento?",
+        "context_code": "// array = [1, 3, 5, 7, ..., 999999]\n// Encontrar: 742831",
+        "category": "logic",
+        "required_stage": "Mid",
+        "region": "Google",
+        "mentor": "The Simplifier",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Iterar do inicio ate encontrar: O(n), no maximo 1 milhao de comparacoes",
+                "is_correct": false,
+                "explanation": "Busca linear ignora que o array esta ordenado. Voce esta jogando fora informacao valiosa."
+            },
+            {
+                "text": "Busca Binaria: dividir ao meio a cada passo, O(log n) = ~20 comparacoes para 1 milhao de elementos",
+                "is_correct": true,
+                "explanation": "Busca binaria corta o espaco de busca pela metade a cada iteracao. log2(1.000.000) = ~20. De 1 milhao para 20 comparacoes. Essa e a diferenca entre pensar algoritmicamente e usar forca bruta."
+            },
+            {
+                "text": "Usar um HashMap para busca O(1)",
+                "is_correct": false,
+                "explanation": "HashMap usa O(n) espaco extra e destroi a ordem. Se o dado ja esta ordenado, busca binaria e O(log n) sem espaco extra. Nao desperdice recursos."
+            }
+        ]
+    },
+    {
+        "id": "mid_04_facebook_tdd",
+        "title": "Desenvolvimento Orientado a Testes",
+        "description": "Qual e a ordem correta dos passos no TDD?",
+        "context_code": null,
+        "category": "architecture",
+        "required_stage": "Mid",
+        "region": "Facebook",
+        "mentor": "The Simplifier",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Escrever codigo, depois testes, depois refatorar",
+                "is_correct": false,
+                "explanation": "Escrever testes depois do codigo leva a testes que verificam implementacao, nao comportamento. Ficam frageis e inuteis."
+            },
+            {
+                "text": "Red (teste falhando), Green (faze-lo passar), Refactor (limpar)",
+                "is_correct": true,
+                "explanation": "TDD forca voce a pensar no contrato antes da implementacao. O teste define O QUE, o codigo define COMO. Refatoracao garante qualidade."
+            },
+            {
+                "text": "Escrever todos os testes primeiro, depois implementar tudo de uma vez",
+                "is_correct": false,
+                "explanation": "TDD funciona em ciclos incrementais pequenos. Escrever todos os testes primeiro perde o loop de feedback que torna o TDD poderoso."
+            }
+        ]
+    },
+    {
+        "id": "mid_05_facebook_graphs",
+        "title": "Grafos Sociais",
+        "description": "No Facebook, cada usuario e um no e cada amizade e uma aresta. Para encontrar 'amigos de amigos', qual algoritmo usar?",
+        "context_code": "// Grafo: User A -> [B, C]\n//        User B -> [A, D, E]\n// 'Amigos de amigos de A' = {D, E}",
+        "category": "logic",
+        "required_stage": "Mid",
+        "region": "Facebook",
+        "mentor": "The Simplifier",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "DFS (busca em profundidade) -- vai ate o fundo do grafo",
+                "is_correct": false,
+                "explanation": "DFS explora profundamente, o que pode ir longe demais no grafo social. Para 'amigos de amigos' (distancia 2), voce precisa de busca por nivel."
+            },
+            {
+                "text": "BFS (busca em largura) ate profundidade 2 -- explora nivel por nivel",
+                "is_correct": true,
+                "explanation": "BFS explora todos os vizinhos de nivel 1 (amigos), depois todos de nivel 2 (amigos de amigos). Controla a profundidade naturalmente. E o algoritmo padrao para busca por proximidade em grafos sociais."
+            },
+            {
+                "text": "Ordenar a lista de usuarios e usar busca binaria",
+                "is_correct": false,
+                "explanation": "Grafos nao sao arrays. Busca binaria requer dados ordenados linearmente. Relacoes sociais sao conexoes, nao sequencias."
+            }
+        ]
+    },
+    {
+        "id": "mid_06_facebook_concurrency",
+        "title": "Concorrencia em Escala",
+        "description": "Dois usuarios curtem o mesmo post simultaneamente. O contador mostra 1 ao inves de 2. Qual o problema?",
+        "context_code": "// Thread A: count = getCount(); // retorna 0\n// Thread B: count = getCount(); // retorna 0\n// Thread A: setCount(count + 1); // seta 1\n// Thread B: setCount(count + 1); // seta 1 (deveria ser 2!)",
+        "category": "logic",
+        "required_stage": "Mid",
+        "region": "Facebook",
+        "mentor": "The Simplifier",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Bug no banco de dados -- o INSERT falhou silenciosamente",
+                "is_correct": false,
+                "explanation": "O banco nao falhou. O problema e logico: ler-modificar-escrever sem atomicidade e uma race condition classica."
+            },
+            {
+                "text": "Race condition: ler-modificar-escrever nao e atomico. Solucao: usar operacao atomica (CAS ou incremento atomico)",
+                "is_correct": true,
+                "explanation": "A operacao correta e atomicCounter.incrementAndGet() ou UPDATE posts SET count = count + 1 (atomico no banco). Nunca leia, modifique e escreva em passos separados sem lock ou operacao atomica."
+            },
+            {
+                "text": "Colocar um sleep() entre as operacoes para evitar colisao",
+                "is_correct": false,
+                "explanation": "Sleep nao resolve race conditions. Apenas reduz a probabilidade. Em escala do Facebook (bilhoes de interacoes), a colisao ACONTECERA."
+            }
+        ]
+    },
+    {
+        "id": "senior_01_amazon_performance",
+        "title": "Performance e Arquitetura",
+        "description": "De onde vem a melhoria real de performance em sistemas de producao?",
+        "context_code": "// O que importa mais?\n// A) Otimizar iteracoes de for-loop\n// B) Reduzir pressao do GC, I/O assincrono, entender distribuicao de latencia",
+        "category": "architecture",
+        "required_stage": "Senior",
+        "region": "Amazon",
+        "mentor": "The Pragmatist",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Otimizar for-loops individuais e micro-benchmarks",
+                "is_correct": false,
+                "explanation": "Micro-otimizacao e amadorismo. O gargalo quase nunca e um loop. E I/O, pausas do GC, saltos de rede e fluxo de dados mal projetado."
+            },
+            {
+                "text": "Menos alocacoes (pressao do GC), I/O assincrono (nao-bloqueante) e entender latencia p99",
+                "is_correct": true,
+                "explanation": "Performance real e arquitetural. Reduza alocacao de objetos para diminuir pressao do GC. Use I/O nao-bloqueante para throughput. Monitore latencia p99, nao medias -- a cauda mata a experiencia do usuario."
+            },
+            {
+                "text": "Usar a linguagem de programacao mais rapida disponivel (Rust/C++)",
+                "is_correct": false,
+                "explanation": "A escolha da linguagem importa menos que o design arquitetural. Um sistema Java bem projetado supera um sistema Rust mal projetado."
+            }
+        ]
+    },
+    {
+        "id": "senior_02_amazon_twosum",
+        "title": "Two Sum (O Classico)",
+        "description": "Dado um array de inteiros e uma soma alvo, encontre dois numeros que somam ao alvo. Qual e a abordagem otima?",
+        "context_code": "// Input: nums = [2, 7, 11, 15], target = 9\n// Output: [0, 1] (porque nums[0] + nums[1] = 9)",
+        "category": "logic",
+        "required_stage": "Senior",
+        "region": "Amazon",
+        "mentor": "The Pragmatist",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Loops aninhados: verificar cada par. Tempo O(n^2).",
+                "is_correct": false,
+                "explanation": "Forca bruta funciona mas nao escala. Com 1 milhao de elementos, sao 10^12 operacoes. Inaceitavel."
+            },
+            {
+                "text": "Ordenar o array, depois usar dois ponteiros. Tempo O(n log n).",
+                "is_correct": false,
+                "explanation": "Melhor que forca bruta, mas ordenar modifica os indices originais. Voce precisa de controle extra. Existe uma solucao O(n)."
+            },
+            {
+                "text": "Usar um HashMap: para cada numero, verificar se (alvo - numero) existe. Tempo O(n).",
+                "is_correct": true,
+                "explanation": "Passagem unica. Para cada elemento x, verifique se (alvo - x) esta no mapa. Se sim, retorne indices. Se nao, armazene x. Tempo O(n), espaco O(n). Esta e a resposta esperada em toda entrevista de Big Tech."
+            }
+        ]
+    },
+    {
+        "id": "senior_03_amazon_resilience",
+        "title": "Resiliencia: Circuit Breaker",
+        "description": "Um microservico depende de um servico externo que esta fora do ar. O que acontece sem Circuit Breaker?",
+        "context_code": "// Servico A -> Servico B (fora do ar)\n// 1000 req/s chegando em A\n// Cada req espera 30s de timeout em B",
+        "category": "distributed_systems",
+        "required_stage": "Senior",
+        "region": "Amazon",
+        "mentor": "The Pragmatist",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "As requisicoes simplesmente falham rapido e o usuario recebe um erro",
+                "is_correct": false,
+                "explanation": "Sem circuit breaker, as requisicoes NAO falham rapido. Cada uma espera o timeout (30s), acumulando threads bloqueadas ate esgotar o pool."
+            },
+            {
+                "text": "Cascata de falhas: threads bloqueadas esgotam o pool, Servico A tambem para de responder. Circuit Breaker corta o circuito apos N falhas.",
+                "is_correct": true,
+                "explanation": "Circuit Breaker monitora falhas. Apos um limiar (ex: 5 falhas em 10s), abre o circuito: rejeita requisicoes imediatamente sem chamar B. Periodicamente testa se B voltou (half-open). Isso isola a falha e protege o sistema."
+            },
+            {
+                "text": "So aumentar o timeout para dar mais tempo ao servico",
+                "is_correct": false,
+                "explanation": "Aumentar o timeout PIORA o problema. Mais threads ficam bloqueadas por mais tempo. O padrao correto e fail fast com circuit breaker."
+            }
+        ]
+    },
+    {
+        "id": "senior_04_meli_idempotency",
+        "title": "Idempotencia em Pagamentos",
+        "description": "O Mercado Pago processa uma compra duas vezes porque o cliente clicou 2x no botao. Como evitar cobranca duplicada?",
+        "context_code": "// POST /api/pay\n// { amount: 299.90, buyer_id: 'abc', idempotency_key: '???' }",
+        "category": "distributed_systems",
+        "required_stage": "Senior",
+        "region": "Mercado Livre",
+        "mentor": "The Pragmatist",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Desabilitar o botao no frontend apos o primeiro clique",
+                "is_correct": false,
+                "explanation": "Frontend pode ser burlado. Falhas de rede causam retentativas implicitas. O servidor DEVE ser idempotente independente do cliente."
+            },
+            {
+                "text": "Exigir uma chave de idempotencia por requisicao e armazenar chaves processadas para detectar duplicatas",
+                "is_correct": true,
+                "explanation": "Uma chave de idempotencia identifica unicamente cada operacao pretendida. O servidor armazena chaves processadas e retorna o resultado em cache para duplicatas. Este e o padrao em Stripe, Mercado Pago e todos os sistemas de pagamento serios."
+            },
+            {
+                "text": "Verificar se o saldo ja foi debitado antes de processar",
+                "is_correct": false,
+                "explanation": "Em ambiente concorrente, duas requisicoes podem verificar o saldo ao mesmo tempo e ambas concluir que ha saldo. Race condition classica."
+            }
+        ]
+    },
+    {
+        "id": "senior_05_meli_cache",
+        "title": "Estrategia de Cache",
+        "description": "A pagina de um produto no Mercado Livre recebe 50.000 acessos por segundo. Toda requisicao consulta o banco. Qual a solucao?",
+        "context_code": "// GET /product/MLB123456\n// Banco: 5ms por query\n// 50.000 req/s = 250 segundos de query por segundo!",
+        "category": "architecture",
+        "required_stage": "Senior",
+        "region": "Mercado Livre",
+        "mentor": "The Pragmatist",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Escalar verticalmente o banco: mais CPU, mais RAM",
+                "is_correct": false,
+                "explanation": "Scaling vertical tem limite fisico e custo exponencial. Nao resolve o problema fundamental: leituras repetitivas do mesmo dado."
+            },
+            {
+                "text": "Cache em camadas: CDN para assets, Redis/Memcached para dados quentes, com TTL e invalidacao por evento",
+                "is_correct": true,
+                "explanation": "Cache e a arma numero 1 contra leitura excessiva. CDN serve conteudo estatico. Redis guarda dados quentes com TTL. Quando o produto muda, um evento invalida o cache. Isso reduz 50k req/s no banco para dezenas."
+            },
+            {
+                "text": "Colocar um sleep de 100ms entre requisicoes para nao sobrecarregar",
+                "is_correct": false,
+                "explanation": "Throttling no servidor penaliza usuarios legitimos. O problema nao e excesso de requisicoes, e excesso de queries ao banco."
+            }
+        ]
+    },
+    {
+        "id": "senior_06_meli_sharding",
+        "title": "Particionamento de Dados",
+        "description": "O banco de dados do Mercado Livre tem 500 milhoes de produtos. Uma unica instancia nao aguenta. Como escalar?",
+        "context_code": "// 500 milhoes de registros\n// Queries por seller_id sao as mais frequentes",
+        "category": "distributed_systems",
+        "required_stage": "Senior",
+        "region": "Mercado Livre",
+        "mentor": "The Pragmatist",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Replicacao: copiar todos os dados para 10 servidores",
+                "is_correct": false,
+                "explanation": "Replicacao ajuda leituras mas nao resolve o tamanho dos dados. Cada replica ainda tem 500M de registros e escritas vao para todas."
+            },
+            {
+                "text": "Sharding por seller_id: distribuir vendedores entre N particoes, cada uma com subconjunto dos dados",
+                "is_correct": true,
+                "explanation": "Sharding (particionamento horizontal) divide os dados. Shard = hash(seller_id) % N. Cada shard guarda ~500M/N registros. Queries por seller_id vao direto ao shard correto. E assim que sistemas como o Mercado Livre escalam para centenas de milhoes de produtos."
+            },
+            {
+                "text": "Usar NoSQL que escala automaticamente sem pensar em particoes",
+                "is_correct": false,
+                "explanation": "NoSQL nao e magica. DynamoDB, Cassandra, MongoDB -- todos exigem escolha cuidadosa de partition key. A decisao de sharding permanece."
+            }
+        ]
+    },
+    {
+        "id": "senior_07_jpmorgan_consistency",
+        "title": "Consistencia em Transacoes",
+        "description": "Uma transferencia entre duas contas deve debitar R$1000 de A e creditar R$1000 em B. O sistema falha apos o debito mas antes do credito. O que acontece?",
+        "context_code": "// Passo 1: UPDATE accounts SET balance = balance - 1000 WHERE id = 'A';\n// --- FALHA AQUI ---\n// Passo 2: UPDATE accounts SET balance = balance + 1000 WHERE id = 'B';",
+        "category": "distributed_systems",
+        "required_stage": "Senior",
+        "region": "JP Morgan",
+        "mentor": "The Pragmatist",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "O dinheiro desaparece -- e preciso corrigir manualmente",
+                "is_correct": false,
+                "explanation": "Em sistemas bem projetados, isso NUNCA acontece. Transacoes ACID existem exatamente para prevenir este cenario."
+            },
+            {
+                "text": "Transacao ACID: ambas operacoes estao em uma unica transacao. Se qualquer parte falha, TODAS sao revertidas (ROLLBACK)",
+                "is_correct": true,
+                "explanation": "ACID = Atomicity, Consistency, Isolation, Durability. Atomicidade garante que ou TUDO acontece ou NADA acontece. O banco reverte o debito automaticamente. Em sistemas financeiros, isso nao e opcional."
+            },
+            {
+                "text": "Executar um job de reconciliacao diario para encontrar inconsistencias",
+                "is_correct": false,
+                "explanation": "Reconciliacao e util como segunda camada, mas o sistema NAO deve depender dela para consistencia. Transacoes ACID resolvem na raiz."
+            }
+        ]
+    },
+    {
+        "id": "senior_08_jpmorgan_encryption",
+        "title": "Criptografia de Dados Sensiveis",
+        "description": "O JP Morgan armazena numeros de conta e SSN dos clientes. Como proteger estes dados em repouso?",
+        "context_code": "// Banco de dados:\n// account_number: '1234-5678-9012-3456' -- TEXTO PLANO!\n// ssn: '123-45-6789' -- TEXTO PLANO!",
+        "category": "architecture",
+        "required_stage": "Senior",
+        "region": "JP Morgan",
+        "mentor": "The Pragmatist",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Confiar na seguranca do banco de dados (firewall e ACL)",
+                "is_correct": false,
+                "explanation": "Defense in depth: se o banco for comprometido, dados em texto plano sao expostos imediatamente. Firewall e necessario mas insuficiente."
+            },
+            {
+                "text": "Criptografia AES-256 em repouso com chaves gerenciadas em HSM (Hardware Security Module), rotacao periodica de chaves",
+                "is_correct": true,
+                "explanation": "PCI DSS e regulacao bancaria exigem criptografia em repouso. AES-256 e o padrao. Chaves em HSM (nao no codigo!). Rotacao periodica limita o impacto de comprometimento. Logs de acesso a chaves para auditoria."
+            },
+            {
+                "text": "Usar Base64 para ofuscar os dados",
+                "is_correct": false,
+                "explanation": "Base64 NAO e criptografia. E codificacao reversivel por qualquer pessoa. Nao oferece nenhuma protecao real."
+            }
+        ]
+    },
+    {
+        "id": "senior_09_jpmorgan_audit",
+        "title": "Trilha de Auditoria",
+        "description": "Um regulador pede: 'Mostre todas as operacoes feitas na conta X nos ultimos 90 dias'. Seu sistema consegue?",
+        "context_code": "// Abordagem A: UPDATE account SET balance = 5000; (sobrescreve estado anterior)\n// Abordagem B: INSERT INTO ledger (account, type, amount, timestamp, actor) VALUES (...);",
+        "category": "architecture",
+        "required_stage": "Senior",
+        "region": "JP Morgan",
+        "mentor": "The Pragmatist",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Apenas guardar o saldo atual -- o regulador so precisa ver o estado final",
+                "is_correct": false,
+                "explanation": "Reguladores precisam de HISTORICO completo: quem fez o que, quando, e por que. Saldo atual sem historico e insuficiente para compliance."
+            },
+            {
+                "text": "Ledger imutavel (append-only): cada operacao e um registro permanente. Nunca UPDATE, nunca DELETE. Reconstrucao completa do historico.",
+                "is_correct": true,
+                "explanation": "Sistemas financeiros usam ledger (livro-razao) imutavel. Cada transacao e um INSERT. Saldo e calculado somando os eventos. ISO 27001, PCI DSS e SOX exigem rastreabilidade completa."
+            },
+            {
+                "text": "Fazer backup diario do banco e guardar por 90 dias",
+                "is_correct": false,
+                "explanation": "Backup captura snapshots, nao operacoes individuais. Voce nao consegue rastrear 'quem alterou o que as 14:32 do dia 15'. Granularidade insuficiente."
+            }
+        ]
+    },
+    {
+        "id": "staff_01_tesla_cap",
+        "title": "Teorema CAP",
+        "description": "Em um sistema de banco de dados distribuido, ocorre uma particao de rede. Voce deve escolher entre consistencia e disponibilidade. O que um sistema bancario escolhe?",
+        "context_code": "// Teorema CAP:\n// C = Consistencia (toda leitura retorna a escrita mais recente)\n// A = Disponibilidade (toda requisicao recebe uma resposta)\n// P = Tolerancia a Particao (sistema funciona apesar de falhas de rede)\n// Voce so pode garantir 2 de 3.",
+        "category": "distributed_systems",
+        "required_stage": "Staff",
+        "region": "Tesla / SpaceX",
+        "mentor": "The Logician",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Disponibilidade -- usuarios devem sempre receber resposta, mesmo com dados desatualizados",
+                "is_correct": false,
+                "explanation": "Em sistemas bancarios, mostrar saldo desatualizado pode levar a gasto duplo. Um usuario pode sacar dinheiro que nao existe."
+            },
+            {
+                "text": "Consistencia -- e melhor rejeitar uma requisicao do que servir dados financeiros incorretos",
+                "is_correct": true,
+                "explanation": "Sistemas financeiros escolhem CP (Consistencia + Tolerancia a Particao). E mais seguro retornar um erro do que permitir estado inconsistente. Isso previne gasto duplo, leituras fantasma e falhas de auditoria."
+            },
+            {
+                "text": "Nenhum -- basta usar uma rede melhor que nunca particione",
+                "is_correct": false,
+                "explanation": "Particoes de rede sao inevitaveis em sistemas distribuidos. Fingir que nao acontecem e negligencia de engenharia."
+            }
+        ]
+    },
+    {
+        "id": "staff_02_tesla_event_sourcing",
+        "title": "Event Sourcing",
+        "description": "Por que um sistema armazenaria eventos ao inves de apenas o estado atual?",
+        "context_code": "// Tradicional: UPDATE account SET balance = 900 WHERE id = 1;\n// Event Sourcing: INSERT INTO events (type, data) VALUES ('MoneyWithdrawn', '{amount: 100}');",
+        "category": "architecture",
+        "required_stage": "Staff",
+        "region": "Tesla / SpaceX",
+        "mentor": "The Logician",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "E mais performatico para leituras",
+                "is_correct": false,
+                "explanation": "Event sourcing e na verdade mais lento para leituras (voce precisa reproduzir eventos). O beneficio esta em outro lugar."
+            },
+            {
+                "text": "Trilha de auditoria completa: toda mudanca de estado e registrada, nada se perde, tudo e reproduzivel",
+                "is_correct": true,
+                "explanation": "Event sourcing oferece um historico completo e imutavel. Voce pode reconstruir o estado em qualquer ponto no tempo. Pode debugar problemas de producao reproduzindo eventos. Isso e critico para sistemas financeiros, compliance e analise forense."
+            },
+            {
+                "text": "Usa menos espaco em disco do que bancos de dados tradicionais",
+                "is_correct": false,
+                "explanation": "Event sourcing usa MAIS espaco (armazena cada evento, nao apenas o estado atual). O trade-off e espaco por auditabilidade."
+            }
+        ]
+    },
+    {
+        "id": "staff_03_tesla_redundancy",
+        "title": "Projetando para Falhar",
+        "description": "Um foguete SpaceX tem centenas de sensores. Se um sensor falha, o que o software faz?",
+        "context_code": "// sensor_temperature = read(sensor_A); // FALHA!\n// Decisao do software: abortar missao? Usar backup? Ignorar?",
+        "category": "architecture",
+        "required_stage": "Staff",
+        "region": "Tesla / SpaceX",
+        "mentor": "The Logician",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Abortar a missao imediatamente -- seguranca em primeiro lugar",
+                "is_correct": false,
+                "explanation": "Aborto por falha de um unico sensor e overreaction. Sistemas criticos usam redundancia para tolerar falhas individuais."
+            },
+            {
+                "text": "Redundancia com votacao: N sensores medem a mesma coisa. Se 2 de 3 concordam, o outlier e descartado (Triple Modular Redundancy)",
+                "is_correct": true,
+                "explanation": "TMR (Triple Modular Redundancy) e o padrao em aviacao e espacial. 3 sensores votam. Maioria vence. Um sensor defeituoso e isolado automaticamente. O sistema continua operando com degradacao graceful."
+            },
+            {
+                "text": "Usar o ultimo valor valido do sensor ate ele voltar",
+                "is_correct": false,
+                "explanation": "Em ambiente dinamico (foguete em voo), o ultimo valor pode estar desatualizado em milissegundos. Stale data em sistemas criticos pode ser fatal."
+            }
+        ]
+    },
+    {
+        "id": "staff_04_itau_legacy",
+        "title": "Modernizacao de Legados",
+        "description": "O Itau tem sistemas COBOL de 40 anos processando milhoes de transacoes por dia. Como modernizar sem parar o banco?",
+        "context_code": "// Sistema atual: COBOL rodando em mainframe\n// Desejado: APIs modernas, cloud-native\n// Restricao: ZERO downtime permitido",
+        "category": "architecture",
+        "required_stage": "Staff",
+        "region": "Itau",
+        "mentor": "The Logician",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Reescrever tudo em Java/Go do zero e migrar em big-bang no fim de semana",
+                "is_correct": false,
+                "explanation": "Big-bang rewrite e o cemiterio de projetos de TI. Voce perde 40 anos de regras de negocio embutidas em COBOL. O risco e catastrofico."
+            },
+            {
+                "text": "Strangler Fig Pattern: criar APIs modernas que delegam para o legado, migrar funcionalidade por funcionalidade",
+                "is_correct": true,
+                "explanation": "Strangler Fig (padrao estrangulador) coloca uma fachada moderna na frente do legado. Novas features vao para o sistema novo. Funcionalidades existentes sao migradas uma a uma. O legado encolhe gradualmente ate ser desligado. Zero downtime, risco controlado."
+            },
+            {
+                "text": "Manter o COBOL para sempre -- funciona, nao mexa",
+                "is_correct": false,
+                "explanation": "Desenvolvedores COBOL estao se aposentando. O risco operacional de depender de tecnologia sem mao de obra qualificada e insustentavel a longo prazo."
+            }
+        ]
+    },
+    {
+        "id": "staff_05_itau_observability",
+        "title": "Observabilidade em Producao",
+        "description": "O Itau processa 1 bilhao de transacoes por mes. Uma transacao Pix esta demorando 5 segundos. Como diagnosticar?",
+        "context_code": "// Pix deveria levar < 100ms\n// Mas 0.1% das transacoes levam > 5 segundos\n// Logs mostram apenas 'Transacao processada com sucesso'",
+        "category": "architecture",
+        "required_stage": "Staff",
+        "region": "Itau",
+        "mentor": "The Logician",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Adicionar mais logs em cada etapa do fluxo",
+                "is_correct": false,
+                "explanation": "Logs sem correlacao sao um oceano de texto. Em escala de bilhoes, voce nao consegue rastrear uma transacao individual entre centenas de microservicos."
+            },
+            {
+                "text": "Tracing distribuido (OpenTelemetry): cada transacao gera um trace ID unico que conecta todos os spans entre servicos",
+                "is_correct": true,
+                "explanation": "OpenTelemetry gera um traceId unico por transacao. Cada servico cria um span com inicio/fim. Jaeger/Grafana Tempo visualizam o caminho completo. Voce ve exatamente qual servico demorou 4.8s dos 5s totais."
+            },
+            {
+                "text": "Rodar o profiler (JProfiler/VisualVM) em producao",
+                "is_correct": false,
+                "explanation": "Profilers adicionam overhead significativo em producao (10-30% de latencia extra). Em sistema bancario com SLA rigido, isso e inaceitavel. Tracing distribuido foi projetado para producao com overhead minimo (<1%)."
+            }
+        ]
+    },
+    {
+        "id": "staff_06_itau_security",
+        "title": "Zero Trust em Banking",
+        "description": "Um microservico interno do Itau precisa acessar dados de clientes em outro microservico. Deve confiar porque esta na mesma rede interna?",
+        "context_code": "// Servico A (interno) -> Servico B (interno)\n// Mesma VPC, mesmo cluster Kubernetes\n// Devemos permitir sem autenticacao?",
+        "category": "architecture",
+        "required_stage": "Staff",
+        "region": "Itau",
+        "mentor": "The Logician",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Sim, servicos internos podem confiar uns nos outros -- o firewall protege",
+                "is_correct": false,
+                "explanation": "O modelo de 'confianca perimetral' falha quando um atacante entra na rede (lateral movement). A maioria dos breaches bancarios comeca de dentro."
+            },
+            {
+                "text": "Zero Trust: toda comunicacao requer mTLS + JWT + RBAC, independente de estar na mesma rede",
+                "is_correct": true,
+                "explanation": "Zero Trust assume que a rede ja esta comprometida. Cada servico se autentica mutuamente (mTLS), cada request carrega claims de autorizacao (JWT), e cada endpoint verifica permissoes (RBAC). 'Nunca confie, sempre verifique'."
+            },
+            {
+                "text": "Usar API key fixa compartilhada entre os servicos",
+                "is_correct": false,
+                "explanation": "API key fixa e um segredo estatico que nao expira, nao tem escopo granular e se vazada compromete tudo. Tokens JWT com expiracao curta e escopos especificos sao o padrao."
+            }
+        ]
+    },
+    {
+        "id": "staff_07_uber_realtime",
+        "title": "Sistemas em Tempo Real",
+        "description": "O Uber precisa calcular o preco de uma corrida em tempo real considerando trafego, demanda e distancia. Qual arquitetura?",
+        "context_code": "// Inputs: localizacao GPS (a cada 1s), demanda por zona, condicoes de trafego\n// Output: preco dinamico atualizado a cada segundo\n// Restricao: latencia < 200ms",
+        "category": "architecture",
+        "required_stage": "Staff",
+        "region": "Uber",
+        "mentor": "The Logician",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "REST API sincrona: o app consulta o backend a cada segundo",
+                "is_correct": false,
+                "explanation": "1 milhao de motoristas * 1 req/s = 1 milhao de req/s. REST sincrono cria gargalo enorme. Cada request abre conexao, serializa, deserializa."
+            },
+            {
+                "text": "Event streaming (Kafka + processamento em tempo real): dados de GPS e demanda fluem como eventos, preco e calculado como stream processing",
+                "is_correct": true,
+                "explanation": "Kafka ingere milhoes de eventos GPS/s. Apache Flink ou Kafka Streams processam em tempo real. Preco e calculado como funcao do stream (surge pricing). Push via WebSocket para os apps. Latencia de milissegundos, throughput de milhoes."
+            },
+            {
+                "text": "Calcular o preco no app do cliente, sem backend",
+                "is_correct": false,
+                "explanation": "Preco no cliente e manipulavel e inseguro. Demanda por zona e dado do servidor. Logica de pricing deve estar no backend por seguranca e justica."
+            }
+        ]
+    },
+    {
+        "id": "staff_08_uber_geospatial",
+        "title": "Matching Motorista-Passageiro",
+        "description": "Um passageiro pede uma corrida. Como encontrar o motorista mais proximo entre 50.000 motoristas ativos na cidade?",
+        "context_code": "// Passageiro: lat=-23.5505, lon=-46.6333\n// 50.000 motoristas com GPS atualizado a cada 4 segundos\n// Encontrar os 5 mais proximos em < 50ms",
+        "category": "logic",
+        "required_stage": "Staff",
+        "region": "Uber",
+        "mentor": "The Logician",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Calcular distancia euclidiana para todos os 50.000 e ordenar: O(n log n)",
+                "is_correct": false,
+                "explanation": "50k calculos de distancia + sort a cada requisicao e lento demais. E distancia euclidiana nao funciona na superficie terrestre (curvatura)."
+            },
+            {
+                "text": "Indice geoespacial (Geohash/R-tree/H3): dividir o mapa em celulas, buscar apenas motoristas na mesma celula e adjacentes",
+                "is_correct": true,
+                "explanation": "Geohash divide o mapa em celulas hierarquicas. Para encontrar motoristas proximos, basta consultar a celula do passageiro + vizinhas. De 50k para ~100 candidatos. Calcular Haversine (distancia real na esfera) so para esses 100. O Uber usa H3 (hexagonal grid) da propria engenharia."
+            },
+            {
+                "text": "Colocar todos os motoristas em uma lista e filtrar por distancia maxima",
+                "is_correct": false,
+                "explanation": "Sem indice espacial, voce precisa varrer TODOS os motoristas. Isso e O(n) por query. Em cidade grande com milhoes de queries, nao escala."
+            }
+        ]
+    },
+    {
+        "id": "staff_09_uber_consistency",
+        "title": "Consistencia Eventual vs Forte",
+        "description": "O Uber aceita uma corrida. O motorista ve 'corrida aceita' mas o passageiro ainda ve 'procurando motorista'. Qual tipo de consistencia esta em jogo?",
+        "context_code": "// Servico de Matching: atualiza status = 'matched'\n// App do Motorista: le do replica A -> ve 'matched'\n// App do Passageiro: le do replica B -> ve 'searching' (replicacao ainda nao chegou)",
+        "category": "distributed_systems",
+        "required_stage": "Staff",
+        "region": "Uber",
+        "mentor": "The Logician",
+        "points_on_correct": 100,
+        "options": [
+            {
+                "text": "Bug no sistema -- ambos deveriam ver o mesmo estado",
+                "is_correct": false,
+                "explanation": "Nao e bug. E consistencia eventual: a escrita foi feita, mas a replicacao entre nos leva tempo (milissegundos a segundos). O sistema convergira."
+            },
+            {
+                "text": "Consistencia eventual: ambos verao o mesmo estado em breve, mas ha uma janela de inconsistencia aceita para ganhar disponibilidade",
+                "is_correct": true,
+                "explanation": "Uber opta por AP (Disponibilidade + Tolerancia a Particao) para dados de ride status. Consistencia eventual e aceitavel: em segundos o passageiro vera o motorista. Para pagamentos, porem, usam consistencia forte (CP)."
+            },
+            {
+                "text": "Basta usar um unico banco de dados sem replicas",
+                "is_correct": false,
+                "explanation": "Um unico banco em escala global cria ponto unico de falha e latencia inaceitavel para usuarios em outras regioes. Replicacao e obrigatoria para escala."
+            }
+        ]
+    },
+    {
+        "id": "principal_01_santander_compliance",
+        "title": "Compliance Multi-Jurisdicional",
+        "description": "O Santander opera em 10 paises, cada um com regulacoes bancarias diferentes (LGPD, GDPR, PSD2, SOX). Como o software lida?",
+        "context_code": "// Brasil: LGPD - dados pessoais com consentimento\n// Europa: GDPR - direito ao esquecimento\n// EUA: SOX - controles internos auditaveis\n// Europa: PSD2 - Open Banking obrigatorio",
+        "category": "architecture",
+        "required_stage": "Principal",
+        "region": "Santander",
+        "mentor": null,
+        "points_on_correct": 200,
+        "options": [
+            {
+                "text": "Uma unica implementacao global que atende todas as regulacoes",
+                "is_correct": false,
+                "explanation": "Regulacoes sao conflitantes. GDPR exige 'direito ao esquecimento'. Regulacao bancaria exige manter registros por anos. Uma unica implementacao nao resolve."
+            },
+            {
+                "text": "Policy Engine: regras de compliance como configuracao por jurisdicao, avaliadas em runtime, auditadas por evento",
+                "is_correct": true,
+                "explanation": "Separe as regras do codigo. Um Policy Engine avalia 'Pais=BR -> aplicar LGPD rules'. Cada regra e versionada, auditada e testada isoladamente. Mudanca regulatoria = nova policy, nao novo deploy de codigo."
+            },
+            {
+                "text": "Ter um time juridico que revisa cada feature antes do deploy",
+                "is_correct": false,
+                "explanation": "Revisao manual nao escala. Com centenas de deploys por dia em 10 paises, compliance deve ser automatizada e embedded no pipeline."
+            }
+        ]
+    },
+    {
+        "id": "principal_02_santander_privacy",
+        "title": "Direito ao Esquecimento vs Auditoria",
+        "description": "Um cliente europeu do Santander exige que seus dados sejam apagados (GDPR Art. 17). Mas a regulacao bancaria exige manter registros por 7 anos. O que fazer?",
+        "context_code": "// GDPR: DELETE customer WHERE id = 'EU-12345'\n// Regulacao bancaria: RETAIN all transactions for 7 years\n// Conflito direto!",
+        "category": "architecture",
+        "required_stage": "Principal",
+        "region": "Santander",
+        "mentor": null,
+        "points_on_correct": 200,
+        "options": [
+            {
+                "text": "GDPR tem prioridade -- apagar tudo",
+                "is_correct": false,
+                "explanation": "Apagar registros financeiros viola regulacao bancaria e pode resultar em multas de centenas de milhoes."
+            },
+            {
+                "text": "Pseudonimizacao: substituir dados identificaveis por tokens irreversiveis, mantendo registros financeiros anonimizados para auditoria",
+                "is_correct": true,
+                "explanation": "Pseudonimizacao atende ambas regulacoes. Dados pessoais (nome, email) sao substituidos por hashes irreversiveis. Transacoes financeiras mantidas para auditoria, mas nao sao mais 'dados pessoais' porque nao identificam o individuo. GDPR Art. 4(5) reconhece pseudonimizacao explicitamente."
+            },
+            {
+                "text": "Guardar tudo e ignorar o pedido de exclusao",
+                "is_correct": false,
+                "explanation": "Violar GDPR pode resultar em multa de ate 4% do faturamento global anual. Para o Santander, isso sao bilhoes de euros."
+            }
+        ]
+    },
+    {
+        "id": "principal_03_santander_resilience",
+        "title": "Resiliencia Global",
+        "description": "Um datacenter do Santander em Madrid cai completamente. 5 milhoes de clientes europeus ficam sem acesso. Qual a estrategia?",
+        "context_code": "// Datacenter Madrid: DOWN\n// Clientes afetados: 5 milhoes\n// SLA: 99.99% (max 52 minutos de downtime/ano)\n// RTO: < 5 minutos, RPO: 0 (zero data loss)",
+        "category": "distributed_systems",
+        "required_stage": "Principal",
+        "region": "Santander",
+        "mentor": null,
+        "points_on_correct": 200,
+        "options": [
+            {
+                "text": "Restaurar backup no mesmo datacenter quando voltar",
+                "is_correct": false,
+                "explanation": "Se o datacenter inteiro caiu (incendio, desastre natural), pode levar dias. RTO de 5 minutos exige failover automatico, nao restauracao manual."
+            },
+            {
+                "text": "Multi-region active-active: trafego e distribuido entre datacenters. Failover automatico com replicacao sincrona e DNS failover",
+                "is_correct": true,
+                "explanation": "Active-active em multiplas regioes: Madrid + Frankfurt. Replicacao sincrona para RPO=0. Health checks automaticos detectam falha em segundos. DNS failover redireciona trafego. Clientes nem percebem. Isso e o padrao para bancos globais."
+            },
+            {
+                "text": "Ter um datacenter de backup frio (cold standby) que pode ser ativado em 2 horas",
+                "is_correct": false,
+                "explanation": "2 horas excedem o RTO de 5 minutos em 24x. Cold standby tambem perde dados entre o ultimo backup e a falha (RPO > 0). Inaceitavel para sistema bancario."
+            }
+        ]
+    },
+    {
+        "id": "principal_04_bradesco_scaling",
+        "title": "Transformacao Digital",
+        "description": "O Bradesco tem 60 milhoes de clientes, 70% acessam via app. Como garantir que o app aguenta picos de acesso (dia de pagamento)?",
+        "context_code": "// Dia normal: 500k req/min\n// Dia de pagamento: 5M req/min (10x)\n// Black Friday: 8M req/min (16x)\n// O sistema precisa escalar automaticamente",
+        "category": "architecture",
+        "required_stage": "Principal",
+        "region": "Bradesco",
+        "mentor": null,
+        "points_on_correct": 200,
+        "options": [
+            {
+                "text": "Provisionar para o pico maximo o tempo todo -- 8M req/min permanente",
+                "is_correct": false,
+                "explanation": "Provisionar para pico permanente desperica 95% dos recursos em dias normais. Custo proibitivo. Cloud-native e sobre elasticidade."
+            },
+            {
+                "text": "Auto-scaling baseado em metricas: Kubernetes HPA monitora CPU/latencia/queue depth e escala pods automaticamente. Load shedding para proteger o core.",
+                "is_correct": true,
+                "explanation": "HPA (Horizontal Pod Autoscaler) adiciona instancias quando metricas cruzam thresholds. De 500k para 5M, escala de 10 para 100 pods em minutos. Load shedding rejeita requisicoes nao-criticas em sobrecarga extrema para proteger transacoes financeiras."
+            },
+            {
+                "text": "Colocar tudo atras de uma CDN para cachear as respostas",
+                "is_correct": false,
+                "explanation": "CDN funciona para conteudo estatico. Saldo bancario, transferencias e Pix sao dados dinamicos e personalizados que nao podem ser cacheados em CDN."
+            }
+        ]
+    },
+    {
+        "id": "principal_05_bradesco_openbanking",
+        "title": "Open Banking e APIs",
+        "description": "O Banco Central exige que o Bradesco exponha APIs de Open Banking. Terceiros podem consultar dados de clientes (com consentimento). Como projetar?",
+        "context_code": "// API publica: GET /open-banking/accounts/{id}/balance\n// Qualquer fintech autorizada pode chamar\n// Milhares de fintechs, milhoes de requisicoes\n// Dados sensiveis de clientes",
+        "category": "architecture",
+        "required_stage": "Principal",
+        "region": "Bradesco",
+        "mentor": null,
+        "points_on_correct": 200,
+        "options": [
+            {
+                "text": "Expor o banco de dados direto via API REST simples",
+                "is_correct": false,
+                "explanation": "Expor banco diretamente viola every security principle. Sem rate limiting, sem autenticacao granular, sem auditoria. Breach garantido."
+            },
+            {
+                "text": "API Gateway + OAuth2/OIDC + Rate Limiting + Consentimento granular + Auditoria completa por requisicao",
+                "is_correct": true,
+                "explanation": "API Gateway controla acesso. OAuth2 com PKCE para autenticacao. Consentimento do cliente registrado e revogavel. Rate limiting por fintech (ex: 100 req/min). Cada requisicao gera log de auditoria. Padrao Open Banking Brasil (regulacao BACEN)."
+            },
+            {
+                "text": "Dar uma senha unica para cada fintech acessar o sistema",
+                "is_correct": false,
+                "explanation": "Senha unica sem expiracao, sem escopo, sem revogacao e o oposto de seguranca moderna. OAuth2 com tokens de curta duracao e escopos granulares e o padrao."
+            }
+        ]
+    },
+    {
+        "id": "principal_06_bradesco_ai",
+        "title": "IA Explicavel em Banking",
+        "description": "O Bradesco usa IA para aprovar/negar credito. Um cliente tem o credito negado. Como garantir que o modelo nao e discriminatorio?",
+        "context_code": "// Modelo ML: input = dados do cliente -> output = score de credito\n// Score < 0.5 = credito negado\n// Regulacao: decisoes automatizadas devem ser explicaveis (LGPD Art. 20)",
+        "category": "architecture",
+        "required_stage": "Principal",
+        "region": "Bradesco",
+        "mentor": null,
+        "points_on_correct": 200,
+        "options": [
+            {
+                "text": "Remover variaveis sensiveis (raca, genero) do modelo -- problema resolvido",
+                "is_correct": false,
+                "explanation": "Remover a variavel explicita nao basta. Proxies (CEP, escola, bairro) podem codificar discriminacao indiretamente. Isso se chama 'indirect discrimination' ou 'proxy bias'."
+            },
+            {
+                "text": "IA Explicavel (XAI): SHAP values para explicar cada decisao + fairness metrics (demographic parity, equalized odds) + auditoria periodica do modelo",
+                "is_correct": true,
+                "explanation": "SHAP values mostram o peso de cada variavel na decisao. Fairness metrics medem se o modelo trata grupos diferentes de forma equitativa. Auditoria periodica detecta drift e bias emergente. LGPD Art. 20 garante ao cidadao o direito de explicacao de decisoes automatizadas."
+            },
+            {
+                "text": "Deixar um humano revisar todas as decisoes do modelo",
+                "is_correct": false,
+                "explanation": "Revisao humana nao escala para milhoes de decisoes. Humanos tambem tem vieses. A solucao e medir e monitorar fairness sistematicamente."
+            }
+        ]
+    },
+    {
+        "id": "principal_07_cloud_retry",
+        "title": "Retentativa com Backoff",
+        "description": "Uma chamada entre microservicos falha devido a um problema temporario de rede. Qual e a estrategia correta de retentativa?",
+        "context_code": "// Servico A chama Servico B\n// Servico B retorna HTTP 503 (Service Unavailable)\n// O que o Servico A deve fazer?",
+        "category": "distributed_systems",
+        "required_stage": "Principal",
+        "region": "Cloud Valley",
+        "mentor": null,
+        "points_on_correct": 200,
+        "options": [
+            {
+                "text": "Retentar imediatamente em um loop continuo ate funcionar",
+                "is_correct": false,
+                "explanation": "Retentativas imediatas amplificam o problema. Se o servidor esta sobrecarregado, bombardea-lo com retentativas piora tudo. Isso se chama retry storm."
+            },
+            {
+                "text": "Backoff exponencial com jitter: esperar 1s, 2s, 4s... mais um atraso aleatorio",
+                "is_correct": true,
+                "explanation": "Backoff exponencial da tempo ao servico que falhou para se recuperar. Jitter (atraso aleatorio) impede que todos os clientes retentem no mesmo instante. Este e o padrao usado por AWS, Google Cloud e todo sistema distribuido serio."
+            },
+            {
+                "text": "Nunca retentar -- apenas falhar rapido e avisar o usuario",
+                "is_correct": false,
+                "explanation": "Falhar na primeira tentativa e agressivo demais. Falhas transientes sao normais em sistemas distribuidos. Uma politica razoavel de retentativa melhora a confiabilidade."
+            }
+        ]
+    },
+    {
+        "id": "principal_08_cloud_legacy",
+        "title": "A Refatoracao do Legado",
+        "description": "Voce herda um monolito de 10 anos sem nenhum teste, processando R$250 milhoes em transacoes diarias. Qual e o primeiro passo correto?",
+        "context_code": null,
+        "category": "architecture",
+        "required_stage": "Principal",
+        "region": "Cloud Valley",
+        "mentor": null,
+        "points_on_correct": 200,
+        "options": [
+            {
+                "text": "Reescrever tudo do zero usando microservicos",
+                "is_correct": false,
+                "explanation": "Reescrita total de sistemas funcionais e a causa numero um de projetos de engenharia fracassados. Voce perde anos de conhecimento de negocio embutido."
+            },
+            {
+                "text": "Adicionar testes de caracterizacao nos caminhos criticos primeiro, depois refatorar incrementalmente",
+                "is_correct": true,
+                "explanation": "Testes de caracterizacao capturam o comportamento atual. Uma vez que voce tem uma rede de seguranca, pode refatorar com confianca. Mudancas pequenas e incrementais sao mais seguras que reescrita total. Este e o padrao Strangler Fig."
+            },
+            {
+                "text": "Fazer deploy na cloud e adicionar monitoramento -- o codigo funciona, nao mexa nele",
+                "is_correct": false,
+                "explanation": "Codigo funcionando sem testes e uma bomba-relogio. Voce nao pode corrigir bugs, adicionar funcionalidades ou lidar com incidentes com seguranca sem entender a base de codigo."
+            }
+        ]
+    },
+    {
+        "id": "principal_09_cloud_oath",
+        "title": "O Juramento do Engenheiro",
+        "description": "Voce chegou ao fim. O que define um Distinguished Engineer?",
+        "context_code": null,
+        "category": "domain_modeling",
+        "required_stage": "Principal",
+        "region": "Cloud Valley",
+        "mentor": null,
+        "points_on_correct": 300,
+        "options": [
+            {
+                "text": "Alguem que conhece todas as linguagens e frameworks",
+                "is_correct": false,
+                "explanation": "Conhecimento de ferramentas nao e engenharia. Um distinguished engineer entende principios que transcendem qualquer tecnologia especifica."
+            },
+            {
+                "text": "Alguem que escreve codigo que nao quebra quando o mundo muda -- porque pensa em contratos, invariantes e trade-offs",
+                "is_correct": true,
+                "explanation": "GARAGE nao forma programadores. GARAGE forma engenheiros. Voce entende dominio. Respeita estado. Pensa em invariantes. Nao escreve codigo fragil. Agora voce e capaz de construir software que sobrevive."
+            },
+            {
+                "text": "Alguem com mais estrelas e seguidores no GitHub",
+                "is_correct": false,
+                "explanation": "Popularidade nao e competencia em engenharia. Os melhores engenheiros frequentemente trabalham em sistemas que voce nunca vera -- porque sao criticos demais para falhar."
+            }
+        ]
+    }
+]
