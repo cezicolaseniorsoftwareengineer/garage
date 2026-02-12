@@ -1,9 +1,4 @@
-"""
-GARAGE - Main Entry Point.
-
-Composes the application: wires infrastructure to API layer.
-FastAPI is an infrastructure detail, not the core.
-"""
+"""Entry point. Wires repos into routes and serves the frontend."""
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
