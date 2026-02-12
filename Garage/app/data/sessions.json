@@ -10,17 +10,19 @@
     },
     "language": "Java",
     "stage": "Junior",
-    "score": 300,
+    "score": 500,
     "current_errors": 0,
     "max_errors": 3,
     "completed_challenges": [
       "intern_01_xerox_object_creation",
       "intern_02_xerox_naming",
-      "intern_03_xerox_functions"
+      "intern_03_xerox_functions",
+      "intern_04_apple_hello_world",
+      "intern_05_apple_data_structures"
     ],
     "game_over_count": 0,
     "status": "in_progress",
-    "total_attempts": 3,
+    "total_attempts": 5,
     "created_at": "2026-02-12T19:38:48.173196+00:00",
     "attempts": [
       {
@@ -43,6 +45,20 @@
         "is_correct": true,
         "points_awarded": 100,
         "timestamp": "2026-02-12T19:43:09.758886+00:00"
+      },
+      {
+        "challenge_id": "intern_04_apple_hello_world",
+        "selected_index": 1,
+        "is_correct": true,
+        "points_awarded": 100,
+        "timestamp": "2026-02-12T22:08:50.991399+00:00"
+      },
+      {
+        "challenge_id": "intern_05_apple_data_structures",
+        "selected_index": 2,
+        "is_correct": true,
+        "points_awarded": 100,
+        "timestamp": "2026-02-12T22:09:09.615054+00:00"
       }
     ]
   }
