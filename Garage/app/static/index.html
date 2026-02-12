@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>GARAGE | Aventura Side-Scroller</title>
     <link
         href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap"
@@ -151,15 +152,15 @@
             <span class="key-cap">ENTER</span> <span id="interactText">FALAR</span>
         </div>
 
-        <!-- Mobile Controls -->
+        <!-- Mobile Controls (D-Pad left, Actions right) -->
         <div class="mobile-controls">
             <div class="mobile-left">
-                <button class="ctrl-btn" id="btnLeft">&#9664;</button>
-                <button class="ctrl-btn" id="btnRight">&#9654;</button>
+                <button class="ctrl-btn" id="btnLeft" aria-label="Mover esquerda">&#9664;</button>
+                <button class="ctrl-btn" id="btnRight" aria-label="Mover direita">&#9654;</button>
             </div>
             <div class="mobile-right">
-                <button class="ctrl-btn ctrl-jump" id="btnJump">PULAR</button>
-                <button class="ctrl-btn ctrl-action" id="btnAction">FALAR</button>
+                <button class="ctrl-btn ctrl-jump" id="btnJump" aria-label="Pular">PULAR</button>
+                <button class="ctrl-btn ctrl-action action" id="btnAction" aria-label="Acao">FALAR</button>
             </div>
         </div>
     </div>
@@ -175,7 +176,7 @@
         </div>
         <div id="dContent" class="dialog-content"></div>
         <div class="dialog-actions">
-            <button class="btn-dialog" onclick="World.closeDialog()">CONTINUAR [ENTER]</button>
+            <button class="btn-dialog" onclick="World.closeDialog()">CONTINUAR</button>
         </div>
     </div>
 
@@ -286,7 +287,7 @@
                             <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
                         </div>
                         <textarea class="ide-code-input" id="ideCodeInput" spellcheck="false" autocomplete="off"
-                            autocorrect="off" autocapitalize="off"></textarea>
+                            autocorrect="off" autocapitalize="off" enterkeyhint="done" inputmode="text"></textarea>
                     </div>
 
                     <!-- Terminal output -->

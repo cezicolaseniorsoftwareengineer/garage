@@ -1138,7 +1138,9 @@ const World = {
         this.H = window.innerHeight;
         this.canvas.width = this.W;
         this.canvas.height = this.H;
-        this.GROUND_Y = this.H - 80;
+        const mobileControls = document.querySelector('.mobile-controls');
+        const controlsVisible = mobileControls && getComputedStyle(mobileControls).display !== 'none';
+        this.GROUND_Y = controlsVisible ? this.H - 160 : this.H - 80;
     },
 
     generateDecorations() {
@@ -1209,14 +1211,18 @@ const World = {
             this.keys[e.code] = false;
         });
 
-        // Mobile buttons
+        // Mobile buttons -- hold-to-move with touchcancel safety
         const hold = (id, code) => {
             const el = document.getElementById(id);
             if (!el) return;
-            const on = () => { this.keys[code] = true; };
-            const off = () => { this.keys[code] = false; };
-            el.addEventListener('mousedown', on); el.addEventListener('mouseup', off); el.addEventListener('mouseleave', off);
-            el.addEventListener('touchstart', e => { e.preventDefault(); on(); }); el.addEventListener('touchend', e => { e.preventDefault(); off(); });
+            const on = () => { this.keys[code] = true; el.classList.add('pressed'); };
+            const off = () => { this.keys[code] = false; el.classList.remove('pressed'); };
+            el.addEventListener('mousedown', on);
+            el.addEventListener('mouseup', off);
+            el.addEventListener('mouseleave', off);
+            el.addEventListener('touchstart', e => { e.preventDefault(); on(); }, { passive: false });
+            el.addEventListener('touchend', e => { e.preventDefault(); off(); }, { passive: false });
+            el.addEventListener('touchcancel', e => { e.preventDefault(); off(); }, { passive: false });
         };
         hold('btnLeft', 'ArrowLeft');
         hold('btnRight', 'ArrowRight');
@@ -1224,16 +1230,17 @@ const World = {
 
         const actBtn = document.getElementById('btnAction');
         if (actBtn) {
-            actBtn.addEventListener('click', () => {
-                if (State.isInDialog) this.closeDialog();
-                else this.tryInteract();
-            });
-            actBtn.addEventListener('touchstart', e => {
-                e.preventDefault();
-                if (State.isInDialog) this.closeDialog();
-                else this.tryInteract();
-            });
+            const doAction = () => {
+                if (State.isBookPopup) this.closeBookPopup();
+                else if (State.isInDialog) this.closeDialog();
+                else if (!State.isInChallenge) this.tryInteract();
+            };
+            actBtn.addEventListener('click', doAction);
+            actBtn.addEventListener('touchstart', e => { e.preventDefault(); doAction(); }, { passive: false });
         }
+
+        // Prevent body scroll and bounce on iOS when touching the game canvas
+        document.getElementById('gameCanvas').addEventListener('touchmove', e => e.preventDefault(), { passive: false });
     },
 
     /* --- INTERACTION (NPC proximity) --- */
@@ -1251,19 +1258,30 @@ const World = {
         });
 
         const hint = document.getElementById('interactHint');
+        const isMobile = window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
+        const keyCap = isMobile ? 'TOQUE' : 'ENTER';
+        const actionBtn = document.getElementById('btnAction');
+
         if (closest && closestDist < 80) {
             State.interactionTarget = closest;
             hint.classList.add('visible');
             if (State.lockedRegion && closest.region !== State.lockedRegion) {
                 document.getElementById('interactText').textContent = 'BLOQUEADO - Complete ' + State.lockedRegion;
+                if (actionBtn) actionBtn.textContent = 'FALAR';
             } else if (State.lockedRegion && closest.region === State.lockedRegion) {
                 document.getElementById('interactText').textContent = 'CONTINUAR DESAFIOS COM ' + closest.name;
+                if (actionBtn) actionBtn.textContent = 'FALAR';
             } else {
                 document.getElementById('interactText').textContent = 'FALAR COM ' + closest.name;
+                if (actionBtn) actionBtn.textContent = 'FALAR';
             }
+            // Update keycap label
+            const keyCapEl = hint.querySelector('.key-cap');
+            if (keyCapEl) keyCapEl.textContent = keyCap;
         } else {
             State.interactionTarget = null;
             hint.classList.remove('visible');
+            if (actionBtn) actionBtn.textContent = 'FALAR';
         }
     },
 
@@ -3519,6 +3537,46 @@ const IDE = {
         // Show overlay
         document.getElementById('ideOverlay').classList.add('visible');
         document.getElementById('ideCodeInput').focus();
+
+        // On mobile: handle virtual keyboard resizing
+        this._setupMobileKeyboardHandlers();
+    },
+
+    _setupMobileKeyboardHandlers() {
+        const isMobile = window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
+        if (!isMobile) return;
+
+        const codeInput = document.getElementById('ideCodeInput');
+        const container = document.querySelector('.ide-container');
+        const bottomBar = document.querySelector('.ide-bottombar');
+
+        // When textarea gains focus on mobile, hide bottom bar and expand editor
+        codeInput.addEventListener('focus', () => {
+            if (bottomBar) bottomBar.style.display = 'none';
+            if (container) container.classList.add('keyboard-open');
+        });
+
+        codeInput.addEventListener('blur', () => {
+            if (bottomBar) bottomBar.style.display = 'flex';
+            if (container) container.classList.remove('keyboard-open');
+        });
+
+        // Use visualViewport API to detect keyboard open/close
+        if (window.visualViewport) {
+            const onResize = () => {
+                const overlay = document.getElementById('ideOverlay');
+                if (!overlay || !overlay.classList.contains('visible')) return;
+                const keyboardOpen = window.visualViewport.height < window.innerHeight * 0.75;
+                if (keyboardOpen) {
+                    if (bottomBar) bottomBar.style.display = 'none';
+                    if (container) container.classList.add('keyboard-open');
+                } else {
+                    if (bottomBar) bottomBar.style.display = 'flex';
+                    if (container) container.classList.remove('keyboard-open');
+                }
+            };
+            window.visualViewport.addEventListener('resize', onResize);
+        }
     },
 
     _syncLineNumbers() {
