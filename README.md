@@ -1,5 +1,11 @@
 # GARAGE
 
+<img width="1873" height="905" alt="image" src="https://github.com/user-attachments/assets/311086dc-5da8-4d30-a07a-a1c69ead0c7e" />
+
+<img width="1906" height="891" alt="image" src="https://github.com/user-attachments/assets/53189e6e-dcb3-46fe-9ed0-cba4304ea1f5" />
+
+
+
 > Every Big Tech started in a garage.
 
 2D platformer game about the history of computing. The player walks through Silicon Valley from 1973 to 2026, meeting real tech founders, answering engineering challenges, and leveling up from Intern to Principal Engineer.
