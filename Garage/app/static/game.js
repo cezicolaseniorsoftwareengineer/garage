@@ -9,15 +9,23 @@ const API = {
         }
         return h;
     },
+    async _handle401(p) {
+        if (p.includes('/auth/')) return false;
+        const refreshed = await Auth.tryRefresh();
+        if (refreshed) return true;
+        Auth.handleExpired();
+        UI.showScreen('screen-login');
+        throw new Error('Sessao expirada. Faca login novamente.');
+    },
     async get(p) {
-        const r = await fetch(p, { headers: this._headers() });
-        if (r.status === 401 && !p.includes('/auth/')) { Auth.handleExpired(); throw new Error('Sessao expirada. Faca login novamente.'); }
+        let r = await fetch(p, { headers: this._headers() });
+        if (r.status === 401) { if (await this._handle401(p)) r = await fetch(p, { headers: this._headers() }); }
         if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || r.statusText); }
         return r.json();
     },
     async post(p, b) {
-        const r = await fetch(p, { method: 'POST', headers: this._headers(), body: JSON.stringify(b) });
-        if (r.status === 401 && !p.includes('/auth/')) { Auth.handleExpired(); throw new Error('Sessao expirada. Faca login novamente.'); }
+        let r = await fetch(p, { method: 'POST', headers: this._headers(), body: JSON.stringify(b) });
+        if (r.status === 401) { if (await this._handle401(p)) r = await fetch(p, { method: 'POST', headers: this._headers(), body: JSON.stringify(b) }); }
         if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || r.statusText); }
         return r.json();
     },
@@ -2558,6 +2566,14 @@ const UI = {
         if (id === 'screen-world') { World.start(); SFX.playMusic('explore'); }
         else { World.stop(); if (id === 'screen-title' || id === 'screen-onboarding') SFX.playMusic('title'); }
         if (id === 'screen-onboarding') this._drawOnboardingChar();
+        if (id === 'screen-title') this.updateTitleButtons();
+    },
+
+    updateTitleButtons() {
+        const continueBtn = document.getElementById('btnContinueGame');
+        if (continueBtn) {
+            continueBtn.style.display = Auth.hasSession() ? '' : 'none';
+        }
     },
 
     _drawOnboardingChar() {
@@ -2889,7 +2905,16 @@ const Game = {
             World.init(State.player.character ? State.player.character.avatar_index : 0);
             UI.updateHUD(State.player);
             UI.showScreen('screen-world');
-        } catch (e) { alert('Erro: ' + e.message); }
+        } catch (e) {
+            // Session no longer exists on server -- clean up and let user start fresh
+            if (e.message && (e.message.includes('not found') || e.message.includes('404'))) {
+                localStorage.removeItem('garage_session_id');
+                UI.updateTitleButtons();
+                alert('Sessao anterior nao encontrada. Inicie um novo jogo.');
+            } else {
+                alert('Erro ao carregar sessao: ' + e.message);
+            }
+        }
     },
 
     async enterRegion(regionId) {
@@ -4184,11 +4209,12 @@ const Auth = {
     _user: null,
     _token: null,
     _refreshToken: null,
+    _refreshing: null,
 
     init() {
-        const stored = sessionStorage.getItem('garage_user');
-        const token = sessionStorage.getItem('garage_token');
-        const refresh = sessionStorage.getItem('garage_refresh');
+        const stored = localStorage.getItem('garage_user');
+        const token = localStorage.getItem('garage_token');
+        const refresh = localStorage.getItem('garage_refresh');
         if (stored && token) {
             try {
                 this._user = JSON.parse(stored);
@@ -4198,6 +4224,23 @@ const Auth = {
                 this._user = null;
                 this._token = null;
                 this._refreshToken = null;
+            }
+        }
+        // Migrate from sessionStorage (one-time)
+        if (!this._token) {
+            const legacyToken = sessionStorage.getItem('garage_token');
+            const legacyUser = sessionStorage.getItem('garage_user');
+            const legacyRefresh = sessionStorage.getItem('garage_refresh');
+            if (legacyToken && legacyUser) {
+                try {
+                    this._user = JSON.parse(legacyUser);
+                    this._token = legacyToken;
+                    this._refreshToken = legacyRefresh;
+                    this._persist();
+                } catch (e) { /* ignore */ }
+                sessionStorage.removeItem('garage_token');
+                sessionStorage.removeItem('garage_user');
+                sessionStorage.removeItem('garage_refresh');
             }
         }
         this._bindForms();
@@ -4216,33 +4259,65 @@ const Auth = {
         return this._token;
     },
 
+    hasSession() {
+        return !!localStorage.getItem('garage_session_id');
+    },
+
+    _persist() {
+        if (this._user) localStorage.setItem('garage_user', JSON.stringify(this._user));
+        if (this._token) localStorage.setItem('garage_token', this._token);
+        if (this._refreshToken) localStorage.setItem('garage_refresh', this._refreshToken);
+    },
+
     _setUser(user, accessToken, refreshToken) {
         this._user = user;
         this._token = accessToken;
         this._refreshToken = refreshToken || null;
-        sessionStorage.setItem('garage_user', JSON.stringify(user));
-        if (accessToken) sessionStorage.setItem('garage_token', accessToken);
-        if (refreshToken) sessionStorage.setItem('garage_refresh', refreshToken);
+        this._persist();
     },
 
     logout() {
         this._user = null;
         this._token = null;
         this._refreshToken = null;
-        sessionStorage.removeItem('garage_user');
-        sessionStorage.removeItem('garage_token');
-        sessionStorage.removeItem('garage_refresh');
+        localStorage.removeItem('garage_user');
+        localStorage.removeItem('garage_token');
+        localStorage.removeItem('garage_refresh');
         localStorage.removeItem('garage_session_id');
         UI.showScreen('screen-login');
+    },
+
+    async tryRefresh() {
+        if (!this._refreshToken) return false;
+        if (this._refreshing) return this._refreshing;
+        this._refreshing = (async () => {
+            try {
+                const r = await fetch('/api/auth/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh_token: this._refreshToken }),
+                });
+                if (!r.ok) return false;
+                const data = await r.json();
+                this._token = data.access_token;
+                localStorage.setItem('garage_token', this._token);
+                return true;
+            } catch (e) {
+                return false;
+            } finally {
+                this._refreshing = null;
+            }
+        })();
+        return this._refreshing;
     },
 
     handleExpired() {
         this._user = null;
         this._token = null;
         this._refreshToken = null;
-        sessionStorage.removeItem('garage_user');
-        sessionStorage.removeItem('garage_token');
-        sessionStorage.removeItem('garage_refresh');
+        localStorage.removeItem('garage_user');
+        localStorage.removeItem('garage_token');
+        localStorage.removeItem('garage_refresh');
         localStorage.removeItem('garage_session_id');
     },
 
@@ -4325,6 +4400,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Auth.init();
     if (Auth.isLoggedIn()) {
         UI.showScreen('screen-title');
+        UI.updateTitleButtons();
     } else {
         UI.showScreen('screen-login');
     }

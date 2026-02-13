@@ -120,8 +120,12 @@
                     CORRA PELO VALE DO SILICIO . ENCONTRE MENTORES . RESOLVA DESAFIOS
                 </div>
                 <div class="arcade-insert blink">&gt;&gt;&gt; PRESSIONE START &lt;&lt;&lt;</div>
+                <button class="arcade-btn" id="btnContinueGame" style="display:none"
+                    onclick="SFX.menuConfirm(); Game.loadSession()">
+                    <span class="arcade-btn-icon">&#9654;</span> CONTINUAR JOGO
+                </button>
                 <button class="arcade-btn" onclick="SFX.menuConfirm(); UI.showScreen('screen-onboarding')">
-                    <span class="arcade-btn-icon">&#9654;</span> 1 JOGADOR INICIAR
+                    <span class="arcade-btn-icon">&#9654;</span> NOVO JOGO
                 </button>
                 <button class="arcade-btn arcade-btn-logout" onclick="Auth.logout()">
                     SAIR
