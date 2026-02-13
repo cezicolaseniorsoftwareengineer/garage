@@ -146,9 +146,15 @@
             <p class="subtitle">Defina sua identidade para entrar no Vale do Silicio.</p>
 
             <label>1. SEU PERSONAGEM</label>
-            <div class="avatar-single" id="avatarSingle">
-                <canvas id="onboardingCharCanvas" width="96" height="160"></canvas>
-                <span class="avatar-single-name">Dev Boy</span>
+            <div class="avatar-selection" id="avatarSelection">
+                <div class="avatar-card selected" data-avatar="boy" onclick="UI.selectAvatar(this)">
+                    <canvas id="onboardingCharBoy" width="96" height="160"></canvas>
+                    <span class="avatar-card-name">Dev Boy</span>
+                </div>
+                <div class="avatar-card" data-avatar="girl" onclick="UI.selectAvatar(this)">
+                    <canvas id="onboardingCharGirl" width="96" height="160"></canvas>
+                    <span class="avatar-card-name">Dev Girl</span>
+                </div>
             </div>
 
             <label>2. SEU NOME</label>

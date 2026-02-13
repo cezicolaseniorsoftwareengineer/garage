@@ -1,14 +1,23 @@
 // GARAGE -- 2D platformer engine (Canvas)
 
-// ---- api client ----
+// ---- api client (JWT-aware) ----
 const API = {
+    _headers() {
+        const h = { 'Content-Type': 'application/json' };
+        if (typeof Auth !== 'undefined' && Auth.getToken()) {
+            h['Authorization'] = 'Bearer ' + Auth.getToken();
+        }
+        return h;
+    },
     async get(p) {
-        const r = await fetch(p);
+        const r = await fetch(p, { headers: this._headers() });
+        if (r.status === 401 && !p.includes('/auth/')) { Auth.handleExpired(); throw new Error('Sessao expirada. Faca login novamente.'); }
         if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || r.statusText); }
         return r.json();
     },
     async post(p, b) {
-        const r = await fetch(p, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) });
+        const r = await fetch(p, { method: 'POST', headers: this._headers(), body: JSON.stringify(b) });
+        if (r.status === 401 && !p.includes('/auth/')) { Auth.handleExpired(); throw new Error('Sessao expirada. Faca login novamente.'); }
         if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || r.statusText); }
         return r.json();
     },
@@ -2552,7 +2561,12 @@ const UI = {
     },
 
     _drawOnboardingChar() {
-        const canvas = document.getElementById('onboardingCharCanvas');
+        this._drawOnboardingBoy();
+        this._drawOnboardingGirl();
+    },
+
+    _drawOnboardingBoy() {
+        const canvas = document.getElementById('onboardingCharBoy');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         const w = canvas.width, h = canvas.height;
@@ -2630,12 +2644,127 @@ const UI = {
         ctx.restore();
     },
 
+    _drawOnboardingGirl() {
+        const canvas = document.getElementById('onboardingCharGirl');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const skinColor = '#F5D0A9';
+        const cx = w / 2;
+        const scale = 1.2;
+        const offsetY = 10;
+
+        ctx.save();
+        ctx.translate(cx, offsetY);
+        ctx.scale(scale, scale);
+        const lx = 0;
+
+        // Long hair (behind head -- drawn first)
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(lx - 18, 10, 6, 38);
+        ctx.fillRect(lx + 12, 10, 6, 38);
+
+        // Head
+        ctx.fillStyle = skinColor;
+        ctx.beginPath();
+        ctx.arc(lx, 20, 16, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Hair (top with side fringe)
+        ctx.fillStyle = '#1a1a2e';
+        ctx.beginPath();
+        ctx.arc(lx, 16, 17, Math.PI, Math.PI * 2);
+        ctx.fill();
+        // Side hair strands
+        ctx.fillRect(lx - 17, 16, 5, 10);
+        ctx.fillRect(lx + 12, 16, 5, 10);
+        // Fringe detail
+        ctx.beginPath();
+        ctx.moveTo(lx - 10, 5);
+        ctx.quadraticCurveTo(lx - 2, 12, lx + 4, 5);
+        ctx.fill();
+
+        // Hair accessory (small bow)
+        ctx.fillStyle = '#f472b6';
+        ctx.beginPath();
+        ctx.arc(lx + 12, 10, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ec4899';
+        ctx.beginPath();
+        ctx.arc(lx + 12, 10, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eyes (large, expressive -- slightly larger lashes)
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(lx - 6, 20, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(lx + 6, 20, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#111';
+        ctx.beginPath(); ctx.arc(lx - 5, 21, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(lx + 7, 21, 2.5, 0, Math.PI * 2); ctx.fill();
+        // Eyelashes
+        ctx.strokeStyle = '#1a1a2e';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(lx - 11, 17); ctx.lineTo(lx - 9, 16); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(lx + 11, 17); ctx.lineTo(lx + 9, 16); ctx.stroke();
+
+        // Mouth (smile)
+        ctx.strokeStyle = '#555';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(lx, 28, 5, 0.15 * Math.PI, 0.85 * Math.PI);
+        ctx.stroke();
+
+        // Body (black tee)
+        const bodyTop = 36;
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(lx - 14, bodyTop, 28, 30);
+
+        // Shirt text 'Garage'
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = 'bold 7px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Garage', lx, bodyTop + 15);
+
+        // Arms
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(lx - 20, bodyTop + 2, 7, 18);
+        ctx.fillRect(lx + 13, bodyTop + 2, 7, 18);
+        ctx.fillStyle = skinColor;
+        ctx.fillRect(lx - 20, bodyTop + 20, 7, 10);
+        ctx.fillRect(lx + 13, bodyTop + 20, 7, 10);
+
+        // Legs (blue jeans)
+        ctx.fillStyle = '#4472C4';
+        ctx.fillRect(lx - 11, bodyTop + 30, 10, 26);
+        ctx.fillRect(lx + 1, bodyTop + 30, 10, 26);
+
+        // Shoes (white sneakers)
+        ctx.fillStyle = '#e5e7eb';
+        ctx.fillRect(lx - 13, bodyTop + 55, 12, 6);
+        ctx.fillRect(lx + 1, bodyTop + 55, 12, 6);
+
+        ctx.restore();
+    },
+
     selectAvatar(el) {
-        // Single character -- no selection needed
+        const container = document.getElementById('avatarSelection');
+        if (!container) return;
+        container.querySelectorAll('.avatar-card').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        SFX.menuConfirm();
     },
 
     getSelectedAvatar() {
-        return { index: 0, gender: 'male', ethnicity: 'white' };
+        const selected = document.querySelector('.avatar-card.selected');
+        const isGirl = selected && selected.dataset.avatar === 'girl';
+        return {
+            index: isGirl ? 2 : 0,
+            gender: isGirl ? 'female' : 'male',
+            ethnicity: 'white'
+        };
     },
 
     updateHUD(player) {
@@ -4053,33 +4182,68 @@ const IDE = {
 // ---- auth module ----
 const Auth = {
     _user: null,
+    _token: null,
+    _refreshToken: null,
 
     init() {
         const stored = sessionStorage.getItem('garage_user');
-        if (stored) {
-            try { this._user = JSON.parse(stored); } catch (e) { this._user = null; }
+        const token = sessionStorage.getItem('garage_token');
+        const refresh = sessionStorage.getItem('garage_refresh');
+        if (stored && token) {
+            try {
+                this._user = JSON.parse(stored);
+                this._token = token;
+                this._refreshToken = refresh;
+            } catch (e) {
+                this._user = null;
+                this._token = null;
+                this._refreshToken = null;
+            }
         }
         this._bindForms();
         this._bindNavigation();
     },
 
     isLoggedIn() {
-        return this._user !== null;
+        return this._user !== null && this._token !== null;
     },
 
     getUser() {
         return this._user;
     },
 
-    _setUser(user) {
+    getToken() {
+        return this._token;
+    },
+
+    _setUser(user, accessToken, refreshToken) {
         this._user = user;
+        this._token = accessToken;
+        this._refreshToken = refreshToken || null;
         sessionStorage.setItem('garage_user', JSON.stringify(user));
+        if (accessToken) sessionStorage.setItem('garage_token', accessToken);
+        if (refreshToken) sessionStorage.setItem('garage_refresh', refreshToken);
     },
 
     logout() {
         this._user = null;
+        this._token = null;
+        this._refreshToken = null;
         sessionStorage.removeItem('garage_user');
+        sessionStorage.removeItem('garage_token');
+        sessionStorage.removeItem('garage_refresh');
+        localStorage.removeItem('garage_session_id');
         UI.showScreen('screen-login');
+    },
+
+    handleExpired() {
+        this._user = null;
+        this._token = null;
+        this._refreshToken = null;
+        sessionStorage.removeItem('garage_user');
+        sessionStorage.removeItem('garage_token');
+        sessionStorage.removeItem('garage_refresh');
+        localStorage.removeItem('garage_session_id');
     },
 
     _bindNavigation() {
@@ -4106,7 +4270,7 @@ const Auth = {
                     username: document.getElementById('loginUsername').value.trim(),
                     password: document.getElementById('loginPassword').value,
                 });
-                this._setUser(res.user);
+                this._setUser(res.user, res.access_token, res.refresh_token);
                 UI.showScreen('screen-title');
             } catch (err) {
                 errEl.textContent = err.message || 'Erro ao fazer login.';
@@ -4141,7 +4305,7 @@ const Auth = {
                     profession: document.getElementById('regProfession').value,
                     password: pwd,
                 });
-                this._setUser(res.user);
+                this._setUser(res.user, res.access_token, res.refresh_token);
                 sucEl.textContent = 'Cadastro realizado! Entrando...';
                 sucEl.hidden = false;
                 setTimeout(() => UI.showScreen('screen-title'), 1200);
