@@ -6,9 +6,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 from app.api.routes.game_routes import router as game_router, init_routes
+from app.api.routes.auth_routes import router as auth_router, init_auth_routes
 from app.infrastructure.repositories.challenge_repository import ChallengeRepository
 from app.infrastructure.repositories.player_repository import PlayerRepository
 from app.infrastructure.repositories.leaderboard_repository import LeaderboardRepository
+from app.infrastructure.repositories.user_repository import UserRepository
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -45,7 +47,13 @@ leaderboard_repo = LeaderboardRepository(
 
 init_routes(player_repo, challenge_repo, leaderboard_repo)
 
+user_repo = UserRepository(
+    data_path=os.path.join(DATA_DIR, "users.json")
+)
+init_auth_routes(user_repo)
+
 # Register API routes
+app.include_router(auth_router)
 app.include_router(game_router)
 
 

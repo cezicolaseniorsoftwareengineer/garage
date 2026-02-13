@@ -840,70 +840,85 @@ const State = {
 
 // ---- NPC definitions ----
 const NPC_DATA = [
-    // ── INTERN ──────────────────────────────────────────
+    // -- INTERN --
     {
-        id: 'npc_xerox', name: 'CHARLES GESCHKE', role: 'Cofundador - Xerox PARC / Adobe', region: 'Xerox PARC', stage: 'Intern', worldX: 800, dialog: 'Bem-vindo ao Vale. Codigo limpo nao e sugestao, e lei. Vou testar seus fundamentos.',
+        id: 'npc_xerox', name: 'CHARLES GESCHKE', role: 'Cofundador - Xerox PARC / Adobe', region: 'Xerox PARC', stage: 'Intern', worldX: 800,
+        dialog: 'Eu sou Charles Geschke. Nos anos 70, a Xerox PARC inventou a interface grafica, o mouse e a rede Ethernet -- tecnologias que mudaram o mundo. Mais tarde cofundei a Adobe e criamos o PostScript e o PDF. Aqui voce vai provar que domina os fundamentos: logica, variaveis e estruturas basicas. Sem base solida, nenhum sistema sobrevive.',
         look: { hair: '#ccc', hairStyle: 'bald-sides', beard: '#aaa', glasses: true, glassesStyle: 'round', shirt: '#1e3a5f', pants: '#333', skinTone: '#F5D0A9' }
     },
     {
-        id: 'npc_apple', name: 'STEVE JOBS', role: 'Cofundador - Apple', region: 'Apple Garage', stage: 'Intern', worldX: 1800, dialog: 'Todo imperio comecou numa garagem. Prove que voce entende a simplicidade que muda o mundo.',
+        id: 'npc_apple', name: 'STEVE JOBS', role: 'Cofundador - Apple', region: 'Apple Garage', stage: 'Intern', worldX: 1800,
+        dialog: 'Sou Steve Jobs. Em 1976, Steve Wozniak e eu montamos o primeiro Apple numa garagem em Los Altos, California. A Apple revolucionou a computacao pessoal, a musica digital e os smartphones. Eu acreditava que tecnologia e arte devem andar juntas. Seus desafios aqui testarao sua capacidade de pensar simples -- porque simplicidade e a sofisticacao suprema.',
         look: { hair: '#222', hairStyle: 'short', beard: null, glasses: true, glassesStyle: 'round', shirt: '#111', pants: '#3b5998', skinTone: '#F5D0A9', turtleneck: true }
     },
-    // ── JUNIOR ──────────────────────────────────────────
+    // -- JUNIOR --
     {
-        id: 'npc_microsoft', name: 'BILL GATES', role: 'Cofundador - Microsoft', region: 'Microsoft', stage: 'Junior', worldX: 3200, dialog: 'Sistemas operacionais escalam para bilhoes. Seus fundamentos precisam ser solidos.',
+        id: 'npc_microsoft', name: 'BILL GATES', role: 'Cofundador - Microsoft', region: 'Microsoft', stage: 'Junior', worldX: 3200,
+        dialog: 'Prazer, Bill Gates. Em 1975, Paul Allen e eu fundamos a Microsoft com a visao de colocar um computador em cada mesa. Do MS-DOS ao Windows, do Office ao Azure -- construimos um ecossistema que conecta bilhoes de pessoas. Como Junior, voce precisa provar que entende sistemas operacionais, estruturas de dados e a base da engenharia de software.',
         look: { hair: '#8B6F47', hairStyle: 'parted', beard: null, glasses: true, glassesStyle: 'square', shirt: '#4a90d9', pants: '#2c3e50', skinTone: '#F5D0A9', tie: '#8b0000' }
     },
     {
-        id: 'npc_nubank', name: 'DAVID VELEZ', role: 'Fundador - Nubank', region: 'Nubank', stage: 'Junior', worldX: 4400, dialog: 'Fintech e sobre eliminar complexidade desnecessaria. O cliente nao quer burocracia, quer solucao.',
+        id: 'npc_nubank', name: 'DAVID VELEZ', role: 'Fundador - Nubank', region: 'Nubank', stage: 'Junior', worldX: 4400,
+        dialog: 'Ola, sou David Velez. Fundei o Nubank em 2013 no Brasil porque estava cansado da burocracia bancaria. Com um cartao roxo e um app, democratizamos servicos financeiros para mais de 80 milhoes de clientes. Fintech e sobre eliminar complexidade e entregar valor real. Mostre que voce sabe resolver problemas com codigo limpo e eficiente.',
         look: { hair: '#222', hairStyle: 'short', beard: null, glasses: false, shirt: '#820ad1', pants: '#222', skinTone: '#D2A673', casual: true }
     },
-    // ── MID ─────────────────────────────────────────────
+    // -- MID --
     {
-        id: 'npc_google', name: 'LARRY & SERGEY', role: 'Cofundadores - Google', region: 'Google', stage: 'Mid', worldX: 5800, dialog: 'Algoritmos, dados, sistemas distribuidos. A complexidade computacional e real.',
+        id: 'npc_google', name: 'LARRY & SERGEY', role: 'Cofundadores - Google', region: 'Google', stage: 'Mid', worldX: 5800,
+        dialog: 'Somos Larry Page e Sergey Brin. Em 1998, numa garagem em Menlo Park, criamos o Google -- um buscador que organizou toda a informacao do mundo. Depois veio o Android, YouTube, Cloud, IA. Como engenheiro Pleno, voce enfrentara algoritmos avancados, sistemas distribuidos e a complexidade computacional que faz o Google funcionar em escala planetaria.',
         look: { hair: '#333', hairStyle: 'curly', beard: null, glasses: false, shirt: '#4285f4', pants: '#333', skinTone: '#F5D0A9', casual: true }
     },
     {
-        id: 'npc_facebook', name: 'MARK ZUCKERBERG', role: 'Cofundador - Facebook', region: 'Facebook', stage: 'Mid', worldX: 7300, dialog: 'Escalar grafos sociais para bilhoes exige consistencia e engenharia cirurgica.',
+        id: 'npc_facebook', name: 'MARK ZUCKERBERG', role: 'Cofundador - Facebook', region: 'Facebook', stage: 'Mid', worldX: 7300,
+        dialog: 'Eu sou Mark Zuckerberg. Em 2004, no dormitorio de Harvard, criei o Facebook. Hoje a Meta conecta mais de 3 bilhoes de pessoas e esta construindo o metaverso. Escalar grafos sociais para esse volume exige engenharia de dados, consistencia eventual e arquitetura de sistemas que nao falham. Prepare-se para desafios de nivel Pleno.',
         look: { hair: '#8B6F47', hairStyle: 'curly-short', beard: null, glasses: false, shirt: '#888', pants: '#333', skinTone: '#F5D0A9', hoodie: '#444' }
     },
-    // ── SENIOR ──────────────────────────────────────────
+    // -- SENIOR --
     {
-        id: 'npc_amazon', name: 'JEFF BEZOS', role: 'Fundador - Amazon', region: 'Amazon', stage: 'Senior', worldX: 8800, dialog: 'De e-commerce a cloud. Aqui voce projeta para falhar sem cair.',
+        id: 'npc_amazon', name: 'JEFF BEZOS', role: 'Fundador - Amazon', region: 'Amazon', stage: 'Senior', worldX: 8800,
+        dialog: 'Jeff Bezos aqui. Comecei a Amazon em 1994 vendendo livros numa garagem em Seattle. Hoje somos o maior e-commerce do planeta e a AWS e a espinha dorsal da internet moderna. De e-commerce a cloud computing, aqui voce projetara sistemas resilientes, com tolerancia a falhas e alta disponibilidade. Engenheiro Senior nao aceita sistema que cai.',
         look: { hair: null, hairStyle: 'bald', beard: null, glasses: false, shirt: '#1a3c5e', pants: '#222', skinTone: '#F5D0A9', bald: true }
     },
     {
-        id: 'npc_meli', name: 'MARCOS GALPERIN', role: 'Fundador - Mercado Livre', region: 'Mercado Livre', stage: 'Senior', worldX: 10200, dialog: 'O maior marketplace da America Latina processa milhoes de transacoes por segundo. Escala e tudo.',
+        id: 'npc_meli', name: 'MARCOS GALPERIN', role: 'Fundador - Mercado Livre', region: 'Mercado Livre', stage: 'Senior', worldX: 10200,
+        dialog: 'Sou Marcos Galperin. Fundei o Mercado Livre em 1999 na Argentina. Somos o maior ecossistema de comercio eletronico da America Latina -- marketplace, pagamentos com Mercado Pago, logistica e credito. Processamos milhoes de transacoes por segundo em 18 paises. Seus desafios aqui envolvem escala, performance e arquitetura de plataforma.',
         look: { hair: '#555', hairStyle: 'short', beard: null, glasses: false, shirt: '#333', pants: '#222', skinTone: '#F5D0A9', suit: '#1a1a1a' }
     },
     {
-        id: 'npc_jpmorgan', name: 'JAMIE DIMON', role: 'CEO - JP Morgan', region: 'JP Morgan', stage: 'Senior', worldX: 11600, dialog: 'Wall Street exige zero tolerancia a falhas. Cada transacao e irrevogavel.',
+        id: 'npc_jpmorgan', name: 'JAMIE DIMON', role: 'CEO - JP Morgan', region: 'JP Morgan', stage: 'Senior', worldX: 11600,
+        dialog: 'Jamie Dimon, CEO do JP Morgan Chase -- o maior banco dos Estados Unidos, com mais de 200 anos de historia. Wall Street exige zero tolerancia a falhas. Cada transacao financeira e irrevogavel, cada microsegundo conta. Aqui voce enfrentara desafios de sistemas criticos, concorrencia e seguranca de nivel bancario.',
         look: { hair: '#888', hairStyle: 'parted', beard: null, glasses: false, shirt: '#fff', pants: '#111', skinTone: '#F5D0A9', suit: '#0a3d62', tie: '#c9a800' }
     },
-    // ── STAFF ───────────────────────────────────────────
+    // -- STAFF --
     {
-        id: 'npc_tesla', name: 'ELON MUSK', role: 'CEO - Tesla / SpaceX', region: 'Tesla / SpaceX', stage: 'Staff', worldX: 13100, dialog: 'Engenharia extrema sob restricoes extremas. Redesenhe o sistema.',
+        id: 'npc_tesla', name: 'ELON MUSK', role: 'CEO - Tesla / SpaceX', region: 'Tesla / SpaceX', stage: 'Staff', worldX: 13100,
+        dialog: 'Elon Musk. Tesla revolucionou os carros eletricos, SpaceX esta tornando a humanidade multiplanetaria, e a Neuralink conecta cerebros a computadores. Engenharia extrema sob restricoes extremas -- esse e o padrao aqui. Como Staff Engineer, voce vai redesenhar sistemas complexos, otimizar para o impossivel e liderar decisoes tecnicas criticas.',
         look: { hair: '#555', hairStyle: 'short', beard: null, glasses: false, shirt: '#111', pants: '#222', skinTone: '#F5D0A9', jacket: '#1a1a1a' }
     },
     {
-        id: 'npc_itau', name: 'ROBERTO SETUBAL', role: 'Ex-CEO - Itau Unibanco', region: 'Itau', stage: 'Staff', worldX: 14600, dialog: 'O maior banco da America Latina. Sistemas legados que processam trilhoes por ano precisam evoluir sem parar.',
+        id: 'npc_itau', name: 'ROBERTO SETUBAL', role: 'Ex-CEO - Itau Unibanco', region: 'Itau', stage: 'Staff', worldX: 14600,
+        dialog: 'Roberto Setubal, ex-CEO do Itau Unibanco -- o maior banco privado do Brasil e da America Latina. Processamos trilhoes de reais por ano com sistemas que nao podem parar. A transformacao digital de um banco centenario exige migrar legados para arquiteturas modernas sem interromper operacoes. Desafios de Staff Engineer estao a sua espera.',
         look: { hair: '#aaa', hairStyle: 'parted', beard: null, glasses: true, glassesStyle: 'square', shirt: '#fff', pants: '#111', skinTone: '#F5D0A9', suit: '#003399', tie: '#ff6600' }
     },
     {
-        id: 'npc_uber', name: 'TRAVIS KALANICK', role: 'Cofundador - Uber', region: 'Uber', stage: 'Staff', worldX: 16000, dialog: 'Milhoes de corridas por minuto. Geolocation, matching, pricing -- tudo em tempo real.',
+        id: 'npc_uber', name: 'TRAVIS KALANICK', role: 'Cofundador - Uber', region: 'Uber', stage: 'Staff', worldX: 16000,
+        dialog: 'Travis Kalanick aqui. Cofundei a Uber em 2009 e transformamos o transporte global. Milhoes de corridas por minuto em centenas de cidades. Geolocalizacao em tempo real, matching de motoristas, precificacao dinamica, pagamentos -- tudo processado em milissegundos. Seus desafios envolvem sistemas real-time de altissima performance.',
         look: { hair: '#333', hairStyle: 'short', beard: null, glasses: false, shirt: '#111', pants: '#222', skinTone: '#F5D0A9', casual: true }
     },
-    // ── PRINCIPAL ───────────────────────────────────────
+    // -- PRINCIPAL --
     {
-        id: 'npc_santander', name: 'ANA BOTIN', role: 'CEO - Santander', region: 'Santander', stage: 'Principal', worldX: 17400, dialog: 'Banking global exige compliance em dezenas de regulacoes simultaneas. Zero margem de erro.',
+        id: 'npc_santander', name: 'ANA BOTIN', role: 'CEO - Santander', region: 'Santander', stage: 'Principal', worldX: 17400,
+        dialog: 'Ana Botin, CEO do Grupo Santander -- um dos maiores bancos do mundo, presente em dezenas de paises. Banking global exige compliance com regulacoes como PCI DSS, PSD2, LGPD e Basel III simultaneamente. Zero margem de erro, auditoria total. Como Principal Engineer, seus desafios sao de governanca, seguranca e arquitetura regulatoria.',
         look: { hair: '#8B4513', hairStyle: 'parted', beard: null, glasses: false, shirt: '#fff', pants: '#111', skinTone: '#F5D0A9', suit: '#ec0000' }
     },
     {
-        id: 'npc_bradesco', name: 'MARCELO NORONHA', role: 'CEO - Bradesco', region: 'Bradesco', stage: 'Principal', worldX: 18900, dialog: 'Transformacao digital em escala nacional. De agencias fisicas a APIs. A engenharia define o futuro.',
+        id: 'npc_bradesco', name: 'MARCELO NORONHA', role: 'CEO - Bradesco', region: 'Bradesco', stage: 'Principal', worldX: 18900,
+        dialog: 'Marcelo Noronha, CEO do Bradesco. Somos um dos maiores bancos do Brasil, com mais de 70 milhoes de clientes. A transformacao digital de um banco dessa escala -- de agencias fisicas a APIs abertas, Open Banking e Pix -- exige visao arquitetural profunda. Seus desafios de Principal Engineer envolvem design de sistemas que definem o futuro financeiro.',
         look: { hair: '#555', hairStyle: 'parted', beard: null, glasses: true, glassesStyle: 'square', shirt: '#fff', pants: '#111', skinTone: '#F5D0A9', suit: '#cc092f', tie: '#cc092f' }
     },
     {
-        id: 'npc_cloud', name: 'LINUS TORVALDS', role: 'Criador - Linux / Git', region: 'Cloud Valley', stage: 'Principal', worldX: 20400, dialog: 'Voce chegou ao topo. Aqui criamos contratos para o futuro.',
+        id: 'npc_cloud', name: 'LINUS TORVALDS', role: 'Criador - Linux / Git', region: 'Cloud Valley', stage: 'Principal', worldX: 20400,
+        dialog: 'Linus Torvalds. Criei o Linux em 1991, o sistema operacional que roda em servidores, smartphones e supercomputadores. Depois criei o Git, que revolucionou o controle de versao. Voce chegou ao topo da jornada. Aqui criamos contratos para o futuro -- open source, infraestrutura global e os alicerces da computacao moderna.',
         look: { hair: '#c4a35a', hairStyle: 'short', beard: '#b8963e', glasses: true, glassesStyle: 'square', shirt: '#2d5016', pants: '#3b3b3b', skinTone: '#F5D0A9' }
     },
 ];
@@ -2270,11 +2285,46 @@ const World = {
             ctx.textAlign = 'center';
             ctx.fillText(npc.name, sx, ny - 12);
 
-            // Exclamation mark if interactable
+            // Speech bubble if interactable
             if (State.interactionTarget && State.interactionTarget.id === npc.id) {
-                ctx.fillStyle = '#fbbf24';
-                ctx.font = 'bold 24px Arial';
-                ctx.fillText('!', sx, ny - 38);
+                const pulse = Math.sin(Date.now() * 0.005) * 2;
+                const bx = sx;
+                const by = ny - 46 + pulse;
+
+                // Bubble background
+                ctx.fillStyle = '#fff';
+                this.roundRect(ctx, bx - 18, by - 10, 36, 20, 6);
+                ctx.fill();
+                ctx.strokeStyle = '#374151';
+                ctx.lineWidth = 1.5;
+                this.roundRect(ctx, bx - 18, by - 10, 36, 20, 6);
+                ctx.stroke();
+
+                // Bubble tail (triangle pointing down)
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.moveTo(bx - 4, by + 10);
+                ctx.lineTo(bx + 4, by + 10);
+                ctx.lineTo(bx, by + 16);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#374151';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(bx - 4, by + 10);
+                ctx.lineTo(bx, by + 16);
+                ctx.lineTo(bx + 4, by + 10);
+                ctx.stroke();
+
+                // Three dots animation (typing indicator)
+                const dotBase = Date.now() * 0.004;
+                for (let i = 0; i < 3; i++) {
+                    const dotY = by + Math.sin(dotBase + i * 1.2) * 2;
+                    ctx.fillStyle = '#374151';
+                    ctx.beginPath();
+                    ctx.arc(bx - 6 + i * 6, dotY, 2.2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
 
             ctx.textAlign = 'left';
@@ -4000,5 +4050,118 @@ const IDE = {
     },
 };
 
+// ---- auth module ----
+const Auth = {
+    _user: null,
+
+    init() {
+        const stored = sessionStorage.getItem('garage_user');
+        if (stored) {
+            try { this._user = JSON.parse(stored); } catch (e) { this._user = null; }
+        }
+        this._bindForms();
+        this._bindNavigation();
+    },
+
+    isLoggedIn() {
+        return this._user !== null;
+    },
+
+    getUser() {
+        return this._user;
+    },
+
+    _setUser(user) {
+        this._user = user;
+        sessionStorage.setItem('garage_user', JSON.stringify(user));
+    },
+
+    logout() {
+        this._user = null;
+        sessionStorage.removeItem('garage_user');
+        UI.showScreen('screen-login');
+    },
+
+    _bindNavigation() {
+        const goReg = document.getElementById('goToRegister');
+        const goLog = document.getElementById('goToLogin');
+        if (goReg) goReg.addEventListener('click', (e) => { e.preventDefault(); UI.showScreen('screen-register'); });
+        if (goLog) goLog.addEventListener('click', (e) => { e.preventDefault(); UI.showScreen('screen-login'); });
+    },
+
+    _bindForms() {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+
+        if (loginForm) loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errEl = document.getElementById('loginError');
+            errEl.hidden = true;
+            const btn = loginForm.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'ENTRANDO...';
+
+            try {
+                const res = await API.post('/api/auth/login', {
+                    username: document.getElementById('loginUsername').value.trim(),
+                    password: document.getElementById('loginPassword').value,
+                });
+                this._setUser(res.user);
+                UI.showScreen('screen-title');
+            } catch (err) {
+                errEl.textContent = err.message || 'Erro ao fazer login.';
+                errEl.hidden = false;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'ENTRAR';
+            }
+        });
+
+        if (registerForm) registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errEl = document.getElementById('registerError');
+            const sucEl = document.getElementById('registerSuccess');
+            errEl.hidden = true;
+            sucEl.hidden = true;
+            const btn = registerForm.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'CADASTRANDO...';
+
+            try {
+                const pwd = document.getElementById('regPassword').value;
+                const pwdConfirm = document.getElementById('regPasswordConfirm').value;
+                if (pwd !== pwdConfirm) {
+                    throw new Error('As senhas nao coincidem.');
+                }
+                const res = await API.post('/api/auth/register', {
+                    full_name: document.getElementById('regFullName').value.trim(),
+                    username: document.getElementById('regUsername').value.trim(),
+                    email: document.getElementById('regEmail').value.trim(),
+                    whatsapp: document.getElementById('regWhatsapp').value.trim(),
+                    profession: document.getElementById('regProfession').value,
+                    password: pwd,
+                });
+                this._setUser(res.user);
+                sucEl.textContent = 'Cadastro realizado! Entrando...';
+                sucEl.hidden = false;
+                setTimeout(() => UI.showScreen('screen-title'), 1200);
+            } catch (err) {
+                errEl.textContent = err.message || 'Erro ao cadastrar.';
+                errEl.hidden = false;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'CADASTRAR';
+            }
+        });
+    },
+};
+
 // ---- boot ----
-document.addEventListener('DOMContentLoaded', () => UI.showScreen('screen-title'));
+document.addEventListener('DOMContentLoaded', () => {
+    Auth.init();
+    if (Auth.isLoggedIn()) {
+        UI.showScreen('screen-title');
+    } else {
+        UI.showScreen('screen-login');
+    }
+});

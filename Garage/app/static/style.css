@@ -60,6 +60,264 @@ body {
     display: flex;
 }
 
+/* --- AUTH SCREENS (LOGIN / REGISTER) --- */
+.auth-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.auth-bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 30%;
+    filter: brightness(0.35) blur(2px);
+}
+
+.auth-bg-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg,
+            rgba(10, 10, 15, 0.7) 0%,
+            rgba(10, 10, 15, 0.85) 60%,
+            rgba(10, 10, 15, 0.95) 100%);
+}
+
+.auth-container {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.auth-card {
+    background: rgba(17, 24, 39, 0.92);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 16px;
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 420px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5),
+        0 0 60px rgba(59, 130, 246, 0.08);
+}
+
+.auth-logo {
+    font-family: var(--font);
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--green);
+    text-align: center;
+    letter-spacing: 4px;
+    margin-bottom: 4px;
+}
+
+.auth-logo span {
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+}
+
+.auth-subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+    margin-bottom: 28px;
+    letter-spacing: 1px;
+}
+
+.auth-field {
+    margin-bottom: 16px;
+}
+
+.auth-field label {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+}
+
+.auth-field input,
+.auth-field select {
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid #374151;
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.85rem;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+}
+
+.auth-field input:focus,
+.auth-field select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.auth-field input::placeholder {
+    color: #4b5563;
+}
+
+.auth-field select {
+    cursor: pointer;
+}
+
+.auth-field select option {
+    background: #111827;
+    color: var(--text);
+}
+
+.auth-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: var(--red);
+    font-size: 0.75rem;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.auth-success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: var(--green);
+    font-size: 0.75rem;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--font);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    touch-action: manipulation;
+    min-height: 48px;
+}
+
+.auth-btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.auth-btn-primary:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+}
+
+.auth-btn-primary:active {
+    transform: translateY(0);
+}
+
+.auth-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: none;
+    transform: none;
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.7rem;
+    color: var(--muted);
+}
+
+.auth-switch a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+/* Auth responsive -- phones */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 28px 20px;
+        border-radius: 12px;
+    }
+
+    .auth-logo {
+        font-size: 1.5rem;
+        letter-spacing: 2px;
+    }
+
+    .auth-subtitle {
+        font-size: 0.65rem;
+        margin-bottom: 20px;
+    }
+
+    .auth-field input,
+    .auth-field select {
+        font-size: 16px;
+        padding: 12px 12px;
+        min-height: 48px;
+    }
+
+    .auth-field label {
+        font-size: 0.6rem;
+    }
+
+    .auth-btn {
+        font-size: 0.8rem;
+        min-height: 50px;
+    }
+}
+
+/* Auth responsive -- landscape phone */
+@media (max-height: 500px) and (orientation: landscape) {
+    .auth-container {
+        align-items: flex-start;
+        padding-top: 8px;
+    }
+
+    .auth-card {
+        padding: 16px 20px;
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+
+    .auth-field {
+        margin-bottom: 8px;
+    }
+
+    .auth-logo {
+        font-size: 1.2rem;
+        margin-bottom: 2px;
+    }
+
+    .auth-subtitle {
+        margin-bottom: 10px;
+    }
+}
+
 /* --- TITLE SCREEN (ARCADE RETRO 80s/90s) --- */
 #screen-title {
     background: #000;
@@ -279,6 +537,23 @@ body {
 .arcade-btn-icon {
     margin-right: 8px;
     font-size: 0.7rem;
+}
+
+.arcade-btn-logout {
+    border-color: var(--red);
+    color: var(--red);
+    font-size: 0.6rem;
+    padding: 8px 24px;
+    margin-top: 4px;
+    letter-spacing: 3px;
+    min-height: auto;
+}
+
+.arcade-btn-logout:hover {
+    border-color: #f87171;
+    color: #fca5a5;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+    background: rgba(239, 68, 68, 0.08);
 }
 
 .arcade-credits {
@@ -649,6 +924,9 @@ body {
     line-height: 1.6;
     color: #d1d5db;
     margin-bottom: 12px;
+    white-space: pre-line;
+    max-height: 40vh;
+    overflow-y: auto;
 }
 
 .dialog-close-hint {
@@ -1860,6 +2138,7 @@ body {
     .dialog-content {
         font-size: 0.72rem;
         line-height: 1.5;
+        max-height: 30vh;
     }
 
     .btn-dialog {

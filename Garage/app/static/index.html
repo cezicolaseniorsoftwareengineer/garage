@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GARAGE | Aventura Side-Scroller</title>
+    <title>Garage - Aventura no Vale do Silicio</title>
     <link
         href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap"
         rel="stylesheet">
@@ -14,8 +14,99 @@
 
 <body>
 
+    <!-- ========== SCREEN: LOGIN ========== -->
+    <div id="screen-login" class="screen active">
+        <div class="auth-bg">
+            <img src="/static/login_bg.png" alt="Garage Characters" class="auth-bg-img">
+            <div class="auth-bg-overlay"></div>
+        </div>
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-logo">[<span>GARAGE</span>]</div>
+                <p class="auth-subtitle">Faca login para iniciar sua jornada</p>
+                <form id="loginForm" autocomplete="off">
+                    <div class="auth-field">
+                        <label for="loginUsername">Usuario</label>
+                        <input type="text" id="loginUsername" placeholder="Seu nome de usuario" required
+                            autocomplete="username">
+                    </div>
+                    <div class="auth-field">
+                        <label for="loginPassword">Senha</label>
+                        <input type="password" id="loginPassword" placeholder="Sua senha" required
+                            autocomplete="current-password">
+                    </div>
+                    <div id="loginError" class="auth-error" hidden></div>
+                    <button type="submit" class="auth-btn auth-btn-primary">ENTRAR</button>
+                </form>
+                <div class="auth-switch">
+                    Nao tem conta? <a href="#" id="goToRegister">Cadastre-se</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== SCREEN: REGISTER ========== -->
+    <div id="screen-register" class="screen">
+        <div class="auth-bg">
+            <img src="/static/login_bg.png" alt="Garage Characters" class="auth-bg-img">
+            <div class="auth-bg-overlay"></div>
+        </div>
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-logo">[<span>GARAGE</span>]</div>
+                <p class="auth-subtitle">Crie sua conta e entre no Vale do Silicio</p>
+                <form id="registerForm" autocomplete="off">
+                    <div class="auth-field">
+                        <label for="regFullName">Nome Completo</label>
+                        <input type="text" id="regFullName" placeholder="Ex: Ada Lovelace" required minlength="3"
+                            maxlength="100">
+                    </div>
+                    <div class="auth-field">
+                        <label for="regUsername">Nome de Usuario</label>
+                        <input type="text" id="regUsername" placeholder="Ex: ada_dev" required minlength="3"
+                            maxlength="30" autocomplete="username">
+                    </div>
+                    <div class="auth-field">
+                        <label for="regEmail">Email</label>
+                        <input type="email" id="regEmail" placeholder="seu@email.com" required>
+                    </div>
+                    <div class="auth-field">
+                        <label for="regWhatsapp">WhatsApp</label>
+                        <input type="tel" id="regWhatsapp" placeholder="(11) 99999-9999" required minlength="10"
+                            maxlength="20">
+                    </div>
+                    <div class="auth-field">
+                        <label for="regProfession">Profissao</label>
+                        <select id="regProfession" required>
+                            <option value="" disabled selected>Selecione</option>
+                            <option value="autonomo">Autonomo</option>
+                            <option value="estudante">Estudante</option>
+                            <option value="empresario">Empresario</option>
+                        </select>
+                    </div>
+                    <div class="auth-field">
+                        <label for="regPassword">Senha</label>
+                        <input type="password" id="regPassword" placeholder="Minimo 6 caracteres" required minlength="6"
+                            maxlength="128" autocomplete="new-password">
+                    </div>
+                    <div class="auth-field">
+                        <label for="regPasswordConfirm">Confirmar Senha</label>
+                        <input type="password" id="regPasswordConfirm" placeholder="Repita a senha" required
+                            minlength="6" maxlength="128" autocomplete="new-password">
+                    </div>
+                    <div id="registerError" class="auth-error" hidden></div>
+                    <div id="registerSuccess" class="auth-success" hidden></div>
+                    <button type="submit" class="auth-btn auth-btn-primary">CADASTRAR</button>
+                </form>
+                <div class="auth-switch">
+                    Ja tem conta? <a href="#" id="goToLogin">Fazer login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ========== SCREEN: TITLE (ARCADE RETRO) ========== -->
-    <div id="screen-title" class="screen active">
+    <div id="screen-title" class="screen">
         <div class="arcade-scanlines"></div>
         <div class="arcade-container">
             <div class="arcade-content">
@@ -31,6 +122,9 @@
                 <div class="arcade-insert blink">&gt;&gt;&gt; PRESSIONE START &lt;&lt;&lt;</div>
                 <button class="arcade-btn" onclick="SFX.menuConfirm(); UI.showScreen('screen-onboarding')">
                     <span class="arcade-btn-icon">&#9654;</span> 1 JOGADOR INICIAR
+                </button>
+                <button class="arcade-btn arcade-btn-logout" onclick="Auth.logout()">
+                    SAIR
                 </button>
                 <div class="arcade-credits">
                     <div>RECORDE ............. 999999</div>
