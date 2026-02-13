@@ -61,6 +61,7 @@ class Player:
         character: Character,
         language: BackendLanguage,
         player_id: UUID | None = None,
+        user_id: str | None = None,
         stage: CareerStage = CareerStage.INTERN,
         score: int = 0,
         current_errors: int = 0,
@@ -74,6 +75,7 @@ class Player:
             raise ValueError("Player name cannot be empty")
 
         self._id = player_id or uuid4()
+        self._user_id = user_id
         self._name = name.strip()
         self._character = character
         self._language = language
@@ -91,6 +93,10 @@ class Player:
     @property
     def id(self) -> UUID:
         return self._id
+
+    @property
+    def user_id(self) -> str | None:
+        return self._user_id
 
     @property
     def name(self) -> str:
@@ -252,6 +258,7 @@ class Player:
     def to_dict(self) -> dict:
         return {
             "id": str(self._id),
+            "user_id": self._user_id,
             "name": self._name,
             "character": self._character.to_dict(),
             "language": self._language.value,

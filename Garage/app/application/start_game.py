@@ -12,6 +12,7 @@ def start_game(
     ethnicity: str,
     avatar_index: int,
     language: str,
+    user_id: str | None = None,
 ) -> Player:
     """
     Creates a new game session with validated inputs.
@@ -27,6 +28,7 @@ def start_game(
         name=player_name,
         character=character,
         language=BackendLanguage(language),
+        user_id=user_id,
     )
 
     return player
