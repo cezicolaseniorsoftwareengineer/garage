@@ -1267,13 +1267,13 @@ const World = {
             hint.classList.add('visible');
             if (State.lockedRegion && closest.region !== State.lockedRegion) {
                 document.getElementById('interactText').textContent = 'BLOQUEADO - Complete ' + State.lockedRegion;
-                if (actionBtn) actionBtn.textContent = 'FALAR';
+                if (actionBtn) actionBtn.textContent = 'APRENDER';
             } else if (State.lockedRegion && closest.region === State.lockedRegion) {
                 document.getElementById('interactText').textContent = 'CONTINUAR DESAFIOS COM ' + closest.name;
-                if (actionBtn) actionBtn.textContent = 'FALAR';
+                if (actionBtn) actionBtn.textContent = 'APRENDER';
             } else {
-                document.getElementById('interactText').textContent = 'FALAR COM ' + closest.name;
-                if (actionBtn) actionBtn.textContent = 'FALAR';
+                document.getElementById('interactText').textContent = 'APRENDER COM ' + closest.name;
+                if (actionBtn) actionBtn.textContent = 'APRENDER';
             }
             // Update keycap label
             const keyCapEl = hint.querySelector('.key-cap');
@@ -1281,7 +1281,7 @@ const World = {
         } else {
             State.interactionTarget = null;
             hint.classList.remove('visible');
-            if (actionBtn) actionBtn.textContent = 'FALAR';
+            if (actionBtn) actionBtn.textContent = 'APRENDER';
         }
     },
 
@@ -1945,6 +1945,13 @@ const World = {
         ctx.arc(p.w / 2, torsoY + 2, 8, 0, Math.PI);
         ctx.fill();
 
+        // Shirt text 'Garage'
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = 'bold 6px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Garage', p.w / 2, torsoY + torsoH * 0.45);
+
         // Arms -- swing opposite to legs for natural motion
         let armLAngle = 0, armRAngle = 0;
         if (p.state === 'walk') {
@@ -2491,17 +2498,94 @@ const UI = {
         if (el) el.classList.add('active');
         if (id === 'screen-world') { World.start(); SFX.playMusic('explore'); }
         else { World.stop(); if (id === 'screen-title' || id === 'screen-onboarding') SFX.playMusic('title'); }
+        if (id === 'screen-onboarding') this._drawOnboardingChar();
+    },
+
+    _drawOnboardingChar() {
+        const canvas = document.getElementById('onboardingCharCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const skinColor = '#F5D0A9';
+        const cx = w / 2;
+        const scale = 1.2;
+        const offsetY = 10;
+
+        ctx.save();
+        ctx.translate(cx, offsetY);
+        ctx.scale(scale, scale);
+        const lx = 0;
+
+        // Head
+        ctx.fillStyle = skinColor;
+        ctx.beginPath();
+        ctx.arc(lx, 20, 16, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Hair (dark, bowl cut)
+        ctx.fillStyle = '#1a1a2e';
+        ctx.beginPath();
+        ctx.arc(lx, 16, 17, Math.PI, Math.PI * 2);
+        ctx.fill();
+        ctx.fillRect(lx - 17, 16, 4, 6);
+        ctx.fillRect(lx + 13, 16, 4, 6);
+
+        // Eyes (large, expressive)
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(lx - 6, 20, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(lx + 6, 20, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#111';
+        ctx.beginPath(); ctx.arc(lx - 5, 21, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(lx + 7, 21, 2.5, 0, Math.PI * 2); ctx.fill();
+
+        // Mouth (smile)
+        ctx.strokeStyle = '#555';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(lx, 28, 5, 0.15 * Math.PI, 0.85 * Math.PI);
+        ctx.stroke();
+
+        // Body (black tee)
+        const bodyTop = 36;
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(lx - 14, bodyTop, 28, 30);
+
+        // Shirt text 'Garage'
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = 'bold 7px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Garage', lx, bodyTop + 15);
+
+        // Arms
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(lx - 20, bodyTop + 2, 7, 18);
+        ctx.fillRect(lx + 13, bodyTop + 2, 7, 18);
+        ctx.fillStyle = skinColor;
+        ctx.fillRect(lx - 20, bodyTop + 20, 7, 10);
+        ctx.fillRect(lx + 13, bodyTop + 20, 7, 10);
+
+        // Legs (blue jeans)
+        ctx.fillStyle = '#4472C4';
+        ctx.fillRect(lx - 11, bodyTop + 30, 10, 26);
+        ctx.fillRect(lx + 1, bodyTop + 30, 10, 26);
+
+        // Shoes (white sneakers)
+        ctx.fillStyle = '#e5e7eb';
+        ctx.fillRect(lx - 13, bodyTop + 55, 12, 6);
+        ctx.fillRect(lx + 1, bodyTop + 55, 12, 6);
+
+        ctx.restore();
     },
 
     selectAvatar(el) {
-        document.querySelectorAll('.avatar-card').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-        SFX.menuSelect();
+        // Single character -- no selection needed
     },
 
     getSelectedAvatar() {
-        const s = document.querySelector('.avatar-card.selected');
-        return { index: parseInt(s.dataset.index) || 0, gender: s.dataset.gender, ethnicity: s.dataset.ethnicity };
+        return { index: 0, gender: 'male', ethnicity: 'white' };
     },
 
     updateHUD(player) {
@@ -3765,6 +3849,13 @@ const IDE = {
         // Body
         ctx.fillStyle = '#1a1a1a';
         ctx.fillRect(cx - 10, bodyTop, 20, 24);
+
+        // Shirt text 'Garage'
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = 'bold 5px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Garage', cx, bodyTop + 12);
 
         // Arms
         ctx.fillStyle = '#1a1a1a';

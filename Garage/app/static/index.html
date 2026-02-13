@@ -20,11 +20,8 @@
         <div class="arcade-container">
             <div class="arcade-content">
                 <div class="arcade-top-text">- AVENTURA NO VALE DO SILICIO -</div>
-                <div class="arcade-logo">
-                    <span class="arcade-logo-bracket">[</span>
-                    GARAGE
-                    <span class="arcade-logo-bracket">]</span>
-                </div>
+                <div class="arcade-logo"><span class="arcade-logo-bracket">[</span>GARAGE<span
+                        class="arcade-logo-bracket">]</span></div>
                 <div class="arcade-tagline">&lt;/&gt; TODA BIG TECH TEM UM INICIO &lt;/&gt;</div>
                 <div class="arcade-divider">════════════════════════</div>
                 <div class="arcade-description">
@@ -54,28 +51,10 @@
             <h2>CRIAR PERSONAGEM</h2>
             <p class="subtitle">Defina sua identidade para entrar no Vale do Silicio.</p>
 
-            <label>1. AVATAR</label>
-            <div class="avatar-grid" id="avatarGrid">
-                <div class="avatar-card selected" data-index="0" data-gender="male" data-ethnicity="white"
-                    onclick="UI.selectAvatar(this)">
-                    <div class="char-sprite-preview s0"></div>
-                    <span>Dev Boy 1</span>
-                </div>
-                <div class="avatar-card" data-index="2" data-gender="male" data-ethnicity="white"
-                    onclick="UI.selectAvatar(this)">
-                    <div class="char-sprite-preview s2"></div>
-                    <span>Dev Boy 2</span>
-                </div>
-                <div class="avatar-card" data-index="1" data-gender="female" data-ethnicity="black"
-                    onclick="UI.selectAvatar(this)">
-                    <div class="char-sprite-preview s1"></div>
-                    <span>Dev Girl 1</span>
-                </div>
-                <div class="avatar-card" data-index="3" data-gender="female" data-ethnicity="black"
-                    onclick="UI.selectAvatar(this)">
-                    <div class="char-sprite-preview s3"></div>
-                    <span>Dev Girl 2</span>
-                </div>
+            <label>1. SEU PERSONAGEM</label>
+            <div class="avatar-single" id="avatarSingle">
+                <canvas id="onboardingCharCanvas" width="96" height="160"></canvas>
+                <span class="avatar-single-name">Dev Boy</span>
             </div>
 
             <label>2. SEU NOME</label>
@@ -149,7 +128,7 @@
 
         <!-- Interaction Hint -->
         <div id="interactHint" class="interact-hint">
-            <span class="key-cap">ENTER</span> <span id="interactText">FALAR</span>
+            <span class="key-cap">ENTER</span> <span id="interactText">APRENDER</span>
         </div>
 
         <!-- Mobile Controls (D-Pad left, Actions right) -->
@@ -160,7 +139,7 @@
             </div>
             <div class="mobile-right">
                 <button class="ctrl-btn ctrl-jump" id="btnJump" aria-label="Pular">PULAR</button>
-                <button class="ctrl-btn ctrl-action action" id="btnAction" aria-label="Acao">FALAR</button>
+                <button class="ctrl-btn ctrl-action action" id="btnAction" aria-label="Acao">APRENDER</button>
             </div>
         </div>
     </div>
