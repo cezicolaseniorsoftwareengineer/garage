@@ -2895,9 +2895,9 @@ const Game = {
         } catch (e) { alert('Erro: ' + e.message); }
     },
 
-    async loadSession() {
+    async loadSession(silent = false) {
         const id = localStorage.getItem('garage_session_id');
-        if (!id) { alert('Nenhuma sessao salva.'); return; }
+        if (!id) { if (!silent) alert('Nenhuma sessao salva.'); return false; }
         try {
             State.player = await API.get('/api/session/' + id);
             State.sessionId = id;
@@ -2905,15 +2905,17 @@ const Game = {
             World.init(State.player.character ? State.player.character.avatar_index : 0);
             UI.updateHUD(State.player);
             UI.showScreen('screen-world');
+            return true;
         } catch (e) {
             // Session no longer exists on server -- clean up and let user start fresh
             if (e.message && (e.message.includes('not found') || e.message.includes('404'))) {
                 localStorage.removeItem('garage_session_id');
                 UI.updateTitleButtons();
-                alert('Sessao anterior nao encontrada. Inicie um novo jogo.');
+                if (!silent) alert('Sessao anterior nao encontrada. Inicie um novo jogo.');
             } else {
-                alert('Erro ao carregar sessao: ' + e.message);
+                if (!silent) alert('Erro ao carregar sessao: ' + e.message);
             }
+            return false;
         }
     },
 
@@ -4396,11 +4398,20 @@ const Auth = {
 };
 
 // ---- boot ----
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     Auth.init();
     if (Auth.isLoggedIn()) {
-        UI.showScreen('screen-title');
-        UI.updateTitleButtons();
+        if (Auth.hasSession()) {
+            // Auto-resume: refresh must return to where the player was
+            const resumed = await Game.loadSession(true);
+            if (!resumed) {
+                UI.showScreen('screen-title');
+                UI.updateTitleButtons();
+            }
+        } else {
+            UI.showScreen('screen-title');
+            UI.updateTitleButtons();
+        }
     } else {
         UI.showScreen('screen-login');
     }
