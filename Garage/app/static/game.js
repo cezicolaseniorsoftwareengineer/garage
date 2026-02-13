@@ -3149,8 +3149,8 @@ const JavaAnalyzer = {
                 const name = forMatch[2];
                 if (!decls.has(name)) decls.set(name, { type: forMatch[1], line: i + 1 });
             }
-            // For-each: for (int n : arr)
-            const forEachMatch = line.match(/for\s*\(\s*(int|long|double|float|String|char)\s+(\w+)\s*:\s*(\w+)\s*\)/);
+            // For-each: for (int n : arr) or for (Type<Gen> n : collection.method())
+            const forEachMatch = line.match(/for\s*\(\s*([\w.]+(?:<[^>]*>)?(?:\[\s*\])?)\s+(\w+)\s*:\s*[^)]+\)/);
             if (forEachMatch) {
                 if (!decls.has(forEachMatch[2])) decls.set(forEachMatch[2], { type: forEachMatch[1], line: i + 1 });
             }
