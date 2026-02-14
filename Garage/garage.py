@@ -7,6 +7,6 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8000,
         reload=True,
-        reload_includes=["*.py", "*.html", "*.css", "*.js"],
-        reload_excludes=["*.json", "__pycache__/*", "data/*"],
+        reload_includes=["*.py"],
+        reload_excludes=["__pycache__/*"],
     )
