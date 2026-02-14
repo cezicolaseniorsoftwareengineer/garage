@@ -12,3 +12,5 @@ services:
         value: "3.12.0"
       - key: JWT_SECRET_KEY
         generateValue: true
+      - key: DATABASE_URL
+        sync: false
