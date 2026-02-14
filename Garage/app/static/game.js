@@ -2577,190 +2577,211 @@ const UI = {
     },
 
     _drawOnboardingChar() {
-        this._drawOnboardingBoy();
-        this._drawOnboardingGirl();
+        // Start animation loop for avatar preview (stops when screen changes)
+        if (this._onboardingAnimId) cancelAnimationFrame(this._onboardingAnimId);
+        const self = this;
+        (function loop() {
+            const screen = document.getElementById('screen-onboarding');
+            if (!screen || !screen.classList.contains('active')) {
+                self._onboardingAnimId = null;
+                return;
+            }
+            self._drawAnimatedAvatar('onboardingCharBoy', 'male');
+            self._drawAnimatedAvatar('onboardingCharGirl', 'female');
+            self._onboardingAnimId = requestAnimationFrame(loop);
+        })();
     },
 
-    _drawOnboardingBoy() {
-        const canvas = document.getElementById('onboardingCharBoy');
+    /**
+     * Draw an animated character preview on a small canvas.
+     * Reuses the same visual style as World.drawPlayer (walk cycle).
+     * @param {string} canvasId  - DOM id of the target canvas
+     * @param {'male'|'female'} gender - controls hair style and accessories
+     */
+    _drawAnimatedAvatar(canvasId, gender) {
+        const canvas = document.getElementById(canvasId);
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
-        const w = canvas.width, h = canvas.height;
-        ctx.clearRect(0, 0, w, h);
+        const W = canvas.width, H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
 
+        const t = performance.now();
         const skinColor = '#F5D0A9';
-        const cx = w / 2;
-        const scale = 1.2;
-        const offsetY = 10;
+        const bodyColor = '#1a1a1a';
+        const isFemale = gender === 'female';
+
+        // Character dimensions (proportional to the in-game player)
+        const pw = 48;   // player width reference
+        const ph = 90;   // player height reference
+        const ox = W / 2 - pw / 2;  // center horizontally
+        const oy = H - ph - 18;     // stand near bottom
 
         ctx.save();
-        ctx.translate(cx, offsetY);
-        ctx.scale(scale, scale);
-        const lx = 0;
+        ctx.translate(ox, oy);
 
-        // Head
-        ctx.fillStyle = skinColor;
+        // ------ Shadow ------
+        ctx.fillStyle = 'rgba(0,0,0,0.13)';
         ctx.beginPath();
-        ctx.arc(lx, 20, 16, 0, Math.PI * 2);
+        ctx.ellipse(pw / 2, ph + 2, 22, 6, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Hair (dark, bowl cut)
-        ctx.fillStyle = '#1a1a2e';
-        ctx.beginPath();
-        ctx.arc(lx, 16, 17, Math.PI, Math.PI * 2);
-        ctx.fill();
-        ctx.fillRect(lx - 17, 16, 4, 6);
-        ctx.fillRect(lx + 13, 16, 4, 6);
+        // ------ Walk cycle (continuous) ------
+        const cycle = Math.sin(t * 0.005);
+        const legLAngle = cycle * 14;
+        const legRAngle = -cycle * 14;
+        const armLAngle = -cycle * 20;
+        const armRAngle = cycle * 20;
 
-        // Eyes (large, expressive)
-        ctx.fillStyle = '#fff';
-        ctx.beginPath(); ctx.arc(lx - 6, 20, 5, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(lx + 6, 20, 5, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#111';
-        ctx.beginPath(); ctx.arc(lx - 5, 21, 2.5, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(lx + 7, 21, 2.5, 0, Math.PI * 2); ctx.fill();
-
-        // Mouth (smile)
-        ctx.strokeStyle = '#555';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.arc(lx, 28, 5, 0.15 * Math.PI, 0.85 * Math.PI);
-        ctx.stroke();
-
-        // Body (black tee)
-        const bodyTop = 36;
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(lx - 14, bodyTop, 28, 30);
-
-        // Shirt text 'Garage'
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = 'bold 7px monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('Garage', lx, bodyTop + 15);
-
-        // Arms
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(lx - 20, bodyTop + 2, 7, 18);
-        ctx.fillRect(lx + 13, bodyTop + 2, 7, 18);
-        ctx.fillStyle = skinColor;
-        ctx.fillRect(lx - 20, bodyTop + 20, 7, 10);
-        ctx.fillRect(lx + 13, bodyTop + 20, 7, 10);
-
-        // Legs (blue jeans)
+        // ------ Legs (blue jeans) ------
         ctx.fillStyle = '#4472C4';
-        ctx.fillRect(lx - 11, bodyTop + 30, 10, 26);
-        ctx.fillRect(lx + 1, bodyTop + 30, 10, 26);
-
-        // Shoes (white sneakers)
+        // Left leg
+        ctx.save();
+        ctx.translate(pw * 0.30, ph * 0.65);
+        ctx.rotate(legLAngle * Math.PI / 180);
+        ctx.fillRect(-4, 0, 9, ph * 0.33);
+        // Shoe left
         ctx.fillStyle = '#e5e7eb';
-        ctx.fillRect(lx - 13, bodyTop + 55, 12, 6);
-        ctx.fillRect(lx + 1, bodyTop + 55, 12, 6);
-
+        World.roundRect(ctx, -5, ph * 0.33 - 2, 12, 8, 3);
+        ctx.fill();
+        ctx.fillStyle = '#555';
+        ctx.fillRect(-5, ph * 0.33 + 4, 12, 3);
         ctx.restore();
-    },
 
-    _drawOnboardingGirl() {
-        const canvas = document.getElementById('onboardingCharGirl');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        const w = canvas.width, h = canvas.height;
-        ctx.clearRect(0, 0, w, h);
-
-        const skinColor = '#F5D0A9';
-        const cx = w / 2;
-        const scale = 1.2;
-        const offsetY = 10;
-
+        // Right leg
+        ctx.fillStyle = '#4472C4';
         ctx.save();
-        ctx.translate(cx, offsetY);
-        ctx.scale(scale, scale);
-        const lx = 0;
+        ctx.translate(pw * 0.60, ph * 0.65);
+        ctx.rotate(legRAngle * Math.PI / 180);
+        ctx.fillRect(-4, 0, 9, ph * 0.33);
+        ctx.fillStyle = '#e5e7eb';
+        World.roundRect(ctx, -5, ph * 0.33 - 2, 12, 8, 3);
+        ctx.fill();
+        ctx.fillStyle = '#555';
+        ctx.fillRect(-5, ph * 0.33 + 4, 12, 3);
+        ctx.restore();
 
-        // Long hair (behind head -- drawn first)
-        ctx.fillStyle = '#1a1a2e';
-        ctx.fillRect(lx - 18, 10, 6, 38);
-        ctx.fillRect(lx + 12, 10, 6, 38);
-
-        // Head
-        ctx.fillStyle = skinColor;
-        ctx.beginPath();
-        ctx.arc(lx, 20, 16, 0, Math.PI * 2);
+        // ------ Torso (black tee) ------
+        const torsoY = ph * 0.2;
+        const torsoH = ph * 0.45;
+        ctx.fillStyle = bodyColor;
+        World.roundRect(ctx, pw * 0.15, torsoY, pw * 0.7, torsoH, 6);
         ctx.fill();
 
-        // Hair (top with side fringe)
-        ctx.fillStyle = '#1a1a2e';
+        // Collar
+        ctx.fillStyle = '#333';
         ctx.beginPath();
-        ctx.arc(lx, 16, 17, Math.PI, Math.PI * 2);
-        ctx.fill();
-        // Side hair strands
-        ctx.fillRect(lx - 17, 16, 5, 10);
-        ctx.fillRect(lx + 12, 16, 5, 10);
-        // Fringe detail
-        ctx.beginPath();
-        ctx.moveTo(lx - 10, 5);
-        ctx.quadraticCurveTo(lx - 2, 12, lx + 4, 5);
+        ctx.arc(pw / 2, torsoY + 2, 8, 0, Math.PI);
         ctx.fill();
 
-        // Hair accessory (small bow)
-        ctx.fillStyle = '#f472b6';
-        ctx.beginPath();
-        ctx.arc(lx + 12, 10, 4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#ec4899';
-        ctx.beginPath();
-        ctx.arc(lx + 12, 10, 2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Eyes (large, expressive -- slightly larger lashes)
-        ctx.fillStyle = '#fff';
-        ctx.beginPath(); ctx.arc(lx - 6, 20, 5, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(lx + 6, 20, 5, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#111';
-        ctx.beginPath(); ctx.arc(lx - 5, 21, 2.5, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(lx + 7, 21, 2.5, 0, Math.PI * 2); ctx.fill();
-        // Eyelashes
-        ctx.strokeStyle = '#1a1a2e';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.moveTo(lx - 11, 17); ctx.lineTo(lx - 9, 16); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(lx + 11, 17); ctx.lineTo(lx + 9, 16); ctx.stroke();
-
-        // Mouth (smile)
-        ctx.strokeStyle = '#555';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.arc(lx, 28, 5, 0.15 * Math.PI, 0.85 * Math.PI);
-        ctx.stroke();
-
-        // Body (black tee)
-        const bodyTop = 36;
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(lx - 14, bodyTop, 28, 30);
-
-        // Shirt text 'Garage'
+        // Shirt text
         ctx.fillStyle = '#fbbf24';
-        ctx.font = 'bold 7px monospace';
+        ctx.font = 'bold 6px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('Garage', lx, bodyTop + 15);
+        ctx.fillText('Garage', pw / 2, torsoY + torsoH * 0.45);
 
-        // Arms
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(lx - 20, bodyTop + 2, 7, 18);
-        ctx.fillRect(lx + 13, bodyTop + 2, 7, 18);
+        // ------ Arms ------
+        // Left arm
+        ctx.save();
+        ctx.translate(pw * 0.10, torsoY + 4);
+        ctx.rotate(armLAngle * Math.PI / 180);
+        ctx.fillStyle = bodyColor;
+        ctx.fillRect(-4, 0, 9, 14);
         ctx.fillStyle = skinColor;
-        ctx.fillRect(lx - 20, bodyTop + 20, 7, 10);
-        ctx.fillRect(lx + 13, bodyTop + 20, 7, 10);
+        ctx.fillRect(-3, 14, 7, torsoH * 0.4);
+        ctx.restore();
 
-        // Legs (blue jeans)
-        ctx.fillStyle = '#4472C4';
-        ctx.fillRect(lx - 11, bodyTop + 30, 10, 26);
-        ctx.fillRect(lx + 1, bodyTop + 30, 10, 26);
+        // Right arm
+        ctx.save();
+        ctx.translate(pw * 0.80, torsoY + 4);
+        ctx.rotate(armRAngle * Math.PI / 180);
+        ctx.fillStyle = bodyColor;
+        ctx.fillRect(-4, 0, 9, 14);
+        ctx.fillStyle = skinColor;
+        ctx.fillRect(-3, 14, 7, torsoH * 0.4);
+        ctx.restore();
 
-        // Shoes (white sneakers)
-        ctx.fillStyle = '#e5e7eb';
-        ctx.fillRect(lx - 13, bodyTop + 55, 12, 6);
-        ctx.fillRect(lx + 1, bodyTop + 55, 12, 6);
+        // ------ Head ------
+        const headSize = pw * 0.55;
+        const headX = pw / 2;
+        const headY = headSize * 0.5 + 2;
+
+        // Female: long hair behind head (drawn before head circle)
+        if (isFemale) {
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(pw * 0.12, headY - 2, 6, ph * 0.35);
+            ctx.fillRect(pw * 0.72, headY - 2, 6, ph * 0.35);
+        }
+
+        ctx.fillStyle = skinColor;
+        ctx.beginPath();
+        ctx.arc(headX, headY, headSize / 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Hair (top)
+        ctx.fillStyle = '#1a1a2e';
+        ctx.beginPath();
+        ctx.arc(headX, headY - 4, headSize / 2 + 1, Math.PI, Math.PI * 2);
+        ctx.fill();
+
+        if (isFemale) {
+            // Side hair strands
+            ctx.fillRect(headX - headSize / 2 - 1, headY - 4, 5, 10);
+            ctx.fillRect(headX + headSize / 2 - 4, headY - 4, 5, 10);
+            // Fringe
+            ctx.beginPath();
+            ctx.moveTo(headX - 10, headY - headSize / 2 - 5);
+            ctx.quadraticCurveTo(headX - 2, headY - headSize / 2 + 2, headX + 4, headY - headSize / 2 - 5);
+            ctx.fill();
+            // Hair bow
+            ctx.fillStyle = '#f472b6';
+            ctx.beginPath();
+            ctx.arc(headX + headSize / 2 - 2, headY - headSize / 2 + 2, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ec4899';
+            ctx.beginPath();
+            ctx.arc(headX + headSize / 2 - 2, headY - headSize / 2 + 2, 2, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            // Bowl cut side flaps
+            ctx.fillRect(headX - headSize / 2 - 1, headY - 4, 4, 6);
+            ctx.fillRect(headX + headSize / 2 - 3, headY - 4, 4, 6);
+        }
+
+        // ------ Eyes (with blink) ------
+        const eyeY = headY + 2;
+        const blinkOpen = Math.sin(t * 0.003) > -0.95;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.ellipse(headX - 7, eyeY, 5, blinkOpen ? 5 : 1, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(headX + 7, eyeY, 5, blinkOpen ? 5 : 1, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pupils
+        ctx.fillStyle = '#111';
+        ctx.beginPath();
+        ctx.arc(headX - 5, eyeY + 1, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(headX + 9, eyeY + 1, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Female eyelashes
+        if (isFemale) {
+            ctx.strokeStyle = '#1a1a2e';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(headX - 12, eyeY - 3); ctx.lineTo(headX - 10, eyeY - 4); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(headX + 12, eyeY - 3); ctx.lineTo(headX + 10, eyeY - 4); ctx.stroke();
+        }
+
+        // ------ Mouth (smile) ------
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(headX, headY + 7, 5, 0.1 * Math.PI, 0.9 * Math.PI);
+        ctx.stroke();
 
         ctx.restore();
     },
