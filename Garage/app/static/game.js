@@ -2586,15 +2586,36 @@ const UI = {
                 self._onboardingAnimId = null;
                 return;
             }
-            self._drawAnimatedAvatar('onboardingCharBoy', 'male');
-            self._drawAnimatedAvatar('onboardingCharGirl', 'female');
+            try {
+                self._drawAnimatedAvatar('onboardingCharBoy', 'male');
+                self._drawAnimatedAvatar('onboardingCharGirl', 'female');
+            } catch (e) {
+                console.error('[GARAGE] Avatar render error:', e);
+            }
             self._onboardingAnimId = requestAnimationFrame(loop);
         })();
+    },
+
+    /** Helper: draw a rounded rectangle path (self-contained, no external deps). */
+    _rrect(ctx, x, y, w, h, r) {
+        if (r < 0) r = 0;
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
     },
 
     /**
      * Draw an animated character preview on a small canvas.
      * Reuses the same visual style as World.drawPlayer (walk cycle).
+     * Completely self-contained -- no dependency on World object.
      * @param {string} canvasId  - DOM id of the target canvas
      * @param {'male'|'female'} gender - controls hair style and accessories
      */
@@ -2641,7 +2662,7 @@ const UI = {
         ctx.fillRect(-4, 0, 9, ph * 0.33);
         // Shoe left
         ctx.fillStyle = '#e5e7eb';
-        World.roundRect(ctx, -5, ph * 0.33 - 2, 12, 8, 3);
+        this._rrect(ctx, -5, ph * 0.33 - 2, 12, 8, 3);
         ctx.fill();
         ctx.fillStyle = '#555';
         ctx.fillRect(-5, ph * 0.33 + 4, 12, 3);
@@ -2654,7 +2675,7 @@ const UI = {
         ctx.rotate(legRAngle * Math.PI / 180);
         ctx.fillRect(-4, 0, 9, ph * 0.33);
         ctx.fillStyle = '#e5e7eb';
-        World.roundRect(ctx, -5, ph * 0.33 - 2, 12, 8, 3);
+        this._rrect(ctx, -5, ph * 0.33 - 2, 12, 8, 3);
         ctx.fill();
         ctx.fillStyle = '#555';
         ctx.fillRect(-5, ph * 0.33 + 4, 12, 3);
@@ -2664,7 +2685,7 @@ const UI = {
         const torsoY = ph * 0.2;
         const torsoH = ph * 0.45;
         ctx.fillStyle = bodyColor;
-        World.roundRect(ctx, pw * 0.15, torsoY, pw * 0.7, torsoH, 6);
+        this._rrect(ctx, pw * 0.15, torsoY, pw * 0.7, torsoH, 6);
         ctx.fill();
 
         // Collar
