@@ -1,5 +1,6 @@
 """Database connection pool and session factory for PostgreSQL (Neon)."""
 import os
+import re
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
@@ -7,20 +8,35 @@ from sqlalchemy.orm import sessionmaker
 _engine = None
 _SessionLocal = None
 
+# Matches a postgres(ql):// URL anywhere inside a string.
+_PG_URL_RE = re.compile(r"(postgres(?:ql)?://\S+)")
+
 
 def _resolve_database_url() -> str:
-    """Read DATABASE_URL from environment. Fix common URL scheme issues.
+    """Read DATABASE_URL from environment and extract a clean SQLAlchemy URL.
 
-    Handles:
+    Handles robustly:
     - Leading/trailing whitespace or newlines from copy-paste.
     - Literal surrounding quotes pasted in dashboards.
+    - Full ``psql`` command pasted instead of just the URL
+      (e.g. ``psql 'postgresql://user:pass@host/db'``).
     - ``postgres://`` scheme that SQLAlchemy rejects (needs ``postgresql://``).
     """
-    url = os.environ.get("DATABASE_URL", "").strip()
+    raw = os.environ.get("DATABASE_URL", "").strip()
 
     # Remove accidental surrounding quotes (single or double)
-    if len(url) >= 2 and url[0] == url[-1] and url[0] in ('"', "'"):
-        url = url[1:-1].strip()
+    if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in ('"', "'"):
+        raw = raw[1:-1].strip()
+
+    # Extract the actual URL if the value contains a command prefix (e.g. psql ...)
+    match = _PG_URL_RE.search(raw)
+    if match:
+        url = match.group(1)
+    else:
+        url = raw
+
+    # Strip trailing quote that may remain from psql 'url'
+    url = url.rstrip("'\"").strip()
 
     # Render / Heroku / Neon sometimes expose postgres:// instead of postgresql://
     if url.startswith("postgres://"):
