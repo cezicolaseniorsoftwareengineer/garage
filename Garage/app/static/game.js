@@ -853,6 +853,7 @@ const State = {
     doorAnimBuilding: null,   // building being entered
     companyComplete: false,   // true when all challenges done in locked region
     completedRegions: [],     // list of fully completed region names
+    _actionCooldownUntil: 0,  // timestamp: ignore action keys until this time
 };
 
 // ---- NPC definitions ----
@@ -1230,6 +1231,7 @@ const World = {
 
             this.keys[e.code] = true;
             if (e.code === 'Enter' || e.code === 'Space') {
+                if (performance.now() < State._actionCooldownUntil) return;
                 const promoVisible = document.getElementById('promotionOverlay').style.display === 'flex';
                 if (promoVisible) { UI.hidePromotion(); }
                 else if (State.isBookPopup) { this.closeBookPopup(); }
@@ -1265,6 +1267,7 @@ const World = {
         const actBtn = document.getElementById('btnAction');
         if (actBtn) {
             const doAction = () => {
+                if (performance.now() < State._actionCooldownUntil) return;
                 const promoVisible = document.getElementById('promotionOverlay').style.display === 'flex';
                 if (promoVisible) UI.hidePromotion();
                 else if (State.isBookPopup) this.closeBookPopup();
@@ -1381,6 +1384,7 @@ const World = {
 
     showDialog(name, role, text) {
         State.isInDialog = true;
+        State._actionCooldownUntil = performance.now() + 300;
         document.getElementById('dName').textContent = name;
         document.getElementById('dRole').textContent = role;
         document.getElementById('dContent').textContent = text;
@@ -2839,6 +2843,7 @@ const UI = {
 
     showChallenge(challenge) {
         State.isInChallenge = true;
+        State._actionCooldownUntil = performance.now() + 300;
         SFX.pauseMusic();
         SFX.challengeOpen();
         document.getElementById('challengeMentor').textContent = challenge.mentor || 'MENTOR';
@@ -2872,6 +2877,7 @@ const UI = {
     },
 
     showFeedback(result) {
+        State._actionCooldownUntil = performance.now() + 300;
         const fb = document.getElementById('challengeFeedback');
         const ok = result.outcome === 'correct';
         fb.innerHTML = `<div class="feedback-box ${ok ? 'correct' : 'wrong'}">
@@ -2890,6 +2896,7 @@ const UI = {
         document.getElementById('promotionMessage').textContent = msg;
         document.getElementById('promotionStage').textContent = STAGE_PT[stage] || stage;
         document.getElementById('promotionOverlay').style.display = 'flex';
+        State._actionCooldownUntil = performance.now() + 400;
         this._promotionCallback = onDismiss || null;
         SFX.promote();
     },
