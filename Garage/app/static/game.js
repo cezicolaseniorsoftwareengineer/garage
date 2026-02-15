@@ -3235,8 +3235,9 @@ const JavaAnalyzer = {
             if (/^(import|package)\s/.test(line) && !line.endsWith(';'))
                 return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': falta ";" no final da declaracao.' };
             // Statement lines (assignments, method calls, return, declarations)
-            if (/^(int|long|double|float|char|boolean|String|var|return|System|HashMap|Stack|Queue|LinkedList|ListNode|TreeNode)\b/.test(line) ||
-                /^\w+\s*[\.\[\(=]/.test(line) ||
+            if (/^(int|long|double|float|char|boolean|String|var|return|System|HashMap|HashSet|Stack|Queue|LinkedList|ListNode|TreeNode|PriorityQueue|ArrayList|Map|List|Set)\b/.test(line) ||
+                /^\w+\s*[\.\[\(=<]/.test(line) ||
+                /^\w+\s*<[^>]*>\s+\w+\s*=/.test(line) ||
                 /^\w+\s+\w+\s*=/.test(line)) {
                 if (!line.endsWith(';') && !line.endsWith('{') && !line.endsWith('}') && !line.endsWith(',') && !line.endsWith('(') && !/\)\s*\{/.test(line))
                     return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': falta ";" no final da declaracao.' };
@@ -3258,8 +3259,9 @@ const JavaAnalyzer = {
             // Also: for (int i = 0; ...)
             const patterns = [
                 /\b(int|long|double|float|char|boolean|String|byte|short)\s*(\[\s*\])?\s+(\w+)\s*[=;,)]/,
-                /\b(HashMap|Map|Stack|Queue|LinkedList|List|ArrayList|Set|HashSet|TreeMap)\s*<[^>]*>\s+(\w+)\s*[=;]/,
+                /\b(HashMap|Map|Stack|Queue|LinkedList|List|ArrayList|Set|HashSet|TreeMap|PriorityQueue|Deque|ArrayDeque|TreeSet)\s*<[^>]*>\s+(\w+)\s*[=;]/,
                 /\b(ListNode|TreeNode)\s+(\w+)\s*[=;]/,
+                /\b([A-Z]\w+)\s+(\w+)\s*[=;]/,
             ];
             for (const pat of patterns) {
                 const matches = line.matchAll(new RegExp(pat.source, 'g'));
@@ -3374,15 +3376,15 @@ const JavaAnalyzer = {
                 }
                 // Check if arg references undeclared variables (basic check)
                 // Extract variable references from the argument (skip strings and numbers)
-                const cleanArg = arg.replace(/"[^"]*"/g, '').replace(/\b\d+\b/g, '').trim();
+                const cleanArg = arg.replace(/"[^"]*"/g, '').replace(/\b\d+\b/g, '').replace(/\.\w+/g, '').trim();
                 if (cleanArg) {
                     const varRefs = cleanArg.match(/\b[a-zA-Z_]\w*\b/g) || [];
-                    const javaKeywords = new Set(['new', 'null', 'true', 'false', 'this', 'super', 'instanceof', 'return', 'if', 'else', 'for', 'while']);
-                    const javaClasses = new Set(['System', 'String', 'Integer', 'Double', 'Math', 'Arrays', 'Map', 'Entry', 'Character']);
-                    const javaMethods = new Set(['toString', 'valueOf', 'parseInt', 'getKey', 'getValue', 'size', 'length', 'charAt', 'format', 'isEmpty', 'pop', 'push', 'poll', 'peek', 'get', 'containsKey', 'entrySet', 'add', 'remove']);
+                    const javaKeywords = new Set(['new', 'null', 'true', 'false', 'this', 'super', 'instanceof', 'return', 'if', 'else', 'for', 'while', 'int', 'long', 'double', 'float', 'char', 'boolean', 'byte', 'short', 'void', 'class', 'static', 'public', 'private', 'protected', 'final', 'abstract', 'extends', 'implements', 'throw', 'throws', 'try', 'catch', 'break', 'continue', 'switch', 'case', 'default', 'do']);
+                    const javaClasses = new Set(['System', 'String', 'Integer', 'Double', 'Math', 'Arrays', 'Map', 'Entry', 'Character', 'HashMap', 'HashSet', 'LinkedList', 'ArrayList', 'Stack', 'Queue', 'PriorityQueue', 'TreeMap', 'TreeSet', 'List', 'Set', 'Collections', 'Objects', 'Comparable', 'Comparator', 'Object', 'Boolean', 'Long', 'Float', 'Byte', 'Short']);
+                    const javaMethods = new Set(['toString', 'valueOf', 'parseInt', 'getKey', 'getValue', 'size', 'length', 'charAt', 'format', 'isEmpty', 'pop', 'push', 'poll', 'peek', 'get', 'containsKey', 'entrySet', 'add', 'remove', 'contains', 'put', 'of', 'asList', 'sort', 'toCharArray', 'toLowerCase', 'toUpperCase', 'replaceAll', 'substring', 'trim', 'equals', 'compareTo', 'getOrDefault', 'addFirst', 'removeLast', 'offer', 'compare']);
                     // Extract user-defined method names from the code (static/non-static)
                     const userMethods = new Set();
-                    const methodDeclRe = /\b(?:static\s+)?(?:void|int|long|double|float|char|boolean|String|int\[\]|String\[\])\s+(\w+)\s*\(/g;
+                    const methodDeclRe = /\b(?:static\s+)?(?:void|int|long|double|float|char|boolean|String|int\[\]|String\[\]|[A-Z]\w*(?:<[^>]*>)?(?:\[\])?)\s+(\w+)\s*\(/g;
                     let mm;
                     while ((mm = methodDeclRe.exec(code)) !== null) { userMethods.add(mm[1]); }
                     for (const ref of varRefs) {
@@ -3392,7 +3394,7 @@ const JavaAnalyzer = {
                         // Skip user-defined method names
                         if (userMethods.has(ref)) continue;
                         // Check method params (rough: check if method signature has this var)
-                        const methodParam = code.match(new RegExp('\\(\\s*(?:int\\[\\]|int|String|long|double|boolean|float|char|String\\[\\])\\s+' + ref + '\\b'));
+                        const methodParam = code.match(new RegExp('(?:\\(|,)\\s*(?:int\\[\\]|int|String|long|double|boolean|float|char|byte|short|String\\[\\]|[A-Z]\\w*(?:<[^>]*>)?(?:\\[\\])?)\\s+' + ref + '\\b'));
                         if (methodParam) continue;
                         if (!decls.has(ref)) {
                             return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': variável "' + ref + '" não foi declarada neste escopo.' };
