@@ -3258,7 +3258,7 @@ const JavaAnalyzer = {
             // Statement lines (assignments, method calls, return, declarations)
             if (/^(int|long|double|float|char|boolean|String|var|return|System|HashMap|HashSet|Stack|Queue|LinkedList|ListNode|TreeNode|PriorityQueue|ArrayList|Map|List|Set)\b/.test(line) ||
                 /^\w+\s*[\.\[\(=<]/.test(line) ||
-                /^\w+\s*<[^>]*>\s+\w+\s*=/.test(line) ||
+                /^\w+\s*<(?:[^<>]*(?:<[^<>]*>)?)*>\s+\w+\s*=/.test(line) ||
                 /^\w+\s+\w+\s*=/.test(line)) {
                 if (!line.endsWith(';') && !line.endsWith('{') && !line.endsWith('}') && !line.endsWith(',') && !line.endsWith('(') && !/\)\s*\{/.test(line))
                     return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': falta ";" no final da declaracao.' };
@@ -3280,7 +3280,7 @@ const JavaAnalyzer = {
             // Also: for (int i = 0; ...)
             const patterns = [
                 /\b(int|long|double|float|char|boolean|String|byte|short)\s*(\[\s*\])?\s+(\w+)\s*[=;,)]/,
-                /\b(HashMap|Map|Stack|Queue|LinkedList|List|ArrayList|Set|HashSet|TreeMap|PriorityQueue|Deque|ArrayDeque|TreeSet)\s*<[^>]*>\s+(\w+)\s*[=;]/,
+                /\b(HashMap|Map|Stack|Queue|LinkedList|List|ArrayList|Set|HashSet|TreeMap|PriorityQueue|Deque|ArrayDeque|TreeSet)\s*<(?:[^<>]*(?:<[^<>]*>)?)*>\s+(\w+)\s*[=;]/,
                 /\b(ListNode|TreeNode)\s+(\w+)\s*[=;]/,
                 /\b([A-Z]\w+)\s+(\w+)\s*[=;]/,
             ];
@@ -3300,7 +3300,7 @@ const JavaAnalyzer = {
                 if (!decls.has(name)) decls.set(name, { type: forMatch[1], line: i + 1 });
             }
             // For-each: for (int n : arr) or for (Type<Gen> n : collection.method())
-            const forEachMatch = line.match(/for\s*\(\s*([\w.]+(?:<[^>]*>)?(?:\[\s*\])?)\s+(\w+)\s*:\s*[^)]+\)/);
+            const forEachMatch = line.match(/for\s*\(\s*([\w.]+(?:<(?:[^<>]*(?:<[^<>]*>)?)*>)?(?:\[\s*\])?)\s+(\w+)\s*:\s*[^)]+\)/);
             if (forEachMatch) {
                 if (!decls.has(forEachMatch[2])) decls.set(forEachMatch[2], { type: forEachMatch[1], line: i + 1 });
             }
@@ -3410,7 +3410,7 @@ const JavaAnalyzer = {
                     const javaMethods = new Set(['toString', 'valueOf', 'parseInt', 'getKey', 'getValue', 'size', 'length', 'charAt', 'format', 'isEmpty', 'pop', 'push', 'poll', 'peek', 'get', 'containsKey', 'entrySet', 'add', 'remove', 'contains', 'put', 'of', 'asList', 'sort', 'toCharArray', 'toLowerCase', 'toUpperCase', 'replaceAll', 'substring', 'trim', 'equals', 'compareTo', 'getOrDefault', 'addFirst', 'removeLast', 'offer', 'compare']);
                     // Extract user-defined method names from the code (static/non-static)
                     const userMethods = new Set();
-                    const methodDeclRe = /\b(?:static\s+)?(?:void|int|long|double|float|char|boolean|String|int\[\]|String\[\]|[A-Z]\w*(?:<[^>]*>)?(?:\[\])?)\s+(\w+)\s*\(/g;
+                    const methodDeclRe = /\b(?:static\s+)?(?:void|int|long|double|float|char|boolean|String|int\[\]|String\[\]|[A-Z]\w*(?:<(?:[^<>]*(?:<[^<>]*>)?)*>)?(?:\[\])?)\s+(\w+)\s*\(/g;
                     let mm;
                     while ((mm = methodDeclRe.exec(code)) !== null) { userMethods.add(mm[1]); }
                     for (const ref of varRefs) {
@@ -3420,7 +3420,7 @@ const JavaAnalyzer = {
                         // Skip user-defined method names
                         if (userMethods.has(ref)) continue;
                         // Check method params (rough: check if method signature has this var)
-                        const methodParam = code.match(new RegExp('(?:\\(|,)\\s*(?:int\\[\\]|int|String|long|double|boolean|float|char|byte|short|String\\[\\]|[A-Z]\\w*(?:<[^>]*>)?(?:\\[\\])?)\\s+' + ref + '\\b'));
+                        const methodParam = code.match(new RegExp('(?:\\(|,)\\s*(?:int\\[\\]|int|String|long|double|boolean|float|char|byte|short|String\\[\\]|[A-Z]\\w*(?:<(?:[^<>]*(?:<[^<>]*>)?)*>)?(?:\\[\\])?)\\s+' + ref + '\\b'));
                         if (methodParam) continue;
                         if (!decls.has(ref)) {
                             return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': variável "' + ref + '" não foi declarada neste escopo.' };
