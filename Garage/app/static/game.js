@@ -861,82 +861,127 @@ const NPC_DATA = [
     // -- INTERN --
     {
         id: 'npc_xerox', name: 'CHARLES GESCHKE', role: 'Cofundador - Xerox PARC / Adobe', region: 'Xerox PARC', stage: 'Intern', worldX: 800,
-        dialog: 'Eu sou Charles Geschke. Nos anos 70, a Xerox PARC inventou a interface grafica, o mouse e a rede Ethernet -- tecnologias que mudaram o mundo. Mais tarde cofundei a Adobe e criamos o PostScript e o PDF. Aqui voce vai provar que domina os fundamentos: logica, variaveis e estruturas basicas. Sem base solida, nenhum sistema sobrevive.',
+        dialog: 'Eu sou Charles Geschke. Nos anos 70, a Xerox PARC inventou a interface gr\u00e1fica, o mouse e a rede Ethernet -- tecnologias que mudaram o mundo. Mais tarde cofundei a Adobe e criamos o PostScript e o PDF. Aqui voc\u00ea vai provar que domina os fundamentos: l\u00f3gica, vari\u00e1veis e estruturas b\u00e1sicas. Sem base s\u00f3lida, nenhum sistema sobrevive.',
         look: { hair: '#ccc', hairStyle: 'bald-sides', beard: '#aaa', glasses: true, glassesStyle: 'round', shirt: '#1e3a5f', pants: '#333', skinTone: '#F5D0A9' }
     },
     {
-        id: 'npc_apple', name: 'STEVE JOBS', role: 'Cofundador - Apple', region: 'Apple Garage', stage: 'Intern', worldX: 1800,
-        dialog: 'Sou Steve Jobs. Em 1976, Steve Wozniak e eu montamos o primeiro Apple numa garagem em Los Altos, California. A Apple revolucionou a computacao pessoal, a musica digital e os smartphones. Eu acreditava que tecnologia e arte devem andar juntas. Seus desafios aqui testarao sua capacidade de pensar simples -- porque simplicidade e a sofisticacao suprema.',
+        id: 'npc_apple', name: 'STEVE JOBS', role: 'Cofundador - Apple', region: 'Apple Garage', stage: 'Intern', worldX: 2200,
+        dialog: 'Sou Steve Jobs. Em 1976, Steve Wozniak e eu montamos o primeiro Apple numa garagem em Los Altos, Calif\u00f3rnia. A Apple revolucionou a computa\u00e7\u00e3o pessoal, a m\u00fasica digital e os smartphones. Eu acreditava que tecnologia e arte devem andar juntas. Seus desafios aqui testar\u00e3o sua capacidade de pensar simples -- porque simplicidade \u00e9 a sofistica\u00e7\u00e3o suprema.',
         look: { hair: '#222', hairStyle: 'short', beard: null, glasses: true, glassesStyle: 'round', shirt: '#111', pants: '#3b5998', skinTone: '#F5D0A9', turtleneck: true }
     },
     // -- JUNIOR --
     {
-        id: 'npc_microsoft', name: 'BILL GATES', role: 'Cofundador - Microsoft', region: 'Microsoft', stage: 'Junior', worldX: 3200,
-        dialog: 'Prazer, Bill Gates. Em 1975, Paul Allen e eu fundamos a Microsoft com a visao de colocar um computador em cada mesa. Do MS-DOS ao Windows, do Office ao Azure -- construimos um ecossistema que conecta bilhoes de pessoas. Como Junior, voce precisa provar que entende sistemas operacionais, estruturas de dados e a base da engenharia de software.',
+        id: 'npc_microsoft', name: 'BILL GATES', role: 'Cofundador - Microsoft', region: 'Microsoft', stage: 'Junior', worldX: 3600,
+        dialog: 'Prazer, Bill Gates. Em 1975, Paul Allen e eu fundamos a Microsoft com a vis\u00e3o de colocar um computador em cada mesa. Do MS-DOS ao Windows, do Office ao Azure -- constru\u00edmos um ecossistema que conecta bilh\u00f5es de pessoas. Como Junior, voc\u00ea precisa provar que entende sistemas operacionais, estruturas de dados e a base da engenharia de software.',
         look: { hair: '#8B6F47', hairStyle: 'parted', beard: null, glasses: true, glassesStyle: 'square', shirt: '#4a90d9', pants: '#2c3e50', skinTone: '#F5D0A9', tie: '#8b0000' }
     },
     {
-        id: 'npc_nubank', name: 'DAVID VELEZ', role: 'Fundador - Nubank', region: 'Nubank', stage: 'Junior', worldX: 4400,
-        dialog: 'Ola, sou David Velez. Fundei o Nubank em 2013 no Brasil porque estava cansado da burocracia bancaria. Com um cartao roxo e um app, democratizamos servicos financeiros para mais de 80 milhoes de clientes. Fintech e sobre eliminar complexidade e entregar valor real. Mostre que voce sabe resolver problemas com codigo limpo e eficiente.',
+        id: 'npc_nubank', name: 'DAVID VELEZ', role: 'Fundador - Nubank', region: 'Nubank', stage: 'Junior', worldX: 5000,
+        dialog: 'Ol\u00e1, sou David Velez. Fundei o Nubank em 2013 no Brasil porque estava cansado da burocracia banc\u00e1ria. Com um cart\u00e3o roxo e um app, democratizamos servi\u00e7os financeiros para mais de 80 milh\u00f5es de clientes. Fintech \u00e9 sobre eliminar complexidade e entregar valor real. Mostre que voc\u00ea sabe resolver problemas com c\u00f3digo limpo e eficiente.',
         look: { hair: '#222', hairStyle: 'short', beard: null, glasses: false, shirt: '#820ad1', pants: '#222', skinTone: '#D2A673', casual: true }
+    },
+    {
+        id: 'npc_disney', name: 'BOB IGER', role: 'CEO - Disney', region: 'Disney', stage: 'Junior', worldX: 6400,
+        dialog: 'Bob Iger, CEO da Walt Disney Company. De parques tem\u00e1ticos a Marvel, Star Wars e Pixar -- a Disney \u00e9 o maior conglomerado de entretenimento do mundo. Engenharia de software na Disney significa sistemas que encantam bilh\u00f5es de pessoas. Orienta\u00e7\u00e3o a objetos \u00e9 a base: interfaces, polimorfismo e heran\u00e7a. Mostre que voc\u00ea domina OOP.',
+        look: { hair: '#bbb', hairStyle: 'parted', beard: null, glasses: false, shirt: '#1a237e', pants: '#111', skinTone: '#F5D0A9', suit: '#1a237e', tie: '#cc0000' }
     },
     // -- MID --
     {
-        id: 'npc_google', name: 'LARRY & SERGEY', role: 'Cofundadores - Google', region: 'Google', stage: 'Mid', worldX: 5800,
-        dialog: 'Somos Larry Page e Sergey Brin. Em 1998, numa garagem em Menlo Park, criamos o Google -- um buscador que organizou toda a informacao do mundo. Depois veio o Android, YouTube, Cloud, IA. Como engenheiro Pleno, voce enfrentara algoritmos avancados, sistemas distribuidos e a complexidade computacional que faz o Google funcionar em escala planetaria.',
+        id: 'npc_google', name: 'LARRY & SERGEY', role: 'Cofundadores - Google', region: 'Google', stage: 'Mid', worldX: 7800,
+        dialog: 'Somos Larry Page e Sergey Brin. Em 1998, numa garagem em Menlo Park, criamos o Google -- um buscador que organizou toda a informa\u00e7\u00e3o do mundo. Depois veio o Android, YouTube, Cloud, IA. Como engenheiro Pleno, voc\u00ea enfrentar\u00e1 algoritmos avan\u00e7ados, sistemas distribu\u00eddos e a complexidade computacional que faz o Google funcionar em escala planet\u00e1ria.',
         look: { hair: '#333', hairStyle: 'curly', beard: null, glasses: false, shirt: '#4285f4', pants: '#333', skinTone: '#F5D0A9', casual: true }
     },
     {
-        id: 'npc_facebook', name: 'MARK ZUCKERBERG', role: 'Cofundador - Facebook', region: 'Facebook', stage: 'Mid', worldX: 7300,
-        dialog: 'Eu sou Mark Zuckerberg. Em 2004, no dormitorio de Harvard, criei o Facebook. Hoje a Meta conecta mais de 3 bilhoes de pessoas e esta construindo o metaverso. Escalar grafos sociais para esse volume exige engenharia de dados, consistencia eventual e arquitetura de sistemas que nao falham. Prepare-se para desafios de nivel Pleno.',
+        id: 'npc_facebook', name: 'MARK ZUCKERBERG', role: 'Cofundador - Facebook', region: 'Facebook', stage: 'Mid', worldX: 9200,
+        dialog: 'Eu sou Mark Zuckerberg. Em 2004, no dormit\u00f3rio de Harvard, criei o Facebook. Hoje a Meta conecta mais de 3 bilh\u00f5es de pessoas e est\u00e1 construindo o metaverso. Escalar grafos sociais para esse volume exige engenharia de dados, consist\u00eancia eventual e arquitetura de sistemas que n\u00e3o falham. Prepare-se para desafios de n\u00edvel Pleno.',
         look: { hair: '#8B6F47', hairStyle: 'curly-short', beard: null, glasses: false, shirt: '#888', pants: '#333', skinTone: '#F5D0A9', hoodie: '#444' }
+    },
+    {
+        id: 'npc_ibm', name: 'ARVIND KRISHNA', role: 'CEO - IBM', region: 'IBM', stage: 'Mid', worldX: 10600,
+        dialog: 'Arvind Krishna, CEO da IBM. Desde 1911, a IBM define a computa\u00e7\u00e3o: mainframes, COBOL, SQL, Watson, computa\u00e7\u00e3o qu\u00e2ntica. Somos a empresa que inventou o c\u00f3digo de barras, o caixa eletr\u00f4nico e o disco r\u00edgido. Validar express\u00f5es, parsing e manipula\u00e7\u00e3o de estruturas -- esses s\u00e3o os fundamentos que todo engenheiro IBM domina.',
+        look: { hair: '#333', hairStyle: 'short', beard: null, glasses: true, glassesStyle: 'square', shirt: '#0530ad', pants: '#222', skinTone: '#C68642', suit: '#0530ad', tie: '#fff' }
     },
     // -- SENIOR --
     {
-        id: 'npc_amazon', name: 'JEFF BEZOS', role: 'Fundador - Amazon', region: 'Amazon', stage: 'Senior', worldX: 8800,
-        dialog: 'Jeff Bezos aqui. Comecei a Amazon em 1994 vendendo livros numa garagem em Seattle. Hoje somos o maior e-commerce do planeta e a AWS e a espinha dorsal da internet moderna. De e-commerce a cloud computing, aqui voce projetara sistemas resilientes, com tolerancia a falhas e alta disponibilidade. Engenheiro Senior nao aceita sistema que cai.',
+        id: 'npc_amazon', name: 'JEFF BEZOS', role: 'Fundador - Amazon', region: 'Amazon', stage: 'Senior', worldX: 12000,
+        dialog: 'Jeff Bezos aqui. Comecei a Amazon em 1994 vendendo livros numa garagem em Seattle. Hoje somos o maior e-commerce do planeta e a AWS \u00e9 a espinha dorsal da internet moderna. De e-commerce a cloud computing, aqui voc\u00ea projetar\u00e1 sistemas resilientes, com toler\u00e2ncia a falhas e alta disponibilidade. Engenheiro S\u00eanior n\u00e3o aceita sistema que cai.',
         look: { hair: null, hairStyle: 'bald', beard: null, glasses: false, shirt: '#1a3c5e', pants: '#222', skinTone: '#F5D0A9', bald: true }
     },
     {
-        id: 'npc_meli', name: 'MARCOS GALPERIN', role: 'Fundador - Mercado Livre', region: 'Mercado Livre', stage: 'Senior', worldX: 10200,
-        dialog: 'Sou Marcos Galperin. Fundei o Mercado Livre em 1999 na Argentina. Somos o maior ecossistema de comercio eletronico da America Latina -- marketplace, pagamentos com Mercado Pago, logistica e credito. Processamos milhoes de transacoes por segundo em 18 paises. Seus desafios aqui envolvem escala, performance e arquitetura de plataforma.',
+        id: 'npc_meli', name: 'MARCOS GALPERIN', role: 'Fundador - Mercado Livre', region: 'Mercado Livre', stage: 'Senior', worldX: 13400,
+        dialog: 'Sou Marcos Galperin. Fundei o Mercado Livre em 1999 na Argentina. Somos o maior ecossistema de com\u00e9rcio eletr\u00f4nico da Am\u00e9rica Latina -- marketplace, pagamentos com Mercado Pago, log\u00edstica e cr\u00e9dito. Processamos milh\u00f5es de transa\u00e7\u00f5es por segundo em 18 pa\u00edses. Seus desafios aqui envolvem escala, performance e arquitetura de plataforma.',
         look: { hair: '#555', hairStyle: 'short', beard: null, glasses: false, shirt: '#333', pants: '#222', skinTone: '#F5D0A9', suit: '#1a1a1a' }
     },
     {
-        id: 'npc_jpmorgan', name: 'JAMIE DIMON', role: 'CEO - JP Morgan', region: 'JP Morgan', stage: 'Senior', worldX: 11600,
-        dialog: 'Jamie Dimon, CEO do JP Morgan Chase -- o maior banco dos Estados Unidos, com mais de 200 anos de historia. Wall Street exige zero tolerancia a falhas. Cada transacao financeira e irrevogavel, cada microsegundo conta. Aqui voce enfrentara desafios de sistemas criticos, concorrencia e seguranca de nivel bancario.',
+        id: 'npc_jpmorgan', name: 'JAMIE DIMON', role: 'CEO - JP Morgan', region: 'JP Morgan', stage: 'Senior', worldX: 14800,
+        dialog: 'Jamie Dimon, CEO do JP Morgan Chase -- o maior banco dos Estados Unidos, com mais de 200 anos de hist\u00f3ria. Wall Street exige zero toler\u00e2ncia a falhas. Cada transa\u00e7\u00e3o financeira \u00e9 irrevog\u00e1vel, cada microssegundo conta. Aqui voc\u00ea enfrentar\u00e1 desafios de sistemas cr\u00edticos, concorr\u00eancia e seguran\u00e7a de n\u00edvel banc\u00e1rio.',
         look: { hair: '#888', hairStyle: 'parted', beard: null, glasses: false, shirt: '#fff', pants: '#111', skinTone: '#F5D0A9', suit: '#0a3d62', tie: '#c9a800' }
+    },
+    {
+        id: 'npc_paypal', name: 'PETER THIEL', role: 'Cofundador - PayPal', region: 'PayPal', stage: 'Senior', worldX: 16200,
+        dialog: 'Peter Thiel. Cofundei o PayPal em 1998 com Max Levchin e Elon Musk. Criamos o pagamento digital que revolucionou o com\u00e9rcio online. A "M\u00e1fia do PayPal" gerou Tesla, LinkedIn, YouTube e Palantir. Detec\u00e7\u00e3o de fraude, processamento de strings e otimiza\u00e7\u00e3o de busca s\u00e3o essenciais quando cada transa\u00e7\u00e3o vale dinheiro real.',
+        look: { hair: '#8B6F47', hairStyle: 'short', beard: null, glasses: false, shirt: '#003087', pants: '#222', skinTone: '#F5D0A9', suit: '#333' }
+    },
+    {
+        id: 'npc_netflix', name: 'REED HASTINGS', role: 'Fundador - Netflix', region: 'Netflix', stage: 'Senior', worldX: 17600,
+        dialog: 'Reed Hastings, fundador da Netflix. Em 1997, come\u00e7amos enviando DVDs pelo correio. Hoje transmitimos conte\u00fado para 260 milh\u00f5es de assinantes em 190 pa\u00edses. Nosso algoritmo de recomenda\u00e7\u00e3o \u00e9 lend\u00e1rio. Sliding window, processamento de streams e otimiza\u00e7\u00e3o de dados em tempo real -- \u00e9 isso que mant\u00e9m o mundo assistindo.',
+        look: { hair: '#888', hairStyle: 'bald-sides', beard: null, glasses: false, shirt: '#e50914', pants: '#222', skinTone: '#F5D0A9', casual: true }
     },
     // -- STAFF --
     {
-        id: 'npc_tesla', name: 'ELON MUSK', role: 'CEO - Tesla / SpaceX', region: 'Tesla / SpaceX', stage: 'Staff', worldX: 13100,
-        dialog: 'Elon Musk. Tesla revolucionou os carros eletricos, SpaceX esta tornando a humanidade multiplanetaria, e a Neuralink conecta cerebros a computadores. Engenharia extrema sob restricoes extremas -- esse e o padrao aqui. Como Staff Engineer, voce vai redesenhar sistemas complexos, otimizar para o impossivel e liderar decisoes tecnicas criticas.',
+        id: 'npc_spacex', name: 'GWYNNE SHOTWELL', role: 'Presidente & COO - SpaceX', region: 'SpaceX', stage: 'Staff', worldX: 19000,
+        dialog: 'Gwynne Shotwell, Presidente e COO da SpaceX. Enquanto Elon sonha, eu fa\u00e7o os foguetes decolarem. J\u00e1 lan\u00e7amos mais de 200 miss\u00f5es orbitais com sucesso. Telemetria de foguetes gera milh\u00f5es de dados por segundo -- deduplica\u00e7\u00e3o, conjuntos e filtragem s\u00e3o quest\u00e3o de vida ou morte. HashSet n\u00e3o \u00e9 teoria aqui, \u00e9 sobreviv\u00eancia.',
+        look: { hair: '#6B4226', hairStyle: 'parted', beard: null, glasses: false, shirt: '#fff', pants: '#222', skinTone: '#F5D0A9', jacket: '#1a1a1a' }
+    },
+    {
+        id: 'npc_tesla', name: 'ELON MUSK', role: 'CEO - Tesla', region: 'Tesla', stage: 'Staff', worldX: 20400,
+        dialog: 'Elon Musk. A Tesla revolucionou os carros el\u00e9tricos. De baterias a software de autonomia, cada sistema precisa ser otimizado ao extremo. Engenharia sob restri\u00e7\u00f5es extremas -- esse \u00e9 o padr\u00e3o aqui. Como Staff Engineer, voc\u00ea vai redesenhar sistemas complexos, otimizar para o imposs\u00edvel e liderar decis\u00f5es t\u00e9cnicas cr\u00edticas.',
         look: { hair: '#555', hairStyle: 'short', beard: null, glasses: false, shirt: '#111', pants: '#222', skinTone: '#F5D0A9', jacket: '#1a1a1a' }
     },
     {
-        id: 'npc_itau', name: 'ROBERTO SETUBAL', role: 'Ex-CEO - Itau Unibanco', region: 'Itau', stage: 'Staff', worldX: 14600,
-        dialog: 'Roberto Setubal, ex-CEO do Itau Unibanco -- o maior banco privado do Brasil e da America Latina. Processamos trilhoes de reais por ano com sistemas que nao podem parar. A transformacao digital de um banco centenario exige migrar legados para arquiteturas modernas sem interromper operacoes. Desafios de Staff Engineer estao a sua espera.',
+        id: 'npc_itau', name: 'ROBERTO SETUBAL', role: 'Ex-CEO - Ita\u00fa Unibanco', region: 'Itau', stage: 'Staff', worldX: 21800,
+        dialog: 'Roberto Setubal, ex-CEO do Ita\u00fa Unibanco -- o maior banco privado do Brasil e da Am\u00e9rica Latina. Processamos trilh\u00f5es de reais por ano com sistemas que n\u00e3o podem parar. A transforma\u00e7\u00e3o digital de um banco centen\u00e1rio exige migrar legados para arquiteturas modernas sem interromper opera\u00e7\u00f5es. Desafios de Staff Engineer est\u00e3o \u00e0 sua espera.',
         look: { hair: '#aaa', hairStyle: 'parted', beard: null, glasses: true, glassesStyle: 'square', shirt: '#fff', pants: '#111', skinTone: '#F5D0A9', suit: '#003399', tie: '#ff6600' }
     },
     {
-        id: 'npc_uber', name: 'TRAVIS KALANICK', role: 'Cofundador - Uber', region: 'Uber', stage: 'Staff', worldX: 16000,
-        dialog: 'Travis Kalanick aqui. Cofundei a Uber em 2009 e transformamos o transporte global. Milhoes de corridas por minuto em centenas de cidades. Geolocalizacao em tempo real, matching de motoristas, precificacao dinamica, pagamentos -- tudo processado em milissegundos. Seus desafios envolvem sistemas real-time de altissima performance.',
+        id: 'npc_uber', name: 'TRAVIS KALANICK', role: 'Cofundador - Uber', region: 'Uber', stage: 'Staff', worldX: 23200,
+        dialog: 'Travis Kalanick aqui. Cofundei a Uber em 2009 e transformamos o transporte global. Milh\u00f5es de corridas por minuto em centenas de cidades. Geolocaliza\u00e7\u00e3o em tempo real, matching de motoristas, precifica\u00e7\u00e3o din\u00e2mica, pagamentos -- tudo processado em milissegundos. Seus desafios envolvem sistemas real-time de alt\u00edssima performance.',
         look: { hair: '#333', hairStyle: 'short', beard: null, glasses: false, shirt: '#111', pants: '#222', skinTone: '#F5D0A9', casual: true }
+    },
+    {
+        id: 'npc_nvidia', name: 'JENSEN HUANG', role: 'CEO - Nvidia', region: 'Nvidia', stage: 'Staff', worldX: 24600,
+        dialog: 'Jensen Huang, CEO da Nvidia. Fundei a empresa em 1993 num Denny\'s em San Jose. De placas de v\u00eddeo a IA generativa, nossas GPUs s\u00e3o o motor da revolu\u00e7\u00e3o da intelig\u00eancia artificial. Treinamento de modelos, ordena\u00e7\u00e3o eficiente e processamento massivo de dados -- Merge Sort n\u00e3o \u00e9 exerc\u00edcio acad\u00eamico, \u00e9 o que roda em cada GPU nossa.',
+        look: { hair: '#222', hairStyle: 'short', beard: null, glasses: false, shirt: '#111', pants: '#222', skinTone: '#D2A673', jacket: '#111' }
+    },
+    {
+        id: 'npc_openai', name: 'SAM ALTMAN', role: 'CEO - OpenAI', region: 'OpenAI', stage: 'Staff', worldX: 26000,
+        dialog: 'Sam Altman, CEO da OpenAI. Criamos o ChatGPT, DALL-E e GPT-4 -- modelos que est\u00e3o redefinindo a intelig\u00eancia artificial. Redes neurais s\u00e3o grafos computacionais. Travessia em largura, busca em profundidade e processamento de estruturas conectadas s\u00e3o a base de tudo que constru\u00edmos. Grafos n\u00e3o s\u00e3o teoria, s\u00e3o a realidade da IA.',
+        look: { hair: '#c4733c', hairStyle: 'short', beard: null, glasses: false, shirt: '#444', pants: '#333', skinTone: '#F5D0A9', casual: true }
     },
     // -- PRINCIPAL --
     {
-        id: 'npc_santander', name: 'ANA BOTIN', role: 'CEO - Santander', region: 'Santander', stage: 'Principal', worldX: 17400,
-        dialog: 'Ana Botin, CEO do Grupo Santander -- um dos maiores bancos do mundo, presente em dezenas de paises. Banking global exige compliance com regulacoes como PCI DSS, PSD2, LGPD e Basel III simultaneamente. Zero margem de erro, auditoria total. Como Principal Engineer, seus desafios sao de governanca, seguranca e arquitetura regulatoria.',
+        id: 'npc_santander', name: 'ANA BOTIN', role: 'CEO - Santander', region: 'Santander', stage: 'Principal', worldX: 27400,
+        dialog: 'Ana Botin, CEO do Grupo Santander -- um dos maiores bancos do mundo, presente em dezenas de pa\u00edses. Banking global exige compliance com regula\u00e7\u00f5es como PCI DSS, PSD2, LGPD e Basel III simultaneamente. Zero margem de erro, auditoria total. Como Principal Engineer, seus desafios s\u00e3o de governan\u00e7a, seguran\u00e7a e arquitetura regulat\u00f3ria.',
         look: { hair: '#8B4513', hairStyle: 'parted', beard: null, glasses: false, shirt: '#fff', pants: '#111', skinTone: '#F5D0A9', suit: '#ec0000' }
     },
     {
-        id: 'npc_bradesco', name: 'MARCELO NORONHA', role: 'CEO - Bradesco', region: 'Bradesco', stage: 'Principal', worldX: 18900,
-        dialog: 'Marcelo Noronha, CEO do Bradesco. Somos um dos maiores bancos do Brasil, com mais de 70 milhoes de clientes. A transformacao digital de um banco dessa escala -- de agencias fisicas a APIs abertas, Open Banking e Pix -- exige visao arquitetural profunda. Seus desafios de Principal Engineer envolvem design de sistemas que definem o futuro financeiro.',
+        id: 'npc_bradesco', name: 'MARCELO NORONHA', role: 'CEO - Bradesco', region: 'Bradesco', stage: 'Principal', worldX: 28800,
+        dialog: 'Marcelo Noronha, CEO do Bradesco. Somos um dos maiores bancos do Brasil, com mais de 70 milh\u00f5es de clientes. A transforma\u00e7\u00e3o digital de um banco dessa escala -- de ag\u00eancias f\u00edsicas a APIs abertas, Open Banking e Pix -- exige vis\u00e3o arquitetural profunda. Seus desafios de Principal Engineer envolvem design de sistemas que definem o futuro financeiro.',
         look: { hair: '#555', hairStyle: 'parted', beard: null, glasses: true, glassesStyle: 'square', shirt: '#fff', pants: '#111', skinTone: '#F5D0A9', suit: '#cc092f', tie: '#cc092f' }
     },
     {
-        id: 'npc_cloud', name: 'LINUS TORVALDS', role: 'Criador - Linux / Git', region: 'Cloud Valley', stage: 'Principal', worldX: 20400,
-        dialog: 'Linus Torvalds. Criei o Linux em 1991, o sistema operacional que roda em servidores, smartphones e supercomputadores. Depois criei o Git, que revolucionou o controle de versao. Voce chegou ao topo da jornada. Aqui criamos contratos para o futuro -- open source, infraestrutura global e os alicerces da computacao moderna.',
+        id: 'npc_gemini', name: 'DEMIS HASSABIS', role: 'CEO - Google DeepMind', region: 'Gemini', stage: 'Principal', worldX: 30200,
+        dialog: 'Demis Hassabis, CEO do Google DeepMind. Criamos o AlphaGo, AlphaFold e o Gemini -- IA que resolve prote\u00ednas, vence campe\u00f5es de Go e raciocina com multimodalidade. Priority Queue e Heap s\u00e3o fundamentais em IA: agendamento de tarefas, busca A*, beam search. Quando cada decis\u00e3o tem um custo, priorizar \u00e9 tudo.',
+        look: { hair: '#333', hairStyle: 'curly', beard: null, glasses: false, shirt: '#4285f4', pants: '#222', skinTone: '#D2A673', casual: true }
+    },
+    {
+        id: 'npc_claude', name: 'DARIO AMODEI', role: 'CEO - Anthropic', region: 'Claude', stage: 'Principal', worldX: 31600,
+        dialog: 'Dario Amodei, CEO da Anthropic, criadores do Claude. Sa\u00ed da OpenAI para construir IA segura e alinhada. Programa\u00e7\u00e3o din\u00e2mica \u00e9 o cora\u00e7\u00e3o do racioc\u00ednio: decompor problemas grandes em subproblemas menores, memorizar resultados e construir a solu\u00e7\u00e3o de baixo para cima. \u00c9 assim que o Claude pensa -- e \u00e9 assim que voc\u00ea vai pensar.',
+        look: { hair: '#333', hairStyle: 'curly', beard: '#333', glasses: true, glassesStyle: 'round', shirt: '#d4a574', pants: '#333', skinTone: '#F5D0A9' }
+    },
+    {
+        id: 'npc_cloud', name: 'LINUS TORVALDS', role: 'Criador - Linux / Git', region: 'Cloud Valley', stage: 'Principal', worldX: 33000,
+        dialog: 'Linus Torvalds. Criei o Linux em 1991, o sistema operacional que roda em servidores, smartphones e supercomputadores. Depois criei o Git, que revolucionou o controle de vers\u00e3o. Voc\u00ea chegou ao topo da jornada. Aqui criamos contratos para o futuro -- open source, infraestrutura global e os alicerces da computa\u00e7\u00e3o moderna.',
         look: { hair: '#c4a35a', hairStyle: 'short', beard: '#b8963e', glasses: true, glassesStyle: 'square', shirt: '#2d5016', pants: '#3b3b3b', skinTone: '#F5D0A9' }
     },
 ];
@@ -944,153 +989,162 @@ const NPC_DATA = [
 // ---- buildings / zones ----
 const BUILDINGS = [
     { name: 'XEROX PARC', x: 500, w: 400, h: 200, color: '#94a3b8', roofColor: '#64748b' },
-    { name: 'APPLE GARAGE', x: 1500, w: 350, h: 160, color: '#ef4444', roofColor: '#b91c1c' },
-    { name: 'MICROSOFT', x: 2900, w: 500, h: 280, color: '#0078d4', roofColor: '#005a9e' },
-    { name: 'NUBANK', x: 4100, w: 420, h: 240, color: '#820ad1', roofColor: '#5b0894' },
-    { name: 'GOOGLE', x: 5500, w: 550, h: 250, color: '#4285f4', roofColor: '#2b5ea7' },
-    { name: 'FACEBOOK', x: 7000, w: 450, h: 260, color: '#1877f2', roofColor: '#0d5bbd' },
-    { name: 'AMAZON', x: 8500, w: 500, h: 300, color: '#ff9900', roofColor: '#cc7a00' },
-    { name: 'MERCADO LIVRE', x: 9900, w: 480, h: 270, color: '#ffe600', roofColor: '#ccb800' },
-    { name: 'JP MORGAN', x: 11300, w: 520, h: 310, color: '#0a3d62', roofColor: '#072a44' },
-    { name: 'TESLA / SPACEX', x: 12800, w: 600, h: 320, color: '#cc0000', roofColor: '#990000' },
-    { name: 'ITAU', x: 14300, w: 460, h: 280, color: '#003399', roofColor: '#002266' },
-    { name: 'UBER', x: 15700, w: 440, h: 260, color: '#000000', roofColor: '#1a1a1a' },
-    { name: 'SANTANDER', x: 17100, w: 500, h: 290, color: '#ec0000', roofColor: '#b30000' },
-    { name: 'BRADESCO', x: 18600, w: 480, h: 280, color: '#cc092f', roofColor: '#990720' },
-    { name: 'CLOUD VALLEY', x: 20100, w: 650, h: 350, color: '#8b5cf6', roofColor: '#6d28d9' },
+    { name: 'APPLE GARAGE', x: 1900, w: 350, h: 160, color: '#ef4444', roofColor: '#b91c1c' },
+    { name: 'MICROSOFT', x: 3300, w: 500, h: 280, color: '#0078d4', roofColor: '#005a9e' },
+    { name: 'NUBANK', x: 4700, w: 420, h: 240, color: '#820ad1', roofColor: '#5b0894' },
+    { name: 'DISNEY', x: 6100, w: 450, h: 250, color: '#1a237e', roofColor: '#0d1242' },
+    { name: 'GOOGLE', x: 7500, w: 550, h: 250, color: '#4285f4', roofColor: '#2b5ea7' },
+    { name: 'FACEBOOK', x: 8900, w: 450, h: 260, color: '#1877f2', roofColor: '#0d5bbd' },
+    { name: 'IBM', x: 10300, w: 480, h: 270, color: '#0530ad', roofColor: '#031f7a' },
+    { name: 'AMAZON', x: 11700, w: 500, h: 300, color: '#ff9900', roofColor: '#cc7a00' },
+    { name: 'MERCADO LIVRE', x: 13100, w: 480, h: 270, color: '#ffe600', roofColor: '#ccb800' },
+    { name: 'JP MORGAN', x: 14500, w: 520, h: 310, color: '#0a3d62', roofColor: '#072a44' },
+    { name: 'PAYPAL', x: 15900, w: 460, h: 260, color: '#003087', roofColor: '#001f5c' },
+    { name: 'NETFLIX', x: 17300, w: 480, h: 270, color: '#e50914', roofColor: '#b3070f' },
+    { name: 'SPACEX', x: 18700, w: 550, h: 320, color: '#111111', roofColor: '#000000' },
+    { name: 'TESLA', x: 20100, w: 600, h: 320, color: '#cc0000', roofColor: '#990000' },
+    { name: 'ITAU', x: 21500, w: 460, h: 280, color: '#003399', roofColor: '#002266' },
+    { name: 'UBER', x: 22900, w: 440, h: 260, color: '#000000', roofColor: '#1a1a1a' },
+    { name: 'NVIDIA', x: 24300, w: 500, h: 290, color: '#76b900', roofColor: '#5a8c00' },
+    { name: 'OPENAI', x: 25700, w: 480, h: 270, color: '#412991', roofColor: '#2d1b66' },
+    { name: 'SANTANDER', x: 27100, w: 500, h: 290, color: '#ec0000', roofColor: '#b30000' },
+    { name: 'BRADESCO', x: 28500, w: 480, h: 280, color: '#cc092f', roofColor: '#990720' },
+    { name: 'GEMINI', x: 29900, w: 480, h: 280, color: '#4285f4', roofColor: '#2b5ea7' },
+    { name: 'CLAUDE', x: 31300, w: 480, h: 280, color: '#d4a574', roofColor: '#b8895c' },
+    { name: 'CLOUD VALLEY', x: 32700, w: 650, h: 350, color: '#8b5cf6', roofColor: '#6d28d9' },
 ];
 
 // ---- collectible books ----
 const BOOKS_DATA = [
     {
         id: 'b01', title: 'Clean Code', author: 'Robert C. Martin', color: '#22c55e',
-        summary: 'Codigo e um ativo de longo prazo. Legibilidade > esperteza. Funcoes pequenas, nomes claros, responsabilidade unica e testes automatizados.',
-        lesson: 'Codigo e para humanos primeiro; manutencao custa mais que escrever.',
+        summary: 'Código é um ativo de longo prazo. Legibilidade > esperteza. Funções pequenas, nomes claros, responsabilidade única e testes automatizados.',
+        lesson: 'Código é para humanos primeiro; manutenção custa mais que escrever.',
         worldX: 400, floatY: 130
     },
     {
         id: 'b02', title: 'The Clean Coder', author: 'Robert C. Martin', color: '#16a34a',
-        summary: 'Profissionalismo em engenharia. Disciplina, estimativas realistas, dizer "nao", foco, pratica deliberada e responsabilidade pessoal pela qualidade.',
-        lesson: 'Ser senior nao e saber mais tecnologia, e assumir compromisso com entrega previsivel e qualidade.',
+        summary: 'Profissionalismo em engenharia. Disciplina, estimativas realistas, dizer "não", foco, prática deliberada e responsabilidade pessoal pela qualidade.',
+        lesson: 'Ser sênior não é saber mais tecnologia, é assumir compromisso com entrega previsível e qualidade.',
         worldX: 700, floatY: 150
     },
     {
         id: 'b03', title: 'Clean Architecture', author: 'Robert C. Martin', color: '#15803d',
-        summary: 'Arquitetura orientada a independencia: do framework, do banco, da UI e de detalhes externos. Dependencias apontam para o dominio.',
-        lesson: 'O negocio e o nucleo; tecnologia e detalhe substituivel.',
+        summary: 'Arquitetura orientada a independência: do framework, do banco, da UI e de detalhes externos. Dependências apontam para o domínio.',
+        lesson: 'O negócio é o núcleo; tecnologia é detalhe substituível.',
         worldX: 1200, floatY: 140
     },
     {
         id: 'b04', title: 'Design Patterns', author: 'GoF (Gang of Four)', color: '#3b82f6',
-        summary: 'Catalogo de solucoes recorrentes para problemas classicos de design orientado a objetos. Ensina quando abstrair, desacoplar e reutilizar.',
-        lesson: 'Nao reinventar a roda; use padroes para reduzir complexidade e acoplamento.',
+        summary: 'Catálogo de soluções recorrentes para problemas clássicos de design orientado a objetos. Ensina quando abstrair, desacoplar e reutilizar.',
+        lesson: 'Não reinventar a roda; use padrões para reduzir complexidade e acoplamento.',
         worldX: 2000, floatY: 160
     },
     {
         id: 'b05', title: 'Refactoring', author: 'Martin Fowler', color: '#6366f1',
-        summary: 'Melhorar codigo sem alterar comportamento. Pequenas mudancas continuas mantem o sistema saudavel.',
-        lesson: 'Divida tecnica cresce em silencio; refatorar e manutencao estrategica, nao luxo.',
+        summary: 'Melhorar código sem alterar comportamento. Pequenas mudanças contínuas mantém o sistema saudável.',
+        lesson: 'Dívida técnica cresce em silêncio; refatorar é manutenção estratégica, não luxo.',
         worldX: 2600, floatY: 130
     },
     {
         id: 'b06', title: 'Domain-Driven Design', author: 'Eric Evans', color: '#8b5cf6',
-        summary: 'Modelar software a partir do dominio do negocio, usando linguagem ubiqua e limites claros (Bounded Contexts).',
-        lesson: 'Software complexo falha quando a tecnologia ignora o negocio.',
+        summary: 'Modelar software a partir do domínio do negócio, usando linguagem ubíqua e limites claros (Bounded Contexts).',
+        lesson: 'Software complexo falha quando a tecnologia ignora o negócio.',
         worldX: 3500, floatY: 150
     },
     {
         id: 'b07', title: 'Implementing DDD', author: 'Vaughn Vernon', color: '#7c3aed',
-        summary: 'Versao pratica do DDD: agregados, eventos de dominio, consistencia, microsservicos orientados a contexto.',
-        lesson: 'Limites bem definidos evitam sistemas distribuidos caoticos.',
+        summary: 'Versão prática do DDD: agregados, eventos de domínio, consistência, microsserviços orientados a contexto.',
+        lesson: 'Limites bem definidos evitam sistemas distribuídos caóticos.',
         worldX: 4200, floatY: 140
     },
     {
         id: 'b08', title: 'Designing Data-Intensive Apps', author: 'Martin Kleppmann', color: '#ef4444',
-        summary: 'Biblia de sistemas distribuidos: consistencia, replicacao, particionamento, tolerancia a falhas, trade-offs CAP.',
-        lesson: 'Escala e sobre trade-offs; nao existe sistema distribuido perfeito.',
+        summary: 'Bíblia de sistemas distribuídos: consistência, replicação, particionamento, tolerância a falhas, trade-offs CAP.',
+        lesson: 'Escala é sobre trade-offs; não existe sistema distribuído perfeito.',
         worldX: 5100, floatY: 160
     },
     {
         id: 'b09', title: 'Building Microservices', author: 'Sam Newman', color: '#f97316',
-        summary: 'Como decompor sistemas, evitar acoplamento e gerenciar comunicacao, deploy e governanca.',
-        lesson: 'Microsservicos so funcionam com autonomia, observabilidade e cultura madura.',
+        summary: 'Como decompor sistemas, evitar acoplamento e gerenciar comunicação, deploy e governança.',
+        lesson: 'Microsserviços só funcionam com autonomia, observabilidade e cultura madura.',
         worldX: 5700, floatY: 130
     },
     {
         id: 'b10', title: 'Release It!', author: 'Michael Nygard', color: '#dc2626',
-        summary: 'Sistemas falham em producao por causas previsiveis. Circuit breaker, bulkhead, retry, timeout e padroes de resiliencia.',
-        lesson: 'Projetar para falhar e o unico caminho para estabilidade.',
+        summary: 'Sistemas falham em produção por causas previsíveis. Circuit breaker, bulkhead, retry, timeout e padrões de resiliência.',
+        lesson: 'Projetar para falhar é o único caminho para estabilidade.',
         worldX: 6500, floatY: 150
     },
     {
         id: 'b11', title: 'Site Reliability Engineering', author: 'Google SRE Team', color: '#fbbf24',
-        summary: 'Operar sistemas como engenharia: SLO, error budget, automacao, reducao de toil.',
-        lesson: 'Confiabilidade e uma metrica de negocio, nao apenas tecnica.',
+        summary: 'Operar sistemas como engenharia: SLO, error budget, automação, redução de toil.',
+        lesson: 'Confiabilidade é uma métrica de negócio, não apenas técnica.',
         worldX: 7200, floatY: 140
     },
     {
         id: 'b12', title: 'The Phoenix Project', author: 'Gene Kim', color: '#f59e0b',
-        summary: 'Romance sobre transformacao DevOps. Mostra gargalos, fluxo, dependencias e melhoria continua.',
-        lesson: 'TI e sistema de producao; otimizar o fluxo gera resultado real.',
+        summary: 'Romance sobre transformação DevOps. Mostra gargalos, fluxo, dependências e melhoria contínua.',
+        lesson: 'TI é sistema de produção; otimizar o fluxo gera resultado real.',
         worldX: 8200, floatY: 160
     },
     {
         id: 'b13', title: 'The DevOps Handbook', author: 'Gene Kim', color: '#eab308',
-        summary: 'Manual pratico: CI/CD, infraestrutura como codigo, feedback rapido, cultura colaborativa.',
-        lesson: 'Velocidade com qualidade so vem com automacao e integracao continua.',
+        summary: 'Manual prático: CI/CD, infraestrutura como código, feedback rápido, cultura colaborativa.',
+        lesson: 'Velocidade com qualidade só vem com automação e integração contínua.',
         worldX: 9500, floatY: 130
     },
     {
         id: 'b14', title: 'The Lean Startup', author: 'Eric Ries', color: '#ec4899',
-        summary: 'Construir, medir, aprender. Validar hipoteses antes de escalar.',
-        lesson: 'Nao construa mais; aprenda mais rapido com o mercado.',
+        summary: 'Construir, medir, aprender. Validar hipóteses antes de escalar.',
+        lesson: 'Não construa mais; aprenda mais rápido com o mercado.',
         worldX: 10200, floatY: 150
     },
     {
         id: 'b15', title: 'Measure What Matters', author: 'John Doerr', color: '#d946ef',
-        summary: 'OKRs para alinhar estrategia e execucao. Foco em resultados mensuraveis e prioridades claras.',
-        lesson: 'O que nao e medido nao e gerenciado.',
+        summary: 'OKRs para alinhar estratégia e execução. Foco em resultados mensuráveis e prioridades claras.',
+        lesson: 'O que não é medido não é gerenciado.',
         worldX: 11200, floatY: 140
     },
     {
         id: 'b16', title: 'Good Strategy Bad Strategy', author: 'Richard Rumelt', color: '#a855f7',
-        summary: 'Estrategia real e diagnostico + escolha clara + acoes coerentes. Evita metas genericas e slogans.',
-        lesson: 'Estrategia e foco e renuncia, nao ambicao vaga.',
+        summary: 'Estratégia real é diagnóstico + escolha clara + ações coerentes. Evita metas genéricas e slogans.',
+        lesson: 'Estratégia é foco e renúncia, não ambição vaga.',
         worldX: 12800, floatY: 160
     },
     {
         id: 'b17', title: 'Cracking the Coding Interview', author: 'Gayle Laakmann McDowell', color: '#06b6d4',
-        summary: 'Preparacao para entrevistas tecnicas: arrays, strings, arvores, grafos, recursao e complexidade algoritmica.',
-        lesson: 'Entrevistas medem raciocinio, nao decoreba. Pratique decomposicao de problemas.',
+        summary: 'Preparação para entrevistas técnicas: arrays, strings, árvores, grafos, recursão e complexidade algorítmica.',
+        lesson: 'Entrevistas medem raciocínio, não decoreba. Pratique decomposição de problemas.',
         worldX: 13500, floatY: 130
     },
     {
         id: 'b18', title: 'Introduction to Algorithms', author: 'Cormen, Leiserson, Rivest, Stein', color: '#0891b2',
-        summary: 'CLRS: a referencia academica em algoritmos. Ordenacao, grafos, programacao dinamica, NP-completude.',
-        lesson: 'Complexidade computacional define os limites do que e possivel.',
+        summary: 'CLRS: a referência acadêmica em algoritmos. Ordenação, grafos, programação dinâmica, NP-completude.',
+        lesson: 'Complexidade computacional define os limites do que é possível.',
         worldX: 14500, floatY: 150
     },
     {
         id: 'b19', title: 'System Design Interview', author: 'Alex Xu', color: '#14b8a6',
-        summary: 'Como projetar sistemas escalaveis: load balancer, cache, CDN, sharding, message queue, rate limiter.',
-        lesson: 'Design de sistemas e sobre trade-offs mensuráveis, nao escolhas absolutas.',
+        summary: 'Como projetar sistemas escaláveis: load balancer, cache, CDN, sharding, message queue, rate limiter.',
+        lesson: 'Design de sistemas é sobre trade-offs mensuráveis, não escolhas absolutas.',
         worldX: 15500, floatY: 140
     },
     {
         id: 'b20', title: 'Grokking Algorithms', author: 'Aditya Bhargava', color: '#10b981',
-        summary: 'Algoritmos explicados visualmente: busca binaria, BFS, Dijkstra, programacao dinamica, KNN.',
-        lesson: 'Pensar algoritmicamente e mais importante que decorar implementacoes.',
+        summary: 'Algoritmos explicados visualmente: busca binária, BFS, Dijkstra, programação dinâmica, KNN.',
+        lesson: 'Pensar algoritmicamente é mais importante que decorar implementações.',
         worldX: 16500, floatY: 160
     },
     {
         id: 'b21', title: 'Accelerate', author: 'Forsgren, Humble, Kim', color: '#84cc16',
-        summary: 'Metricas DORA: frequencia de deploy, lead time, MTTR, taxa de falha. Evidencia cientifica para DevOps.',
-        lesson: 'Performance de engenharia se mede com dados, nao opiniao.',
+        summary: 'Métricas DORA: frequência de deploy, lead time, MTTR, taxa de falha. Evidência científica para DevOps.',
+        lesson: 'Performance de engenharia se mede com dados, não opinião.',
         worldX: 17500, floatY: 130
     },
     {
         id: 'b22', title: 'Staff Engineer', author: 'Will Larson', color: '#a3e635',
-        summary: 'Alem de senior: influencia tecnica, mentoria, decisoes arquiteturais, navegacao organizacional.',
+        summary: 'Além de sênior: influência técnica, mentoria, decisões arquiteturais, navegação organizacional.',
         lesson: 'Staff Engineer resolve problemas que nenhum time sozinho consegue.',
         worldX: 18500, floatY: 150
     },
@@ -1329,7 +1383,7 @@ const World = {
         if (!State.interactionTarget) return;
         // If already locked in a company, prevent interaction with other NPCs
         if (State.lockedRegion && State.interactionTarget.region !== State.lockedRegion) {
-            this.showDialog('SISTEMA', 'Bloqueado', 'Voce precisa concluir todos os desafios em ' + State.lockedRegion + ' antes de sair. Resolva as questoes e o desafio de codigo.');
+            this.showDialog('SISTEMA', 'Bloqueado', 'Você precisa concluir todos os desafios em ' + State.lockedRegion + ' antes de sair. Resolva as questões e o desafio de código.');
             return;
         }
 
@@ -1342,20 +1396,20 @@ const World = {
         SFX.talk();
 
         if (npcIdx > playerIdx) {
-            this.showDialog(npc.name, npc.role, 'Voce ainda nao atingiu o cargo necessario para me desafiar. Continue evoluindo.');
+            this.showDialog(npc.name, npc.role, 'Você ainda não atingiu o cargo necessário para me desafiar. Continue evoluindo.');
             return;
         }
 
         // If region already fully completed, just greet
         if (State.completedRegions.includes(npc.region)) {
-            this.showDialog(npc.name, npc.role, 'Voce ja completou todos os desafios aqui. Parabens! Siga em frente para a proxima empresa.');
+            this.showDialog(npc.name, npc.role, 'Você já completou todos os desafios aqui. Parabéns! Siga em frente para a próxima empresa.');
             return;
         }
 
         // If already locked in this same company, go directly to challenges (no door animation again)
         if (State.lockedRegion === npc.region) {
             State._pendingNpcRegion = npc.region;
-            this.showDialog(npc.name, npc.role, 'Vamos continuar os desafios. Voce ainda precisa completar tudo aqui.');
+            this.showDialog(npc.name, npc.role, 'Vamos continuar os desafios. Você ainda precisa completar tudo aqui.');
             return;
         }
 
@@ -1370,7 +1424,7 @@ const World = {
             this._doorAnimCallback = () => {
                 State.enteringDoor = false;
                 State.lockedRegion = npc.region;
-                this.showDialog(npc.name, npc.role, npc.dialog + '\n\nVoce entrou na ' + npc.region + '. Resolva TODOS os desafios para poder sair.');
+                this.showDialog(npc.name, npc.role, npc.dialog + '\n\nVocê entrou na ' + npc.region + '. Resolva TODOS os desafios para poder sair.');
                 State._pendingNpcRegion = npc.region;
             };
         } else {
@@ -2972,9 +3026,9 @@ const Game = {
             if (e.message && (e.message.includes('not found') || e.message.includes('404'))) {
                 localStorage.removeItem('garage_session_id');
                 UI.updateTitleButtons();
-                if (!silent) alert('Sessao anterior nao encontrada. Inicie um novo jogo.');
+                if (!silent) alert('Sessão anterior não encontrada. Inicie um novo jogo.');
             } else {
-                if (!silent) alert('Erro ao carregar sessao: ' + e.message);
+                if (!silent) alert('Erro ao carregar sessão: ' + e.message);
             }
             return false;
         }
@@ -3153,15 +3207,15 @@ const JavaAnalyzer = {
                 if (ch === '/' && lines[ln][c + 1] === '/') break; // line comment
                 if (pairs[ch]) stack.push({ ch, line: ln + 1 });
                 else if (reverse[ch]) {
-                    if (stack.length === 0) return { ok: false, line: ln + 1, msg: 'Erro de compilacao: Linha ' + (ln + 1) + ': "' + ch + '" sem abertura correspondente.' };
+                    if (stack.length === 0) return { ok: false, line: ln + 1, msg: 'Erro de compilação: Linha ' + (ln + 1) + ': "' + ch + '" sem abertura correspondente.' };
                     const top = stack.pop();
-                    if (pairs[top.ch] !== ch) return { ok: false, line: ln + 1, msg: 'Erro de compilacao: Linha ' + (ln + 1) + ': esperava "' + pairs[top.ch] + '" mas encontrou "' + ch + '". Abertura na linha ' + top.line + '.' };
+                    if (pairs[top.ch] !== ch) return { ok: false, line: ln + 1, msg: 'Erro de compilação: Linha ' + (ln + 1) + ': esperava "' + pairs[top.ch] + '" mas encontrou "' + ch + '". Abertura na linha ' + top.line + '.' };
                 }
             }
         }
         if (stack.length > 0) {
             const top = stack[stack.length - 1];
-            return { ok: false, line: top.line, msg: 'Erro de compilacao: "' + top.ch + '" aberto na linha ' + top.line + ' nunca foi fechado. Falta "' + pairs[top.ch] + '".' };
+            return { ok: false, line: top.line, msg: 'Erro de compilação: "' + top.ch + '" aberto na linha ' + top.line + ' nunca foi fechado. Falta "' + pairs[top.ch] + '".' };
         }
         return { ok: true };
     },
@@ -3179,13 +3233,13 @@ const JavaAnalyzer = {
             if (/^(public|private|protected|static|class|interface|enum|if|else|for|while|do|switch|case|default|try|catch|finally|import|package)\b/.test(line) && line.endsWith('{')) continue;
             if (/^\}/.test(line)) continue;
             if (/^(import|package)\s/.test(line) && !line.endsWith(';'))
-                return { ok: false, line: i + 1, msg: 'Erro de compilacao: Linha ' + (i + 1) + ': falta ";" no final da declaracao.' };
+                return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': falta ";" no final da declaracao.' };
             // Statement lines (assignments, method calls, return, declarations)
             if (/^(int|long|double|float|char|boolean|String|var|return|System|HashMap|Stack|Queue|LinkedList|ListNode|TreeNode)\b/.test(line) ||
                 /^\w+\s*[\.\[\(=]/.test(line) ||
                 /^\w+\s+\w+\s*=/.test(line)) {
                 if (!line.endsWith(';') && !line.endsWith('{') && !line.endsWith('}') && !line.endsWith(',') && !line.endsWith('(') && !/\)\s*\{/.test(line))
-                    return { ok: false, line: i + 1, msg: 'Erro de compilacao: Linha ' + (i + 1) + ': falta ";" no final da declaracao.' };
+                    return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': falta ";" no final da declaracao.' };
             }
         }
         return { ok: true };
@@ -3253,12 +3307,12 @@ const JavaAnalyzer = {
 
                 // Check: init var must match condition var
                 if (initVar !== condVar) {
-                    return { ok: false, line: i + 1, msg: 'Erro de compilacao: Linha ' + (i + 1) + ': variavel do inicializador "' + initVar + '" e diferente da variavel na condicao "' + condVar + '". O for espera a mesma variavel.' };
+                    return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': variável do inicializador "' + initVar + '" é diferente da variável na condição "' + condVar + '". O for espera a mesma variável.' };
                 }
 
                 // Check: increment must reference the same var
                 if (!incrExpr.includes(initVar)) {
-                    return { ok: false, line: i + 1, msg: 'Erro de compilacao: Linha ' + (i + 1) + ': incremento "' + incrExpr + '" nao usa a variavel iteradora "' + initVar + '".' };
+                    return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': incremento "' + incrExpr + '" não usa a variável iteradora "' + initVar + '".' };
                 }
 
                 // Check: if condition references .length, the object must be declared
@@ -3266,7 +3320,7 @@ const JavaAnalyzer = {
                 if (lengthMatch) {
                     const arrName = lengthMatch[1];
                     if (!decls.has(arrName)) {
-                        return { ok: false, line: i + 1, msg: 'Erro de compilacao: Linha ' + (i + 1) + ': variavel "' + arrName + '" nao foi declarada. Voce quis dizer outra variavel?' };
+                        return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': variável "' + arrName + '" não foi declarada. Você quis dizer outra variável?' };
                     }
                 }
 
@@ -3313,7 +3367,7 @@ const JavaAnalyzer = {
                     const contextAbove = lines.slice(Math.max(0, i - 5), i).join('\n');
                     if (/for\s*\(/.test(contextAbove) && decls.size > 0) {
                         // Inside or near a for loop -- empty println is likely wrong
-                        return { ok: false, line: i + 1, msg: 'Erro de compilacao: Linha ' + (i + 1) + ': System.out.println() sem argumento. Voce provavelmente deveria imprimir um elemento do array. Ex: System.out.println(arr[i]);' };
+                        return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': System.out.println() sem argumento. Você provavelmente deveria imprimir um elemento do array. Ex: System.out.println(arr[i]);' };
                     }
                     continue;
                 }
@@ -3340,7 +3394,7 @@ const JavaAnalyzer = {
                         const methodParam = code.match(new RegExp('\\(\\s*(?:int\\[\\]|int|String|long|double|boolean|float|char|String\\[\\])\\s+' + ref + '\\b'));
                         if (methodParam) continue;
                         if (!decls.has(ref)) {
-                            return { ok: false, line: i + 1, msg: 'Erro de compilacao: Linha ' + (i + 1) + ': variavel "' + ref + '" nao foi declarada neste escopo.' };
+                            return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': variável "' + ref + '" não foi declarada neste escopo.' };
                         }
                     }
                 }
@@ -3384,7 +3438,7 @@ const JavaAnalyzer = {
             // If iterator name matches an existing array name -- critical error
             for (const arr of arrayDecls) {
                 if (iterName === arr.name) {
-                    return { ok: false, line: i + 1, msg: 'Erro de compilacao: Linha ' + (i + 1) + ': voce esta usando "' + iterName + '" como iterador do for, mas "' + iterName + '" ja e o nome do seu array (declarado na linha ' + arr.line + '). Use um nome diferente para o contador, como "i". Ex: for (int i = 0; i < ' + arr.name + '.length; i++)' };
+                    return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': você está usando "' + iterName + '" como iterador do for, mas "' + iterName + '" já é o nome do seu array (declarado na linha ' + arr.line + '). Use um nome diferente para o contador, como "i". Ex: for (int i = 0; i < ' + arr.name + '.length; i++)' };
                 }
             }
 
@@ -3396,9 +3450,9 @@ const JavaAnalyzer = {
                 if (!knownArr && condArr !== 'args') {
                     // Check if they wrote the wrong name
                     if (arrayDecls.length > 0) {
-                        return { ok: false, line: i + 1, msg: 'Erro de compilacao: Linha ' + (i + 1) + ': "' + condArr + '.length" -- variavel "' + condArr + '" nao existe. O array se chama "' + arrayDecls[0].name + '". Use: ' + arrayDecls[0].name + '.length' };
+                        return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': "' + condArr + '.length" -- variável "' + condArr + '" não existe. O array se chama "' + arrayDecls[0].name + '". Use: ' + arrayDecls[0].name + '.length' };
                     }
-                    return { ok: false, line: i + 1, msg: 'Erro de compilacao: Linha ' + (i + 1) + ': "' + condArr + '" nao e uma variavel declarada.' };
+                    return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': "' + condArr + '" não é uma variável declarada.' };
                 }
             }
 
@@ -3415,7 +3469,7 @@ const JavaAnalyzer = {
                 if (j > i || loopStarted) {
                     const printMatch = lines[j].match(/System\s*\.\s*out\s*\.\s*print(?:ln)?\s*\(\s*\)/);
                     if (printMatch && arrayDecls.length > 0) {
-                        return { ok: false, line: j + 1, msg: 'Erro de compilacao: Linha ' + (j + 1) + ': System.out.println() esta vazio dentro do loop. Para imprimir elementos do array, use: System.out.println(' + arrayDecls[0].name + '[' + iterName + ']);' };
+                        return { ok: false, line: j + 1, msg: 'Erro de compilação: Linha ' + (j + 1) + ': System.out.println() está vazio dentro do loop. Para imprimir elementos do array, use: System.out.println(' + arrayDecls[0].name + '[' + iterName + ']);' };
                     }
                     // Check if println uses array[wrong_var]
                     const printArrMatch = lines[j].match(/System\s*\.\s*out\s*\.\s*print(?:ln)?\s*\(\s*(\w+)\s*\[\s*(\w+)\s*\]\s*\)/);
@@ -3424,13 +3478,13 @@ const JavaAnalyzer = {
                         const usedIdx = printArrMatch[2];
                         const knownArr = arrayDecls.find(a => a.name === usedArr);
                         if (!knownArr) {
-                            return { ok: false, line: j + 1, msg: 'Erro de compilacao: Linha ' + (j + 1) + ': array "' + usedArr + '" nao foi declarado.' };
+                            return { ok: false, line: j + 1, msg: 'Erro de compilação: Linha ' + (j + 1) + ': array "' + usedArr + '" não foi declarado.' };
                         }
                         // Extract iterator declared in for-init
                         const forDeclMatch = line.match(/for\s*\(\s*int\s+(\w+)/);
                         const actualIter = forDeclMatch ? forDeclMatch[1] : iterName;
                         if (usedIdx !== actualIter) {
-                            return { ok: false, line: j + 1, msg: 'Erro de compilacao: Linha ' + (j + 1) + ': indice "' + usedIdx + '" nao foi declarado neste escopo. O iterador do for e "' + actualIter + '". Use: ' + usedArr + '[' + actualIter + ']' };
+                            return { ok: false, line: j + 1, msg: 'Erro de compilação: Linha ' + (j + 1) + ': índice "' + usedIdx + '" não foi declarado neste escopo. O iterador do for é "' + actualIter + '". Use: ' + usedArr + '[' + actualIter + ']' };
                         }
                     }
                 }
@@ -3488,9 +3542,9 @@ const CODE_CHALLENGES = [
     // ── INTERN ──────────────────────────────────────────────────────────────
     {
         id: 'code_hello', stage: 'Intern', region: 'Xerox PARC',
-        title: 'Hello World', concept: 'Syntax / Estrutura basica',
+        title: 'Hello World', concept: 'Syntax / Estrutura básica',
         language: 'java', fileName: 'HelloWorld.java',
-        description: 'Escreva a classe HelloWorld com o metodo main que imprime "Hello World" no console.\n\nRegras:\n- Nome da classe: HelloWorld (CamelCase)\n- Metodo: public static void main(String[] args)\n- Saida: System.out.println("Hello World");',
+        description: 'Escreva a classe HelloWorld com o método main que imprime "Hello World" no console.\n\nRegras:\n- Nome da classe: HelloWorld (CamelCase)\n- Método: public static void main(String[] args)\n- Saída: System.out.println("Hello World");',
         starterCode: '// Escreva sua classe aqui\n\n',
         validator(code) {
             // Phase 1: Structural compilation
@@ -3501,39 +3555,39 @@ const CODE_CHALLENGES = [
                 const classMatch = code.match(/class\s+(\w+)/);
                 if (classMatch) {
                     const typed = classMatch[1];
-                    if (/^hello\s*world$/i.test(typed)) return { ok: false, msg: 'Erro de compilacao: Java e case-sensitive. Use HelloWorld (H e W maiusculos).' };
-                    if (typed.toLowerCase().includes('hello')) return { ok: false, msg: 'Erro de compilacao: Nome da classe incorreto: "' + typed + '". Deve ser exatamente HelloWorld.' };
-                    return { ok: false, msg: 'Erro de compilacao: A classe deve se chamar HelloWorld (CamelCase). Voce escreveu: ' + typed };
+                    if (/^hello\s*world$/i.test(typed)) return { ok: false, msg: 'Erro de compilação: Java e case-sensitive. Use HelloWorld (H e W maiusculos).' };
+                    if (typed.toLowerCase().includes('hello')) return { ok: false, msg: 'Erro de compilação: Nome da classe incorreto: "' + typed + '". Deve ser exatamente HelloWorld.' };
+                    return { ok: false, msg: 'Erro de compilação: A classe deve se chamar HelloWorld (CamelCase). Você escreveu: ' + typed };
                 }
-                return { ok: false, msg: 'Erro de compilacao: Falta declarar a classe. Use: public class HelloWorld { ... }' };
+                return { ok: false, msg: 'Erro de compilação: Falta declarar a classe. Use: public class HelloWorld { ... }' };
             }
-            if (!/public\s+static\s+void\s+main\s*\(\s*String\s*\[\s*\]\s+\w+\s*\)/.test(code)) return { ok: false, msg: 'Erro de compilacao: Metodo main incorreto. Use: public static void main(String[] args)' };
+            if (!/public\s+static\s+void\s+main\s*\(\s*String\s*\[\s*\]\s+\w+\s*\)/.test(code)) return { ok: false, msg: 'Erro de compilação: Método main incorreto. Use: public static void main(String[] args)' };
             if (!/System\s*\.\s*out\s*\.\s*println\s*\(\s*"Hello World[!]?"\s*\)/.test(code)) {
-                if (/system\s*\.\s*out/i.test(code) && !/System\.out/.test(code)) return { ok: false, msg: 'Erro de compilacao: Java e case-sensitive. Use System.out.println (S maiusculo).' };
-                if (/System\s*\.\s*out\s*\.\s*print\s*\(/.test(code) && !/println/.test(code)) return { ok: false, msg: 'Erro de compilacao: Use println (com "ln" no final), nao print.' };
-                if (/"hello world"/i.test(code) && !/"Hello World"/.test(code)) return { ok: false, msg: 'Erro de compilacao: O texto deve ser exatamente "Hello World" (H e W maiusculos).' };
-                return { ok: false, msg: 'Erro de compilacao: Use System.out.println("Hello World");' };
+                if (/system\s*\.\s*out/i.test(code) && !/System\.out/.test(code)) return { ok: false, msg: 'Erro de compilação: Java e case-sensitive. Use System.out.println (S maiusculo).' };
+                if (/System\s*\.\s*out\s*\.\s*print\s*\(/.test(code) && !/println/.test(code)) return { ok: false, msg: 'Erro de compilação: Use println (com "ln" no final), não print.' };
+                if (/"hello world"/i.test(code) && !/"Hello World"/.test(code)) return { ok: false, msg: 'Erro de compilação: O texto deve ser exatamente "Hello World" (H e W maiusculos).' };
+                return { ok: false, msg: 'Erro de compilação: Use System.out.println("Hello World");' };
             }
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> Hello World\n\nProcesso finalizado com codigo de saida 0.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> Hello World\n\nProcesso finalizado com código de saída 0.' };
         },
-        helpText: 'COMO PENSAR:\n1. Todo programa Java comeca com uma classe\n2. O ponto de entrada e o metodo main (assinatura fixa)\n3. System.out.println() e a funcao de saida\n\nCOLA -- Copie este codigo na IDE:\n\npublic class HelloWorld {\n    public static void main(String[] args) {\n        System.out.println("Hello World");\n    }\n}'
+        helpText: 'COMO PENSAR:\n1. Todo programa Java começa com uma classe\n2. O ponto de entrada é o método main (assinatura fixa)\n3. System.out.println() é a função de saída\n\nCOLA -- Copie este código na IDE:\n\npublic class HelloWorld {\n    public static void main(String[] args) {\n        System.out.println("Hello World");\n    }\n}'
     },
     {
         id: 'code_var', stage: 'Intern', region: 'Apple Garage',
-        title: 'Variaveis e Tipos', concept: 'Tipos primitivos / Declaracao',
+        title: 'Variáveis e Tipos', concept: 'Tipos primitivos / Declaração',
         language: 'java', fileName: 'Variables.java',
-        description: 'Declare e imprima:\n1. int idade = 20;\n2. double salario = 3500.50;\n3. String nome = "Dev";\n4. boolean ativo = true;\n\nImprima cada variavel com System.out.println().',
-        starterCode: 'public class Variables {\n    public static void main(String[] args) {\n        // Declare suas variaveis aqui\n\n    }\n}\n',
+        description: 'Declare e imprima:\n1. int idade = 20;\n2. double salario = 3500.50;\n3. String nome = "Dev";\n4. boolean ativo = true;\n\nImprima cada variável com System.out.println().',
+        starterCode: 'public class Variables {\n    public static void main(String[] args) {\n        // Declare suas variáveis aqui\n\n    }\n}\n',
         validator(code) {
             const compile = JavaAnalyzer.analyze(code);
             if (!compile.ok) return compile;
-            if (!/class\s+Variables/.test(code)) return { ok: false, msg: 'Erro de compilacao: A classe deve se chamar Variables.' };
-            if (!/int\s+\w+\s*=\s*\d+/.test(code)) return { ok: false, msg: 'Erro de compilacao: Declare uma variavel int. Ex: int idade = 20;' };
-            if (!/double\s+\w+\s*=\s*[\d.]+/.test(code)) return { ok: false, msg: 'Erro de compilacao: Declare uma variavel double. Ex: double salario = 3500.50;' };
-            if (!/String\s+\w+\s*=\s*"[^"]*"/.test(code)) return { ok: false, msg: 'Erro de compilacao: Declare uma variavel String. Ex: String nome = "Dev";' };
-            if (!/boolean\s+\w+\s*=\s*(true|false)/.test(code)) return { ok: false, msg: 'Erro de compilacao: Declare uma variavel boolean. Ex: boolean ativo = true;' };
+            if (!/class\s+Variables/.test(code)) return { ok: false, msg: 'Erro de compilação: A classe deve se chamar Variables.' };
+            if (!/int\s+\w+\s*=\s*\d+/.test(code)) return { ok: false, msg: 'Erro de compilação: Declare uma variável int. Ex: int idade = 20;' };
+            if (!/double\s+\w+\s*=\s*[\d.]+/.test(code)) return { ok: false, msg: 'Erro de compilação: Declare uma variável double. Ex: double salario = 3500.50;' };
+            if (!/String\s+\w+\s*=\s*"[^"]*"/.test(code)) return { ok: false, msg: 'Erro de compilação: Declare uma variável String. Ex: String nome = "Dev";' };
+            if (!/boolean\s+\w+\s*=\s*(true|false)/.test(code)) return { ok: false, msg: 'Erro de compilação: Declare uma variável boolean. Ex: boolean ativo = true;' };
             const printCount = (code.match(/System\s*\.\s*out\s*\.\s*println/g) || []).length;
-            if (printCount < 4) return { ok: false, msg: 'Erro semantico: Imprima cada variavel com System.out.println(). Faltam ' + (4 - printCount) + ' prints.' };
+            if (printCount < 4) return { ok: false, msg: 'Erro semântico: Imprima cada variavel com System.out.println(). Faltam ' + (4 - printCount) + ' prints.' };
             // Verify println arguments reference declared vars
             const declNames = [];
             const declMatches = code.matchAll(/\b(int|double|String|boolean)\s+(\w+)\s*=/g);
@@ -3541,16 +3595,16 @@ const CODE_CHALLENGES = [
             const printArgs = code.matchAll(/System\s*\.\s*out\s*\.\s*println\s*\(\s*(\w+)\s*\)/g);
             for (const m of printArgs) {
                 if (!declNames.includes(m[1]) && m[1] !== 'true' && m[1] !== 'false')
-                    return { ok: false, msg: 'Erro de compilacao: variavel "' + m[1] + '" no println nao foi declarada.' };
+                    return { ok: false, msg: 'Erro de compilação: variável "' + m[1] + '" no println não foi declarada.' };
             }
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 20\n> 3500.5\n> Dev\n> true\n\nProcesso finalizado com codigo de saida 0.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 20\n> 3500.5\n> Dev\n> true\n\nProcesso finalizado com código de saída 0.' };
         },
-        helpText: 'COMO PENSAR:\n1. Java tem 4 tipos basicos: int (inteiro), double (decimal), String (texto), boolean (true/false)\n2. Cada variavel precisa de tipo + nome + valor\n3. Ponto e virgula no final de cada linha\n\nCOLA -- Copie este codigo na IDE:\n\npublic class Variables {\n    public static void main(String[] args) {\n        int idade = 20;\n        double salario = 3500.50;\n        String nome = "Dev";\n        boolean ativo = true;\n\n        System.out.println(idade);\n        System.out.println(salario);\n        System.out.println(nome);\n        System.out.println(ativo);\n    }\n}'
+        helpText: 'COMO PENSAR:\n1. Java tem 4 tipos básicos: int (inteiro), double (decimal), String (texto), boolean (true/false)\n2. Cada variável precisa de tipo + nome + valor\n3. Ponto e vírgula no final de cada linha\n\nCOLA -- Copie este código na IDE:\n\npublic class Variables {\n    public static void main(String[] args) {\n        int idade = 20;\n        double salario = 3500.50;\n        String nome = "Dev";\n        boolean ativo = true;\n\n        System.out.println(idade);\n        System.out.println(salario);\n        System.out.println(nome);\n        System.out.println(ativo);\n    }\n}'
     },
     // ── JUNIOR ──────────────────────────────────────────────────────────────
     {
         id: 'code_array', stage: 'Junior', region: 'Microsoft',
-        title: 'Array e Loop', concept: 'Arrays / Iteracao',
+        title: 'Array e Loop', concept: 'Arrays / Iteração',
         language: 'java', fileName: 'ArrayLoop.java',
         description: 'Crie um array de inteiros {10, 20, 30, 40, 50}.\nUse um loop for para imprimir cada elemento.\n\nDica: array.length retorna o tamanho.',
         starterCode: 'public class ArrayLoop {\n    public static void main(String[] args) {\n        // Crie o array e o loop aqui\n\n    }\n}\n',
@@ -3559,67 +3613,67 @@ const CODE_CHALLENGES = [
             const compile = JavaAnalyzer.analyze(code);
             if (!compile.ok) return compile;
             // Phase 2: Domain checks
-            if (!/class\s+ArrayLoop/.test(code)) return { ok: false, msg: 'Erro de compilacao: A classe deve se chamar ArrayLoop.' };
+            if (!/class\s+ArrayLoop/.test(code)) return { ok: false, msg: 'Erro de compilação: A classe deve se chamar ArrayLoop.' };
             if (!/int\s*\[\s*\]\s+\w+\s*=\s*\{/.test(code) && !/int\s*\[\s*\]\s+\w+\s*=\s*new\s+int/.test(code))
-                return { ok: false, msg: 'Erro de compilacao: Declare um array de int. Ex: int[] nums = {10, 20, 30, 40, 50};' };
+                return { ok: false, msg: 'Erro de compilação: Declare um array de int. Ex: int[] nums = {10, 20, 30, 40, 50};' };
             // Extract array name
             const arrMatch = code.match(/int\s*\[\s*\]\s+(\w+)\s*=/);
             const arrName = arrMatch ? arrMatch[1] : 'nums';
             // Must have a for loop
             if (!/for\s*\(/.test(code) && !/for\s*\(\s*int\s+\w+\s*:/.test(code))
-                return { ok: false, msg: 'Erro de compilacao: Use um loop for para iterar o array.' };
+                return { ok: false, msg: 'Erro de compilação: Use um loop for para iterar o array.' };
             // Check for-each or standard for
             const forEachMatch = code.match(/for\s*\(\s*int\s+(\w+)\s*:\s*(\w+)\s*\)/);
             if (forEachMatch) {
                 // For-each: verify array name matches
                 if (forEachMatch[2] !== arrName)
-                    return { ok: false, msg: 'Erro de compilacao: for-each itera sobre "' + forEachMatch[2] + '" mas o array se chama "' + arrName + '".' };
+                    return { ok: false, msg: 'Erro de compilação: for-each itera sobre "' + forEachMatch[2] + '" mas o array se chama "' + arrName + '".' };
                 // Verify println uses the loop variable
                 const loopVar = forEachMatch[1];
                 const printInLoop = new RegExp('System\\s*\\.\\s*out\\s*\\.\\s*println\\s*\\(\\s*' + loopVar + '\\s*\\)');
                 if (!printInLoop.test(code))
-                    return { ok: false, msg: 'Erro semantico: Dentro do for-each, imprima a variavel "' + loopVar + '". Ex: System.out.println(' + loopVar + ');' };
+                    return { ok: false, msg: 'Erro semântico: Dentro do for-each, imprima a variavel "' + loopVar + '". Ex: System.out.println(' + loopVar + ');' };
             } else {
                 // Standard for: verify .length references correct array
-                if (!/\.length/.test(code)) return { ok: false, msg: 'Erro semantico: Use ' + arrName + '.length como condicao do for.' };
+                if (!/\.length/.test(code)) return { ok: false, msg: 'Erro semântico: Use ' + arrName + '.length como condicao do for.' };
                 const lengthRef = code.match(/(\w+)\.length/);
                 if (lengthRef && lengthRef[1] !== arrName && lengthRef[1] !== 'args')
-                    return { ok: false, msg: 'Erro de compilacao: "' + lengthRef[1] + '.length" -- variavel "' + lengthRef[1] + '" nao existe. O array se chama "' + arrName + '". Use: ' + arrName + '.length' };
+                    return { ok: false, msg: 'Erro de compilação: "' + lengthRef[1] + '.length" -- variável "' + lengthRef[1] + '" não existe. O array se chama "' + arrName + '". Use: ' + arrName + '.length' };
                 // Verify println accesses array[i]
                 const printArrAccess = new RegExp('System\\s*\\.\\s*out\\s*\\.\\s*println\\s*\\(\\s*' + arrName + '\\s*\\[\\s*\\w+\\s*\\]\\s*\\)');
                 if (!printArrAccess.test(code))
-                    return { ok: false, msg: 'Erro semantico: Imprima cada elemento com System.out.println(' + arrName + '[i]); dentro do loop.' };
+                    return { ok: false, msg: 'Erro semântico: Imprima cada elemento com System.out.println(' + arrName + '[i]); dentro do loop.' };
             }
-            if (!/System\s*\.\s*out\s*\.\s*println/.test(code)) return { ok: false, msg: 'Erro de compilacao: Use System.out.println() para imprimir.' };
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 10\n> 20\n> 30\n> 40\n> 50\n\nProcesso finalizado com codigo de saida 0.' };
+            if (!/System\s*\.\s*out\s*\.\s*println/.test(code)) return { ok: false, msg: 'Erro de compilação: Use System.out.println() para imprimir.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 10\n> 20\n> 30\n> 40\n> 50\n\nProcesso finalizado com código de saída 0.' };
         },
-        helpText: 'COMO PENSAR:\n1. Array = colecao de tamanho fixo. Indices comecam em 0.\n2. Loop for: inicializacao; condicao; incremento\n3. i < array.length garante que nao acessa fora dos limites\n\nCOLA -- Copie este codigo na IDE:\n\npublic class ArrayLoop {\n    public static void main(String[] args) {\n        int[] nums = {10, 20, 30, 40, 50};\n\n        for (int i = 0; i < nums.length; i++) {\n            System.out.println(nums[i]);\n        }\n    }\n}'
+        helpText: 'COMO PENSAR:\n1. Array = coleção de tamanho fixo. Índices começam em 0.\n2. Loop for: inicialização; condição; incremento\n3. i < array.length garante que não acessa fora dos limites\n\nCOLA -- Copie este código na IDE:\n\npublic class ArrayLoop {\n    public static void main(String[] args) {\n        int[] nums = {10, 20, 30, 40, 50};\n\n        for (int i = 0; i < nums.length; i++) {\n            System.out.println(nums[i]);\n        }\n    }\n}'
     },
     {
         id: 'code_fizzbuzz', stage: 'Junior', region: 'Nubank',
-        title: 'FizzBuzz', concept: 'Condicional / Modulo',
+        title: 'FizzBuzz', concept: 'Condicional / Módulo',
         language: 'java', fileName: 'FizzBuzz.java',
-        description: 'Implemente FizzBuzz de 1 a 15:\n- Multiplo de 3 e 5: imprima "FizzBuzz"\n- Multiplo de 3: imprima "Fizz"\n- Multiplo de 5: imprima "Buzz"\n- Caso contrario: imprima o numero\n\nPENSE ANTES: a ordem dos if/else importa!',
+        description: 'Implemente FizzBuzz de 1 a 15:\n- Múltiplo de 3 e 5: imprima "FizzBuzz"\n- Múltiplo de 3: imprima "Fizz"\n- Múltiplo de 5: imprima "Buzz"\n- Caso contrário: imprima o número\n\nPENSE ANTES: a ordem dos if/else importa!',
         starterCode: 'public class FizzBuzz {\n    public static void main(String[] args) {\n        for (int i = 1; i <= 15; i++) {\n            // Sua logica aqui\n\n        }\n    }\n}\n',
         validator(code) {
             const compile = JavaAnalyzer.analyze(code);
             if (!compile.ok) return compile;
-            if (!/class\s+FizzBuzz/.test(code)) return { ok: false, msg: 'Erro de compilacao: A classe deve se chamar FizzBuzz.' };
-            if (!/for\s*\(/.test(code)) return { ok: false, msg: 'Erro semantico: Use um loop for.' };
-            if (!/%\s*3/.test(code) || !/%\s*5/.test(code)) return { ok: false, msg: 'Erro semantico: Use o operador modulo (%). Ex: i % 3 == 0' };
-            if (!/if\s*\(/.test(code)) return { ok: false, msg: 'Erro semantico: Use if/else para as condicoes.' };
-            if (!/"FizzBuzz"/.test(code)) return { ok: false, msg: 'Erro semantico: Quando multiplo de 3 E 5, imprima "FizzBuzz".' };
-            if (!/"Fizz"/.test(code)) return { ok: false, msg: 'Erro semantico: Quando multiplo de 3, imprima "Fizz".' };
-            if (!/"Buzz"/.test(code)) return { ok: false, msg: 'Erro semantico: Quando multiplo de 5, imprima "Buzz".' };
+            if (!/class\s+FizzBuzz/.test(code)) return { ok: false, msg: 'Erro de compilação: A classe deve se chamar FizzBuzz.' };
+            if (!/for\s*\(/.test(code)) return { ok: false, msg: 'Erro semântico: Use um loop for.' };
+            if (!/%\s*3/.test(code) || !/%\s*5/.test(code)) return { ok: false, msg: 'Erro semântico: Use o operador módulo (%). Ex: i % 3 == 0' };
+            if (!/if\s*\(/.test(code)) return { ok: false, msg: 'Erro semântico: Use if/else para as condições.' };
+            if (!/"FizzBuzz"/.test(code)) return { ok: false, msg: 'Erro semântico: Quando múltiplo de 3 E 5, imprima "FizzBuzz".' };
+            if (!/"Fizz"/.test(code)) return { ok: false, msg: 'Erro semântico: Quando múltiplo de 3, imprima "Fizz".' };
+            if (!/"Buzz"/.test(code)) return { ok: false, msg: 'Erro semântico: Quando múltiplo de 5, imprima "Buzz".' };
             // Verify FizzBuzz check comes BEFORE individual Fizz/Buzz
             const fbPos = code.indexOf('FizzBuzz');
             const fPos = code.indexOf('"Fizz"');
             const bPos = code.indexOf('"Buzz"');
             if (fbPos > fPos || fbPos > bPos)
-                return { ok: false, msg: 'Erro logico: A condicao "FizzBuzz" (multiplo de 3 E 5) DEVE vir ANTES das condicoes individuais "Fizz" e "Buzz". Caso contrario, 15 nunca sera FizzBuzz.' };
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 1\n> 2\n> Fizz\n> 4\n> Buzz\n> Fizz\n> 7\n> 8\n> Fizz\n> Buzz\n> 11\n> Fizz\n> 13\n> 14\n> FizzBuzz\n\nProcesso finalizado com codigo de saida 0.' };
+                return { ok: false, msg: 'Erro lógico: A condição "FizzBuzz" (múltiplo de 3 E 5) DEVE vir ANTES das condições individuais "Fizz" e "Buzz". Caso contrário, 15 nunca será FizzBuzz.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 1\n> 2\n> Fizz\n> 4\n> Buzz\n> Fizz\n> 7\n> 8\n> Fizz\n> Buzz\n> 11\n> Fizz\n> 13\n> 14\n> FizzBuzz\n\nProcesso finalizado com código de saída 0.' };
         },
-        helpText: 'COMO PENSAR:\n1. A ORDEM importa: teste "multiplo de 3 E 5" PRIMEIRO\n2. Se testar "multiplo de 3" antes, 15 imprime "Fizz" ao inves de "FizzBuzz"\n3. Operador %: a % b retorna o RESTO da divisao. Se resto == 0, e multiplo.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class FizzBuzz {\n    public static void main(String[] args) {\n        for (int i = 1; i <= 15; i++) {\n            if (i % 3 == 0 && i % 5 == 0) {\n                System.out.println("FizzBuzz");\n            } else if (i % 3 == 0) {\n                System.out.println("Fizz");\n            } else if (i % 5 == 0) {\n                System.out.println("Buzz");\n            } else {\n                System.out.println(i);\n            }\n        }\n    }\n}'
+        helpText: 'COMO PENSAR:\n1. A ORDEM importa: teste "múltiplo de 3 E 5" PRIMEIRO\n2. Se testar "múltiplo de 3" antes, 15 imprime "Fizz" ao invés de "FizzBuzz"\n3. Operador %: a % b retorna o RESTO da divisão. Se resto == 0, é múltiplo.\n\nCOLA -- Copie este código na IDE:\n\npublic class FizzBuzz {\n    public static void main(String[] args) {\n        for (int i = 1; i <= 15; i++) {\n            if (i % 3 == 0 && i % 5 == 0) {\n                System.out.println("FizzBuzz");\n            } else if (i % 3 == 0) {\n                System.out.println("Fizz");\n            } else if (i % 5 == 0) {\n                System.out.println("Buzz");\n            } else {\n                System.out.println(i);\n            }\n        }\n    }\n}'
     },
     // ── MID ─────────────────────────────────────────────────────────────────
     {
@@ -3631,206 +3685,380 @@ const CODE_CHALLENGES = [
         validator(code) {
             const compile = JavaAnalyzer.analyze(code);
             if (!compile.ok) return compile;
-            if (!/import\s+java\.util\.Stack/.test(code)) return { ok: false, msg: 'Erro de compilacao: Falta import java.util.Stack;' };
-            if (!/Stack\s*<\s*Integer\s*>\s+\w+\s*=\s*new\s+Stack/.test(code)) return { ok: false, msg: 'Erro de compilacao: Crie a Stack: Stack<Integer> stack = new Stack<>();' };
-            if (!(/\.push\s*\(/.test(code))) return { ok: false, msg: 'Erro semantico: Use stack.push() para adicionar elementos.' };
-            if (!(/\.pop\s*\(/.test(code))) return { ok: false, msg: 'Erro semantico: Use stack.pop() para remover o topo.' };
-            if (!(/\.size\s*\(/.test(code))) return { ok: false, msg: 'Erro semantico: Use stack.size() para imprimir o tamanho.' };
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> Pop: 30\n> Tamanho: 2\n\nProcesso finalizado com codigo de saida 0.' };
+            if (!/import\s+java\.util\.Stack/.test(code)) return { ok: false, msg: 'Erro de compilação: Falta import java.util.Stack;' };
+            if (!/Stack\s*<\s*Integer\s*>\s+\w+\s*=\s*new\s+Stack/.test(code)) return { ok: false, msg: 'Erro de compilação: Crie a Stack: Stack<Integer> stack = new Stack<>();' };
+            if (!(/\.push\s*\(/.test(code))) return { ok: false, msg: 'Erro semântico: Use stack.push() para adicionar elementos.' };
+            if (!(/\.pop\s*\(/.test(code))) return { ok: false, msg: 'Erro semântico: Use stack.pop() para remover o topo.' };
+            if (!(/\.size\s*\(/.test(code))) return { ok: false, msg: 'Erro semântico: Use stack.size() para imprimir o tamanho.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> Pop: 30\n> Tamanho: 2\n\nProcesso finalizado com código de saída 0.' };
         },
-        helpText: 'COMO PENSAR:\n1. Stack = LIFO (Last In, First Out). O ultimo a entrar sai primeiro.\n2. Analogia: pilha de pratos. Voce so tira o de cima.\n3. push() coloca no topo, pop() remove do topo, peek() ve sem remover.\n\nCOLA -- Copie este codigo na IDE:\n\nimport java.util.Stack;\n\npublic class StackDemo {\n    public static void main(String[] args) {\n        Stack<Integer> stack = new Stack<>();\n        stack.push(10);\n        stack.push(20);\n        stack.push(30);\n\n        int topo = stack.pop();\n        System.out.println("Pop: " + topo);\n        System.out.println("Tamanho: " + stack.size());\n    }\n}'
+        helpText: 'COMO PENSAR:\n1. Stack = LIFO (Last In, First Out). O último a entrar sai primeiro.\n2. Analogia: pilha de pratos. Você só tira o de cima.\n3. push() coloca no topo, pop() remove do topo, peek() vê sem remover.\n\nCOLA -- Copie este código na IDE:\n\nimport java.util.Stack;\n\npublic class StackDemo {\n    public static void main(String[] args) {\n        Stack<Integer> stack = new Stack<>();\n        stack.push(10);\n        stack.push(20);\n        stack.push(30);\n\n        int topo = stack.pop();\n        System.out.println("Pop: " + topo);\n        System.out.println("Tamanho: " + stack.size());\n    }\n}'
     },
     {
         id: 'code_linkedlist', stage: 'Mid', region: 'Facebook',
-        title: 'LinkedList', concept: 'Lista encadeada / Insercao O(1)',
+        title: 'LinkedList', concept: 'Lista encadeada / Inserção O(1)',
         language: 'java', fileName: 'LinkedListDemo.java',
-        description: 'Use java.util.LinkedList para:\n1. Criar LinkedList<String>\n2. Adicionar "Alpha", "Beta", "Gamma" com add()\n3. Adicionar "First" no inicio com addFirst()\n4. Remover o ultimo com removeLast()\n5. Imprimir a lista',
+        description: 'Use java.util.LinkedList para:\n1. Criar LinkedList<String>\n2. Adicionar "Alpha", "Beta", "Gamma" com add()\n3. Adicionar "First" no início com addFirst()\n4. Remover o último com removeLast()\n5. Imprimir a lista',
         starterCode: 'import java.util.LinkedList;\n\npublic class LinkedListDemo {\n    public static void main(String[] args) {\n        // Implemente aqui\n\n    }\n}\n',
         validator(code) {
             const compile = JavaAnalyzer.analyze(code);
             if (!compile.ok) return compile;
-            if (!/import\s+java\.util\.LinkedList/.test(code)) return { ok: false, msg: 'Erro de compilacao: Falta import java.util.LinkedList;' };
-            if (!/LinkedList\s*<\s*String\s*>\s+\w+\s*=\s*new\s+LinkedList/.test(code)) return { ok: false, msg: 'Erro de compilacao: Crie: LinkedList<String> list = new LinkedList<>();' };
-            if (!(/\.add\s*\(/.test(code))) return { ok: false, msg: 'Erro semantico: Use list.add() para adicionar elementos.' };
-            if (!(/\.addFirst\s*\(/.test(code))) return { ok: false, msg: 'Erro semantico: Use list.addFirst() para inserir no inicio.' };
-            if (!(/\.removeLast\s*\(/.test(code))) return { ok: false, msg: 'Erro semantico: Use list.removeLast() para remover o ultimo.' };
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> [First, Alpha, Beta]\n\nProcesso finalizado com codigo de saida 0.' };
+            if (!/import\s+java\.util\.LinkedList/.test(code)) return { ok: false, msg: 'Erro de compilação: Falta import java.util.LinkedList;' };
+            if (!/LinkedList\s*<\s*String\s*>\s+\w+\s*=\s*new\s+LinkedList/.test(code)) return { ok: false, msg: 'Erro de compilação: Crie: LinkedList<String> list = new LinkedList<>();' };
+            if (!(/\.add\s*\(/.test(code))) return { ok: false, msg: 'Erro semântico: Use list.add() para adicionar elementos.' };
+            if (!(/\.addFirst\s*\(/.test(code))) return { ok: false, msg: 'Erro semântico: Use list.addFirst() para inserir no início.' };
+            if (!(/\.removeLast\s*\(/.test(code))) return { ok: false, msg: 'Erro semântico: Use list.removeLast() para remover o último.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> [First, Alpha, Beta]\n\nProcesso finalizado com código de saída 0.' };
         },
-        helpText: 'COMO PENSAR:\n1. LinkedList = nos conectados por ponteiros. Insercao no inicio/fim e O(1).\n2. Diferente de ArrayList: nao tem acesso aleatorio O(1), mas insercao/remocao nas pontas e instantanea.\n3. addFirst() insere antes do primeiro no, removeLast() remove o ultimo.\n\nCOLA -- Copie este codigo na IDE:\n\nimport java.util.LinkedList;\n\npublic class LinkedListDemo {\n    public static void main(String[] args) {\n        LinkedList<String> list = new LinkedList<>();\n        list.add("Alpha");\n        list.add("Beta");\n        list.add("Gamma");\n        list.addFirst("First");\n        list.removeLast();\n        System.out.println(list);\n    }\n}'
+        helpText: 'COMO PENSAR:\n1. LinkedList = nós conectados por ponteiros. Inserção no início/fim é O(1).\n2. Diferente de ArrayList: não tem acesso aleatório O(1), mas inserção/remoção nas pontas é instantânea.\n3. addFirst() insere antes do primeiro nó, removeLast() remove o último.\n\nCOLA -- Copie este código na IDE:\n\nimport java.util.LinkedList;\n\npublic class LinkedListDemo {\n    public static void main(String[] args) {\n        LinkedList<String> list = new LinkedList<>();\n        list.add("Alpha");\n        list.add("Beta");\n        list.add("Gamma");\n        list.addFirst("First");\n        list.removeLast();\n        System.out.println(list);\n    }\n}'
     },
     // ── SENIOR ──────────────────────────────────────────────────────────────
     {
         id: 'code_hashmap', stage: 'Senior', region: 'Amazon',
         title: 'HashMap', concept: 'Hash table / O(1) lookup',
         language: 'java', fileName: 'HashMapDemo.java',
-        description: 'Use java.util.HashMap para:\n1. Criar HashMap<String, Integer>\n2. Inserir: "Java"->1995, "Python"->1991, "Go"->2009\n3. Verificar se contem "Java" com containsKey()\n4. Obter valor de "Python" com get()\n5. Iterar com entrySet() e imprimir chave=valor',
+        description: 'Use java.util.HashMap para:\n1. Criar HashMap<String, Integer>\n2. Inserir: "Java"->1995, "Python"->1991, "Go"->2009\n3. Verificar se contém "Java" com containsKey()\n4. Obter valor de "Python" com get()\n5. Iterar com entrySet() e imprimir chave=valor',
         starterCode: 'import java.util.HashMap;\nimport java.util.Map;\n\npublic class HashMapDemo {\n    public static void main(String[] args) {\n        // Implemente aqui\n\n    }\n}\n',
         validator(code) {
             const compile = JavaAnalyzer.analyze(code);
             if (!compile.ok) return compile;
-            if (!/import\s+java\.util\.HashMap/.test(code)) return { ok: false, msg: 'Erro de compilacao: Falta import java.util.HashMap;' };
-            if (!/HashMap\s*<\s*String\s*,\s*Integer\s*>/.test(code)) return { ok: false, msg: 'Erro de compilacao: Crie: HashMap<String, Integer> map = new HashMap<>();' };
-            if (!(/\.put\s*\(/.test(code))) return { ok: false, msg: 'Erro semantico: Use map.put("key", value) para inserir.' };
-            if (!(/\.containsKey\s*\(/.test(code))) return { ok: false, msg: 'Erro semantico: Use map.containsKey("Java") para verificar.' };
-            if (!(/\.get\s*\(/.test(code))) return { ok: false, msg: 'Erro semantico: Use map.get("Python") para obter valor.' };
-            if (!(/\.entrySet\s*\(/.test(code) || /for\s*\(/.test(code))) return { ok: false, msg: 'Erro semantico: Itere com for (Map.Entry<> e : map.entrySet())' };
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> Contem Java: true\n> Python: 1991\n> Java=1995\n> Python=1991\n> Go=2009\n\nProcesso finalizado com codigo de saida 0.' };
+            if (!/import\s+java\.util\.HashMap/.test(code)) return { ok: false, msg: 'Erro de compilação: Falta import java.util.HashMap;' };
+            if (!/HashMap\s*<\s*String\s*,\s*Integer\s*>/.test(code)) return { ok: false, msg: 'Erro de compilação: Crie: HashMap<String, Integer> map = new HashMap<>();' };
+            if (!(/\.put\s*\(/.test(code))) return { ok: false, msg: 'Erro semântico: Use map.put("key", value) para inserir.' };
+            if (!(/\.containsKey\s*\(/.test(code))) return { ok: false, msg: 'Erro semântico: Use map.containsKey("Java") para verificar.' };
+            if (!(/\.get\s*\(/.test(code))) return { ok: false, msg: 'Erro semântico: Use map.get("Python") para obter valor.' };
+            if (!(/\.entrySet\s*\(/.test(code) || /for\s*\(/.test(code))) return { ok: false, msg: 'Erro semântico: Itere com for (Map.Entry<> e : map.entrySet())' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> Contem Java: true\n> Python: 1991\n> Java=1995\n> Python=1991\n> Go=2009\n\nProcesso finalizado com código de saída 0.' };
         },
-        helpText: 'COMO PENSAR:\n1. HashMap = tabela hash. Armazena pares chave-valor.\n2. Busca por chave e O(1) -- constante, nao importa quantos elementos.\n3. put() insere, get() busca, containsKey() verifica existencia.\n4. entrySet() retorna todos os pares para iteracao.\n\nCOLA -- Copie este codigo na IDE:\n\nimport java.util.HashMap;\nimport java.util.Map;\n\npublic class HashMapDemo {\n    public static void main(String[] args) {\n        HashMap<String, Integer> map = new HashMap<>();\n        map.put("Java", 1995);\n        map.put("Python", 1991);\n        map.put("Go", 2009);\n\n        System.out.println("Contem Java: " + map.containsKey("Java"));\n        System.out.println("Python: " + map.get("Python"));\n\n        for (Map.Entry<String, Integer> e : map.entrySet()) {\n            System.out.println(e.getKey() + "=" + e.getValue());\n        }\n    }\n}'
+        helpText: 'COMO PENSAR:\n1. HashMap = tabela hash. Armazena pares chave-valor.\n2. Busca por chave é O(1) -- constante, não importa quantos elementos.\n3. put() insere, get() busca, containsKey() verifica existência.\n4. entrySet() retorna todos os pares para iteração.\n\nCOLA -- Copie este código na IDE:\n\nimport java.util.HashMap;\nimport java.util.Map;\n\npublic class HashMapDemo {\n    public static void main(String[] args) {\n        HashMap<String, Integer> map = new HashMap<>();\n        map.put("Java", 1995);\n        map.put("Python", 1991);\n        map.put("Go", 2009);\n\n        System.out.println("Contem Java: " + map.containsKey("Java"));\n        System.out.println("Python: " + map.get("Python"));\n\n        for (Map.Entry<String, Integer> e : map.entrySet()) {\n            System.out.println(e.getKey() + "=" + e.getValue());\n        }\n    }\n}'
     },
     {
         id: 'code_queue', stage: 'Senior', region: 'Mercado Livre',
         title: 'Fila (Queue)', concept: 'Estrutura FIFO / Processamento de pedidos',
         language: 'java', fileName: 'QueueDemo.java',
-        description: 'Simule uma fila de pedidos do Mercado Livre:\n1. Criar Queue<String> usando LinkedList\n2. Enfileirar: "Pedido-001", "Pedido-002", "Pedido-003"\n3. Processar (poll) e imprimir cada pedido\n4. Mostrar se a fila esta vazia com isEmpty()',
+        description: 'Simule uma fila de pedidos do Mercado Livre:\n1. Criar Queue<String> usando LinkedList\n2. Enfileirar: "Pedido-001", "Pedido-002", "Pedido-003"\n3. Processar (poll) e imprimir cada pedido\n4. Mostrar se a fila está vazia com isEmpty()',
         starterCode: 'import java.util.Queue;\nimport java.util.LinkedList;\n\npublic class QueueDemo {\n    public static void main(String[] args) {\n        // Implemente aqui\n\n    }\n}\n',
         validator(code) {
             const compile = JavaAnalyzer.analyze(code);
             if (!compile.ok) return compile;
-            if (!/import\s+java\.util\.Queue/.test(code)) return { ok: false, msg: 'Erro de compilacao: Falta import java.util.Queue;' };
-            if (!/Queue\s*<\s*String\s*>\s+\w+\s*=\s*new\s+LinkedList/.test(code)) return { ok: false, msg: 'Erro de compilacao: Crie: Queue<String> fila = new LinkedList<>();' };
-            if (!(/\.(add|offer)\s*\(/.test(code))) return { ok: false, msg: 'Erro semantico: Use fila.add() ou fila.offer() para enfileirar.' };
-            if (!(/\.poll\s*\(/.test(code))) return { ok: false, msg: 'Erro semantico: Use fila.poll() para processar o proximo da fila.' };
-            if (!(/\.isEmpty\s*\(/.test(code))) return { ok: false, msg: 'Erro semantico: Use fila.isEmpty() para verificar se esta vazia.' };
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> Processando: Pedido-001\n> Processando: Pedido-002\n> Processando: Pedido-003\n> Fila vazia: true\n\nFIFO: primeiro pedido a entrar e o primeiro a ser processado.\nProcesso finalizado com codigo de saida 0.' };
+            if (!/import\s+java\.util\.Queue/.test(code)) return { ok: false, msg: 'Erro de compilação: Falta import java.util.Queue;' };
+            if (!/Queue\s*<\s*String\s*>\s+\w+\s*=\s*new\s+LinkedList/.test(code)) return { ok: false, msg: 'Erro de compilação: Crie: Queue<String> fila = new LinkedList<>();' };
+            if (!(/\.(add|offer)\s*\(/.test(code))) return { ok: false, msg: 'Erro semântico: Use fila.add() ou fila.offer() para enfileirar.' };
+            if (!(/\.poll\s*\(/.test(code))) return { ok: false, msg: 'Erro semântico: Use fila.poll() para processar o próximo da fila.' };
+            if (!(/\.isEmpty\s*\(/.test(code))) return { ok: false, msg: 'Erro semântico: Use fila.isEmpty() para verificar se esta vazia.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> Processando: Pedido-001\n> Processando: Pedido-002\n> Processando: Pedido-003\n> Fila vazia: true\n\nFIFO: primeiro pedido a entrar e o primeiro a ser processado.\nProcesso finalizado com código de saída 0.' };
         },
-        helpText: 'COMO PENSAR:\n1. Queue = FIFO (First In, First Out). Primeiro a entrar, primeiro a sair.\n2. Analogia: fila de supermercado. Quem chegou primeiro e atendido primeiro.\n3. offer()/add() coloca no fim, poll() remove do inicio.\n4. Queue e interface, LinkedList e a implementacao.\n\nCOLA -- Copie este codigo na IDE:\n\nimport java.util.Queue;\nimport java.util.LinkedList;\n\npublic class QueueDemo {\n    public static void main(String[] args) {\n        Queue<String> fila = new LinkedList<>();\n        fila.add("Pedido-001");\n        fila.add("Pedido-002");\n        fila.add("Pedido-003");\n\n        while (!fila.isEmpty()) {\n            System.out.println("Processando: " + fila.poll());\n        }\n        System.out.println("Fila vazia: " + fila.isEmpty());\n    }\n}'
+        helpText: 'COMO PENSAR:\n1. Queue = FIFO (First In, First Out). Primeiro a entrar, primeiro a sair.\n2. Analogia: fila de supermercado. Quem chegou primeiro é atendido primeiro.\n3. offer()/add() coloca no fim, poll() remove do início.\n4. Queue é interface, LinkedList é a implementação.\n\nCOLA -- Copie este código na IDE:\n\nimport java.util.Queue;\nimport java.util.LinkedList;\n\npublic class QueueDemo {\n    public static void main(String[] args) {\n        Queue<String> fila = new LinkedList<>();\n        fila.add("Pedido-001");\n        fila.add("Pedido-002");\n        fila.add("Pedido-003");\n\n        while (!fila.isEmpty()) {\n            System.out.println("Processando: " + fila.poll());\n        }\n        System.out.println("Fila vazia: " + fila.isEmpty());\n    }\n}'
     },
     {
         id: 'code_bsearch', stage: 'Senior', region: 'JP Morgan',
-        title: 'Binary Search', concept: 'Busca binaria / O(log n)',
+        title: 'Binary Search', concept: 'Busca binária / O(log n)',
         language: 'java', fileName: 'BinarySearch.java',
-        description: 'Implemente busca binaria iterativa:\n1. Metodo: static int binarySearch(int[] arr, int target)\n2. Retorna o indice do target ou -1\n3. Use while (low <= high) com mid = (low + high) / 2\n4. Teste com arr = {2, 5, 8, 12, 16, 23, 38, 56, 72, 91}',
+        description: 'Implemente busca binária iterativa:\n1. Método: static int binarySearch(int[] arr, int target)\n2. Retorna o índice do target ou -1\n3. Use while (low <= high) com mid = (low + high) / 2\n4. Teste com arr = {2, 5, 8, 12, 16, 23, 38, 56, 72, 91}',
         starterCode: 'public class BinarySearch {\n    static int binarySearch(int[] arr, int target) {\n        // Implemente aqui\n        return -1;\n    }\n\n    public static void main(String[] args) {\n        int[] arr = {2, 5, 8, 12, 16, 23, 38, 56, 72, 91};\n        System.out.println(binarySearch(arr, 23));\n        System.out.println(binarySearch(arr, 99));\n    }\n}\n',
         validator(code) {
             const compile = JavaAnalyzer.analyze(code);
             if (!compile.ok) return compile;
-            if (!/class\s+BinarySearch/.test(code)) return { ok: false, msg: 'Erro de compilacao: A classe deve se chamar BinarySearch.' };
+            if (!/class\s+BinarySearch/.test(code)) return { ok: false, msg: 'Erro de compilação: A classe deve se chamar BinarySearch.' };
             if (!/static\s+int\s+binarySearch\s*\(\s*int\s*\[\s*\]\s+\w+\s*,\s*int\s+\w+\s*\)/.test(code))
-                return { ok: false, msg: 'Erro de compilacao: Assinatura: static int binarySearch(int[] arr, int target)' };
-            if (!/while\s*\(/.test(code)) return { ok: false, msg: 'Erro semantico: Use while (low <= high) para o loop de busca.' };
-            if (!/mid/.test(code)) return { ok: false, msg: 'Erro semantico: Calcule int mid = (low + high) / 2;' };
-            if (!/return\s+-?\s*1/.test(code) && !/return\s+\w+/.test(code)) return { ok: false, msg: 'Erro semantico: Retorne -1 quando nao encontrar.' };
-            if (!/low/.test(code) || !/high/.test(code)) return { ok: false, msg: 'Erro semantico: Use variaveis low e high para os limites.' };
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 5\n> -1\n\nComplexidade: O(log n) -- 20 comparacoes para 1 milhao de elementos.\nProcesso finalizado com codigo de saida 0.' };
+                return { ok: false, msg: 'Erro de compilação: Assinatura: static int binarySearch(int[] arr, int target)' };
+            if (!/while\s*\(/.test(code)) return { ok: false, msg: 'Erro semântico: Use while (low <= high) para o loop de busca.' };
+            if (!/mid/.test(code)) return { ok: false, msg: 'Erro semântico: Calcule int mid = (low + high) / 2;' };
+            if (!/return\s+-?\s*1/.test(code) && !/return\s+\w+/.test(code)) return { ok: false, msg: 'Erro semântico: Retorne -1 quando não encontrar.' };
+            if (!/low/.test(code) || !/high/.test(code)) return { ok: false, msg: 'Erro semântico: Use variaveis low e high para os limites.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 5\n> -1\n\nComplexidade: O(log n) -- 20 comparacoes para 1 milhao de elementos.\nProcesso finalizado com código de saída 0.' };
         },
-        helpText: 'COMO PENSAR:\n1. Busca binaria so funciona em arrays ORDENADOS.\n2. Estrategia: dividir e conquistar. Olhe o meio. Se alvo < meio, descarte metade direita. Se alvo > meio, descarte metade esquerda.\n3. A cada passo, o espaco de busca cai pela METADE. log2(1.000.000) = ~20 passos.\n4. Variaveis: low (inicio), high (fim), mid (meio).\n\nCOLA -- Copie este codigo na IDE:\n\npublic class BinarySearch {\n    static int binarySearch(int[] arr, int target) {\n        int low = 0, high = arr.length - 1;\n        while (low <= high) {\n            int mid = (low + high) / 2;\n            if (arr[mid] == target) return mid;\n            else if (arr[mid] < target) low = mid + 1;\n            else high = mid - 1;\n        }\n        return -1;\n    }\n\n    public static void main(String[] args) {\n        int[] arr = {2, 5, 8, 12, 16, 23, 38, 56, 72, 91};\n        System.out.println(binarySearch(arr, 23));\n        System.out.println(binarySearch(arr, 99));\n    }\n}'
+        helpText: 'COMO PENSAR:\n1. Busca binária só funciona em arrays ORDENADOS.\n2. Estratégia: dividir e conquistar. Olhe o meio. Se alvo < meio, descarte metade direita. Se alvo > meio, descarte metade esquerda.\n3. A cada passo, o espaço de busca cai pela METADE. log2(1.000.000) = ~20 passos.\n4. Variáveis: low (início), high (fim), mid (meio).\n\nCOLA -- Copie este código na IDE:\n\npublic class BinarySearch {\n    static int binarySearch(int[] arr, int target) {\n        int low = 0, high = arr.length - 1;\n        while (low <= high) {\n            int mid = (low + high) / 2;\n            if (arr[mid] == target) return mid;\n            else if (arr[mid] < target) low = mid + 1;\n            else high = mid - 1;\n        }\n        return -1;\n    }\n\n    public static void main(String[] args) {\n        int[] arr = {2, 5, 8, 12, 16, 23, 38, 56, 72, 91};\n        System.out.println(binarySearch(arr, 23));\n        System.out.println(binarySearch(arr, 99));\n    }\n}'
     },
     // ── STAFF ───────────────────────────────────────────────────────────────
     {
-        id: 'code_twosum', stage: 'Staff', region: 'Tesla / SpaceX',
-        title: 'Two Sum (HashMap)', concept: 'Hash lookup O(n) / Otimizacao',
+        id: 'code_twosum', stage: 'Staff', region: 'Tesla',
+        title: 'Two Sum (HashMap)', concept: 'Hash lookup O(n) / Otimização',
         language: 'java', fileName: 'TwoSum.java',
-        description: 'Implemente Two Sum com HashMap:\n1. Metodo: static int[] twoSum(int[] nums, int target)\n2. Retorna indices dos dois numeros que somam target\n3. Use HashMap para lookup O(1)\n4. Complexidade total: O(n)\n5. Teste: nums={2,7,11,15}, target=9 -> [0,1]',
+        description: 'Implemente Two Sum com HashMap:\n1. Método: static int[] twoSum(int[] nums, int target)\n2. Retorna índices dos dois números que somam target\n3. Use HashMap para lookup O(1)\n4. Complexidade total: O(n)\n5. Teste: nums={2,7,11,15}, target=9 -> [0,1]',
         starterCode: 'import java.util.HashMap;\nimport java.util.Arrays;\n\npublic class TwoSum {\n    static int[] twoSum(int[] nums, int target) {\n        // Implemente aqui\n        return new int[]{};\n    }\n\n    public static void main(String[] args) {\n        int[] result = twoSum(new int[]{2, 7, 11, 15}, 9);\n        System.out.println(Arrays.toString(result));\n    }\n}\n',
         validator(code) {
             const compile = JavaAnalyzer.analyze(code);
             if (!compile.ok) return compile;
-            if (!/class\s+TwoSum/.test(code)) return { ok: false, msg: 'Erro de compilacao: A classe deve se chamar TwoSum.' };
-            if (!/HashMap/.test(code)) return { ok: false, msg: 'Erro semantico: Use HashMap para obter complexidade O(n).' };
-            if (!(/\.put\s*\(/.test(code))) return { ok: false, msg: 'Erro semantico: Use map.put() para armazenar valores vistos.' };
-            if (!(/\.containsKey\s*\(/.test(code) || /\.get\s*\(/.test(code))) return { ok: false, msg: 'Erro semantico: Use map.containsKey() ou map.get() para verificar o complemento.' };
-            if (!/target\s*-/.test(code) && !/\-\s*\w+\[/.test(code)) return { ok: false, msg: 'Erro semantico: O complemento e target - nums[i]. Verifique se ja existe no mapa.' };
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> [0, 1]\n\nComplexidade: O(n) -- uma unica passada com HashMap.\nBrute force seria O(n^2). Voce otimizou.\nProcesso finalizado com codigo de saida 0.' };
+            if (!/class\s+TwoSum/.test(code)) return { ok: false, msg: 'Erro de compilação: A classe deve se chamar TwoSum.' };
+            if (!/HashMap/.test(code)) return { ok: false, msg: 'Erro semântico: Use HashMap para obter complexidade O(n).' };
+            if (!(/\.put\s*\(/.test(code))) return { ok: false, msg: 'Erro semântico: Use map.put() para armazenar valores vistos.' };
+            if (!(/\.containsKey\s*\(/.test(code) || /\.get\s*\(/.test(code))) return { ok: false, msg: 'Erro semântico: Use map.containsKey() ou map.get() para verificar o complemento.' };
+            if (!/target\s*-/.test(code) && !/\-\s*\w+\[/.test(code)) return { ok: false, msg: 'Erro semântico: O complemento é target - nums[i]. Verifique se já existe no mapa.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> [0, 1]\n\nComplexidade: O(n) -- uma única passada com HashMap.\nBrute force seria O(n^2). Você otimizou.\nProcesso finalizado com código de saída 0.' };
         },
-        helpText: 'COMO PENSAR:\n1. Forca bruta: testar todos os pares = O(n^2). Muito lento.\n2. Insight: para cada numero X, o "par" dele e (target - X). Se esse par ja apareceu, achamos!\n3. HashMap armazena numeros ja vistos. Para cada novo numero, olhamos se o complemento ja esta la.\n4. Uma unica passagem pelo array = O(n).\n\nCOLA -- Copie este codigo na IDE:\n\nimport java.util.HashMap;\nimport java.util.Arrays;\n\npublic class TwoSum {\n    static int[] twoSum(int[] nums, int target) {\n        HashMap<Integer, Integer> map = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int comp = target - nums[i];\n            if (map.containsKey(comp)) {\n                return new int[]{map.get(comp), i};\n            }\n            map.put(nums[i], i);\n        }\n        return new int[]{};\n    }\n\n    public static void main(String[] args) {\n        int[] result = twoSum(new int[]{2, 7, 11, 15}, 9);\n        System.out.println(Arrays.toString(result));\n    }\n}'
+        helpText: 'COMO PENSAR:\n1. Força bruta: testar todos os pares = O(n^2). Muito lento.\n2. Insight: para cada número X, o "par" dele é (target - X). Se esse par já apareceu, achamos!\n3. HashMap armazena números já vistos. Para cada novo número, olhamos se o complemento já está lá.\n4. Uma única passagem pelo array = O(n).\n\nCOLA -- Copie este código na IDE:\n\nimport java.util.HashMap;\nimport java.util.Arrays;\n\npublic class TwoSum {\n    static int[] twoSum(int[] nums, int target) {\n        HashMap<Integer, Integer> map = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int comp = target - nums[i];\n            if (map.containsKey(comp)) {\n                return new int[]{map.get(comp), i};\n            }\n            map.put(nums[i], i);\n        }\n        return new int[]{};\n    }\n\n    public static void main(String[] args) {\n        int[] result = twoSum(new int[]{2, 7, 11, 15}, 9);\n        System.out.println(Arrays.toString(result));\n    }\n}'
     },
     {
         id: 'code_fibonacci', stage: 'Staff', region: 'Itau',
-        title: 'Fibonacci Iterativo', concept: 'Recursao vs Iteracao / Eficiencia',
+        title: 'Fibonacci Iterativo', concept: 'Recursão vs Iteração / Eficiência',
         language: 'java', fileName: 'Fibonacci.java',
-        description: 'Implemente Fibonacci ITERATIVO (nao recursivo):\n1. Metodo: static long fibonacci(int n)\n2. fibonacci(0)=0, fibonacci(1)=1\n3. fibonacci(n) = fibonacci(n-1) + fibonacci(n-2)\n4. Use loop, NAO recursao (seria O(2^n))\n5. Teste: fibonacci(10) = 55, fibonacci(20) = 6765',
+        description: 'Implemente Fibonacci ITERATIVO (não recursivo):\n1. Método: static long fibonacci(int n)\n2. fibonacci(0)=0, fibonacci(1)=1\n3. fibonacci(n) = fibonacci(n-1) + fibonacci(n-2)\n4. Use loop, NÃO recursão (seria O(2^n))\n5. Teste: fibonacci(10) = 55, fibonacci(20) = 6765',
         starterCode: 'public class Fibonacci {\n    static long fibonacci(int n) {\n        // Implemente aqui (iterativo!)\n        return 0;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(fibonacci(10));\n        System.out.println(fibonacci(20));\n    }\n}\n',
         validator(code) {
             const compile = JavaAnalyzer.analyze(code);
             if (!compile.ok) return compile;
-            if (!/class\s+Fibonacci/.test(code)) return { ok: false, msg: 'Erro de compilacao: A classe deve se chamar Fibonacci.' };
-            if (!/static\s+long\s+fibonacci/.test(code)) return { ok: false, msg: 'Erro de compilacao: Metodo: static long fibonacci(int n)' };
-            if (/fibonacci\s*\(\s*n\s*-\s*1\s*\)/.test(code)) return { ok: false, msg: 'Erro semantico: Nao use recursao! Fibonacci recursivo e O(2^n). Use um loop for com variaveis prev e curr.' };
-            if (!/for\s*\(/.test(code) && !/while\s*\(/.test(code)) return { ok: false, msg: 'Erro semantico: Use um loop for ou while. A solucao deve ser iterativa O(n).' };
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 55\n> 6765\n\nComplexidade: O(n) iterativo.\nRecursivo seria O(2^n) = fibonacci(50) levaria HORAS.\nIterativo calcula fibonacci(50) em microssegundos.\nProcesso finalizado com codigo de saida 0.' };
+            if (!/class\s+Fibonacci/.test(code)) return { ok: false, msg: 'Erro de compilação: A classe deve se chamar Fibonacci.' };
+            if (!/static\s+long\s+fibonacci/.test(code)) return { ok: false, msg: 'Erro de compilação: Método: static long fibonacci(int n)' };
+            if (/fibonacci\s*\(\s*n\s*-\s*1\s*\)/.test(code)) return { ok: false, msg: 'Erro semântico: Não use recursão! Fibonacci recursivo é O(2^n). Use um loop for com variáveis prev e curr.' };
+            if (!/for\s*\(/.test(code) && !/while\s*\(/.test(code)) return { ok: false, msg: 'Erro semântico: Use um loop for ou while. A solução deve ser iterativa O(n).' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 55\n> 6765\n\nComplexidade: O(n) iterativo.\nRecursivo seria O(2^n) = fibonacci(50) levaria HORAS.\nIterativo calcula fibonacci(50) em microssegundos.\nProcesso finalizado com código de saída 0.' };
         },
-        helpText: 'COMO PENSAR:\n1. Fibonacci recursivo: fib(n) chama fib(n-1) e fib(n-2). Cada um chama mais dois. Explosao exponencial O(2^n).\n2. Insight: nao precisamos recalcular valores antigos. Basta guardar os dois ultimos.\n3. Variaveis: prev = f(n-2), curr = f(n-1). A cada passo: next = prev + curr.\n4. Avance: prev = curr, curr = next. Repita n vezes. O(n) tempo, O(1) espaco.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class Fibonacci {\n    static long fibonacci(int n) {\n        if (n <= 1) return n;\n        long prev = 0, curr = 1;\n        for (int i = 2; i <= n; i++) {\n            long next = prev + curr;\n            prev = curr;\n            curr = next;\n        }\n        return curr;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(fibonacci(10));\n        System.out.println(fibonacci(20));\n    }\n}'
+        helpText: 'COMO PENSAR:\n1. Fibonacci recursivo: fib(n) chama fib(n-1) e fib(n-2). Cada um chama mais dois. Explosão exponencial O(2^n).\n2. Insight: não precisamos recalcular valores antigos. Basta guardar os dois últimos.\n3. Variáveis: prev = f(n-2), curr = f(n-1). A cada passo: next = prev + curr.\n4. Avance: prev = curr, curr = next. Repita n vezes. O(n) tempo, O(1) espaço.\n\nCOLA -- Copie este código na IDE:\n\npublic class Fibonacci {\n    static long fibonacci(int n) {\n        if (n <= 1) return n;\n        long prev = 0, curr = 1;\n        for (int i = 2; i <= n; i++) {\n            long next = prev + curr;\n            prev = curr;\n            curr = next;\n        }\n        return curr;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(fibonacci(10));\n        System.out.println(fibonacci(20));\n    }\n}'
     },
     {
         id: 'code_sort', stage: 'Staff', region: 'Uber',
-        title: 'Bubble Sort', concept: 'Ordenacao / Comparacao e troca',
+        title: 'Bubble Sort', concept: 'Ordenação / Comparação e troca',
         language: 'java', fileName: 'BubbleSort.java',
-        description: 'Implemente Bubble Sort:\n1. Metodo: static void bubbleSort(int[] arr)\n2. Compare elementos adjacentes e troque se fora de ordem\n3. Repita ate nao haver mais trocas\n4. Imprima o array ordenado\n5. Teste: {64, 34, 25, 12, 22, 11, 90}',
+        description: 'Implemente Bubble Sort:\n1. Método: static void bubbleSort(int[] arr)\n2. Compare elementos adjacentes e troque se fora de ordem\n3. Repita até não haver mais trocas\n4. Imprima o array ordenado\n5. Teste: {64, 34, 25, 12, 22, 11, 90}',
         starterCode: 'import java.util.Arrays;\n\npublic class BubbleSort {\n    static void bubbleSort(int[] arr) {\n        // Implemente aqui\n\n    }\n\n    public static void main(String[] args) {\n        int[] arr = {64, 34, 25, 12, 22, 11, 90};\n        bubbleSort(arr);\n        System.out.println(Arrays.toString(arr));\n    }\n}\n',
         validator(code) {
             const compile = JavaAnalyzer.analyze(code);
             if (!compile.ok) return compile;
-            if (!/class\s+BubbleSort/.test(code)) return { ok: false, msg: 'Erro de compilacao: A classe deve se chamar BubbleSort.' };
-            if (!/static\s+void\s+bubbleSort/.test(code)) return { ok: false, msg: 'Erro de compilacao: Metodo: static void bubbleSort(int[] arr)' };
-            if (!/for\s*\(/.test(code)) return { ok: false, msg: 'Erro semantico: Use dois loops for aninhados.' };
-            if (!/temp/.test(code) && !/\[\s*\w+\s*\]\s*=/.test(code)) return { ok: false, msg: 'Erro semantico: Para trocar, use uma variavel temporaria: int temp = arr[j]; arr[j] = arr[j+1]; arr[j+1] = temp;' };
-            if (!/\w+\s*>\s*\w+/.test(code) && !/\w+\s*<\s*\w+/.test(code)) return { ok: false, msg: 'Erro semantico: Compare elementos adjacentes: if (arr[j] > arr[j+1])' };
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> [11, 12, 22, 25, 34, 64, 90]\n\nBubble Sort: O(n^2). Simples mas ineficiente para grandes datasets.\nEm producao, use Arrays.sort() que e O(n log n).\nProcesso finalizado com codigo de saida 0.' };
+            if (!/class\s+BubbleSort/.test(code)) return { ok: false, msg: 'Erro de compilação: A classe deve se chamar BubbleSort.' };
+            if (!/static\s+void\s+bubbleSort/.test(code)) return { ok: false, msg: 'Erro de compilação: Método: static void bubbleSort(int[] arr)' };
+            if (!/for\s*\(/.test(code)) return { ok: false, msg: 'Erro semântico: Use dois loops for aninhados.' };
+            if (!/temp/.test(code) && !/\[\s*\w+\s*\]\s*=/.test(code)) return { ok: false, msg: 'Erro semântico: Para trocar, use uma variável temporária: int temp = arr[j]; arr[j] = arr[j+1]; arr[j+1] = temp;' };
+            if (!/\w+\s*>\s*\w+/.test(code) && !/\w+\s*<\s*\w+/.test(code)) return { ok: false, msg: 'Erro semântico: Compare elementos adjacentes: if (arr[j] > arr[j+1])' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> [11, 12, 22, 25, 34, 64, 90]\n\nBubble Sort: O(n^2). Simples mas ineficiente para grandes datasets.\nEm produção, use Arrays.sort() que é O(n log n).\nProcesso finalizado com código de saída 0.' };
         },
-        helpText: 'COMO PENSAR:\n1. Bubble Sort "borbulha" o maior elemento para o final a cada passagem.\n2. Loop externo: n-1 passagens. Loop interno: compara vizinhos.\n3. Se arr[j] > arr[j+1], troca-os usando variavel temporaria.\n4. Otimizacao: se nenhuma troca em uma passagem, array ja esta ordenado.\n5. Complexidade: O(n^2) -- nao use em producao, mas e essencial entender.\n\nCOLA -- Copie este codigo na IDE:\n\nimport java.util.Arrays;\n\npublic class BubbleSort {\n    static void bubbleSort(int[] arr) {\n        int n = arr.length;\n        for (int i = 0; i < n - 1; i++) {\n            for (int j = 0; j < n - i - 1; j++) {\n                if (arr[j] > arr[j + 1]) {\n                    int temp = arr[j];\n                    arr[j] = arr[j + 1];\n                    arr[j + 1] = temp;\n                }\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        int[] arr = {64, 34, 25, 12, 22, 11, 90};\n        bubbleSort(arr);\n        System.out.println(Arrays.toString(arr));\n    }\n}'
+        helpText: 'COMO PENSAR:\n1. Bubble Sort "borbulha" o maior elemento para o final a cada passagem.\n2. Loop externo: n-1 passagens. Loop interno: compara vizinhos.\n3. Se arr[j] > arr[j+1], troca-os usando variável temporária.\n4. Otimização: se nenhuma troca em uma passagem, array já está ordenado.\n5. Complexidade: O(n^2) -- não use em produção, mas é essencial entender.\n\nCOLA -- Copie este código na IDE:\n\nimport java.util.Arrays;\n\npublic class BubbleSort {\n    static void bubbleSort(int[] arr) {\n        int n = arr.length;\n        for (int i = 0; i < n - 1; i++) {\n            for (int j = 0; j < n - i - 1; j++) {\n                if (arr[j] > arr[j + 1]) {\n                    int temp = arr[j];\n                    arr[j] = arr[j + 1];\n                    arr[j + 1] = temp;\n                }\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        int[] arr = {64, 34, 25, 12, 22, 11, 90};\n        bubbleSort(arr);\n        System.out.println(Arrays.toString(arr));\n    }\n}'
     },
     // ── PRINCIPAL ───────────────────────────────────────────────────────────
     {
         id: 'code_palindrome', stage: 'Principal', region: 'Santander',
-        title: 'Verificar Palindromo', concept: 'Dois ponteiros / String manipulation',
+        title: 'Verificar Palíndromo', concept: 'Dois ponteiros / String manipulation',
         language: 'java', fileName: 'Palindrome.java',
-        description: 'Implemente verificacao de palindromo:\n1. Metodo: static boolean isPalindrome(String s)\n2. Ignore maiusculas/minusculas e caracteres nao-alfanumericos\n3. Use dois ponteiros (inicio e fim)\n4. Teste: "A man, a plan, a canal: Panama" -> true\n5. Teste: "race a car" -> false',
+        description: 'Implemente verificação de palíndromo:\n1. Método: static boolean isPalindrome(String s)\n2. Ignore maiúsculas/minúsculas e caracteres não-alfanuméricos\n3. Use dois ponteiros (início e fim)\n4. Teste: "A man, a plan, a canal: Panama" -> true\n5. Teste: "race a car" -> false',
         starterCode: 'public class Palindrome {\n    static boolean isPalindrome(String s) {\n        // Implemente aqui\n        return false;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isPalindrome("A man, a plan, a canal: Panama"));\n        System.out.println(isPalindrome("race a car"));\n    }\n}\n',
         validator(code) {
             const compile = JavaAnalyzer.analyze(code);
             if (!compile.ok) return compile;
-            if (!/class\s+Palindrome/.test(code)) return { ok: false, msg: 'Erro de compilacao: A classe deve se chamar Palindrome.' };
-            if (!/static\s+boolean\s+isPalindrome/.test(code)) return { ok: false, msg: 'Erro de compilacao: Metodo: static boolean isPalindrome(String s)' };
-            if (!/toLowerCase/.test(code) && !/toUpperCase/.test(code)) return { ok: false, msg: 'Erro semantico: Converta para minusculas com s.toLowerCase() para ignorar case.' };
+            if (!/class\s+Palindrome/.test(code)) return { ok: false, msg: 'Erro de compilação: A classe deve se chamar Palindrome.' };
+            if (!/static\s+boolean\s+isPalindrome/.test(code)) return { ok: false, msg: 'Erro de compilação: Método: static boolean isPalindrome(String s)' };
+            if (!/toLowerCase/.test(code) && !/toUpperCase/.test(code)) return { ok: false, msg: 'Erro semântico: Converta para minúsculas com s.toLowerCase() para ignorar case.' };
             if (!/Character\s*\.\s*isLetterOrDigit/.test(code) && !/replaceAll/.test(code) && !/isAlphanumeric/.test(code))
-                return { ok: false, msg: 'Erro semantico: Filtre caracteres nao-alfanumericos com Character.isLetterOrDigit() ou replaceAll("[^a-zA-Z0-9]", "")' };
-            if (!/while/.test(code) && !/for/.test(code)) return { ok: false, msg: 'Erro semantico: Use um loop com dois ponteiros (left e right).' };
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> true\n> false\n\nTecnica: Two Pointers. Complexidade O(n), espaco O(1).\nEssencial em entrevistas de Big Tech.\nProcesso finalizado com codigo de saida 0.' };
+                return { ok: false, msg: 'Erro semântico: Filtre caracteres não-alfanuméricos com Character.isLetterOrDigit() ou replaceAll("[^a-zA-Z0-9]", "")' };
+            if (!/while/.test(code) && !/for/.test(code)) return { ok: false, msg: 'Erro semântico: Use um loop com dois ponteiros (left e right).' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> true\n> false\n\nTécnica: Two Pointers. Complexidade O(n), espaço O(1).\nEssencial em entrevistas de Big Tech.\nProcesso finalizado com código de saída 0.' };
         },
-        helpText: 'COMO PENSAR:\n1. Palindromo = le igual de tras para frente.\n2. Primeiro, limpe a string: remova tudo que nao e letra/digito, converta para minusculas.\n3. Dois ponteiros: left no inicio, right no fim.\n4. Compare s[left] com s[right]. Se diferentes, nao e palindromo.\n5. Se left >= right, ja comparou tudo. E palindromo.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class Palindrome {\n    static boolean isPalindrome(String s) {\n        String clean = s.toLowerCase().replaceAll("[^a-z0-9]", "");\n        int left = 0, right = clean.length() - 1;\n        while (left < right) {\n            if (clean.charAt(left) != clean.charAt(right)) return false;\n            left++;\n            right--;\n        }\n        return true;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isPalindrome("A man, a plan, a canal: Panama"));\n        System.out.println(isPalindrome("race a car"));\n    }\n}'
+        helpText: 'COMO PENSAR:\n1. Palíndromo = lê igual de trás para frente.\n2. Primeiro, limpe a string: remova tudo que não é letra/dígito, converta para minúsculas.\n3. Dois ponteiros: left no início, right no fim.\n4. Compare s[left] com s[right]. Se diferentes, não é palíndromo.\n5. Se left >= right, já comparou tudo. É palíndromo.\n\nCOLA -- Copie este código na IDE:\n\npublic class Palindrome {\n    static boolean isPalindrome(String s) {\n        String clean = s.toLowerCase().replaceAll("[^a-z0-9]", "");\n        int left = 0, right = clean.length() - 1;\n        while (left < right) {\n            if (clean.charAt(left) != clean.charAt(right)) return false;\n            left++;\n            right--;\n        }\n        return true;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isPalindrome("A man, a plan, a canal: Panama"));\n        System.out.println(isPalindrome("race a car"));\n    }\n}'
     },
     {
         id: 'code_reverse', stage: 'Principal', region: 'Bradesco',
-        title: 'Reverter Lista In-Place', concept: 'Manipulacao de ponteiros / In-place',
+        title: 'Reverter Lista In-Place', concept: 'Manipulação de ponteiros / In-place',
         language: 'java', fileName: 'ReverseList.java',
-        description: 'Implemente reversao de lista encadeada:\n1. Classe ListNode com int val e ListNode next\n2. Metodo: static ListNode reverseList(ListNode head)\n3. Reverta in-place (sem criar nova lista)\n4. Use 3 ponteiros: prev, curr, next\n5. Complexidade: O(n) tempo, O(1) espaco',
+        description: 'Implemente reversão de lista encadeada:\n1. Classe ListNode com int val e ListNode next\n2. Método: static ListNode reverseList(ListNode head)\n3. Reverta in-place (sem criar nova lista)\n4. Use 3 ponteiros: prev, curr, next\n5. Complexidade: O(n) tempo, O(1) espaço',
         starterCode: 'public class ReverseList {\n    static class ListNode {\n        int val;\n        ListNode next;\n        ListNode(int v) { val = v; }\n    }\n\n    static ListNode reverseList(ListNode head) {\n        // Implemente aqui\n        return head;\n    }\n\n    public static void main(String[] args) {\n        ListNode head = new ListNode(1);\n        head.next = new ListNode(2);\n        head.next.next = new ListNode(3);\n        head.next.next.next = new ListNode(4);\n\n        ListNode rev = reverseList(head);\n        while (rev != null) {\n            System.out.print(rev.val + " ");\n            rev = rev.next;\n        }\n    }\n}\n',
         validator(code) {
             const compile = JavaAnalyzer.analyze(code);
             if (!compile.ok) return compile;
-            if (!/class\s+ReverseList/.test(code)) return { ok: false, msg: 'Erro de compilacao: A classe deve se chamar ReverseList.' };
-            if (!/class\s+ListNode/.test(code)) return { ok: false, msg: 'Erro de compilacao: Defina a classe ListNode com val e next.' };
-            if (!/static\s+ListNode\s+reverseList/.test(code)) return { ok: false, msg: 'Erro de compilacao: Metodo: static ListNode reverseList(ListNode head)' };
-            if (!/prev/.test(code)) return { ok: false, msg: 'Erro semantico: Use um ponteiro prev (inicializado como null) para rastrear o no anterior.' };
-            if (!/while/.test(code)) return { ok: false, msg: 'Erro semantico: Use while (curr != null) para percorrer a lista.' };
-            if (!/\.next/.test(code)) return { ok: false, msg: 'Erro semantico: Manipule os ponteiros .next para inverter as conexoes.' };
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 4 3 2 1\n\nLista revertida in-place. O(n) tempo, O(1) espaco.\nClassico de entrevistas: nao crie nova lista, apenas inverta ponteiros.\nProcesso finalizado com codigo de saida 0.' };
+            if (!/class\s+ReverseList/.test(code)) return { ok: false, msg: 'Erro de compilação: A classe deve se chamar ReverseList.' };
+            if (!/class\s+ListNode/.test(code)) return { ok: false, msg: 'Erro de compilação: Defina a classe ListNode com val e next.' };
+            if (!/static\s+ListNode\s+reverseList/.test(code)) return { ok: false, msg: 'Erro de compilação: Método: static ListNode reverseList(ListNode head)' };
+            if (!/prev/.test(code)) return { ok: false, msg: 'Erro semântico: Use um ponteiro prev (inicializado como null) para rastrear o nó anterior.' };
+            if (!/while/.test(code)) return { ok: false, msg: 'Erro semântico: Use while (curr != null) para percorrer a lista.' };
+            if (!/\.next/.test(code)) return { ok: false, msg: 'Erro semântico: Manipule os ponteiros .next para inverter as conexões.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 4 3 2 1\n\nLista revertida in-place. O(n) tempo, O(1) espaço.\nClássico de entrevistas: não crie nova lista, apenas inverta ponteiros.\nProcesso finalizado com código de saída 0.' };
         },
-        helpText: 'COMO PENSAR:\n1. Lista encadeada: cada no aponta para o proximo. Para reverter, cada no deve apontar para o ANTERIOR.\n2. Tres ponteiros: prev (onde vou apontar), curr (no atual), next (salvar referencia antes de perder).\n3. A cada passo: salve next = curr.next, inverta curr.next = prev, avance prev = curr, curr = next.\n4. Quando curr == null, prev e a nova cabeca.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class ReverseList {\n    static class ListNode {\n        int val;\n        ListNode next;\n        ListNode(int v) { val = v; }\n    }\n\n    static ListNode reverseList(ListNode head) {\n        ListNode prev = null;\n        ListNode curr = head;\n        while (curr != null) {\n            ListNode next = curr.next;\n            curr.next = prev;\n            prev = curr;\n            curr = next;\n        }\n        return prev;\n    }\n\n    public static void main(String[] args) {\n        ListNode head = new ListNode(1);\n        head.next = new ListNode(2);\n        head.next.next = new ListNode(3);\n        head.next.next.next = new ListNode(4);\n\n        ListNode rev = reverseList(head);\n        while (rev != null) {\n            System.out.print(rev.val + " ");\n            rev = rev.next;\n        }\n    }\n}'
+        helpText: 'COMO PENSAR:\n1. Lista encadeada: cada nó aponta para o próximo. Para reverter, cada nó deve apontar para o ANTERIOR.\n2. Três ponteiros: prev (onde vou apontar), curr (nó atual), next (salvar referência antes de perder).\n3. A cada passo: salve next = curr.next, inverta curr.next = prev, avance prev = curr, curr = next.\n4. Quando curr == null, prev é a nova cabeça.\n\nCOLA -- Copie este código na IDE:\n\npublic class ReverseList {\n    static class ListNode {\n        int val;\n        ListNode next;\n        ListNode(int v) { val = v; }\n    }\n\n    static ListNode reverseList(ListNode head) {\n        ListNode prev = null;\n        ListNode curr = head;\n        while (curr != null) {\n            ListNode next = curr.next;\n            curr.next = prev;\n            prev = curr;\n            curr = next;\n        }\n        return prev;\n    }\n\n    public static void main(String[] args) {\n        ListNode head = new ListNode(1);\n        head.next = new ListNode(2);\n        head.next.next = new ListNode(3);\n        head.next.next.next = new ListNode(4);\n\n        ListNode rev = reverseList(head);\n        while (rev != null) {\n            System.out.print(rev.val + " ");\n            rev = rev.next;\n        }\n    }\n}'
     },
     {
         id: 'code_tree', stage: 'Principal', region: 'Cloud Valley',
-        title: 'Inverter Arvore Binaria', concept: 'Recursao / Arvore binaria',
+        title: 'Inverter Árvore Binária', concept: 'Recursão / Árvore binária',
         language: 'java', fileName: 'InvertTree.java',
-        description: 'Implemente a inversao de arvore binaria:\n1. Classe TreeNode com int val, TreeNode left, right\n2. Metodo: static TreeNode invertTree(TreeNode root)\n3. Troca left <-> right recursivamente\n4. Retorna a raiz invertida\n5. Complexidade: O(n)',
+        description: 'Implemente a inversão de árvore binária:\n1. Classe TreeNode com int val, TreeNode left, right\n2. Método: static TreeNode invertTree(TreeNode root)\n3. Troca left <-> right recursivamente\n4. Retorna a raiz invertida\n5. Complexidade: O(n)',
         starterCode: 'public class InvertTree {\n    static class TreeNode {\n        int val;\n        TreeNode left, right;\n        TreeNode(int v) { val = v; }\n    }\n\n    static TreeNode invertTree(TreeNode root) {\n        // Implemente aqui\n        return root;\n    }\n\n    public static void main(String[] args) {\n        TreeNode root = new TreeNode(4);\n        root.left = new TreeNode(2);\n        root.right = new TreeNode(7);\n        root.left.left = new TreeNode(1);\n        root.left.right = new TreeNode(3);\n\n        TreeNode inv = invertTree(root);\n        System.out.println(inv.left.val);  // 7\n        System.out.println(inv.right.val); // 2\n    }\n}\n',
         validator(code) {
             const compile = JavaAnalyzer.analyze(code);
             if (!compile.ok) return compile;
-            if (!/class\s+InvertTree/.test(code)) return { ok: false, msg: 'Erro de compilacao: A classe deve se chamar InvertTree.' };
-            if (!/class\s+TreeNode/.test(code)) return { ok: false, msg: 'Erro de compilacao: Defina a classe interna TreeNode com val, left, right.' };
-            if (!/static\s+TreeNode\s+invertTree/.test(code)) return { ok: false, msg: 'Erro de compilacao: Metodo: static TreeNode invertTree(TreeNode root)' };
+            if (!/class\s+InvertTree/.test(code)) return { ok: false, msg: 'Erro de compilação: A classe deve se chamar InvertTree.' };
+            if (!/class\s+TreeNode/.test(code)) return { ok: false, msg: 'Erro de compilação: Defina a classe interna TreeNode com val, left, right.' };
+            if (!/static\s+TreeNode\s+invertTree/.test(code)) return { ok: false, msg: 'Erro de compilação: Método: static TreeNode invertTree(TreeNode root)' };
             if (!/invertTree\s*\(\s*root\s*\.\s*left\s*\)/.test(code) && !/invertTree\s*\(\s*\w+\s*\.\s*left\s*\)/.test(code) &&
                 !/invertTree\s*\(\s*root\s*\.\s*right\s*\)/.test(code) && !/invertTree\s*\(\s*\w+\s*\.\s*right\s*\)/.test(code))
-                return { ok: false, msg: 'Erro semantico: Use recursao: invertTree(root.left) e invertTree(root.right).' };
-            if (!/null/.test(code)) return { ok: false, msg: 'Erro semantico: Caso base: if (root == null) return null;' };
+                return { ok: false, msg: 'Erro semântico: Use recursão: invertTree(root.left) e invertTree(root.right).' };
+            if (!/null/.test(code)) return { ok: false, msg: 'Erro semântico: Caso base: if (root == null) return null;' };
             const swapPattern = /(temp|TreeNode\s+\w+)\s*=\s*root\.\s*(left|right)/;
             const directSwap = /root\.\s*left\s*=.*root\.\s*right|root\.\s*right\s*=.*root\.\s*left/;
-            if (!swapPattern.test(code) && !directSwap.test(code)) return { ok: false, msg: 'Erro semantico: Troque left e right. Use variavel temporaria ou troca direta.' };
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 7\n> 2\n\nArvore invertida com sucesso. Complexidade O(n).\nEsta e uma questao classica de entrevistas BigTech.\nProcesso finalizado com codigo de saida 0.' };
+            if (!swapPattern.test(code) && !directSwap.test(code)) return { ok: false, msg: 'Erro semântico: Troque left e right. Use variável temporária ou troca direta.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 7\n> 2\n\nÁrvore invertida com sucesso. Complexidade O(n).\nEsta é uma questão clássica de entrevistas BigTech.\nProcesso finalizado com código de saída 0.' };
         },
-        helpText: 'COMO PENSAR:\n1. Arvore binaria: cada no tem 0, 1 ou 2 filhos (left e right).\n2. Inverter = espelhar. O que estava na esquerda vai para a direita e vice-versa.\n3. Recursao: para cada no, troque left e right. Depois, inverta a subarvore esquerda e a direita.\n4. Caso base: se o no e null, retorne null (arvore vazia).\n5. Use uma variavel temporaria para a troca.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class InvertTree {\n    static class TreeNode {\n        int val;\n        TreeNode left, right;\n        TreeNode(int v) { val = v; }\n    }\n\n    static TreeNode invertTree(TreeNode root) {\n        if (root == null) return null;\n        TreeNode temp = root.left;\n        root.left = invertTree(root.right);\n        root.right = invertTree(temp);\n        return root;\n    }\n\n    public static void main(String[] args) {\n        TreeNode root = new TreeNode(4);\n        root.left = new TreeNode(2);\n        root.right = new TreeNode(7);\n        root.left.left = new TreeNode(1);\n        root.left.right = new TreeNode(3);\n\n        TreeNode inv = invertTree(root);\n        System.out.println(inv.left.val);\n        System.out.println(inv.right.val);\n    }\n}'
+        helpText: 'COMO PENSAR:\n1. Árvore binária: cada nó tem 0, 1 ou 2 filhos (left e right).\n2. Inverter = espelhar. O que estava na esquerda vai para a direita e vice-versa.\n3. Recursão: para cada nó, troque left e right. Depois, inverta a subárvore esquerda e a direita.\n4. Caso base: se o nó é null, retorne null (árvore vazia).\n5. Use uma variável temporária para a troca.\n\nCOLA -- Copie este código na IDE:\n\npublic class InvertTree {\n    static class TreeNode {\n        int val;\n        TreeNode left, right;\n        TreeNode(int v) { val = v; }\n    }\n\n    static TreeNode invertTree(TreeNode root) {\n        if (root == null) return null;\n        TreeNode temp = root.left;\n        root.left = invertTree(root.right);\n        root.right = invertTree(temp);\n        return root;\n    }\n\n    public static void main(String[] args) {\n        TreeNode root = new TreeNode(4);\n        root.left = new TreeNode(2);\n        root.right = new TreeNode(7);\n        root.left.left = new TreeNode(1);\n        root.left.right = new TreeNode(3);\n\n        TreeNode inv = invertTree(root);\n        System.out.println(inv.left.val);\n        System.out.println(inv.right.val);\n    }\n}'
+    },
+    // ── NEW: DISNEY (Junior) - Interface + Polimorfismo ─────────────────────
+    {
+        id: 'code_polymorphism', stage: 'Junior', region: 'Disney',
+        title: 'Interface e Polimorfismo', concept: 'OOP / Interface / Polimorfismo',
+        language: 'java', fileName: 'CharacterDemo.java',
+        description: 'Implemente polimorfismo com interface:\n1. Interface Personagem com m\u00e9todo String acao()\n2. Classe Heroi implements Personagem: retorna \"Her\u00f3i luta!\"\n3. Classe Vilao implements Personagem: retorna \"Vil\u00e3o ataca!\"\n4. No main, crie array Personagem[] e chame acao() de cada',
+        starterCode: '// Crie a interface e as classes aqui\n\npublic class CharacterDemo {\n    public static void main(String[] args) {\n        // Crie o array de Personagem e chame acao()\n\n    }\n}\n',
+        validator(code) {
+            const compile = JavaAnalyzer.analyze(code);
+            if (!compile.ok) return compile;
+            if (!/interface\s+Personagem/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: Declare a interface Personagem com o m\u00e9todo acao().' };
+            if (!/class\s+Heroi\s+implements\s+Personagem/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: A classe Heroi deve implementar Personagem.' };
+            if (!/class\s+Vilao\s+implements\s+Personagem/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: A classe Vilao deve implementar Personagem.' };
+            if (!/String\s+acao\s*\(\s*\)/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: O m\u00e9todo deve ser: String acao()' };
+            if (!/Personagem\s*\[\s*\]/.test(code) && !/for\s*\(/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Crie um array de Personagem e use um loop para chamar acao().' };
+            if (!/\.acao\s*\(\s*\)/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Chame o m\u00e9todo acao() de cada personagem.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> Her\u00f3i luta!\n> Vil\u00e3o ataca!\n\nPolimorfismo: mesma interface, comportamentos diferentes.\nEsse \u00e9 o pilar da OOP em toda Big Tech.\nProcesso finalizado com c\u00f3digo de sa\u00edda 0.' };
+        },
+        helpText: 'COMO PENSAR:\n1. Interface = contrato. Define O QUE fazer, n\u00e3o COMO.\n2. Cada classe implementa a interface com seu pr\u00f3prio comportamento.\n3. Um array de Personagem pode conter Heroi e Vilao.\n4. Ao chamar acao(), Java executa a vers\u00e3o correta automaticamente.\n\nCOLA -- Copie este c\u00f3digo na IDE:\n\ninterface Personagem {\n    String acao();\n}\n\nclass Heroi implements Personagem {\n    public String acao() {\n        return \"Her\u00f3i luta!\";\n    }\n}\n\nclass Vilao implements Personagem {\n    public String acao() {\n        return \"Vil\u00e3o ataca!\";\n    }\n}\n\npublic class CharacterDemo {\n    public static void main(String[] args) {\n        Personagem[] p = { new Heroi(), new Vilao() };\n        for (Personagem x : p) {\n            System.out.println(x.acao());\n        }\n    }\n}'
+    },
+    // ── NEW: IBM (Mid) - Valid Parentheses ──────────────────────────────────
+    {
+        id: 'code_brackets', stage: 'Mid', region: 'IBM',
+        title: 'Validar Par\u00eanteses', concept: 'Stack / Bracket Matching',
+        language: 'java', fileName: 'ValidParentheses.java',
+        description: 'Verifique se uma string de par\u00eanteses \u00e9 v\u00e1lida:\n1. M\u00e9todo: static boolean isValid(String s)\n2. Cada ( deve fechar com ), [ com ], { com }\n3. Use uma Stack<Character>\n4. Teste: \"({[]})\" \u2192 true, \"([)]\" \u2192 false',
+        starterCode: 'import java.util.Stack;\n\npublic class ValidParentheses {\n    static boolean isValid(String s) {\n        // Implemente aqui\n        return false;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isValid(\"({[]})\")); \n        System.out.println(isValid(\"([)]\")); \n        System.out.println(isValid(\"{[]}\")); \n    }\n}\n',
+        validator(code) {
+            const compile = JavaAnalyzer.analyze(code);
+            if (!compile.ok) return compile;
+            if (!/class\s+ValidParentheses/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: A classe deve se chamar ValidParentheses.' };
+            if (!/static\s+boolean\s+isValid/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: M\u00e9todo: static boolean isValid(String s)' };
+            if (!/Stack/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use uma Stack para rastrear os par\u00eanteses abertos.' };
+            if (!/\.push\s*\(/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use stack.push() para empilhar caracteres de abertura.' };
+            if (!/\.pop\s*\(/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use stack.pop() para desempilhar e comparar.' };
+            if (!/isEmpty/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Verifique se a stack est\u00e1 vazia com isEmpty().' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> true\n> false\n> true\n\nProblema #1 de Stack no LeetCode. Cobrado em toda Big Tech.\nComplexidade: O(n) tempo, O(n) espa\u00e7o.\nProcesso finalizado com c\u00f3digo de sa\u00edda 0.' };
+        },
+        helpText: 'COMO PENSAR:\n1. Para cada caractere de abertura ( [ {, empilhe na Stack.\n2. Para cada fechamento ) ] }, verifique se o topo \u00e9 o par correspondente.\n3. Se n\u00e3o for, a string \u00e9 inv\u00e1lida.\n4. No final, a Stack deve estar vazia.\n\nCOLA -- Copie este c\u00f3digo na IDE:\n\nimport java.util.Stack;\n\npublic class ValidParentheses {\n    static boolean isValid(String s) {\n        Stack<Character> stack = new Stack<>();\n        for (char c : s.toCharArray()) {\n            if (c == \'(\' || c == \'[\' || c == \'{\') {\n                stack.push(c);\n            } else {\n                if (stack.isEmpty()) return false;\n                char top = stack.pop();\n                if (c == \')\' && top != \'(\') return false;\n                if (c == \']\' && top != \'[\') return false;\n                if (c == \'}\' && top != \'{\') return false;\n            }\n        }\n        return stack.isEmpty();\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isValid(\"({[]})\"));\n        System.out.println(isValid(\"([)]\"));\n        System.out.println(isValid(\"{[]}\"));\n    }\n}'
+    },
+    // ── NEW: PAYPAL (Senior) - Anagram Detection ────────────────────────────
+    {
+        id: 'code_anagram', stage: 'Senior', region: 'PayPal',
+        title: 'Detector de Anagrama', concept: 'HashMap / Contagem de caracteres',
+        language: 'java', fileName: 'AnagramCheck.java',
+        description: 'Verifique se duas strings s\u00e3o anagramas:\n1. M\u00e9todo: static boolean isAnagram(String s, String t)\n2. Anagrama: mesmas letras, ordem diferente\n3. Use um array de contagem int[26]\n4. Teste: \"listen\",\"silent\" \u2192 true\n5. Teste: \"hello\",\"world\" \u2192 false',
+        starterCode: 'public class AnagramCheck {\n    static boolean isAnagram(String s, String t) {\n        // Implemente aqui\n        return false;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isAnagram(\"listen\", \"silent\"));\n        System.out.println(isAnagram(\"hello\", \"world\"));\n    }\n}\n',
+        validator(code) {
+            const compile = JavaAnalyzer.analyze(code);
+            if (!compile.ok) return compile;
+            if (!/class\s+AnagramCheck/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: A classe deve se chamar AnagramCheck.' };
+            if (!/static\s+boolean\s+isAnagram/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: M\u00e9todo: static boolean isAnagram(String s, String t)' };
+            if (!/length/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Verifique se as strings t\u00eam o mesmo tamanho primeiro.' };
+            if (!/for\s*\(/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use um loop para percorrer os caracteres.' };
+            if (!/charAt/.test(code) && !/toCharArray/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use charAt() ou toCharArray() para acessar caracteres.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> true\n> false\n\nAnagramas: mesmas letras, frequ\u00eancias iguais.\nUsado em detec\u00e7\u00e3o de fraude e processamento de texto.\nProcesso finalizado com c\u00f3digo de sa\u00edda 0.' };
+        },
+        helpText: 'COMO PENSAR:\n1. Se os tamanhos s\u00e3o diferentes, n\u00e3o \u00e9 anagrama.\n2. Conte a frequ\u00eancia de cada letra na primeira string.\n3. Subtraia a frequ\u00eancia de cada letra da segunda.\n4. Se todas as contagens s\u00e3o 0, \u00e9 anagrama.\n5. Use int[26] para letras min\u00fasculas (a-z).\n\nCOLA -- Copie este c\u00f3digo na IDE:\n\npublic class AnagramCheck {\n    static boolean isAnagram(String s, String t) {\n        if (s.length() != t.length()) return false;\n        int[] count = new int[26];\n        for (int i = 0; i < s.length(); i++) {\n            count[s.charAt(i) - \'a\']++;\n            count[t.charAt(i) - \'a\']--;\n        }\n        for (int c : count) {\n            if (c != 0) return false;\n        }\n        return true;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isAnagram(\"listen\", \"silent\"));\n        System.out.println(isAnagram(\"hello\", \"world\"));\n    }\n}'
+    },
+    // ── NEW: NETFLIX (Senior) - Sliding Window / Kadane ─────────────────────
+    {
+        id: 'code_kadane', stage: 'Senior', region: 'Netflix',
+        title: 'Subarray de Soma M\u00e1xima', concept: 'Sliding Window / Kadane O(n)',
+        language: 'java', fileName: 'MaxSubarray.java',
+        description: 'Encontre o subarray cont\u00edguo de maior soma:\n1. M\u00e9todo: static int maxSubArray(int[] nums)\n2. Use o algoritmo de Kadane\n3. Mantenha soma atual e soma m\u00e1xima\n4. Teste: {-2,1,-3,4,-1,2,1,-5,4} \u2192 6\n   (subarray [4,-1,2,1])',
+        starterCode: 'public class MaxSubarray {\n    static int maxSubArray(int[] nums) {\n        // Implemente aqui\n        return 0;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};\n        System.out.println(maxSubArray(nums));\n    }\n}\n',
+        validator(code) {
+            const compile = JavaAnalyzer.analyze(code);
+            if (!compile.ok) return compile;
+            if (!/class\s+MaxSubarray/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: A classe deve se chamar MaxSubarray.' };
+            if (!/static\s+int\s+maxSubArray/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: M\u00e9todo: static int maxSubArray(int[] nums)' };
+            if (!/for\s*\(/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use um loop para percorrer o array.' };
+            if (!/Math\.max/.test(code) && !/max/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Compare e atualize o m\u00e1ximo a cada passo.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 6\n\nAlgoritmo de Kadane: O(n) tempo, O(1) espa\u00e7o.\nUsado em an\u00e1lise de s\u00e9ries temporais e streaming.\nProcesso finalizado com c\u00f3digo de sa\u00edda 0.' };
+        },
+        helpText: 'COMO PENSAR:\n1. Kadane: para cada posi\u00e7\u00e3o, decida: continuar o subarray ou come\u00e7ar novo.\n2. Se soma_atual + nums[i] < nums[i], melhor come\u00e7ar do zero.\n3. soma_atual = Math.max(nums[i], soma_atual + nums[i])\n4. soma_maxima = Math.max(soma_maxima, soma_atual)\n5. Uma \u00fanica passagem: O(n).\n\nCOLA -- Copie este c\u00f3digo na IDE:\n\npublic class MaxSubarray {\n    static int maxSubArray(int[] nums) {\n        int maxSum = nums[0];\n        int currSum = nums[0];\n        for (int i = 1; i < nums.length; i++) {\n            currSum = Math.max(nums[i], currSum + nums[i]);\n            maxSum = Math.max(maxSum, currSum);\n        }\n        return maxSum;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};\n        System.out.println(maxSubArray(nums));\n    }\n}'
+    },
+    // ── NEW: SPACEX (Staff) - HashSet / Contains Duplicate ──────────────────
+    {
+        id: 'code_hashset', stage: 'Staff', region: 'SpaceX',
+        title: 'Contains Duplicate (HashSet)', concept: 'Set / Deduplica\u00e7\u00e3o O(n)',
+        language: 'java', fileName: 'ContainsDuplicate.java',
+        description: 'Verifique se um array cont\u00e9m duplicatas:\n1. M\u00e9todo: static boolean containsDuplicate(int[] nums)\n2. Use HashSet para detec\u00e7\u00e3o O(1)\n3. Se o elemento j\u00e1 existe no set, h\u00e1 duplicata\n4. Teste: {1,2,3,1} \u2192 true\n5. Teste: {1,2,3,4} \u2192 false',
+        starterCode: 'import java.util.HashSet;\n\npublic class ContainsDuplicate {\n    static boolean containsDuplicate(int[] nums) {\n        // Implemente aqui\n        return false;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(containsDuplicate(new int[]{1, 2, 3, 1}));\n        System.out.println(containsDuplicate(new int[]{1, 2, 3, 4}));\n    }\n}\n',
+        validator(code) {
+            const compile = JavaAnalyzer.analyze(code);
+            if (!compile.ok) return compile;
+            if (!/class\s+ContainsDuplicate/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: A classe deve se chamar ContainsDuplicate.' };
+            if (!/static\s+boolean\s+containsDuplicate/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: M\u00e9todo: static boolean containsDuplicate(int[] nums)' };
+            if (!/HashSet/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use HashSet para verifica\u00e7\u00e3o O(1).' };
+            if (!/\.add\s*\(/.test(code) || !/\.contains\s*\(/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use set.contains() para verificar e set.add() para inserir.' };
+            if (!/for\s*\(/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use um loop para percorrer o array.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> true\n> false\n\nHashSet: inser\u00e7\u00e3o e busca O(1). Deduplica\u00e7\u00e3o em uma passagem.\nFundamental para telemetria e processamento de dados.\nProcesso finalizado com c\u00f3digo de sa\u00edda 0.' };
+        },
+        helpText: 'COMO PENSAR:\n1. For\u00e7a bruta: comparar todos os pares = O(n\u00b2). Muito lento.\n2. HashSet: cada elemento \u00e9 inserido e buscado em O(1).\n3. Para cada n\u00famero: se j\u00e1 est\u00e1 no set, retorne true. Sen\u00e3o, adicione.\n4. Se terminar o loop sem duplicata, retorne false.\n\nCOLA -- Copie este c\u00f3digo na IDE:\n\nimport java.util.HashSet;\n\npublic class ContainsDuplicate {\n    static boolean containsDuplicate(int[] nums) {\n        HashSet<Integer> set = new HashSet<>();\n        for (int num : nums) {\n            if (set.contains(num)) return true;\n            set.add(num);\n        }\n        return false;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(containsDuplicate(new int[]{1, 2, 3, 1}));\n        System.out.println(containsDuplicate(new int[]{1, 2, 3, 4}));\n    }\n}'
+    },
+    // ── NEW: NVIDIA (Staff) - Merge Sort ────────────────────────────────────
+    {
+        id: 'code_mergesort', stage: 'Staff', region: 'Nvidia',
+        title: 'Merge Sort', concept: 'Ordena\u00e7\u00e3o O(n log n) / Dividir e Conquistar',
+        language: 'java', fileName: 'MergeSort.java',
+        description: 'Implemente Merge Sort:\n1. M\u00e9todo: static void mergeSort(int[] arr, int left, int right)\n2. Auxiliar: static void merge(int[] arr, int l, int m, int r)\n3. Divida ao meio, ordene cada metade, mescle\n4. Teste: {38, 27, 43, 3, 9, 82, 10}',
+        starterCode: 'import java.util.Arrays;\n\npublic class MergeSort {\n    static void mergeSort(int[] arr, int left, int right) {\n        // Implemente aqui\n    }\n\n    static void merge(int[] arr, int l, int m, int r) {\n        // Implemente aqui\n    }\n\n    public static void main(String[] args) {\n        int[] arr = {38, 27, 43, 3, 9, 82, 10};\n        mergeSort(arr, 0, arr.length - 1);\n        System.out.println(Arrays.toString(arr));\n    }\n}\n',
+        validator(code) {
+            const compile = JavaAnalyzer.analyze(code);
+            if (!compile.ok) return compile;
+            if (!/class\s+MergeSort/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: A classe deve se chamar MergeSort.' };
+            if (!/static\s+void\s+mergeSort/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: M\u00e9todo: static void mergeSort(int[] arr, int left, int right)' };
+            if (!/static\s+void\s+merge\b/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: M\u00e9todo auxiliar: static void merge(int[] arr, int l, int m, int r)' };
+            if (!/mid/.test(code) && !/meio/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Calcule o ponto m\u00e9dio: int mid = (left + right) / 2;' };
+            if (!/mergeSort\s*\(/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use chamadas recursivas de mergeSort().' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> [3, 9, 10, 27, 38, 43, 82]\n\nMerge Sort: O(n log n) garantido. Est\u00e1vel.\nUsado em produ\u00e7\u00e3o quando estabilidade importa.\nProcesso finalizado com c\u00f3digo de sa\u00edda 0.' };
+        },
+        helpText: 'COMO PENSAR:\n1. Dividir: parta o array ao meio recursivamente at\u00e9 ter arrays de 1.\n2. Conquistar: arrays de 1 elemento j\u00e1 est\u00e3o ordenados.\n3. Combinar: mescle dois arrays ordenados comparando elementos.\n4. Complexidade: O(n log n) sempre.\n\nCOLA -- Copie este c\u00f3digo na IDE:\n\nimport java.util.Arrays;\n\npublic class MergeSort {\n    static void mergeSort(int[] arr, int left, int right) {\n        if (left < right) {\n            int mid = (left + right) / 2;\n            mergeSort(arr, left, mid);\n            mergeSort(arr, mid + 1, right);\n            merge(arr, left, mid, right);\n        }\n    }\n\n    static void merge(int[] arr, int l, int m, int r) {\n        int n1 = m - l + 1, n2 = r - m;\n        int[] L = new int[n1], R = new int[n2];\n        for (int i = 0; i < n1; i++) L[i] = arr[l + i];\n        for (int j = 0; j < n2; j++) R[j] = arr[m + 1 + j];\n        int i = 0, j = 0, k = l;\n        while (i < n1 && j < n2) {\n            if (L[i] <= R[j]) arr[k++] = L[i++];\n            else arr[k++] = R[j++];\n        }\n        while (i < n1) arr[k++] = L[i++];\n        while (j < n2) arr[k++] = R[j++];\n    }\n\n    public static void main(String[] args) {\n        int[] arr = {38, 27, 43, 3, 9, 82, 10};\n        mergeSort(arr, 0, arr.length - 1);\n        System.out.println(Arrays.toString(arr));\n    }\n}'
+    },
+    // ── NEW: OPENAI (Staff) - Graph BFS ─────────────────────────────────────
+    {
+        id: 'code_bfs', stage: 'Staff', region: 'OpenAI',
+        title: 'Travessia BFS em Grafo', concept: 'Grafo / Busca em Largura',
+        language: 'java', fileName: 'GraphBFS.java',
+        description: 'Implemente BFS (Busca em Largura) num grafo:\n1. Grafo com lista de adjac\u00eancia (HashMap)\n2. M\u00e9todo: static List<Integer> bfs(Map graph, int start)\n3. Use Queue para a fila e Set para visitados\n4. Retorne a ordem de visita\u00e7\u00e3o',
+        starterCode: 'import java.util.*;\n\npublic class GraphBFS {\n    static List<Integer> bfs(Map<Integer, List<Integer>> graph, int start) {\n        // Implemente aqui\n        return new ArrayList<>();\n    }\n\n    public static void main(String[] args) {\n        Map<Integer, List<Integer>> graph = new HashMap<>();\n        graph.put(0, Arrays.asList(1, 2));\n        graph.put(1, Arrays.asList(0, 3, 4));\n        graph.put(2, Arrays.asList(0, 4));\n        graph.put(3, Arrays.asList(1));\n        graph.put(4, Arrays.asList(1, 2));\n        System.out.println(bfs(graph, 0));\n    }\n}\n',
+        validator(code) {
+            const compile = JavaAnalyzer.analyze(code);
+            if (!compile.ok) return compile;
+            if (!/class\s+GraphBFS/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: A classe deve se chamar GraphBFS.' };
+            if (!/static.*bfs\s*\(/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: Declare o m\u00e9todo bfs com os par\u00e2metros corretos.' };
+            if (!/Queue/.test(code) && !/LinkedList/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use uma Queue (fila) para a travessia BFS.' };
+            if (!/Set/.test(code) && !/visited/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use um Set para rastrear n\u00f3s j\u00e1 visitados.' };
+            if (!/\.poll\s*\(/.test(code) && !/\.remove\s*\(/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use queue.poll() para desenfileirar o pr\u00f3ximo n\u00f3.' };
+            if (!/while/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use while (!queue.isEmpty()) para processar todos os n\u00f3s.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> [0, 1, 2, 3, 4]\n\nBFS: visita todos os n\u00f3s por camada (n\u00edvel).\nBase de redes neurais, redes sociais e shortest path.\nProcesso finalizado com c\u00f3digo de sa\u00edda 0.' };
+        },
+        helpText: 'COMO PENSAR:\n1. BFS = visitar n\u00f3s por camada. Primeiro os vizinhos, depois os vizinhos dos vizinhos.\n2. Estrutura: Queue (fila FIFO) + Set (visitados).\n3. Comece pelo n\u00f3 inicial: adicione \u00e0 fila e ao set.\n4. Enquanto a fila n\u00e3o estiver vazia: retire um n\u00f3, processe, adicione vizinhos.\n5. Complexidade: O(V + E) onde V=v\u00e9rtices, E=arestas.\n\nCOLA -- Copie este c\u00f3digo na IDE:\n\nimport java.util.*;\n\npublic class GraphBFS {\n    static List<Integer> bfs(Map<Integer, List<Integer>> graph, int start) {\n        List<Integer> result = new ArrayList<>();\n        Queue<Integer> queue = new LinkedList<>();\n        Set<Integer> visited = new HashSet<>();\n        queue.add(start);\n        visited.add(start);\n        while (!queue.isEmpty()) {\n            int node = queue.poll();\n            result.add(node);\n            for (int neighbor : graph.getOrDefault(node, List.of())) {\n                if (!visited.contains(neighbor)) {\n                    visited.add(neighbor);\n                    queue.add(neighbor);\n                }\n            }\n        }\n        return result;\n    }\n\n    public static void main(String[] args) {\n        Map<Integer, List<Integer>> graph = new HashMap<>();\n        graph.put(0, Arrays.asList(1, 2));\n        graph.put(1, Arrays.asList(0, 3, 4));\n        graph.put(2, Arrays.asList(0, 4));\n        graph.put(3, Arrays.asList(1));\n        graph.put(4, Arrays.asList(1, 2));\n        System.out.println(bfs(graph, 0));\n    }\n}'
+    },
+    // ── NEW: GEMINI (Principal) - Priority Queue / Heap ─────────────────────
+    {
+        id: 'code_heap', stage: 'Principal', region: 'Gemini',
+        title: 'Fila de Prioridade (Heap)', concept: 'PriorityQueue / Min-Heap',
+        language: 'java', fileName: 'TaskScheduler.java',
+        description: 'Processe tarefas por prioridade usando PriorityQueue:\n1. Classe Task com String nome e int prioridade\n2. Implemente Comparable<Task>\n3. Adicione tarefas com prioridades diferentes\n4. Processe (poll) e imprima em ordem de prioridade',
+        starterCode: 'import java.util.PriorityQueue;\n\npublic class TaskScheduler {\n    static class Task implements Comparable<Task> {\n        String nome;\n        int prioridade;\n        Task(String n, int p) { nome = n; prioridade = p; }\n\n        public int compareTo(Task other) {\n            // Implemente aqui\n            return 0;\n        }\n    }\n\n    public static void main(String[] args) {\n        PriorityQueue<Task> pq = new PriorityQueue<>();\n        // Adicione tarefas e processe\n\n    }\n}\n',
+        validator(code) {
+            const compile = JavaAnalyzer.analyze(code);
+            if (!compile.ok) return compile;
+            if (!/class\s+TaskScheduler/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: A classe deve se chamar TaskScheduler.' };
+            if (!/class\s+Task/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: Defina a classe interna Task.' };
+            if (!/implements\s+Comparable/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: Task deve implementar Comparable<Task>.' };
+            if (!/compareTo/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: Implemente o m\u00e9todo compareTo().' };
+            if (!/PriorityQueue/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use PriorityQueue para processar por prioridade.' };
+            if (!/\.add\s*\(/.test(code) || !/\.poll\s*\(/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use pq.add() para inserir e pq.poll() para extrair.' };
+            if (!/prioridade/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Compare this.prioridade com other.prioridade no compareTo.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> [1] Deploy em produ\u00e7\u00e3o\n> [2] Code review\n> [5] Atualizar docs\n\nPriorityQueue: Min-Heap. Inser\u00e7\u00e3o e extra\u00e7\u00e3o O(log n).\nUsado em A*, Dijkstra, agendamento de tarefas.\nProcesso finalizado com c\u00f3digo de sa\u00edda 0.' };
+        },
+        helpText: 'COMO PENSAR:\n1. PriorityQueue = Min-Heap. O menor elemento sempre sai primeiro.\n2. Implemente Comparable e o m\u00e9todo compareTo().\n3. compareTo retorna negativo se this < other, 0 se igual, positivo se >.\n4. Use: this.prioridade - other.prioridade para ordem crescente.\n\nCOLA -- Copie este c\u00f3digo na IDE:\n\nimport java.util.PriorityQueue;\n\npublic class TaskScheduler {\n    static class Task implements Comparable<Task> {\n        String nome;\n        int prioridade;\n        Task(String n, int p) { nome = n; prioridade = p; }\n\n        public int compareTo(Task other) {\n            return this.prioridade - other.prioridade;\n        }\n    }\n\n    public static void main(String[] args) {\n        PriorityQueue<Task> pq = new PriorityQueue<>();\n        pq.add(new Task(\"Atualizar docs\", 5));\n        pq.add(new Task(\"Deploy em produ\u00e7\u00e3o\", 1));\n        pq.add(new Task(\"Code review\", 2));\n\n        while (!pq.isEmpty()) {\n            Task t = pq.poll();\n            System.out.println(\"[\" + t.prioridade + \"] \" + t.nome);\n        }\n    }\n}'
+    },
+    // ── NEW: CLAUDE (Principal) - Climbing Stairs / DP ──────────────────────
+    {
+        id: 'code_dp', stage: 'Principal', region: 'Claude',
+        title: 'Climbing Stairs (DP)', concept: 'Programa\u00e7\u00e3o Din\u00e2mica / Subproblemas',
+        language: 'java', fileName: 'ClimbingStairs.java',
+        description: 'Conte quantas formas de subir n degraus:\n1. M\u00e9todo: static int climbStairs(int n)\n2. Pode subir 1 ou 2 degraus por vez\n3. Use Programa\u00e7\u00e3o Din\u00e2mica (N\u00c3O recurs\u00e3o pura)\n4. Teste: n=2 \u2192 2, n=5 \u2192 8, n=10 \u2192 89',
+        starterCode: 'public class ClimbingStairs {\n    static int climbStairs(int n) {\n        // Implemente aqui com DP\n        return 0;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(climbStairs(2));\n        System.out.println(climbStairs(5));\n        System.out.println(climbStairs(10));\n    }\n}\n',
+        validator(code) {
+            const compile = JavaAnalyzer.analyze(code);
+            if (!compile.ok) return compile;
+            if (!/class\s+ClimbingStairs/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: A classe deve se chamar ClimbingStairs.' };
+            if (!/static\s+int\s+climbStairs/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: M\u00e9todo: static int climbStairs(int n)' };
+            if (/climbStairs\s*\(\s*n\s*-\s*1\s*\)\s*\+\s*climbStairs\s*\(\s*n\s*-\s*2\s*\)/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Recurs\u00e3o pura \u00e9 O(2^n). Use DP com loop iterativo.' };
+            if (!/for\s*\(/.test(code) && !/while\s*\(/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use um loop iterativo para construir a solu\u00e7\u00e3o de baixo para cima.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> 2\n> 8\n> 89\n\nPrograma\u00e7\u00e3o Din\u00e2mica: resolver subproblemas menores primeiro.\nclimbStairs(n) = climbStairs(n-1) + climbStairs(n-2)\nIterativo: O(n) tempo, O(1) espa\u00e7o.\nProcesso finalizado com c\u00f3digo de sa\u00edda 0.' };
+        },
+        helpText: 'COMO PENSAR:\n1. Para chegar ao degrau n, voc\u00ea veio do n-1 (1 passo) ou n-2 (2 passos).\n2. Formas(n) = Formas(n-1) + Formas(n-2). \u00c9 Fibonacci!\n3. Recurs\u00e3o pura: O(2^n). DP iterativo: O(n).\n4. Guarde os dois \u00faltimos valores e avance.\n\nCOLA -- Copie este c\u00f3digo na IDE:\n\npublic class ClimbingStairs {\n    static int climbStairs(int n) {\n        if (n <= 2) return n;\n        int prev = 1, curr = 2;\n        for (int i = 3; i <= n; i++) {\n            int next = prev + curr;\n            prev = curr;\n            curr = next;\n        }\n        return curr;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(climbStairs(2));\n        System.out.println(climbStairs(5));\n        System.out.println(climbStairs(10));\n    }\n}'
     },
 ];
 
@@ -3883,7 +4111,7 @@ const IDE = {
         document.getElementById('ideChallengeDesc').textContent = challenge.description;
         document.getElementById('ideConceptTag').textContent = challenge.concept;
         document.getElementById('ideCodeInput').value = challenge.starterCode || '';
-        document.getElementById('ideCodeInput').placeholder = '// Escreva seu codigo ' + challenge.language.toUpperCase() + ' aqui...';
+        document.getElementById('ideCodeInput').placeholder = '// Escreva seu código ' + challenge.language.toUpperCase() + ' aqui...';
         document.getElementById('ideSkipBtn').style.display = 'none';
 
         // Reset CONTINUAR button and restore original buttons
@@ -3893,7 +4121,7 @@ const IDE = {
         document.getElementById('ideHelpBtn').style.display = 'flex';
 
         // Terminal reset
-        document.getElementById('ideTermOutput').innerHTML = '<span class="ide-prompt">&gt;</span> Aguardando codigo...\n<span class="ide-term-info">Desafio: ' + challenge.title + '</span>\n<span class="ide-term-info">Conceito: ' + challenge.concept + '</span>';
+        document.getElementById('ideTermOutput').innerHTML = '<span class="ide-prompt">&gt;</span> Aguardando código...\n<span class="ide-term-info">Desafio: ' + challenge.title + '</span>\n<span class="ide-term-info">Conceito: ' + challenge.concept + '</span>';
         const termStatus = document.getElementById('ideTermStatus');
         termStatus.textContent = 'Pronto';
         termStatus.className = 'ide-terminal-status';
@@ -3979,7 +4207,7 @@ const IDE = {
         const termStatus = document.getElementById('ideTermStatus');
 
         if (!code) {
-            term.innerHTML += '\n<span class="ide-term-error">ERRO: Editor vazio. Escreva seu codigo.</span>';
+            term.innerHTML += '\n<span class="ide-term-error">ERRO: Editor vazio. Escreva seu código.</span>';
             return;
         }
 
@@ -3992,7 +4220,7 @@ const IDE = {
             term.innerHTML += '<span class="ide-term-success">Compilation successful.</span>\n';
             term.innerHTML += '<span class="ide-prompt">&gt;</span> java ' + ch.fileName.replace('.java', '') + '\n';
             term.innerHTML += '<span class="ide-term-success">' + result.msg + '</span>';
-            term.innerHTML += '\n\n<span class="ide-term-success">DESAFIO COMPLETO! Codigo validado com sucesso.</span>';
+            term.innerHTML += '\n\n<span class="ide-term-success">DESAFIO COMPLETO! Código validado com sucesso.</span>';
             termStatus.textContent = 'Compilacao OK';
             termStatus.className = 'ide-terminal-status';
             this._solved = true;
@@ -4047,7 +4275,7 @@ const IDE = {
 
     skip() {
         const term = document.getElementById('ideTermOutput');
-        term.innerHTML += '\n<span class="ide-term-warn">Desafio pulado. Estude o conceito para a proxima vez.</span>';
+        term.innerHTML += '\n<span class="ide-term-warn">Desafio pulado. Estude o conceito para a próxima vez.</span>';
 
         // Show the correct answer in terminal as learning opportunity
         if (this._currentChallenge && this._currentChallenge.helpText) {
@@ -4056,7 +4284,7 @@ const IDE = {
         }
 
         if (State.lockedRegion) {
-            term.innerHTML += '\n<span class="ide-term-warn">Voce continua dentro da empresa. Interaja com o fundador para tentar novamente.</span>';
+            term.innerHTML += '\n<span class="ide-term-warn">Você continua dentro da empresa. Interaja com o fundador para tentar novamente.</span>';
         }
 
         // Do NOT mark _solved so IDE.close will not unlock
@@ -4086,7 +4314,7 @@ const IDE = {
                 State.doorAnimBuilding = null;
                 State.companyComplete = true;
                 World.showDialog('SISTEMA', regionBeingWorked,
-                    'Parabens! Voce completou TODOS os desafios em ' + regionBeingWorked + '. Voce esta livre para explorar e coletar livros.');
+                    'Parabéns! Você completou TODOS os desafios em ' + regionBeingWorked + '. Você está livre para explorar e coletar livros.');
                 // Clear completion flag after dialog
                 setTimeout(() => { State.companyComplete = false; }, 3000);
             }
@@ -4461,7 +4689,7 @@ const Auth = {
                 const pwd = document.getElementById('regPassword').value;
                 const pwdConfirm = document.getElementById('regPasswordConfirm').value;
                 if (pwd !== pwdConfirm) {
-                    throw new Error('As senhas nao coincidem.');
+                    throw new Error('As senhas não coincidem.');
                 }
                 const res = await API.post('/api/auth/register', {
                     full_name: document.getElementById('regFullName').value.trim(),
