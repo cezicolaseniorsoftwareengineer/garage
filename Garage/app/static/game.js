@@ -1230,7 +1230,9 @@ const World = {
 
             this.keys[e.code] = true;
             if (e.code === 'Enter' || e.code === 'Space') {
-                if (State.isBookPopup) { this.closeBookPopup(); }
+                const promoVisible = document.getElementById('promotionOverlay').style.display === 'flex';
+                if (promoVisible) { UI.hidePromotion(); }
+                else if (State.isBookPopup) { this.closeBookPopup(); }
                 else if (State.isInDialog) { this.closeDialog(); }
                 else if (!State.isInChallenge) { this.tryInteract(); }
             }
@@ -1263,7 +1265,9 @@ const World = {
         const actBtn = document.getElementById('btnAction');
         if (actBtn) {
             const doAction = () => {
-                if (State.isBookPopup) this.closeBookPopup();
+                const promoVisible = document.getElementById('promotionOverlay').style.display === 'flex';
+                if (promoVisible) UI.hidePromotion();
+                else if (State.isBookPopup) this.closeBookPopup();
                 else if (State.isInDialog) this.closeDialog();
                 else if (!State.isInChallenge) this.tryInteract();
             };
@@ -2879,15 +2883,23 @@ const UI = {
         document.getElementById('challengeActions').style.display = 'flex';
     },
 
-    showPromotion(stage, msg) {
+    _promotionCallback: null,
+
+    showPromotion(stage, msg, onDismiss) {
         const STAGE_PT = { 'Intern': 'Estagiario', 'Junior': 'Junior', 'Mid': 'Pleno', 'Senior': 'Senior', 'Staff': 'Staff', 'Principal': 'Principal', 'Distinguished': 'Engenheiro Distinto' };
         document.getElementById('promotionMessage').textContent = msg;
         document.getElementById('promotionStage').textContent = STAGE_PT[stage] || stage;
         document.getElementById('promotionOverlay').style.display = 'flex';
+        this._promotionCallback = onDismiss || null;
         SFX.promote();
     },
 
-    hidePromotion() { document.getElementById('promotionOverlay').style.display = 'none'; },
+    hidePromotion() {
+        document.getElementById('promotionOverlay').style.display = 'none';
+        const cb = this._promotionCallback;
+        this._promotionCallback = null;
+        if (cb) cb();
+    },
 
     showGameOver(stats) {
         SFX.stopMusic();
@@ -3045,11 +3057,16 @@ const Game = {
         if (pending && pending.type === 'open_ide') {
             UI.hideChallenge();
             if (pending.promotion && pending.promotion.new_stage) {
-                UI.showPromotion(pending.promotion.new_stage, pending.promotion.promotion_message);
                 if (pending.promotion.new_stage === 'Distinguished') {
-                    setTimeout(() => UI.showVictory(State.player), 3000);
+                    UI.showPromotion(pending.promotion.new_stage, pending.promotion.promotion_message, () => {
+                        UI.showVictory(State.player);
+                    });
                     return;
                 }
+                UI.showPromotion(pending.promotion.new_stage, pending.promotion.promotion_message, () => {
+                    IDE.open(pending.npc);
+                });
+                return;
             }
             IDE.open(pending.npc);
             return;
@@ -3061,11 +3078,16 @@ const Game = {
             UI.updateHUD(State.player);
             UI.hideChallenge();
             if (pending.promotion && pending.promotion.new_stage) {
-                UI.showPromotion(pending.promotion.new_stage, pending.promotion.promotion_message);
                 if (pending.promotion.new_stage === 'Distinguished') {
-                    setTimeout(() => UI.showVictory(State.player), 3000);
+                    UI.showPromotion(pending.promotion.new_stage, pending.promotion.promotion_message, () => {
+                        UI.showVictory(State.player);
+                    });
                     return;
                 }
+                UI.showPromotion(pending.promotion.new_stage, pending.promotion.promotion_message, () => {
+                    if (pending.region) Game.enterRegion(pending.region);
+                });
+                return;
             }
             if (pending.region) Game.enterRegion(pending.region);
             return;
