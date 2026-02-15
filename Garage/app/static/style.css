@@ -1971,6 +1971,8 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 55;
+    padding: 16px;
+    overflow-y: auto;
 }
 
 .ide-help-card {
@@ -1980,6 +1982,10 @@ body {
     padding: 24px;
     max-width: 500px;
     width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .ide-help-header {
@@ -1987,6 +1993,7 @@ body {
     align-items: center;
     gap: 10px;
     margin-bottom: 14px;
+    flex-shrink: 0;
 }
 
 .ide-help-icon {
@@ -2007,6 +2014,13 @@ body {
     line-height: 1.7;
     white-space: pre-wrap;
     margin-bottom: 18px;
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.ide-help-card .ide-btn {
+    flex-shrink: 0;
 }
 
 /* ---- responsive: tablets (max-width 768px) ---- */
@@ -2435,17 +2449,19 @@ body {
     .ide-help-card {
         padding: 16px;
         width: 95%;
-        max-height: 90vh;
+        max-height: 80vh;
         overflow-y: auto;
     }
 
     .ide-help-content {
         font-size: 0.7rem;
+        max-height: none;
     }
 
     .ide-help-card .ide-btn {
         width: 100%;
         min-height: 48px;
+        flex-shrink: 0;
     }
 }
 
@@ -2506,5 +2522,24 @@ body {
     .ide-terminal {
         height: 70px;
         min-height: 50px;
+    }
+
+    .ide-help-overlay {
+        padding: 8px;
+    }
+
+    .ide-help-card {
+        max-height: 90vh;
+        padding: 12px;
+    }
+
+    .ide-help-content {
+        font-size: 0.68rem;
+        line-height: 1.5;
+    }
+
+    .ide-help-card .ide-btn {
+        min-height: 40px;
+        padding: 6px 14px;
     }
 }
