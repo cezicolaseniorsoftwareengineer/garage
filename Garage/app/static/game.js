@@ -3316,7 +3316,8 @@ const JavaAnalyzer = {
                 }
 
                 // Check: if condition references .length, the object must be declared
-                const lengthMatch = condExpr.match(/(\w+)\.length/);
+                // Use negative lookahead to skip .length() method calls (String/Collection)
+                const lengthMatch = condExpr.match(/(\w+)\.length(?!\s*\()/);
                 if (lengthMatch) {
                     const arrName = lengthMatch[1];
                     if (!decls.has(arrName)) {
@@ -3442,8 +3443,8 @@ const JavaAnalyzer = {
                 }
             }
 
-            // Check condition uses a declared array for .length
-            const condMatch = line.match(/(\w+)\.length/);
+            // Check condition uses a declared array for .length (skip .length() method calls)
+            const condMatch = line.match(/(\w+)\.length(?!\s*\()/);
             if (condMatch) {
                 const condArr = condMatch[1];
                 const knownArr = arrayDecls.find(a => a.name === condArr);
@@ -3636,7 +3637,7 @@ const CODE_CHALLENGES = [
             } else {
                 // Standard for: verify .length references correct array
                 if (!/\.length/.test(code)) return { ok: false, msg: 'Erro semântico: Use ' + arrName + '.length como condicao do for.' };
-                const lengthRef = code.match(/(\w+)\.length/);
+                const lengthRef = code.match(/(\w+)\.length(?!\s*\()/);
                 if (lengthRef && lengthRef[1] !== arrName && lengthRef[1] !== 'args')
                     return { ok: false, msg: 'Erro de compilação: "' + lengthRef[1] + '.length" -- variável "' + lengthRef[1] + '" não existe. O array se chama "' + arrName + '". Use: ' + arrName + '.length' };
                 // Verify println accesses array[i]
