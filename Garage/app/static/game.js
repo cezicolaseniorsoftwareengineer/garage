@@ -3325,8 +3325,17 @@ const JavaAnalyzer = {
                     const javaKeywords = new Set(['new', 'null', 'true', 'false', 'this', 'super', 'instanceof', 'return', 'if', 'else', 'for', 'while']);
                     const javaClasses = new Set(['System', 'String', 'Integer', 'Double', 'Math', 'Arrays', 'Map', 'Entry', 'Character']);
                     const javaMethods = new Set(['toString', 'valueOf', 'parseInt', 'getKey', 'getValue', 'size', 'length', 'charAt', 'format', 'isEmpty', 'pop', 'push', 'poll', 'peek', 'get', 'containsKey', 'entrySet', 'add', 'remove']);
+                    // Extract user-defined method names from the code (static/non-static)
+                    const userMethods = new Set();
+                    const methodDeclRe = /\b(?:static\s+)?(?:void|int|long|double|float|char|boolean|String|int\[\]|String\[\])\s+(\w+)\s*\(/g;
+                    let mm;
+                    while ((mm = methodDeclRe.exec(code)) !== null) { userMethods.add(mm[1]); }
                     for (const ref of varRefs) {
                         if (javaKeywords.has(ref) || javaClasses.has(ref) || javaMethods.has(ref)) continue;
+                        // Skip if this identifier is a method call (followed by parenthesis)
+                        if (new RegExp('\\b' + ref + '\\s*\\(').test(arg)) continue;
+                        // Skip user-defined method names
+                        if (userMethods.has(ref)) continue;
                         // Check method params (rough: check if method signature has this var)
                         const methodParam = code.match(new RegExp('\\(\\s*(?:int\\[\\]|int|String|long|double|boolean|float|char|String\\[\\])\\s+' + ref + '\\b'));
                         if (methodParam) continue;
