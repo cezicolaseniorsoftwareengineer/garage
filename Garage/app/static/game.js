@@ -3181,8 +3181,13 @@ const JavaAnalyzer = {
      * preserving line structure for error reporting.
      */
     _stripCommentsAndStrings(code) {
-        // Replace string contents but keep quotes for structural analysis
-        let stripped = code.replace(/\/\/.*$/gm, '');
+        // 1. Strip string/char literal contents first (keep quotes for structure)
+        //    This prevents // or /* inside strings from being treated as comments.
+        let stripped = code.replace(/"(?:[^"\\]|\\.)*"/g, '""');
+        stripped = stripped.replace(/'(?:[^'\\]|\\.)*'/g, "''");
+        // 2. Strip line comments
+        stripped = stripped.replace(/\/\/.*$/gm, '');
+        // 3. Strip block comments
         stripped = stripped.replace(/\/\*[\s\S]*?\*\//g, '');
         return stripped;
     },
@@ -3196,15 +3201,26 @@ const JavaAnalyzer = {
         const stack = [];
         const pairs = { '{': '}', '(': ')', '[': ']' };
         const reverse = { '}': '{', ')': '(', ']': '[' };
-        // Skip chars inside strings
+        let inBlock = false; // track /* */ block comments across lines
         for (let ln = 0; ln < lines.length; ln++) {
             let inStr = false;
             let strChar = null;
             for (let c = 0; c < lines[ln].length; c++) {
                 const ch = lines[ln][c];
-                if (inStr) { if (ch === strChar && lines[ln][c - 1] !== '\\') inStr = false; continue; }
+                // Inside block comment -- skip until */
+                if (inBlock) {
+                    if (ch === '*' && lines[ln][c + 1] === '/') { inBlock = false; c++; }
+                    continue;
+                }
+                // Inside string/char literal -- skip escaped chars properly
+                if (inStr) {
+                    if (ch === '\\') { c++; continue; } // skip next char (handles \\, \", \', etc.)
+                    if (ch === strChar) inStr = false;
+                    continue;
+                }
                 if (ch === '"' || ch === '\'') { inStr = true; strChar = ch; continue; }
                 if (ch === '/' && lines[ln][c + 1] === '/') break; // line comment
+                if (ch === '/' && lines[ln][c + 1] === '*') { inBlock = true; c++; continue; } // block comment start
                 if (pairs[ch]) stack.push({ ch, line: ln + 1 });
                 else if (reverse[ch]) {
                     if (stack.length === 0) return { ok: false, line: ln + 1, msg: 'Erro de compilação: Linha ' + (ln + 1) + ': "' + ch + '" sem abertura correspondente.' };
@@ -3229,8 +3245,13 @@ const JavaAnalyzer = {
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
             if (!line || line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) continue;
+            if (line.startsWith('@')) continue; // annotations (@Override, @SuppressWarnings, etc.)
             if (line === '{' || line === '}' || line === '};' || line === '},' || line.endsWith('{') || line.endsWith('}')) continue;
             if (/^(public|private|protected|static|class|interface|enum|if|else|for|while|do|switch|case|default|try|catch|finally|import|package)\b/.test(line) && line.endsWith('{')) continue;
+            // Control flow headers without { on same line: if (...), for (...), while (...), catch (...)
+            if (/^(if|for|while|catch)\s*\(/.test(line) && line.endsWith(')')) continue;
+            if (/^(else|do|try|finally)\s*$/.test(line)) continue;
+            if (/^\}\s*(else|catch|finally)/.test(line)) continue;
             if (/^\}/.test(line)) continue;
             if (/^(import|package)\s/.test(line) && !line.endsWith(';'))
                 return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': falta ";" no final da declaracao.' };
@@ -3362,7 +3383,12 @@ const JavaAnalyzer = {
         const lines = code.split('\n');
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
-            const printMatch = line.match(/System\s*\.\s*out\s*\.\s*print(?:ln)?\s*\(([^)]*)\)/);
+            // Greedy regex: captures full argument including nested parens (requires trailing ;)
+            let printMatch = line.match(/System\s*\.\s*out\s*\.\s*print(?:ln)?\s*\((.*)\)\s*;/);
+            // Fallback for lines without ; (already caught by semicolon check, just skip gracefully)
+            if (!printMatch) {
+                printMatch = line.match(/System\s*\.\s*out\s*\.\s*print(?:ln)?\s*\(([^)]*)\)/);
+            }
             if (printMatch) {
                 const arg = printMatch[1].trim();
                 if (!arg) {
