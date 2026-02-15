@@ -3361,8 +3361,17 @@ const JavaAnalyzer = {
         // Find array declarations
         const arrayDecls = [];
         for (let i = 0; i < lines.length; i++) {
+            // Local declarations: int[] arr = ...;
             const m = lines[i].match(/\b(int|long|double|float|String|char)\s*\[\s*\]\s+(\w+)\s*=/);
             if (m) arrayDecls.push({ name: m[2], type: m[1], line: i + 1 });
+            // Method parameters: (int[] nums, int target) or (String[] args)
+            const paramRe = /\b(int|long|double|float|String|char)\s*\[\s*\]\s+(\w+)\s*[,)]/g;
+            let pm;
+            while ((pm = paramRe.exec(lines[i])) !== null) {
+                if (!arrayDecls.some(a => a.name === pm[2])) {
+                    arrayDecls.push({ name: pm[2], type: pm[1], line: i + 1 });
+                }
+            }
         }
 
         // Check for-loops that iterate arrays
