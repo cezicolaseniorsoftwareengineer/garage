@@ -238,7 +238,7 @@ class Player:
             "Senior": "Senior",
             "Staff": "Staff",
             "Principal": "Principal",
-            "Distinguished": "Engenheiro Distinto",
+            "Distinguished": "CEO",
         }
         if len(stage_challenges) >= self.CHALLENGES_TO_PROMOTE:
             next_stage = self._stage.next_stage()

@@ -2834,7 +2834,7 @@ const UI = {
     },
 
     updateHUD(player) {
-        const STAGE_PT = { 'Intern': 'Estagiario', 'Junior': 'Junior', 'Mid': 'Pleno', 'Senior': 'Senior', 'Staff': 'Staff', 'Principal': 'Principal', 'Distinguished': 'Engenheiro Distinto' };
+        const STAGE_PT = { 'Intern': 'Estagiario', 'Junior': 'Junior', 'Mid': 'Pleno', 'Senior': 'Senior', 'Staff': 'Staff', 'Principal': 'Principal', 'Distinguished': 'CEO' };
         document.getElementById('hudName').textContent = player.name || '---';
         document.getElementById('hudStage').textContent = STAGE_PT[player.stage] || player.stage || 'Estagiario';
         document.getElementById('hudScore').textContent = player.score || 0;
@@ -2892,7 +2892,7 @@ const UI = {
     _promotionCallback: null,
 
     showPromotion(stage, msg, onDismiss) {
-        const STAGE_PT = { 'Intern': 'Estagiario', 'Junior': 'Junior', 'Mid': 'Pleno', 'Senior': 'Senior', 'Staff': 'Staff', 'Principal': 'Principal', 'Distinguished': 'Engenheiro Distinto' };
+        const STAGE_PT = { 'Intern': 'Estagiario', 'Junior': 'Junior', 'Mid': 'Pleno', 'Senior': 'Senior', 'Staff': 'Staff', 'Principal': 'Principal', 'Distinguished': 'CEO' };
         document.getElementById('promotionMessage').textContent = msg;
         document.getElementById('promotionStage').textContent = STAGE_PT[stage] || stage;
         document.getElementById('promotionOverlay').style.display = 'flex';
@@ -2911,7 +2911,7 @@ const UI = {
     showGameOver(stats) {
         SFX.stopMusic();
         SFX.gameOver();
-        const STAGE_PT = { 'Intern': 'Estagiario', 'Junior': 'Junior', 'Mid': 'Pleno', 'Senior': 'Senior', 'Staff': 'Staff', 'Principal': 'Principal', 'Distinguished': 'Engenheiro Distinto' };
+        const STAGE_PT = { 'Intern': 'Estagiario', 'Junior': 'Junior', 'Mid': 'Pleno', 'Senior': 'Senior', 'Staff': 'Staff', 'Principal': 'Principal', 'Distinguished': 'CEO' };
         document.getElementById('gameoverStats').innerHTML =
             `Cargo: ${STAGE_PT[stats.stage] || stats.stage}<br>Pontuacao: ${stats.total_score || stats.score || 0}<br>Tentativas: ${stats.total_attempts || '---'}<br>Fim de Jogo: ${stats.game_over_count || 1}`;
         UI.showScreen('screen-gameover');
@@ -2920,7 +2920,7 @@ const UI = {
     showVictory(player) {
         SFX.stopMusic();
         SFX.victory();
-        const STAGE_PT = { 'Intern': 'Estagiario', 'Junior': 'Junior', 'Mid': 'Pleno', 'Senior': 'Senior', 'Staff': 'Staff', 'Principal': 'Principal', 'Distinguished': 'Engenheiro Distinto' };
+        const STAGE_PT = { 'Intern': 'Estagiario', 'Junior': 'Junior', 'Mid': 'Pleno', 'Senior': 'Senior', 'Staff': 'Staff', 'Principal': 'Principal', 'Distinguished': 'CEO' };
         document.getElementById('victoryStats').innerHTML =
             `Engenheiro: ${player.name}<br>Cargo: ${STAGE_PT[player.stage] || player.stage}<br>Pontuacao: ${player.score}<br>Desafios: ${player.completed_challenges.length}<br>Tentativas: ${player.total_attempts}`;
         UI.showScreen('screen-victory');
@@ -3876,7 +3876,7 @@ const IDE = {
 
         // Populate UI
         document.getElementById('ideFileName').textContent = challenge.fileName;
-        const IDE_STAGE_PT = { 'Intern': 'ESTAGIARIO', 'Junior': 'JUNIOR', 'Mid': 'PLENO', 'Senior': 'SENIOR', 'Staff': 'STAFF', 'Principal': 'PRINCIPAL', 'Distinguished': 'ENGENHEIRO DISTINTO' };
+        const IDE_STAGE_PT = { 'Intern': 'ESTAGIARIO', 'Junior': 'JUNIOR', 'Mid': 'PLENO', 'Senior': 'SENIOR', 'Staff': 'STAFF', 'Principal': 'PRINCIPAL', 'Distinguished': 'CEO' };
         document.getElementById('ideStage').textContent = IDE_STAGE_PT[stage] || stage.toUpperCase();
         document.getElementById('ideSideFileName').textContent = challenge.fileName;
         document.getElementById('ideChallengeTitle').textContent = challenge.title;
