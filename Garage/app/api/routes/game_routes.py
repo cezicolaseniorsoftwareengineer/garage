@@ -31,6 +31,10 @@ class RecoverRequest(BaseModel):
     session_id: str
 
 
+class ResetGameRequest(BaseModel):
+    session_id: str
+
+
 _player_repo = None
 _challenge_repo = None
 _leaderboard_repo = None
@@ -99,6 +103,13 @@ def api_get_session(session_id: str, current_user: dict = Depends(get_current_us
     if not player:
         raise HTTPException(status_code=404, detail="Session not found")
     _assert_owner(player, current_user)
+
+    # Retroactive fix: mark Distinguished sessions as completed if not already
+    if (player.stage.value == "Distinguished"
+            and player.status.value != "completed"):
+        player.mark_completed()
+        _player_repo.save(player)
+
     return player.to_dict()
 
 
@@ -194,6 +205,53 @@ def api_recover(req: RecoverRequest, current_user: dict = Depends(get_current_us
                      session_id=req.session_id)
 
     return result
+
+
+@router.post("/reset")
+def api_reset_game(req: ResetGameRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Reset after victory: keep the completed session as history,
+    create a brand new session so the player can replay from scratch.
+    Returns the new session data.
+    """
+    old_player = _player_repo.get(req.session_id)
+    if not old_player:
+        raise HTTPException(status_code=404, detail="Session not found")
+    _assert_owner(old_player, current_user)
+
+    # Submit to leaderboard if completed and not already submitted
+    if old_player.stage.value == "Distinguished" or old_player.status.value == "completed":
+        try:
+            _leaderboard_repo.submit(
+                player_name=old_player.name,
+                score=old_player.score,
+                stage=old_player.stage.value,
+                language=old_player.language.value,
+            )
+        except Exception:
+            pass
+
+    # Create a fresh session for the same user
+    user_id = current_user["sub"]
+    new_player = start_game(
+        player_name=old_player.name,
+        gender=old_player.character.gender.value,
+        ethnicity=old_player.character.ethnicity.value,
+        avatar_index=old_player.character.avatar_index,
+        language=old_player.language.value,
+        user_id=user_id,
+    )
+    _player_repo.save(new_player)
+
+    if _events:
+        _events.log("game_reset", user_id=user_id,
+                     session_id=str(new_player.id),
+                     payload={"previous_session": req.session_id})
+
+    return {
+        "session_id": str(new_player.id),
+        "player": new_player.to_dict(),
+    }
 
 
 @router.get("/progress/{session_id}")

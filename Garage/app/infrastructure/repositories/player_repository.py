@@ -34,6 +34,32 @@ class PlayerRepository:
         self._load()
         return self._sessions.get(player_id)
 
+    def find_by_user_id(self, user_id: str) -> list:
+        """Return all sessions belonging to a user."""
+        self._load()
+        results = []
+        for player in self._sessions.values():
+            if player.user_id == user_id:
+                d = player.to_dict()
+                d["attempts"] = [a.to_dict() for a in player.attempts]
+                results.append(d)
+        return results
+
+    def get_all(self) -> list:
+        """Return all sessions as Player objects."""
+        self._load()
+        return list(self._sessions.values())
+
+    def get_all_dict(self) -> list:
+        """Return all sessions as dicts (with attempts)."""
+        self._load()
+        results = []
+        for player in self._sessions.values():
+            d = player.to_dict()
+            d["attempts"] = [a.to_dict() for a in player.attempts]
+            results.append(d)
+        return results
+
     def _persist(self) -> None:
         """Write all sessions to JSON file."""
         os.makedirs(os.path.dirname(self._data_path), exist_ok=True)

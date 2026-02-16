@@ -2955,6 +2955,13 @@ const UI = {
         if (continueBtn) {
             continueBtn.style.display = Auth.hasSession() ? '' : 'none';
         }
+        // Show admin dashboard link only for the admin user
+        const adminBtn = document.getElementById('btnAdminDash');
+        if (adminBtn) {
+            const user = Auth.getUser();
+            const isAdmin = user && user.email === 'cezicolatecnologia@gmail.com';
+            adminBtn.style.display = isAdmin ? '' : 'none';
+        }
     },
 
     _drawOnboardingChar() {
@@ -3406,404 +3413,442 @@ const UI = {
         const canvas = document.getElementById('victoryCanvas');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
-        const W = canvas.width;
-        const H = canvas.height;
-        const GROUND = H * 0.82;
 
-        // -- Build character list: player + all 24 NPCs + book authors --
-        const characters = [];
-        // Player character in center
-        characters.push({
-            name: player.name || 'PLAYER',
-            targetX: W / 2,
-            x: W / 2,
-            y: GROUND,
-            arrived: true,
-            isPlayer: true,
-            look: { skinTone: World.getSkinColor(State.avatarIndex || 0), shirt: '#fbbf24', pants: '#1e293b' },
-            delay: 0
+        // Responsive canvas
+        const resize = () => { canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight; };
+        resize();
+        window.addEventListener('resize', resize);
+
+        const startTime = performance.now();
+        let animId = null;
+        const COLORS7 = ['#fbbf24', '#ef4444', '#22c55e', '#3b82f6', '#a855f7', '#ec4899', '#f97316'];
+
+        // -- Character positions in VIRTUAL world (wide, we pan across it) --
+        const CHAR_SPACING = 72;
+        const totalNpcs = NPC_DATA.length;
+        const VIRTUAL_W = (totalNpcs + 6) * CHAR_SPACING;
+        const CENTER_X = VIRTUAL_W / 2;
+
+        // Front row: Player center + NPCs arranged left/right of player
+        const frontRow = [];
+        frontRow.push({
+            name: player.name || 'PLAYER', targetX: CENTER_X, x: CENTER_X, arrived: true,
+            isPlayer: true, look: { skinTone: World.getSkinColor(State.avatarIndex || 0), shirt: '#fbbf24', pants: '#1e293b' },
+            delay: 0, scale: 1.35
         });
-
-        // NPCs: half arrive from left, half from right
+        // Sort NPCs: distribute evenly left and right of center
         NPC_DATA.forEach((npc, i) => {
-            const fromLeft = i % 2 === 0;
-            const spacing = W / (NPC_DATA.length + 2);
-            const tgtX = spacing * (i + 1);
-            characters.push({
-                name: npc.name,
+            const side = i % 2 === 0 ? 1 : -1;
+            const slot = Math.floor(i / 2) + 1;
+            const tgtX = CENTER_X + side * slot * CHAR_SPACING;
+            const fromLeft = tgtX < CENTER_X;
+            frontRow.push({
+                name: npc.name.split(' ').slice(-1)[0], fullName: npc.name,
                 targetX: tgtX,
-                x: fromLeft ? -80 - Math.random() * 200 : W + 80 + Math.random() * 200,
-                y: GROUND,
-                arrived: false,
-                isPlayer: false,
-                look: npc.look || {},
-                delay: 500 + i * 180 + Math.random() * 200,
-                fromLeft: fromLeft
+                x: fromLeft ? -100 - Math.random() * 300 : VIRTUAL_W + 100 + Math.random() * 300,
+                arrived: false, isPlayer: false, look: npc.look || {},
+                delay: 600 + i * 150 + Math.random() * 100, fromLeft, scale: 1.0
             });
         });
 
-        // Book authors as smaller figures in background row
-        const authors = [];
-        const uniqueAuthors = [];
+        // Back row: Book authors (smaller, behind)
+        const backRow = [];
         const seenAuthors = new Set();
         BOOKS_DATA.forEach(bk => {
             if (!seenAuthors.has(bk.author)) {
                 seenAuthors.add(bk.author);
-                uniqueAuthors.push(bk.author);
+                const i = backRow.length;
+                const side = i % 2 === 0 ? -1 : 1;
+                const slot = Math.floor(i / 2) + 1;
+                const tgtX = CENTER_X + side * slot * 56;
+                const fromLeft = tgtX < CENTER_X;
+                backRow.push({
+                    name: bk.author.split(' ').slice(-1)[0],
+                    targetX: tgtX,
+                    x: fromLeft ? -80 - Math.random() * 200 : VIRTUAL_W + 80 + Math.random() * 200,
+                    arrived: false, delay: 2500 + i * 200, fromLeft, scale: 0.65
+                });
             }
         });
-        uniqueAuthors.forEach((auth, i) => {
-            const fromLeft = i % 2 !== 0;
-            const spacing = W / (uniqueAuthors.length + 2);
-            const tgtX = spacing * (i + 1);
-            authors.push({
-                name: auth,
-                targetX: tgtX,
-                x: fromLeft ? -60 - Math.random() * 150 : W + 60 + Math.random() * 150,
-                y: GROUND - 40,
-                arrived: false,
-                delay: 2000 + i * 220,
-                fromLeft: fromLeft
-            });
-        });
 
-        // Confetti particles
+        // Camera panning: starts centered on player, slowly pans left then right to reveal all
+        let camX = CENTER_X;
+        const PAN_SPEED = 0.35;
+        let panPhase = 0; // 0=center, 1=pan-left, 2=pan-right, 3=return-center, 4=done
+        let panTimer = 0;
+
+        // Confetti (abundant)
         const confetti = [];
-        for (let i = 0; i < 120; i++) {
+        for (let i = 0; i < 250; i++) {
             confetti.push({
-                x: Math.random() * W,
-                y: -20 - Math.random() * H,
-                vx: (Math.random() - 0.5) * 2,
-                vy: 1 + Math.random() * 2.5,
-                size: 3 + Math.random() * 5,
-                color: ['#fbbf24', '#ef4444', '#22c55e', '#3b82f6', '#a855f7', '#ec4899', '#f97316'][Math.floor(Math.random() * 7)],
-                rot: Math.random() * 360,
-                rotV: (Math.random() - 0.5) * 8
+                x: Math.random() * 2000 - 400,
+                y: -20 - Math.random() * 1200,
+                vx: (Math.random() - 0.5) * 1.8,
+                vy: 0.8 + Math.random() * 2.2,
+                size: 3 + Math.random() * 6,
+                color: COLORS7[Math.floor(Math.random() * 7)],
+                rot: Math.random() * 360, rotV: (Math.random() - 0.5) * 10,
+                type: Math.random() > 0.5 ? 'rect' : 'circle'
             });
         }
 
-        // "Vale do Silicio" sign
-        const signW = 340;
-        const signH = 70;
-        const signX = (W - signW) / 2;
-        const signY = GROUND - 200;
+        // Firework bursts
+        const fireworks = [];
+        const spawnFirework = () => {
+            const fx = Math.random() * 1200 - 100;
+            const fy = 30 + Math.random() * 150;
+            const count = 20 + Math.floor(Math.random() * 20);
+            const color = COLORS7[Math.floor(Math.random() * 7)];
+            for (let i = 0; i < count; i++) {
+                const angle = (i / count) * Math.PI * 2;
+                const speed = 1.5 + Math.random() * 3;
+                fireworks.push({
+                    x: fx, y: fy, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 0.5,
+                    life: 60 + Math.random() * 40, maxLife: 100, color, size: 2 + Math.random() * 2
+                });
+            }
+        };
+        let lastFirework = 0;
 
-        const startTime = performance.now();
-        let animId = null;
-
-        const drawMiniChar = (c, t, scale) => {
-            const s = scale || 1.0;
+        // -- Drawing helpers --
+        const drawChar = (c, t, drawX, groundY, sz) => {
+            const s = sz || c.scale || 1.0;
             const L = c.look || {};
             const skin = L.skinTone || '#F5D0A9';
-            const sx = c.x;
-            const ny = c.y - 70 * s;
+            const charH = 68 * s;
+            const topY = groundY - charH;
 
             // Shadow
-            ctx.fillStyle = 'rgba(0,0,0,0.12)';
+            ctx.fillStyle = 'rgba(0,0,0,0.18)';
             ctx.beginPath();
-            ctx.ellipse(sx, c.y + 2, 16 * s, 5 * s, 0, 0, Math.PI * 2);
+            ctx.ellipse(drawX, groundY + 2, 14 * s, 4 * s, 0, 0, Math.PI * 2);
             ctx.fill();
 
             // Legs
             ctx.fillStyle = L.pants || '#333';
-            const legSw = c.arrived ? Math.sin(t * 0.004 + c.targetX) * 1.5 : Math.sin(t * 0.012) * 4;
-            ctx.fillRect(sx - 6 * s, ny + 45 * s + legSw, 5 * s, 22 * s);
-            ctx.fillRect(sx + 1 * s, ny + 45 * s - legSw, 5 * s, 22 * s);
+            const legAnim = c.arrived ? Math.sin(t * 0.004 + c.targetX * 0.01) * 2 : Math.sin(t * 0.012) * 5;
+            ctx.fillRect(drawX - 5 * s, topY + 48 * s + legAnim, 4 * s, 18 * s);
+            ctx.fillRect(drawX + 1 * s, topY + 48 * s - legAnim, 4 * s, 18 * s);
 
             // Shoes
-            ctx.fillStyle = '#222';
-            ctx.fillRect(sx - 7 * s, c.y - 4, 8 * s, 4);
-            ctx.fillRect(sx + 0, c.y - 4, 8 * s, 4);
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(drawX - 6 * s, groundY - 3, 6 * s, 3);
+            ctx.fillRect(drawX + 0, groundY - 3, 6 * s, 3);
 
             // Body
-            const bodyColor = L.suit || L.hoodie || L.turtleneck ? (L.suit || L.hoodie || '#111') : (L.shirt || '#666');
-            ctx.fillStyle = bodyColor;
-            ctx.fillRect(sx - 14 * s, ny + 12 * s, 28 * s, 36 * s);
+            const bodyC = L.suit || L.hoodie || L.turtleneck ? (L.suit || L.hoodie || '#111') : (L.shirt || '#555');
+            ctx.fillStyle = bodyC;
+            const bw = 24 * s, bh = 34 * s;
+            ctx.fillRect(drawX - bw / 2, topY + 14 * s, bw, bh);
 
-            // Arms (celebrating bounce)
-            const armAngle = c.arrived ? Math.sin(t * 0.005 + c.targetX * 0.1) * 25 - 15 : Math.sin(t * 0.01) * 20;
+            // Arms -- celebratory wave
+            const armAng = c.arrived ? Math.sin(t * 0.005 + c.targetX * 0.08) * 30 - 20 : Math.sin(t * 0.01) * 15;
             ctx.save();
-            ctx.translate(sx - 14 * s, ny + 16 * s);
-            ctx.rotate(armAngle * Math.PI / 180);
-            ctx.fillStyle = bodyColor;
-            ctx.fillRect(-3 * s, 0, 7 * s, 20 * s);
+            ctx.translate(drawX - bw / 2, topY + 18 * s);
+            ctx.rotate(armAng * Math.PI / 180);
+            ctx.fillStyle = bodyC;
+            ctx.fillRect(-2 * s, 0, 5 * s, 18 * s);
             ctx.fillStyle = skin;
-            ctx.fillRect(-2 * s, 18 * s, 5 * s, 8 * s);
+            ctx.fillRect(-1.5 * s, 16 * s, 4 * s, 7 * s);
+            ctx.restore();
+            ctx.save();
+            ctx.translate(drawX + bw / 2, topY + 18 * s);
+            ctx.rotate(-armAng * Math.PI / 180);
+            ctx.fillStyle = bodyC;
+            ctx.fillRect(-3 * s, 0, 5 * s, 18 * s);
+            ctx.fillStyle = skin;
+            ctx.fillRect(-2.5 * s, 16 * s, 4 * s, 7 * s);
             ctx.restore();
 
-            ctx.save();
-            ctx.translate(sx + 14 * s, ny + 16 * s);
-            ctx.rotate(-armAngle * Math.PI / 180);
-            ctx.fillStyle = bodyColor;
-            ctx.fillRect(-4 * s, 0, 7 * s, 20 * s);
-            ctx.fillStyle = skin;
-            ctx.fillRect(-3 * s, 18 * s, 5 * s, 8 * s);
-            ctx.restore();
-
-            // Player shirt label
+            // CEO label on player
             if (c.isPlayer) {
-                ctx.fillStyle = '#1a1a2e';
-                ctx.font = 'bold ' + Math.round(5 * s) + 'px monospace';
+                ctx.fillStyle = '#0a0e1a';
+                ctx.font = 'bold ' + Math.round(6 * s) + 'px monospace';
                 ctx.textAlign = 'center';
-                ctx.fillText('CEO', sx, ny + 32 * s);
+                ctx.fillText('CEO', drawX, topY + 34 * s);
             }
 
             // Tie
-            if (L.tie) {
-                ctx.fillStyle = L.tie;
-                ctx.fillRect(sx - 2, ny + 16 * s, 4, 18 * s);
-            }
+            if (L.tie) { ctx.fillStyle = L.tie; ctx.fillRect(drawX - 1.5, topY + 18 * s, 3, 16 * s); }
 
             // Head
-            const headR = 12 * s;
-            const headY = ny + 4 * s;
+            const headR = 11 * s;
+            const headY = topY + 5 * s;
             ctx.fillStyle = skin;
-            ctx.beginPath();
-            ctx.arc(sx, headY, headR, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.beginPath(); ctx.arc(drawX, headY, headR, 0, Math.PI * 2); ctx.fill();
 
             // Hair
-            const hairColor = L.hair || '#222';
             if (!L.bald && L.hairStyle !== 'bald') {
-                ctx.fillStyle = hairColor;
-                ctx.beginPath();
-                ctx.arc(sx, headY - 3, headR + 1, Math.PI, Math.PI * 2);
-                ctx.fill();
+                ctx.fillStyle = L.hair || '#222';
+                ctx.beginPath(); ctx.arc(drawX, headY - 3, headR + 1, Math.PI, Math.PI * 2); ctx.fill();
             }
 
             // Eyes
             const eyeY = headY + 2;
-            const blink = Math.sin(t * 0.003 + c.targetX) > -0.9;
+            const blink = Math.sin(t * 0.003 + c.targetX) > -0.92;
             ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.ellipse(sx - 4 * s, eyeY, 3 * s, blink ? 3 * s : 0.8 * s, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.ellipse(sx + 4 * s, eyeY, 3 * s, blink ? 3 * s : 0.8 * s, 0, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.beginPath(); ctx.ellipse(drawX - 4 * s, eyeY, 2.5 * s, blink ? 2.5 * s : 0.6 * s, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(drawX + 4 * s, eyeY, 2.5 * s, blink ? 2.5 * s : 0.6 * s, 0, 0, Math.PI * 2); ctx.fill();
             ctx.fillStyle = '#111';
-            ctx.beginPath();
-            ctx.arc(sx - 3 * s, eyeY + 0.5, 1.5 * s, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(sx + 5 * s, eyeY + 0.5, 1.5 * s, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.beginPath(); ctx.arc(drawX - 3 * s, eyeY + 0.5, 1.3 * s, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(drawX + 5 * s, eyeY + 0.5, 1.3 * s, 0, Math.PI * 2); ctx.fill();
 
             // Glasses
             if (L.glasses) {
-                ctx.strokeStyle = '#555';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.arc(sx - 4 * s, eyeY, 4 * s, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(sx + 4 * s, eyeY, 4 * s, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(sx - 0.5 * s, eyeY);
-                ctx.lineTo(sx + 0.5 * s, eyeY);
-                ctx.stroke();
+                ctx.strokeStyle = '#444'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.arc(drawX - 4 * s, eyeY, 3.5 * s, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(drawX + 4 * s, eyeY, 3.5 * s, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(drawX - 0.5 * s, eyeY); ctx.lineTo(drawX + 0.5 * s, eyeY); ctx.stroke();
             }
 
-            // Mouth - big smile for arrived
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 1.2;
+            // Mouth
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
             ctx.beginPath();
-            if (c.arrived) {
-                ctx.arc(sx, headY + 6 * s, 4 * s, 0.15 * Math.PI, 0.85 * Math.PI);
-            } else {
-                ctx.arc(sx, headY + 6 * s, 3 * s, 0.2 * Math.PI, 0.8 * Math.PI);
-            }
+            ctx.arc(drawX, headY + 6 * s, c.arrived ? 3.5 * s : 2.5 * s, 0.15 * Math.PI, 0.85 * Math.PI);
             ctx.stroke();
 
-            // Name label below
-            if (c.arrived) {
-                ctx.fillStyle = c.isPlayer ? '#fbbf24' : 'rgba(255,255,255,0.6)';
-                ctx.font = (c.isPlayer ? 'bold ' : '') + Math.round(7 * s) + 'px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(c.name, sx, c.y + 14);
+            // Gold glow halo around player
+            if (c.isPlayer) {
+                const glowAlpha = 0.12 + Math.sin(t * 0.003) * 0.08;
+                ctx.save();
+                ctx.globalAlpha = glowAlpha;
+                ctx.shadowColor = '#fbbf24';
+                ctx.shadowBlur = 30;
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath(); ctx.arc(drawX, topY + charH * 0.4, charH * 0.45, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
             }
-        };
 
-        const drawAuthor = (a, t) => {
-            const sx = a.x;
-            const ny = a.y - 42;
-            ctx.globalAlpha = 0.7;
-            ctx.fillStyle = 'rgba(0,0,0,0.08)';
-            ctx.beginPath();
-            ctx.ellipse(sx, a.y + 1, 10, 3, 0, 0, Math.PI * 2);
-            ctx.fill();
-            // Small body
-            ctx.fillStyle = '#64748b';
-            ctx.fillRect(sx - 8, ny + 8, 16, 24);
-            // Legs
-            ctx.fillStyle = '#475569';
-            ctx.fillRect(sx - 5, ny + 30, 4, 14);
-            ctx.fillRect(sx + 1, ny + 30, 4, 14);
-            // Head
-            ctx.fillStyle = '#d4b896';
-            ctx.beginPath();
-            ctx.arc(sx, ny + 2, 8, 0, Math.PI * 2);
-            ctx.fill();
-            // Hair
-            ctx.fillStyle = '#555';
-            ctx.beginPath();
-            ctx.arc(sx, ny - 1, 8.5, Math.PI, Math.PI * 2);
-            ctx.fill();
-            // Name
-            if (a.arrived) {
-                ctx.fillStyle = 'rgba(255,255,255,0.45)';
-                ctx.font = '6px sans-serif';
+            // Name tag
+            if (c.arrived) {
+                ctx.fillStyle = c.isPlayer ? '#fbbf24' : 'rgba(255,255,255,0.55)';
+                ctx.font = (c.isPlayer ? 'bold ' : '') + Math.round(8 * s) + 'px sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText(a.name, sx, a.y + 10);
+                ctx.fillText(c.name || '', drawX, groundY + 13 * s);
             }
-            ctx.globalAlpha = 1.0;
         };
 
         const animate = (now) => {
+            const W = canvas.width;
+            const H = canvas.height;
             const elapsed = now - startTime;
+            const FRONT_GROUND = H * 0.62;
+            const BACK_GROUND = H * 0.50;
+
+            // Camera panning logic
+            if (panPhase === 0 && elapsed > 4000) { panPhase = 1; panTimer = now; }
+            if (panPhase === 1) {
+                camX -= PAN_SPEED * 1.5;
+                const leftEdge = CENTER_X - (totalNpcs / 2 + 1) * CHAR_SPACING;
+                if (camX < leftEdge + 200 || now - panTimer > 5000) { panPhase = 2; panTimer = now; }
+            }
+            if (panPhase === 2) {
+                camX += PAN_SPEED * 1.5;
+                const rightEdge = CENTER_X + (totalNpcs / 2 + 1) * CHAR_SPACING;
+                if (camX > rightEdge - 200 || now - panTimer > 10000) { panPhase = 3; panTimer = now; }
+            }
+            if (panPhase === 3) {
+                const diff = CENTER_X - camX;
+                camX += diff * 0.02;
+                if (Math.abs(diff) < 2) { camX = CENTER_X; panPhase = 4; }
+            }
+
+            // Virtual-to-screen transform
+            const toScreen = (vx) => (vx - camX) + W / 2;
+
             ctx.clearRect(0, 0, W, H);
 
-            // Sky gradient (night celebration)
+            // Sky gradient
             const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
-            skyGrad.addColorStop(0, '#0a0e2a');
-            skyGrad.addColorStop(0.5, '#1a1e3a');
-            skyGrad.addColorStop(1, '#0f172a');
+            skyGrad.addColorStop(0, '#050a1e');
+            skyGrad.addColorStop(0.4, '#0f1533');
+            skyGrad.addColorStop(0.7, '#1a2040');
+            skyGrad.addColorStop(1, '#0d1225');
             ctx.fillStyle = skyGrad;
             ctx.fillRect(0, 0, W, H);
 
-            // Stars
-            ctx.fillStyle = '#fff';
-            for (let i = 0; i < 60; i++) {
-                const sx = (i * 137.508 + Math.sin(now * 0.001 + i) * 2) % W;
-                const sy = (i * 89.3 + Math.cos(now * 0.0008 + i) * 1.5) % (H * 0.5);
-                const sz = 0.5 + (i % 3) * 0.5;
-                ctx.globalAlpha = 0.3 + Math.sin(now * 0.002 + i * 0.5) * 0.3;
-                ctx.beginPath();
-                ctx.arc(sx, sy, sz, 0, Math.PI * 2);
-                ctx.fill();
+            // Stars (parallax)
+            for (let i = 0; i < 100; i++) {
+                const sx = ((i * 137.508 + Math.sin(now * 0.0005 + i) * 1.5) % (W + 200)) - 100;
+                const sy = ((i * 67.3 + Math.cos(now * 0.0004 + i) * 1) % (H * 0.45));
+                const sz = 0.4 + (i % 4) * 0.4;
+                ctx.globalAlpha = 0.2 + Math.sin(now * 0.0015 + i * 0.7) * 0.25;
+                ctx.fillStyle = i % 5 === 0 ? '#fbbf24' : '#fff';
+                ctx.beginPath(); ctx.arc(sx, sy, sz, 0, Math.PI * 2); ctx.fill();
             }
             ctx.globalAlpha = 1.0;
 
-            // Ground
-            ctx.fillStyle = '#1a2744';
-            ctx.fillRect(0, GROUND, W, H - GROUND);
+            // Distant city silhouette
+            ctx.fillStyle = '#0c1020';
+            for (let i = 0; i < 30; i++) {
+                const bx = toScreen(i * 110 - 200) * 0.3 + i * 40;
+                const bw = 25 + (i * 7) % 35;
+                const bh = 30 + (i * 13) % 60;
+                ctx.fillRect(bx, BACK_GROUND - 40 - bh, bw, bh + 40);
+            }
+
+            // Ground layers
+            const groundGrad = ctx.createLinearGradient(0, BACK_GROUND - 10, 0, H);
+            groundGrad.addColorStop(0, '#1a2744');
+            groundGrad.addColorStop(0.3, '#162038');
+            groundGrad.addColorStop(1, '#0d1225');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, BACK_GROUND - 10, W, H - BACK_GROUND + 10);
+
+            // Ground line highlights
             ctx.fillStyle = '#243352';
-            ctx.fillRect(0, GROUND, W, 3);
+            ctx.fillRect(0, BACK_GROUND - 10, W, 2);
+            ctx.fillStyle = '#1e2d48';
+            ctx.fillRect(0, FRONT_GROUND, W, 2);
 
-            // "Vale do Silicio" sign (back, behind characters)
-            ctx.save();
-            // Sign post
-            ctx.fillStyle = '#5c3d1e';
-            ctx.fillRect(signX + signW / 2 - 6, signY + signH, 12, GROUND - signY - signH + 5);
-            // Sign board
+            // "VALE DO SILICIO" sign -- centered, behind back row
+            const signScreenX = toScreen(CENTER_X);
+            const signW = 280;
+            const signH = 55;
+            const signDrawX = signScreenX - signW / 2;
+            const signDrawY = BACK_GROUND - 130;
+
+            ctx.fillStyle = '#3d2a10';
+            ctx.fillRect(signScreenX - 5, signDrawY + signH, 10, 80);
             ctx.fillStyle = '#2d1f0e';
-            ctx.fillRect(signX, signY, signW, signH);
-            ctx.strokeStyle = '#c9a34e';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(signX, signY, signW, signH);
-            // Text
+            ctx.fillRect(signDrawX, signDrawY, signW, signH);
+            ctx.strokeStyle = '#c9a34e'; ctx.lineWidth = 2;
+            ctx.strokeRect(signDrawX + 1, signDrawY + 1, signW - 2, signH - 2);
             ctx.fillStyle = '#fbbf24';
-            ctx.font = 'bold 28px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('VALE DO SILICIO', signX + signW / 2, signY + signH / 2 - 8);
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '13px sans-serif';
-            ctx.fillText('Silicon Valley', signX + signW / 2, signY + signH / 2 + 16);
-            ctx.restore();
+            ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('VALE DO SILICIO', signScreenX, signDrawY + signH / 2 - 7);
+            ctx.fillStyle = '#8899aa'; ctx.font = '11px sans-serif';
+            ctx.fillText('Silicon Valley', signScreenX, signDrawY + signH / 2 + 12);
 
-            // Draw authors (background row, smaller)
-            authors.forEach(a => {
-                if (elapsed > a.delay) {
-                    if (!a.arrived) {
-                        const speed = 1.8;
-                        if (a.fromLeft) {
-                            a.x += speed;
-                            if (a.x >= a.targetX) { a.x = a.targetX; a.arrived = true; }
-                        } else {
-                            a.x -= speed;
-                            if (a.x <= a.targetX) { a.x = a.targetX; a.arrived = true; }
-                        }
-                    }
-                    drawAuthor(a, now);
+            // Draw back row (authors)
+            backRow.forEach(a => {
+                if (elapsed < a.delay) return;
+                if (!a.arrived) {
+                    const spd = 2.5;
+                    if (a.fromLeft) { a.x += spd; if (a.x >= a.targetX) { a.x = a.targetX; a.arrived = true; } }
+                    else { a.x -= spd; if (a.x <= a.targetX) { a.x = a.targetX; a.arrived = true; } }
+                }
+                const sx = toScreen(a.x);
+                if (sx > -60 && sx < W + 60) {
+                    ctx.globalAlpha = 0.6;
+                    const bounce = a.arrived ? Math.abs(Math.sin(now * 0.002 + a.targetX * 0.04)) * 3 : 0;
+                    drawChar(a, now, sx, BACK_GROUND - bounce, a.scale);
+                    ctx.globalAlpha = 1.0;
                 }
             });
 
-            // Draw NPC and player characters
-            characters.forEach(c => {
-                if (elapsed > c.delay) {
-                    if (!c.arrived) {
-                        const speed = 2.2;
-                        if (c.fromLeft) {
-                            c.x += speed;
-                            if (c.x >= c.targetX) { c.x = c.targetX; c.arrived = true; }
-                        } else {
-                            c.x -= speed;
-                            if (c.x <= c.targetX) { c.x = c.targetX; c.arrived = true; }
-                        }
-                    }
-                    // Celebrating bounce when arrived
-                    if (c.arrived) {
-                        const bounce = Math.abs(Math.sin(now * 0.003 + c.targetX * 0.05)) * 4;
-                        const origY = c.y;
-                        c.y -= bounce;
-                        drawMiniChar(c, now, c.isPlayer ? 1.2 : 0.9);
-                        c.y = origY;
-                    } else {
-                        drawMiniChar(c, now, c.isPlayer ? 1.2 : 0.9);
-                    }
+            // Draw front row (player + NPCs)
+            // Sort by targetX for proper Z-order (further from center = drawn first)
+            const sorted = [...frontRow].sort((a, b) => {
+                if (a.isPlayer) return 1; // player drawn last (on top)
+                if (b.isPlayer) return -1;
+                return Math.abs(a.targetX - CENTER_X) - Math.abs(b.targetX - CENTER_X);
+            });
+            sorted.forEach(c => {
+                if (elapsed < c.delay) return;
+                if (!c.arrived) {
+                    const spd = 3.0;
+                    if (c.fromLeft) { c.x += spd; if (c.x >= c.targetX) { c.x = c.targetX; c.arrived = true; } }
+                    else { c.x -= spd; if (c.x <= c.targetX) { c.x = c.targetX; c.arrived = true; } }
+                }
+                const sx = toScreen(c.x);
+                if (sx > -80 && sx < W + 80) {
+                    const bounce = c.arrived ? Math.abs(Math.sin(now * 0.003 + c.targetX * 0.05)) * 5 : 0;
+                    drawChar(c, now, sx, FRONT_GROUND - bounce, c.scale);
                 }
             });
 
-            // Confetti
+            // Confetti (screen-space)
             confetti.forEach(p => {
                 p.x += p.vx;
                 p.y += p.vy;
                 p.rot += p.rotV;
-                if (p.y > H + 20) { p.y = -10; p.x = Math.random() * W; }
+                if (p.y > H + 20) { p.y = -15; p.x = Math.random() * (W + 200) - 100; }
+                if (p.x < -50) p.x = W + 30;
+                if (p.x > W + 50) p.x = -30;
                 ctx.save();
                 ctx.translate(p.x, p.y);
                 ctx.rotate(p.rot * Math.PI / 180);
                 ctx.fillStyle = p.color;
-                ctx.globalAlpha = 0.8;
-                ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+                ctx.globalAlpha = 0.75;
+                if (p.type === 'circle') {
+                    ctx.beginPath(); ctx.arc(0, 0, p.size * 0.4, 0, Math.PI * 2); ctx.fill();
+                } else {
+                    ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+                }
                 ctx.globalAlpha = 1.0;
                 ctx.restore();
             });
 
-            // Fireworks (sparkles)
-            if (elapsed > 3000) {
-                for (let i = 0; i < 3; i++) {
-                    const fx = (Math.sin(now * 0.001 + i * 2.1) * 0.4 + 0.5) * W;
-                    const fy = 40 + Math.sin(now * 0.0015 + i * 1.5) * 60;
-                    const sparkCount = 8;
-                    for (let j = 0; j < sparkCount; j++) {
-                        const angle = (j / sparkCount) * Math.PI * 2 + now * 0.002;
-                        const dist = 15 + Math.sin(now * 0.006 + j) * 10;
-                        const sx = fx + Math.cos(angle) * dist;
-                        const sy = fy + Math.sin(angle) * dist;
-                        ctx.fillStyle = confetti[i * 8 + j] ? confetti[i * 8 + j].color : '#fbbf24';
-                        ctx.globalAlpha = 0.5 + Math.sin(now * 0.005 + j) * 0.4;
-                        ctx.beginPath();
-                        ctx.arc(sx, sy, 2, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                }
-                ctx.globalAlpha = 1.0;
+            // Firework bursts
+            if (elapsed > 2000 && now - lastFirework > 800 + Math.random() * 600) {
+                spawnFirework();
+                lastFirework = now;
             }
+            for (let i = fireworks.length - 1; i >= 0; i--) {
+                const f = fireworks[i];
+                f.x += f.vx; f.y += f.vy; f.vy += 0.03; f.life--;
+                if (f.life <= 0) { fireworks.splice(i, 1); continue; }
+                const alpha = f.life / f.maxLife;
+                ctx.globalAlpha = alpha * 0.9;
+                ctx.fillStyle = f.color;
+                ctx.beginPath(); ctx.arc(f.x, f.y, f.size * alpha, 0, Math.PI * 2); ctx.fill();
+                // Trail
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.beginPath(); ctx.arc(f.x - f.vx, f.y - f.vy, f.size * alpha * 0.6, 0, Math.PI * 2); ctx.fill();
+            }
+            ctx.globalAlpha = 1.0;
+
+            // Spotlight glow on player
+            const playerScreenX = toScreen(CENTER_X);
+            const spotGrad = ctx.createRadialGradient(playerScreenX, FRONT_GROUND - 40, 10, playerScreenX, FRONT_GROUND - 40, 120);
+            spotGrad.addColorStop(0, 'rgba(251, 191, 36, 0.06)');
+            spotGrad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+            ctx.fillStyle = spotGrad;
+            ctx.fillRect(playerScreenX - 150, FRONT_GROUND - 160, 300, 200);
+
+            // Vignette edges
+            const vigL = ctx.createLinearGradient(0, 0, W * 0.15, 0);
+            vigL.addColorStop(0, 'rgba(5, 10, 30, 0.7)'); vigL.addColorStop(1, 'rgba(5, 10, 30, 0)');
+            ctx.fillStyle = vigL; ctx.fillRect(0, 0, W * 0.15, H);
+            const vigR = ctx.createLinearGradient(W, 0, W * 0.85, 0);
+            vigR.addColorStop(0, 'rgba(5, 10, 30, 0.7)'); vigR.addColorStop(1, 'rgba(5, 10, 30, 0)');
+            ctx.fillStyle = vigR; ctx.fillRect(W * 0.85, 0, W * 0.15, H);
 
             animId = requestAnimationFrame(animate);
         };
 
-        // Cancel previous animation if any
         if (this._victoryAnimId) cancelAnimationFrame(this._victoryAnimId);
         this._victoryAnimId = null;
-
         animId = requestAnimationFrame(animate);
         this._victoryAnimId = animId;
     },
 };
+
+/**
+ * Reconstruct State.completedRegions from server data.
+ * A region is considered complete when all its theory challenges are in completed_challenges.
+ * (IDE completion is implied: player cannot leave a building without solving the IDE challenge.)
+ */
+function _reconstructCompletedRegions() {
+    if (!State.player || !State.challenges) return;
+    State.completedRegions = [];
+    const regionMap = {};
+    for (const c of State.challenges) {
+        if (!c.region) continue;
+        if (!regionMap[c.region]) regionMap[c.region] = [];
+        regionMap[c.region].push(c.id);
+    }
+    for (const [region, ids] of Object.entries(regionMap)) {
+        if (ids.length > 0 && ids.every(id => State.player.completed_challenges.includes(id))) {
+            State.completedRegions.push(region);
+        }
+    }
+}
+
+function _allCompaniesComplete() {
+    return BUILDINGS.length > 0 && State.completedRegions.length >= BUILDINGS.length;
+}
 
 // ---- game controller ----
 const Game = {
@@ -3842,8 +3887,15 @@ const Game = {
             State.sessionId = id;
             State.challenges = await API.get('/api/challenges');
             World.init(State.player.character ? State.player.character.avatar_index : 0);
+            State.avatarIndex = State.player.character ? State.player.character.avatar_index : 0;
+            _reconstructCompletedRegions();
             UI.updateHUD(State.player);
             UI.showScreen('screen-world');
+
+            // Victory fires ONLY when all 24 companies are fully complete
+            if (_allCompaniesComplete()) {
+                setTimeout(() => UI.showVictory(State.player), 800);
+            }
             return true;
         } catch (e) {
             // Session no longer exists on server -- clean up and let user start fresh
@@ -3942,12 +3994,7 @@ const Game = {
         if (pending && pending.type === 'open_ide') {
             UI.hideChallenge();
             if (pending.promotion && pending.promotion.new_stage) {
-                if (pending.promotion.new_stage === 'Distinguished') {
-                    UI.showPromotion(pending.promotion.new_stage, pending.promotion.promotion_message, () => {
-                        UI.showVictory(State.player);
-                    });
-                    return;
-                }
+                // All promotions (including Distinguished/CEO) show overlay then open IDE
                 UI.showPromotion(pending.promotion.new_stage, pending.promotion.promotion_message, () => {
                     IDE.open(pending.npc);
                 });
@@ -3963,12 +4010,7 @@ const Game = {
             UI.updateHUD(State.player);
             UI.hideChallenge();
             if (pending.promotion && pending.promotion.new_stage) {
-                if (pending.promotion.new_stage === 'Distinguished') {
-                    UI.showPromotion(pending.promotion.new_stage, pending.promotion.promotion_message, () => {
-                        UI.showVictory(State.player);
-                    });
-                    return;
-                }
+                // All promotions (including Distinguished/CEO) show overlay then continue
                 UI.showPromotion(pending.promotion.new_stage, pending.promotion.promotion_message, () => {
                     if (pending.region) Game.enterRegion(pending.region);
                 });
@@ -3994,6 +4036,26 @@ const Game = {
             UI.updateHUD(State.player);
             UI.showScreen('screen-world');
         } catch (e) { alert('Erro: ' + e.message); }
+    },
+
+    async resetAndReplay() {
+        if (!State.sessionId) { location.reload(); return; }
+        try {
+            const data = await API.post('/api/reset', { session_id: State.sessionId });
+            State.sessionId = data.session_id;
+            State.player = data.player;
+            localStorage.setItem('garage_session_id', data.session_id);
+            State.challenges = await API.get('/api/challenges');
+            State._pendingAfterFeedback = null;
+            State.currentChallenge = null;
+            State.completedRegions = [];
+            State.lockedRegion = null;
+            State.lockedNpc = null;
+            State.collectedBooks = [];
+            World.init(State.avatarIndex || 0);
+            UI.updateHUD(State.player);
+            UI.showScreen('screen-world');
+        } catch (e) { alert('Erro ao reiniciar: ' + e.message); }
     },
 };
 
@@ -5171,10 +5233,16 @@ const IDE = {
                 State.lockedNpc = null;
                 State.doorAnimBuilding = null;
                 State.companyComplete = true;
-                World.showDialog('SISTEMA', regionBeingWorked,
-                    'Parabéns! Você completou TODOS os desafios em ' + regionBeingWorked + '. Você está livre para explorar e coletar livros.');
-                // Clear completion flag after dialog
-                setTimeout(() => { State.companyComplete = false; }, 3000);
+
+                // Check if ALL 24 companies are now complete -> VICTORY
+                if (_allCompaniesComplete()) {
+                    setTimeout(() => { State.companyComplete = false; }, 1000);
+                    setTimeout(() => UI.showVictory(State.player), 1500);
+                } else {
+                    World.showDialog('SISTEMA', regionBeingWorked,
+                        'Parabéns! Você completou TODOS os desafios em ' + regionBeingWorked + '. Você está livre para explorar e coletar livros.');
+                    setTimeout(() => { State.companyComplete = false; }, 3000);
+                }
             }
         }
     },
@@ -5576,12 +5644,25 @@ const Auth = {
 document.addEventListener('DOMContentLoaded', async () => {
     Auth.init();
     if (Auth.isLoggedIn()) {
+        // Validate token with server before auto-resuming
+        try {
+            await API.get('/api/auth/me');
+        } catch (_e) {
+            // Token invalid or server unreachable -- force login
+            Auth.handleExpired();
+            UI.showScreen('screen-login');
+            return;
+        }
         if (Auth.hasSession()) {
-            // Auto-resume: refresh must return to where the player was
             const resumed = await Game.loadSession(true);
             if (!resumed) {
-                UI.showScreen('screen-title');
-                UI.updateTitleButtons();
+                // loadSession may have cleared auth on 401
+                if (!Auth.isLoggedIn()) {
+                    UI.showScreen('screen-login');
+                } else {
+                    UI.showScreen('screen-title');
+                    UI.updateTitleButtons();
+                }
             }
         } else {
             UI.showScreen('screen-title');

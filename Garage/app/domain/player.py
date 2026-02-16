@@ -222,6 +222,10 @@ class Player:
             self._status = GameEnding.IN_PROGRESS
             self._current_errors = 0
 
+    def mark_completed(self) -> None:
+        """Mark this session as completed (player reached Distinguished)."""
+        self._status = GameEnding.COMPLETED
+
     def check_promotion(self) -> dict | None:
         """
         Check if player qualifies for promotion.

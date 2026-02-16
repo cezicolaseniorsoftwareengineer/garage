@@ -41,6 +41,28 @@ class UserRepository:
     def exists_email(self, email: str) -> bool:
         return self.find_by_email(email) is not None
 
+    def find_by_id(self, user_id: str) -> Optional[User]:
+        """Lookup user by UUID string."""
+        return self._users.get(user_id)
+
+    def get_all(self) -> list:
+        """Return all users."""
+        return list(self._users.values())
+
+    def update_password(self, user_id: str, new_hash: str, new_salt: str) -> None:
+        """Update password hash and salt for a user."""
+        user = self._users.get(user_id)
+        if user:
+            d = user.to_dict()
+            d["password_hash"] = new_hash
+            d["salt"] = new_salt
+            self._users[user_id] = User(**{k: v for k, v in d.items() if k != "id"}, user_id=d["id"])
+            self._persist()
+
+    def update_last_login(self, user_id: str) -> None:
+        """No-op for JSON backend (field not tracked)."""
+        pass
+
     def _persist(self) -> None:
         """Write all users to JSON file."""
         os.makedirs(os.path.dirname(self._data_path), exist_ok=True)

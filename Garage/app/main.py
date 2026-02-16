@@ -13,6 +13,7 @@ from fastapi.responses import FileResponse
 
 from app.api.routes.game_routes import router as game_router, init_routes
 from app.api.routes.auth_routes import router as auth_router, init_auth_routes
+from app.api.routes.admin_routes import router as admin_router, init_admin_routes
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -101,10 +102,12 @@ else:
 init_routes(player_repo, challenge_repo, leaderboard_repo,
             metrics_service=metrics_service, event_service=event_service)
 init_auth_routes(user_repo, event_service=event_service)
+init_admin_routes(user_repo, player_repo, leaderboard_repo, challenge_repo)
 
 # Register API routes
 app.include_router(auth_router)
 app.include_router(game_router)
+app.include_router(admin_router)
 
 
 @app.get("/")
@@ -114,6 +117,15 @@ def serve_frontend():
     if os.path.exists(index_path):
         return FileResponse(index_path)
     return {"message": "GARAGE API is running. No frontend found at /static/index.html."}
+
+
+@app.get("/admin")
+def serve_admin():
+    """Serve the admin dashboard (authentication enforced client-side + API)."""
+    admin_path = os.path.join(STATIC_DIR, "admin.html")
+    if os.path.exists(admin_path):
+        return FileResponse(admin_path)
+    return {"message": "Admin page not found."}
 
 
 @app.get("/favicon.ico", include_in_schema=False)

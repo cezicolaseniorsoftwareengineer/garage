@@ -57,5 +57,9 @@ def submit_answer(
             result["promotion"] = True
             result["new_stage"] = promotion["new_stage"]
             result["promotion_message"] = promotion["message"]
+            # Mark session as completed when reaching Distinguished
+            if promotion["new_stage"] == "Distinguished":
+                player.mark_completed()
+                result["game_completed"] = True
 
     return result

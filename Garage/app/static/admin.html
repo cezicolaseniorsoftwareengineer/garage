@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GARAGE Admin Dashboard</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            background: #0a0e1a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #1a1e3a 0%, #0f172a 100%);
+            border-bottom: 2px solid #fbbf24;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .admin-header h1 {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #fbbf24;
+            letter-spacing: 4px;
+        }
+
+        .admin-header .admin-user {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .admin-header .logout-btn {
+            background: transparent;
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 6px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            margin-left: 16px;
+        }
+
+        .admin-header .logout-btn:hover {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .admin-login {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            gap: 20px;
+        }
+
+        .admin-login h2 {
+            color: #fbbf24;
+            font-size: 1.6rem;
+            letter-spacing: 4px;
+        }
+
+        .admin-login input {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            width: 320px;
+        }
+
+        .admin-login button {
+            background: #fbbf24;
+            color: #0a0e1a;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            letter-spacing: 2px;
+        }
+
+        .admin-login button:hover {
+            background: #f59e0b;
+        }
+
+        .admin-login .error {
+            color: #ef4444;
+            font-size: 0.8rem;
+        }
+
+        .admin-container {
+            padding: 24px 32px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #fbbf24;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            letter-spacing: 2px;
+            margin-top: 4px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #1e293b;
+            padding-bottom: 0;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            padding: 10px 24px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            letter-spacing: 2px;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-btn.active {
+            color: #fbbf24;
+            border-bottom-color: #fbbf24;
+        }
+
+        .tab-btn:hover {
+            color: #e2e8f0;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+        }
+
+        thead th {
+            background: #1e293b;
+            color: #94a3b8;
+            padding: 10px 12px;
+            text-align: left;
+            letter-spacing: 1px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            border-bottom: 1px solid #334155;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+        }
+
+        thead th:hover {
+            color: #fbbf24;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #1e293b;
+        }
+
+        tbody tr:hover {
+            background: rgba(251, 191, 36, 0.04);
+        }
+
+        tbody td {
+            padding: 10px 12px;
+            color: #cbd5e1;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .badge-completed {
+            background: #166534;
+            color: #4ade80;
+        }
+
+        .badge-in_progress {
+            background: #1e3a5f;
+            color: #60a5fa;
+        }
+
+        .badge-game_over {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        .rank-gold {
+            color: #fbbf24;
+            font-weight: 900;
+        }
+
+        .rank-silver {
+            color: #c0c0c0;
+            font-weight: 800;
+        }
+
+        .rank-bronze {
+            color: #cd7f32;
+            font-weight: 800;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .refresh-btn {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+        }
+
+        .refresh-btn:hover {
+            border-color: #fbbf24;
+            color: #fbbf24;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 12px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .stat-card {
+                padding: 12px;
+            }
+
+            .stat-card .stat-value {
+                font-size: 1.4rem;
+            }
+
+            table {
+                font-size: 0.7rem;
+            }
+
+            thead th,
+            tbody td {
+                padding: 6px 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="admin-login">
+        <h2>GARAGE ADMIN</h2>
+        <input type="text" id="loginUser" placeholder="Username" autocomplete="username">
+        <input type="password" id="loginPass" placeholder="Senha" autocomplete="current-password">
+        <button onclick="doLogin()">ENTRAR</button>
+        <div id="loginError" class="error"></div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboardScreen" style="display:none;">
+        <header class="admin-header">
+            <h1>GARAGE ADMIN</h1>
+            <div class="header-right">
+                <span class="admin-user" id="adminUserLabel"></span>
+                <button class="refresh-btn" onclick="loadAll()">ATUALIZAR</button>
+                <button class="logout-btn" onclick="doLogout()">SAIR</button>
+            </div>
+        </header>
+
+        <div class="admin-container">
+            <!-- Stats cards -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-value" id="statUsers">--</div>
+                    <div class="stat-label">USUARIOS</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statSessions">--</div>
+                    <div class="stat-label">SESSOES</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statCompleted">--</div>
+                    <div class="stat-label">JOGOS COMPLETOS</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statActive">--</div>
+                    <div class="stat-label">EM PROGRESSO</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statGameOver">--</div>
+                    <div class="stat-label">GAME OVER</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statChallenges">--</div>
+                    <div class="stat-label">DESAFIOS</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="ranking" onclick="switchTab('ranking')">RANKING</button>
+                <button class="tab-btn" data-tab="users" onclick="switchTab('users')">USUARIOS</button>
+                <button class="tab-btn" data-tab="sessions" onclick="switchTab('sessions')">SESSOES</button>
+            </div>
+
+            <!-- Ranking tab -->
+            <div id="tab-ranking" class="tab-content active">
+                <div class="loading" id="rankingLoading">Carregando ranking...</div>
+                <table id="rankingTable" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('rankingTable', 0, 'num')">#</th>
+                            <th onclick="sortTable('rankingTable', 1, 'str')">JOGADOR</th>
+                            <th onclick="sortTable('rankingTable', 2, 'str')">EMAIL</th>
+                            <th onclick="sortTable('rankingTable', 3, 'str')">CARGO</th>
+                            <th onclick="sortTable('rankingTable', 4, 'num')">PONTOS</th>
+                            <th onclick="sortTable('rankingTable', 5, 'str')">STATUS</th>
+                            <th onclick="sortTable('rankingTable', 6, 'str')">TEMPO</th>
+                            <th onclick="sortTable('rankingTable', 7, 'num')">TENTATIVAS</th>
+                            <th onclick="sortTable('rankingTable', 8, 'num')">GAME OVERS</th>
+                            <th onclick="sortTable('rankingTable', 9, 'str')">INICIO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rankingBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Users tab -->
+            <div id="tab-users" class="tab-content">
+                <div class="loading" id="usersLoading">Carregando usuarios...</div>
+                <table id="usersTable" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('usersTable', 0, 'str')">NOME</th>
+                            <th onclick="sortTable('usersTable', 1, 'str')">USERNAME</th>
+                            <th onclick="sortTable('usersTable', 2, 'str')">EMAIL</th>
+                            <th onclick="sortTable('usersTable', 3, 'str')">PROFISSAO</th>
+                            <th onclick="sortTable('usersTable', 4, 'num')">SESSOES</th>
+                            <th onclick="sortTable('usersTable', 5, 'num')">COMPLETOS</th>
+                            <th onclick="sortTable('usersTable', 6, 'str')">MELHOR CARGO</th>
+                            <th onclick="sortTable('usersTable', 7, 'num')">MELHOR SCORE</th>
+                            <th onclick="sortTable('usersTable', 8, 'str')">CADASTRO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Sessions tab -->
+            <div id="tab-sessions" class="tab-content">
+                <div class="loading" id="sessionsLoading">Carregando sessoes...</div>
+                <table id="sessionsTable" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('sessionsTable', 0, 'str')">JOGADOR</th>
+                            <th onclick="sortTable('sessionsTable', 1, 'str')">EMAIL</th>
+                            <th onclick="sortTable('sessionsTable', 2, 'str')">CARGO</th>
+                            <th onclick="sortTable('sessionsTable', 3, 'num')">PONTOS</th>
+                            <th onclick="sortTable('sessionsTable', 4, 'str')">STATUS</th>
+                            <th onclick="sortTable('sessionsTable', 5, 'num')">DESAFIOS</th>
+                            <th onclick="sortTable('sessionsTable', 6, 'str')">TEMPO</th>
+                            <th onclick="sortTable('sessionsTable', 7, 'num')">TENTATIVAS</th>
+                            <th onclick="sortTable('sessionsTable', 8, 'str')">LINGUAGEM</th>
+                            <th onclick="sortTable('sessionsTable', 9, 'str')">INICIO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sessionsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let accessToken = localStorage.getItem('garage_admin_token') || '';
+        let refreshToken = localStorage.getItem('garage_admin_refresh') || '';
+
+        // -- Auth --
+        async function doLogin() {
+            const user = document.getElementById('loginUser').value.trim();
+            const pass = document.getElementById('loginPass').value;
+            document.getElementById('loginError').textContent = '';
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Login failed');
+                accessToken = data.access_token;
+                refreshToken = data.refresh_token;
+                localStorage.setItem('garage_admin_token', accessToken);
+                localStorage.setItem('garage_admin_refresh', refreshToken);
+                showDashboard(data.user);
+            } catch (e) {
+                document.getElementById('loginError').textContent = e.message;
+            }
+        }
+
+        function doLogout() {
+            accessToken = '';
+            refreshToken = '';
+            localStorage.removeItem('garage_admin_token');
+            localStorage.removeItem('garage_admin_refresh');
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('dashboardScreen').style.display = 'none';
+        }
+
+        async function apiFetch(url) {
+            let res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + accessToken } });
+            if (res.status === 401 && refreshToken) {
+                // Try refresh
+                const rr = await fetch('/api/auth/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh_token: refreshToken }),
+                });
+                if (rr.ok) {
+                    const rd = await rr.json();
+                    accessToken = rd.access_token;
+                    localStorage.setItem('garage_admin_token', accessToken);
+                    res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + accessToken } });
+                }
+            }
+            if (res.status === 403) throw new Error('Acesso negado. Somente admin.');
+            if (!res.ok) throw new Error('Erro: ' + res.status);
+            return res.json();
+        }
+
+        // -- Dashboard --
+        async function showDashboard(user) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboardScreen').style.display = 'block';
+            document.getElementById('adminUserLabel').textContent = user ? user.full_name : 'Admin';
+            loadAll();
+        }
+
+        async function loadAll() {
+            try {
+                const [dash, ranking, users, sessions] = await Promise.all([
+                    apiFetch('/api/admin/dashboard'),
+                    apiFetch('/api/admin/ranking'),
+                    apiFetch('/api/admin/users'),
+                    apiFetch('/api/admin/sessions'),
+                ]);
+                renderDashboard(dash);
+                renderRanking(ranking);
+                renderUsers(users);
+                renderSessions(sessions);
+            } catch (e) {
+                alert(e.message);
+                if (e.message.includes('Acesso negado')) doLogout();
+            }
+        }
+
+        function renderDashboard(d) {
+            document.getElementById('statUsers').textContent = d.total_users;
+            document.getElementById('statSessions').textContent = d.total_sessions;
+            document.getElementById('statCompleted').textContent = d.completed_games;
+            document.getElementById('statActive').textContent = d.active_games;
+            document.getElementById('statGameOver').textContent = d.game_over_sessions;
+            document.getElementById('statChallenges').textContent = d.total_challenges;
+        }
+
+        const STAGE_PT = {
+            Intern: 'Estagiario', Junior: 'Junior', Mid: 'Pleno', Senior: 'Senior',
+            Staff: 'Staff', Principal: 'Principal', Distinguished: 'CEO',
+        };
+
+        function formatDuration(sec) {
+            if (!sec || sec <= 0) return '---';
+            const d = Math.floor(sec / 86400);
+            const h = Math.floor((sec % 86400) / 3600);
+            const m = Math.floor((sec % 3600) / 60);
+            const s = sec % 60;
+            const parts = [];
+            if (d > 0) parts.push(d + 'd');
+            if (h > 0) parts.push(h + 'h');
+            if (m > 0) parts.push(m + 'min');
+            if (s > 0 || parts.length === 0) parts.push(s + 's');
+            return parts.join(' ');
+        }
+
+        function formatDate(iso) {
+            if (!iso) return '---';
+            try {
+                const d = new Date(iso);
+                return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            } catch { return iso; }
+        }
+
+        function statusBadge(status) {
+            const cls = status === 'completed' ? 'badge-completed' : (status === 'game_over' ? 'badge-game_over' : 'badge-in_progress');
+            const label = status === 'completed' ? 'COMPLETO' : (status === 'game_over' ? 'GAME OVER' : 'EM JOGO');
+            return '<span class="badge ' + cls + '">' + label + '</span>';
+        }
+
+        function rankClass(r) {
+            if (r === 1) return 'rank-gold';
+            if (r === 2) return 'rank-silver';
+            if (r === 3) return 'rank-bronze';
+            return '';
+        }
+
+        function renderRanking(data) {
+            document.getElementById('rankingLoading').style.display = 'none';
+            const table = document.getElementById('rankingTable');
+            table.style.display = '';
+            const body = document.getElementById('rankingBody');
+            body.innerHTML = '';
+            data.forEach(e => {
+                const tr = document.createElement('tr');
+                const statusText = e.completed ? 'completed' : 'in_progress';
+                tr.innerHTML =
+                    '<td class="' + rankClass(e.rank) + '">' + e.rank + '</td>' +
+                    '<td>' + esc(e.player_name) + '</td>' +
+                    '<td>' + esc(e.user_email) + '</td>' +
+                    '<td>' + (STAGE_PT[e.stage] || e.stage) + '</td>' +
+                    '<td>' + e.score + '</td>' +
+                    '<td>' + statusBadge(statusText) + '</td>' +
+                    '<td>' + formatDuration(e.duration_seconds) + '</td>' +
+                    '<td>' + e.total_attempts + '</td>' +
+                    '<td>' + e.game_over_count + '</td>' +
+                    '<td>' + formatDate(e.created_at) + '</td>';
+                body.appendChild(tr);
+            });
+        }
+
+        function renderUsers(data) {
+            document.getElementById('usersLoading').style.display = 'none';
+            const table = document.getElementById('usersTable');
+            table.style.display = '';
+            const body = document.getElementById('usersBody');
+            body.innerHTML = '';
+            data.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + esc(u.full_name) + '</td>' +
+                    '<td>' + esc(u.username) + '</td>' +
+                    '<td>' + esc(u.email) + '</td>' +
+                    '<td>' + esc(u.profession) + '</td>' +
+                    '<td>' + u.total_sessions + '</td>' +
+                    '<td>' + u.completed_runs + '</td>' +
+                    '<td>' + (STAGE_PT[u.best_stage] || u.best_stage) + '</td>' +
+                    '<td>' + u.best_score + '</td>' +
+                    '<td>' + formatDate(u.created_at) + '</td>';
+                body.appendChild(tr);
+            });
+        }
+
+        function renderSessions(data) {
+            document.getElementById('sessionsLoading').style.display = 'none';
+            const table = document.getElementById('sessionsTable');
+            table.style.display = '';
+            const body = document.getElementById('sessionsBody');
+            body.innerHTML = '';
+            data.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + esc(s.player_name) + '</td>' +
+                    '<td>' + esc(s.user_email) + '</td>' +
+                    '<td>' + (STAGE_PT[s.stage] || s.stage) + '</td>' +
+                    '<td>' + s.score + '</td>' +
+                    '<td>' + statusBadge(s.status) + '</td>' +
+                    '<td>' + s.completed_challenges + '</td>' +
+                    '<td>' + formatDuration(s.duration_seconds) + '</td>' +
+                    '<td>' + s.total_attempts + '</td>' +
+                    '<td>' + esc(s.language) + '</td>' +
+                    '<td>' + formatDate(s.created_at) + '</td>';
+                body.appendChild(tr);
+            });
+        }
+
+        function esc(s) {
+            if (!s) return '';
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        // -- Tabs --
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + tab));
+        }
+
+        // -- Table sorting --
+        function sortTable(tableId, colIdx, type) {
+            const table = document.getElementById(tableId);
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const dir = table.dataset.sortCol == colIdx && table.dataset.sortDir === 'asc' ? 'desc' : 'asc';
+            table.dataset.sortCol = colIdx;
+            table.dataset.sortDir = dir;
+            rows.sort((a, b) => {
+                let va = a.cells[colIdx].textContent.trim();
+                let vb = b.cells[colIdx].textContent.trim();
+                if (type === 'num') {
+                    va = parseFloat(va) || 0;
+                    vb = parseFloat(vb) || 0;
+                    return dir === 'asc' ? va - vb : vb - va;
+                }
+                return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+            });
+            rows.forEach(r => tbody.appendChild(r));
+        }
+
+        // -- Auto-login if token exists --
+        (async function init() {
+            if (accessToken) {
+                try {
+                    const me = await apiFetch('/api/auth/me');
+                    showDashboard(me);
+                } catch {
+                    doLogout();
+                }
+            }
+        })();
+    </script>
+
+</body>
+
+</html>

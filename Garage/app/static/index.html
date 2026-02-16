@@ -130,6 +130,10 @@
                 <button class="arcade-btn arcade-btn-logout" onclick="Auth.logout()">
                     SAIR
                 </button>
+                <a id="btnAdminDash" href="/admin" target="_blank" class="arcade-btn arcade-btn-admin"
+                    style="display:none; text-decoration:none; text-align:center; background:#1e293b; border:1px solid #fbbf24; color:#fbbf24; font-size:0.65rem; letter-spacing:2px;">
+                    PAINEL ADMIN
+                </a>
                 <div class="arcade-credits">
                     <div>RECORDE ............. 999999</div>
                     <div>CREDITO(S) .......... 1</div>
@@ -234,6 +238,13 @@
                     <div class="hud-value hud-companies" id="hudCompanies">0 / 24</div>
                 </div>
             </div>
+            <div class="hud-sep">|</div>
+            <div class="hud-block hud-block-btn" onclick="Auth.logout()" style="pointer-events:auto;cursor:pointer;">
+                <span class="hud-icon" style="color:#ef4444;">&#10005;</span>
+                <div>
+                    <div class="hud-label">SAIR</div>
+                </div>
+            </div>
         </div>
 
         <!-- Canvas -->
@@ -336,7 +347,10 @@
             <p id="victorySubtitle">Voce dominou cada nivel da engenharia de software e agora lidera sua propria empresa
                 no Vale do Silicio.</p>
             <div class="victory-stats" id="victoryStats"></div>
-            <button class="btn-secondary" onclick="location.reload()">MENU PRINCIPAL</button>
+            <div class="victory-buttons">
+                <button class="btn-primary" onclick="Game.resetAndReplay()">JOGAR NOVAMENTE</button>
+                <button class="btn-secondary" onclick="location.reload()">MENU PRINCIPAL</button>
+            </div>
         </div>
     </div>
 
