@@ -1465,10 +1465,6 @@ body {
     text-align: center;
 }
 
-#screen-victory {
-    background: linear-gradient(135deg, #0a1628 0%, #1e1b4b 50%, #0a1628 100%);
-}
-
 .victory-title {
     font-size: 2.5rem;
     font-weight: 900;
@@ -1671,8 +1667,6 @@ body {
 
 /* Victory screen with canvas celebration */
 #screen-victory {
-    position: relative;
-    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
