@@ -1014,6 +1014,34 @@ const BUILDINGS = [
     { name: 'CLOUD VALLEY', x: 32700, w: 650, h: 350, color: '#8b5cf6', roofColor: '#6d28d9' },
 ];
 
+// ---- company logos (Unicode text rendered above signs) ----
+const COMPANY_LOGOS = {
+    'XEROX PARC': { icon: 'X', font: 'bold 28px serif' },
+    'APPLE GARAGE': { icon: '', font: '32px sans-serif', customDraw: 'apple' },
+    'MICROSOFT': { icon: '', font: '26px sans-serif', customDraw: 'microsoft' },
+    'NUBANK': { icon: 'Nu', font: 'bold 22px sans-serif' },
+    'DISNEY': { icon: '', font: '28px serif', customDraw: 'disney' },
+    'GOOGLE': { icon: '', font: 'bold 30px sans-serif', customDraw: 'google' },
+    'FACEBOOK': { icon: 'f', font: 'bold 30px sans-serif' },
+    'IBM': { icon: 'IBM', font: 'bold 20px monospace' },
+    'AMAZON': { icon: '', font: 'bold 16px sans-serif', customDraw: 'amazon' },
+    'MERCADO LIVRE': { icon: '', font: 'bold 22px sans-serif', customDraw: 'mercadolivre' },
+    'JP MORGAN': { icon: 'JPM', font: 'bold 18px serif' },
+    'PAYPAL': { icon: '', font: 'bold 22px sans-serif', customDraw: 'paypal' },
+    'NETFLIX': { icon: 'N', font: 'bold 30px sans-serif' },
+    'SPACEX': { icon: '', font: 'bold 28px sans-serif', customDraw: 'spacex' },
+    'TESLA': { icon: 'T', font: 'bold 30px sans-serif' },
+    'ITAU': { icon: '', font: 'bold 28px serif', customDraw: 'itau' },
+    'UBER': { icon: '', font: 'bold 28px sans-serif', noLogo: true },
+    'NVIDIA': { icon: '\u25B6', font: 'bold 26px sans-serif' },
+    'OPENAI': { icon: '', font: '26px sans-serif', customDraw: 'openai' },
+    'SANTANDER': { icon: 'S', font: 'bold 28px sans-serif' },
+    'BRADESCO': { icon: 'B', font: 'bold 28px serif' },
+    'GEMINI': { icon: '\u2733', font: '26px sans-serif' },
+    'CLAUDE': { icon: 'C', font: 'bold 28px sans-serif' },
+    'CLOUD VALLEY': { icon: '\u2601', font: '26px sans-serif' },
+};
+
 // ---- collectible books ----
 const BOOKS_DATA = [
     {
@@ -1163,7 +1191,7 @@ const World = {
     W: 0,
     H: 0,
     GROUND_Y: 0,
-    WORLD_WIDTH: 21500,
+    WORLD_WIDTH: 34000,
     camera: { x: 0 },
     running: false,
     lastTime: 0,
@@ -1283,6 +1311,15 @@ const World = {
             const ideOpen = document.getElementById('ideOverlay') && document.getElementById('ideOverlay').classList.contains('visible');
             if (ideOpen) return;
 
+            // TAB toggles the metrics overlay
+            if (e.key === 'Tab') { e.preventDefault(); UI.toggleMetrics(); return; }
+
+            // ESC closes metrics overlay if open
+            if (e.key === 'Escape' && UI._metricsOpen) { e.preventDefault(); UI.toggleMetrics(); return; }
+
+            // Block all game input while metrics overlay is open
+            if (UI._metricsOpen) return;
+
             this.keys[e.code] = true;
             if (e.code === 'Enter' || e.code === 'Space') {
                 if (performance.now() < State._actionCooldownUntil) return;
@@ -1298,6 +1335,7 @@ const World = {
         document.addEventListener('keyup', e => {
             const ideOpen = document.getElementById('ideOverlay') && document.getElementById('ideOverlay').classList.contains('visible');
             if (ideOpen) return;
+            // Release keys even if metrics open, to avoid stuck keys
             this.keys[e.code] = false;
         });
 
@@ -1812,6 +1850,50 @@ const World = {
             this._roundRect(ctx, signX + 8, accentY, signW - 16, accentH, 1.5);
             ctx.fill();
 
+            // --- Company Logo above sign ---
+            const logoData = COMPANY_LOGOS[b.name];
+            if (logoData && !logoData.noLogo) {
+                const logoCx = sx + b.w / 2;
+                const logoR = 20;
+                const logoCy = signY - logoR - 6;
+                // Logo circle background
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.arc(logoCx, logoCy, logoR + 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = b.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(logoCx, logoCy, logoR + 2, 0, Math.PI * 2);
+                ctx.stroke();
+                // Company color fill inside circle
+                ctx.fillStyle = b.color;
+                ctx.globalAlpha = 0.15;
+                ctx.beginPath();
+                ctx.arc(logoCx, logoCy, logoR, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+                // Logo icon (text or custom vector path)
+                ctx.shadowColor = b.color;
+                ctx.shadowBlur = 8;
+                if (logoData.noLogo) {
+                    // No logo badge for this company (e.g. Uber)
+                } else if (logoData.customDraw) {
+                    const drawFn = '_draw_' + logoData.customDraw;
+                    if (this[drawFn]) this[drawFn](ctx, logoCx, logoCy, logoR, b.color);
+                } else {
+                    ctx.fillStyle = b.color;
+                    ctx.font = logoData.font;
+                    if (logoData.style === 'italic') ctx.font = 'italic ' + logoData.font;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const iconTxt = logoData.icon;
+                    ctx.fillText(iconTxt, logoCx, logoCy + 1);
+                }
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+            }
+
             // Glow behind text (company color)
             ctx.shadowColor = b.color;
             ctx.shadowBlur = 12;
@@ -1939,6 +2021,243 @@ const World = {
         ctx.lineTo(x, y + r);
         ctx.quadraticCurveTo(x, y, x + r, y);
         ctx.closePath();
+    },
+
+    // --- Company logo vector draw functions ---
+    // Convention: _draw_<customDraw key>(ctx, cx, cy, logoR, color)
+
+    _draw_apple(ctx, cx, cy, logoR, color) {
+        const s = logoR * 0.72;
+        ctx.save();
+        ctx.translate(cx, cy + s * 0.08);
+        ctx.scale(s / 14, s / 14);
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(0, -10);
+        ctx.bezierCurveTo(3, -12, 8, -12, 10, -8);
+        ctx.bezierCurveTo(12, -4, 12, 2, 10, 6);
+        ctx.bezierCurveTo(8, 10, 5, 14, 0, 14);
+        ctx.bezierCurveTo(-5, 14, -8, 10, -10, 6);
+        ctx.bezierCurveTo(-12, 2, -12, -4, -10, -8);
+        ctx.bezierCurveTo(-8, -12, -3, -12, 0, -10);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(12, -4, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = color; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(0, -10); ctx.quadraticCurveTo(1, -15, 2, -16); ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.moveTo(2, -15); ctx.quadraticCurveTo(6, -17, 8, -14); ctx.quadraticCurveTo(6, -13, 2, -15); ctx.closePath(); ctx.fill();
+        ctx.restore();
+    },
+
+    _draw_microsoft(ctx, cx, cy, logoR) {
+        const s = logoR * 0.65;
+        ctx.save();
+        const gap = s * 0.12;
+        const pane = s - gap / 2;
+        ctx.fillStyle = '#f25022'; ctx.fillRect(cx - s, cy - s, pane, pane);
+        ctx.fillStyle = '#7fba00'; ctx.fillRect(cx + gap / 2, cy - s, pane, pane);
+        ctx.fillStyle = '#00a4ef'; ctx.fillRect(cx - s, cy + gap / 2, pane, pane);
+        ctx.fillStyle = '#ffb900'; ctx.fillRect(cx + gap / 2, cy + gap / 2, pane, pane);
+        ctx.restore();
+    },
+
+    _draw_disney(ctx, cx, cy, logoR, color) {
+        const s = logoR * 0.72;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(s / 14, s / 14);
+        ctx.fillStyle = color;
+        ctx.fillRect(-10, 2, 20, 6); ctx.fillRect(-8, -1, 16, 4);
+        ctx.fillRect(-9, -4, 3, 6); ctx.fillRect(-4, -6, 3, 8); ctx.fillRect(1, -6, 3, 8); ctx.fillRect(6, -4, 3, 6);
+        ctx.beginPath(); ctx.moveTo(-7.5, -8); ctx.lineTo(-9.5, -4); ctx.lineTo(-5.5, -4); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-2.5, -11); ctx.lineTo(-4.5, -6); ctx.lineTo(-0.5, -6); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(2.5, -11); ctx.lineTo(0.5, -6); ctx.lineTo(4.5, -6); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(7.5, -8); ctx.lineTo(5.5, -4); ctx.lineTo(9.5, -4); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(-2, -6); ctx.lineTo(2, -6); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = color; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(0, 2, 13, Math.PI, 0, false); ctx.stroke();
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath(); ctx.arc(0, 8, 2.5, Math.PI, 0, true); ctx.fillRect(-2.5, 5.5, 5, 2.5); ctx.fill();
+        ctx.restore();
+    },
+
+    _draw_google(ctx, cx, cy, logoR) {
+        // Multicolored "G" - blue arc, red arc, yellow arc, green bar
+        const s = logoR * 0.6;
+        ctx.save();
+        ctx.lineWidth = s * 0.38;
+        ctx.lineCap = 'butt';
+        // Blue top arc
+        ctx.strokeStyle = '#4285f4';
+        ctx.beginPath(); ctx.arc(cx, cy, s, -0.9, 0.6, true); ctx.stroke();
+        // Red bottom-left arc
+        ctx.strokeStyle = '#ea4335';
+        ctx.beginPath(); ctx.arc(cx, cy, s, 0.6, 1.5); ctx.stroke();
+        // Yellow bottom arc
+        ctx.strokeStyle = '#fbbc05';
+        ctx.beginPath(); ctx.arc(cx, cy, s, 1.5, 2.5); ctx.stroke();
+        // Green right arc
+        ctx.strokeStyle = '#34a853';
+        ctx.beginPath(); ctx.arc(cx, cy, s, 2.5, 3.1); ctx.stroke();
+        // Blue horizontal bar
+        ctx.fillStyle = '#4285f4';
+        ctx.fillRect(cx - s * 0.1, cy - s * 0.19, s * 1.1, s * 0.38);
+        ctx.restore();
+    },
+
+    _draw_amazon(ctx, cx, cy, logoR, color) {
+        // "a" text + orange smile arrow
+        const s = logoR * 0.7;
+        ctx.save();
+        ctx.fillStyle = '#111';
+        ctx.font = 'bold ' + Math.round(s * 1.6) + 'px sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('a', cx - s * 0.1, cy - s * 0.15);
+        // Orange smile arrow from a to z
+        ctx.strokeStyle = '#ff9900'; ctx.lineWidth = s * 0.2; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(cx - s * 0.8, cy + s * 0.5);
+        ctx.quadraticCurveTo(cx, cy + s * 1.0, cx + s * 0.8, cy + s * 0.3);
+        ctx.stroke();
+        // Arrowhead
+        ctx.fillStyle = '#ff9900';
+        ctx.beginPath();
+        ctx.moveTo(cx + s * 0.8, cy + s * 0.3);
+        ctx.lineTo(cx + s * 0.5, cy + s * 0.55);
+        ctx.lineTo(cx + s * 0.75, cy + s * 0.6);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+    },
+
+    _draw_mercadolivre(ctx, cx, cy, logoR) {
+        // Handshake inside circle (yellow bg, blue outline)
+        const r = logoR * 0.85;
+        ctx.save();
+        // Yellow circle fill
+        ctx.fillStyle = '#ffe600';
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+        // Blue outline
+        ctx.strokeStyle = '#2d3277'; ctx.lineWidth = r * 0.15;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+        // Handshake (two arcs meeting)
+        ctx.strokeStyle = '#2d3277'; ctx.lineWidth = r * 0.14; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(cx - r * 0.55, cy + r * 0.1);
+        ctx.quadraticCurveTo(cx - r * 0.1, cy - r * 0.4, cx, cy - r * 0.05);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(cx + r * 0.55, cy + r * 0.1);
+        ctx.quadraticCurveTo(cx + r * 0.1, cy - r * 0.4, cx, cy - r * 0.05);
+        ctx.stroke();
+        // Fingers (small bumps)
+        for (let i = -1; i <= 1; i++) {
+            ctx.fillStyle = '#2d3277';
+            ctx.beginPath();
+            ctx.arc(cx + i * r * 0.2, cy - r * 0.25, r * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+    },
+
+    _draw_paypal(ctx, cx, cy, logoR) {
+        // Two overlapping "P" letters -- dark blue behind, light blue front
+        const s = logoR * 0.75;
+        const fs = Math.round(s * 2.2);
+        ctx.save();
+        ctx.font = 'bold ' + fs + 'px sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        // Back P (dark blue)
+        ctx.fillStyle = '#003087';
+        ctx.fillText('P', cx + s * 0.18, cy + s * 0.08);
+        // Front P (light blue)
+        ctx.fillStyle = '#009cde';
+        ctx.fillText('P', cx - s * 0.18, cy - s * 0.08);
+        ctx.restore();
+    },
+
+    _draw_spacex(ctx, cx, cy, logoR) {
+        // Stylized "X" with arc swoosh
+        const s = logoR * 0.7;
+        ctx.save();
+        ctx.fillStyle = '#111';
+        ctx.font = 'bold ' + Math.round(s * 2.0) + 'px sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('X', cx, cy);
+        // Swoosh arc across
+        ctx.strokeStyle = '#111'; ctx.lineWidth = s * 0.12; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(cx - s * 1.0, cy + s * 0.1);
+        ctx.quadraticCurveTo(cx, cy - s * 0.6, cx + s * 1.0, cy - s * 0.3);
+        ctx.stroke();
+        ctx.restore();
+    },
+
+    _draw_itau(ctx, cx, cy, logoR) {
+        // Rounded orange square with white "itau" text
+        const s = logoR * 0.82;
+        ctx.save();
+        // Orange rounded rect
+        ctx.fillStyle = '#ec7000';
+        const r = s * 0.3;
+        ctx.beginPath();
+        ctx.moveTo(cx - s + r, cy - s);
+        ctx.lineTo(cx + s - r, cy - s);
+        ctx.quadraticCurveTo(cx + s, cy - s, cx + s, cy - s + r);
+        ctx.lineTo(cx + s, cy + s - r);
+        ctx.quadraticCurveTo(cx + s, cy + s, cx + s - r, cy + s);
+        ctx.lineTo(cx - s + r, cy + s);
+        ctx.quadraticCurveTo(cx - s, cy + s, cx - s, cy + s - r);
+        ctx.lineTo(cx - s, cy - s + r);
+        ctx.quadraticCurveTo(cx - s, cy - s, cx - s + r, cy - s);
+        ctx.closePath(); ctx.fill();
+        // White inner rounded rect
+        ctx.fillStyle = '#fff';
+        const s2 = s * 0.72;
+        const r2 = s2 * 0.35;
+        ctx.beginPath();
+        ctx.moveTo(cx - s2 + r2, cy - s2);
+        ctx.lineTo(cx + s2 - r2, cy - s2);
+        ctx.quadraticCurveTo(cx + s2, cy - s2, cx + s2, cy - s2 + r2);
+        ctx.lineTo(cx + s2, cy + s2 - r2);
+        ctx.quadraticCurveTo(cx + s2, cy + s2, cx + s2 - r2, cy + s2);
+        ctx.lineTo(cx - s2 + r2, cy + s2);
+        ctx.quadraticCurveTo(cx - s2, cy + s2, cx - s2, cy + s2 - r2);
+        ctx.lineTo(cx - s2, cy - s2 + r2);
+        ctx.quadraticCurveTo(cx - s2, cy - s2, cx - s2 + r2, cy - s2);
+        ctx.closePath(); ctx.fill();
+        // Orange "itau" text
+        ctx.fillStyle = '#ec7000';
+        ctx.font = 'bold ' + Math.round(s * 0.85) + 'px sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('ita\u00fa', cx, cy + s * 0.05);
+        ctx.restore();
+    },
+
+    _draw_openai(ctx, cx, cy, logoR) {
+        // OpenAI hexagonal flower/knot
+        const s = logoR * 0.7;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.strokeStyle = '#111'; ctx.lineWidth = s * 0.22; ctx.lineCap = 'round';
+        // 6 petal arcs arranged in a hexagonal pattern
+        for (let i = 0; i < 6; i++) {
+            ctx.save();
+            ctx.rotate(i * Math.PI / 3);
+            ctx.beginPath();
+            ctx.moveTo(0, -s * 0.95);
+            ctx.lineTo(0, -s * 0.3);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(s * 0.45, -s * 0.2, s * 0.55, Math.PI * 0.83, Math.PI * 1.35);
+            ctx.stroke();
+            ctx.restore();
+        }
+        ctx.restore();
     },
 
     drawPlayer(cam) {
@@ -2893,6 +3212,108 @@ const UI = {
         document.getElementById('hudStage').textContent = STAGE_PT[player.stage] || player.stage || 'Estagiario';
         document.getElementById('hudScore').textContent = player.score || 0;
         document.getElementById('hudErrors').textContent = (player.current_errors || 0) + ' / 3';
+        // Sync book counter
+        const booksEl = document.getElementById('hudBooks');
+        if (booksEl) booksEl.textContent = State.collectedBooks.length + ' / ' + BOOKS_DATA.length;
+        // Sync company counter
+        const compEl = document.getElementById('hudCompanies');
+        if (compEl) compEl.textContent = State.completedRegions.length + ' / ' + BUILDINGS.length;
+    },
+
+    // --- Metrics Panel ---
+    _metricsOpen: false,
+
+    toggleMetrics() {
+        this._metricsOpen = !this._metricsOpen;
+        const el = document.getElementById('metricsOverlay');
+        if (!el) return;
+        if (this._metricsOpen) {
+            this.populateMetrics();
+            el.classList.add('visible');
+        } else {
+            el.classList.remove('visible');
+        }
+    },
+
+    switchMetricsTab(tab) {
+        document.querySelectorAll('.metrics-tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.tab === tab);
+        });
+        document.querySelectorAll('.metrics-tab-content').forEach(c => {
+            c.classList.toggle('active', c.id === (tab === 'companies' ? 'metricsCompanies' : 'metricsBooks'));
+        });
+    },
+
+    populateMetrics() {
+        const STAGE_PT = { 'Intern': 'Estagiario', 'Junior': 'Junior', 'Mid': 'Pleno', 'Senior': 'Senior', 'Staff': 'Staff', 'Principal': 'Principal', 'Distinguished': 'CEO' };
+        // -- Companies --
+        const compGrid = document.getElementById('metricsCompanies');
+        if (compGrid) {
+            let html = '<div class="metrics-company-grid">';
+            BUILDINGS.forEach(b => {
+                const npc = NPC_DATA.find(n => n.region.toUpperCase() === b.name.toUpperCase() || n.region.toUpperCase() === b.name);
+                const isCompleted = State.completedRegions.some(r => r.toUpperCase() === b.name.toUpperCase());
+                const isLocked = State.lockedRegion && State.lockedRegion.toUpperCase() === b.name.toUpperCase();
+                const logo = COMPANY_LOGOS[b.name] || { icon: '?', font: 'bold 16px sans-serif' };
+                const stage = npc ? (STAGE_PT[npc.stage] || npc.stage) : '';
+                const statusIcon = isCompleted ? '<span style="color:#22c55e">&#10003;</span>' : (isLocked ? '<span style="color:#fbbf24">&#9679;</span>' : '<span style="color:#475569">&#9711;</span>');
+                const cardClass = isCompleted ? 'completed' : (isLocked ? '' : 'locked');
+                // Custom SVG for brands that need vector logos; text icon for others
+                let logoContent = logo.icon;
+                if (logo.noLogo) {
+                    logoContent = '';
+                } else if (logo.customDraw === 'apple') {
+                    logoContent = '<svg viewBox="-16 -18 32 34" width="22" height="22"><path d="M0-10C3-12 8-12 10-8 12-4 12 2 10 6 8 10 5 14 0 14-5 14-8 10-10 6-12 2-12-4-10-8-8-12-3-12 0-10Z" fill="' + b.color + '"/><circle cx="12" cy="-4" r="5" fill="#0f172a"/><path d="M0-10Q1-15 2-16" stroke="' + b.color + '" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M2-15Q6-17 8-14Q6-13 2-15Z" fill="' + b.color + '"/></svg>';
+                } else if (logo.customDraw === 'microsoft') {
+                    logoContent = '<svg viewBox="0 0 22 22" width="22" height="22"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="12" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="12" width="9" height="9" fill="#00a4ef"/><rect x="12" y="12" width="9" height="9" fill="#ffb900"/></svg>';
+                } else if (logo.customDraw === 'disney') {
+                    logoContent = '<svg viewBox="-16 -16 32 26" width="22" height="18"><rect x="-10" y="2" width="20" height="6" fill="' + b.color + '"/><rect x="-8" y="-1" width="16" height="4" fill="' + b.color + '"/><rect x="-9" y="-4" width="3" height="6" fill="' + b.color + '"/><rect x="-4" y="-6" width="3" height="8" fill="' + b.color + '"/><rect x="1" y="-6" width="3" height="8" fill="' + b.color + '"/><rect x="6" y="-4" width="3" height="6" fill="' + b.color + '"/><polygon points="-7.5,-8 -9.5,-4 -5.5,-4" fill="' + b.color + '"/><polygon points="-2.5,-11 -4.5,-6 -0.5,-6" fill="' + b.color + '"/><polygon points="2.5,-11 0.5,-6 4.5,-6" fill="' + b.color + '"/><polygon points="7.5,-8 5.5,-4 9.5,-4" fill="' + b.color + '"/><polygon points="0,-14 -2,-6 2,-6" fill="' + b.color + '"/><path d="M-13,2 A13,13 0 0,1 13,2" stroke="' + b.color + '" stroke-width="1.2" fill="none"/></svg>';
+                } else if (logo.customDraw === 'google') {
+                    logoContent = '<svg viewBox="0 0 24 24" width="22" height="22"><path d="M12,5 A7,7 0 1,0 19,12 L12,12" fill="none" stroke="#4285f4" stroke-width="3"/><path d="M12,5 A7,7 0 0,0 5.5,9" fill="none" stroke="#ea4335" stroke-width="3"/><path d="M5.5,9 A7,7 0 0,0 5.5,15" fill="none" stroke="#fbbc05" stroke-width="3"/><path d="M5.5,15 A7,7 0 0,0 12,19" fill="none" stroke="#34a853" stroke-width="3"/><rect x="11" y="10.5" width="8.5" height="3" fill="#4285f4"/></svg>';
+                } else if (logo.customDraw === 'amazon') {
+                    logoContent = '<svg viewBox="0 0 24 24" width="22" height="22"><text x="8" y="13" font-size="14" font-weight="bold" fill="#111" font-family="sans-serif">a</text><path d="M4,18 Q12,23 20,16" stroke="#ff9900" stroke-width="2.2" fill="none" stroke-linecap="round"/><polygon points="20,16 17,18.5 19,19" fill="#ff9900"/></svg>';
+                } else if (logo.customDraw === 'mercadolivre') {
+                    logoContent = '<svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="10" fill="#ffe600" stroke="#2d3277" stroke-width="1.8"/><path d="M6,13 Q9,8 12,11" stroke="#2d3277" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M18,13 Q15,8 12,11" stroke="#2d3277" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>';
+                } else if (logo.customDraw === 'paypal') {
+                    logoContent = '<svg viewBox="0 0 24 24" width="22" height="22"><text x="13.5" y="15.5" font-size="17" font-weight="bold" fill="#003087" font-family="sans-serif">P</text><text x="10.5" y="13.5" font-size="17" font-weight="bold" fill="#009cde" font-family="sans-serif">P</text></svg>';
+                } else if (logo.customDraw === 'spacex') {
+                    logoContent = '<svg viewBox="0 0 24 24" width="22" height="22"><text x="12" y="15" font-size="16" font-weight="bold" text-anchor="middle" fill="#111" font-family="sans-serif">X</text><path d="M3,13 Q12,6 21,9" stroke="#111" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>';
+                } else if (logo.customDraw === 'itau') {
+                    logoContent = '<svg viewBox="0 0 24 24" width="22" height="22"><rect x="2" y="2" width="20" height="20" rx="5" fill="#ec7000"/><rect x="4.5" y="4.5" width="15" height="15" rx="4" fill="#fff"/><text x="12" y="15.5" font-size="9" font-weight="bold" text-anchor="middle" fill="#ec7000" font-family="sans-serif">ita\u00fa</text></svg>';
+                } else if (logo.customDraw === 'openai') {
+                    logoContent = '<svg viewBox="0 0 24 24" width="22" height="22"><g transform="translate(12,12)" stroke="#111" stroke-width="1.8" fill="none" stroke-linecap="round"><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(0)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(0)"/><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(60)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(60)"/><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(120)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(120)"/><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(180)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(180)"/><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(240)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(240)"/><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(300)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(300)"/></g></svg>';
+                }
+                html += '<div class="metrics-company-card ' + cardClass + '">';
+                html += '<div class="metrics-company-logo" style="background:' + b.color + '20;border-color:' + b.color + ';color:' + b.color + ';">' + logoContent + '</div>';
+                html += '<div class="metrics-company-info"><div class="metrics-company-name">' + b.name + '</div><div class="metrics-company-stage">' + stage + (npc ? ' -- ' + npc.name : '') + '</div></div>';
+                html += '<div class="metrics-company-status">' + statusIcon + '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+            compGrid.innerHTML = html;
+        }
+        // -- Books --
+        const bookGrid = document.getElementById('metricsBooks');
+        if (bookGrid) {
+            let html = '<div class="metrics-book-grid">';
+            BOOKS_DATA.forEach(book => {
+                const isCollected = State.collectedBooks.includes(book.id);
+                const cardClass = isCollected ? 'collected' : 'missing';
+                const statusIcon = isCollected ? '<span style="color:#a78bfa">&#10003;</span>' : '<span style="color:#475569">&#9711;</span>';
+                html += '<div class="metrics-book-card ' + cardClass + '">';
+                html += '<div class="metrics-book-icon" style="background:' + book.color + '30;color:' + book.color + ';">&#128214;</div>';
+                html += '<div class="metrics-book-info"><div class="metrics-book-title">' + book.title + '</div><div class="metrics-book-author">' + book.author + '</div></div>';
+                html += '<div class="metrics-book-status">' + statusIcon + '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+            bookGrid.innerHTML = html;
+        }
+        // -- Footer counts --
+        const cc = document.getElementById('metricsCompanyCount');
+        if (cc) cc.textContent = State.completedRegions.length + ' / ' + BUILDINGS.length + ' empresas';
+        const bc = document.getElementById('metricsBookCount');
+        if (bc) bc.textContent = State.collectedBooks.length + ' / ' + BOOKS_DATA.length + ' livros';
     },
 
     showChallenge(challenge) {
@@ -2978,6 +3399,409 @@ const UI = {
         document.getElementById('victoryStats').innerHTML =
             `Engenheiro: ${player.name}<br>Cargo: ${STAGE_PT[player.stage] || player.stage}<br>Pontuacao: ${player.score}<br>Desafios: ${player.completed_challenges.length}<br>Tentativas: ${player.total_attempts}`;
         UI.showScreen('screen-victory');
+        this._startVictoryCelebration(player);
+    },
+
+    _startVictoryCelebration(player) {
+        const canvas = document.getElementById('victoryCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+        const GROUND = H * 0.82;
+
+        // -- Build character list: player + all 24 NPCs + book authors --
+        const characters = [];
+        // Player character in center
+        characters.push({
+            name: player.name || 'PLAYER',
+            targetX: W / 2,
+            x: W / 2,
+            y: GROUND,
+            arrived: true,
+            isPlayer: true,
+            look: { skinTone: World.getSkinColor(State.avatarIndex || 0), shirt: '#fbbf24', pants: '#1e293b' },
+            delay: 0
+        });
+
+        // NPCs: half arrive from left, half from right
+        NPC_DATA.forEach((npc, i) => {
+            const fromLeft = i % 2 === 0;
+            const spacing = W / (NPC_DATA.length + 2);
+            const tgtX = spacing * (i + 1);
+            characters.push({
+                name: npc.name,
+                targetX: tgtX,
+                x: fromLeft ? -80 - Math.random() * 200 : W + 80 + Math.random() * 200,
+                y: GROUND,
+                arrived: false,
+                isPlayer: false,
+                look: npc.look || {},
+                delay: 500 + i * 180 + Math.random() * 200,
+                fromLeft: fromLeft
+            });
+        });
+
+        // Book authors as smaller figures in background row
+        const authors = [];
+        const uniqueAuthors = [];
+        const seenAuthors = new Set();
+        BOOKS_DATA.forEach(bk => {
+            if (!seenAuthors.has(bk.author)) {
+                seenAuthors.add(bk.author);
+                uniqueAuthors.push(bk.author);
+            }
+        });
+        uniqueAuthors.forEach((auth, i) => {
+            const fromLeft = i % 2 !== 0;
+            const spacing = W / (uniqueAuthors.length + 2);
+            const tgtX = spacing * (i + 1);
+            authors.push({
+                name: auth,
+                targetX: tgtX,
+                x: fromLeft ? -60 - Math.random() * 150 : W + 60 + Math.random() * 150,
+                y: GROUND - 40,
+                arrived: false,
+                delay: 2000 + i * 220,
+                fromLeft: fromLeft
+            });
+        });
+
+        // Confetti particles
+        const confetti = [];
+        for (let i = 0; i < 120; i++) {
+            confetti.push({
+                x: Math.random() * W,
+                y: -20 - Math.random() * H,
+                vx: (Math.random() - 0.5) * 2,
+                vy: 1 + Math.random() * 2.5,
+                size: 3 + Math.random() * 5,
+                color: ['#fbbf24', '#ef4444', '#22c55e', '#3b82f6', '#a855f7', '#ec4899', '#f97316'][Math.floor(Math.random() * 7)],
+                rot: Math.random() * 360,
+                rotV: (Math.random() - 0.5) * 8
+            });
+        }
+
+        // "Vale do Silicio" sign
+        const signW = 340;
+        const signH = 70;
+        const signX = (W - signW) / 2;
+        const signY = GROUND - 200;
+
+        const startTime = performance.now();
+        let animId = null;
+
+        const drawMiniChar = (c, t, scale) => {
+            const s = scale || 1.0;
+            const L = c.look || {};
+            const skin = L.skinTone || '#F5D0A9';
+            const sx = c.x;
+            const ny = c.y - 70 * s;
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.12)';
+            ctx.beginPath();
+            ctx.ellipse(sx, c.y + 2, 16 * s, 5 * s, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Legs
+            ctx.fillStyle = L.pants || '#333';
+            const legSw = c.arrived ? Math.sin(t * 0.004 + c.targetX) * 1.5 : Math.sin(t * 0.012) * 4;
+            ctx.fillRect(sx - 6 * s, ny + 45 * s + legSw, 5 * s, 22 * s);
+            ctx.fillRect(sx + 1 * s, ny + 45 * s - legSw, 5 * s, 22 * s);
+
+            // Shoes
+            ctx.fillStyle = '#222';
+            ctx.fillRect(sx - 7 * s, c.y - 4, 8 * s, 4);
+            ctx.fillRect(sx + 0, c.y - 4, 8 * s, 4);
+
+            // Body
+            const bodyColor = L.suit || L.hoodie || L.turtleneck ? (L.suit || L.hoodie || '#111') : (L.shirt || '#666');
+            ctx.fillStyle = bodyColor;
+            ctx.fillRect(sx - 14 * s, ny + 12 * s, 28 * s, 36 * s);
+
+            // Arms (celebrating bounce)
+            const armAngle = c.arrived ? Math.sin(t * 0.005 + c.targetX * 0.1) * 25 - 15 : Math.sin(t * 0.01) * 20;
+            ctx.save();
+            ctx.translate(sx - 14 * s, ny + 16 * s);
+            ctx.rotate(armAngle * Math.PI / 180);
+            ctx.fillStyle = bodyColor;
+            ctx.fillRect(-3 * s, 0, 7 * s, 20 * s);
+            ctx.fillStyle = skin;
+            ctx.fillRect(-2 * s, 18 * s, 5 * s, 8 * s);
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(sx + 14 * s, ny + 16 * s);
+            ctx.rotate(-armAngle * Math.PI / 180);
+            ctx.fillStyle = bodyColor;
+            ctx.fillRect(-4 * s, 0, 7 * s, 20 * s);
+            ctx.fillStyle = skin;
+            ctx.fillRect(-3 * s, 18 * s, 5 * s, 8 * s);
+            ctx.restore();
+
+            // Player shirt label
+            if (c.isPlayer) {
+                ctx.fillStyle = '#1a1a2e';
+                ctx.font = 'bold ' + Math.round(5 * s) + 'px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('CEO', sx, ny + 32 * s);
+            }
+
+            // Tie
+            if (L.tie) {
+                ctx.fillStyle = L.tie;
+                ctx.fillRect(sx - 2, ny + 16 * s, 4, 18 * s);
+            }
+
+            // Head
+            const headR = 12 * s;
+            const headY = ny + 4 * s;
+            ctx.fillStyle = skin;
+            ctx.beginPath();
+            ctx.arc(sx, headY, headR, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Hair
+            const hairColor = L.hair || '#222';
+            if (!L.bald && L.hairStyle !== 'bald') {
+                ctx.fillStyle = hairColor;
+                ctx.beginPath();
+                ctx.arc(sx, headY - 3, headR + 1, Math.PI, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Eyes
+            const eyeY = headY + 2;
+            const blink = Math.sin(t * 0.003 + c.targetX) > -0.9;
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.ellipse(sx - 4 * s, eyeY, 3 * s, blink ? 3 * s : 0.8 * s, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(sx + 4 * s, eyeY, 3 * s, blink ? 3 * s : 0.8 * s, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#111';
+            ctx.beginPath();
+            ctx.arc(sx - 3 * s, eyeY + 0.5, 1.5 * s, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(sx + 5 * s, eyeY + 0.5, 1.5 * s, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Glasses
+            if (L.glasses) {
+                ctx.strokeStyle = '#555';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(sx - 4 * s, eyeY, 4 * s, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(sx + 4 * s, eyeY, 4 * s, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(sx - 0.5 * s, eyeY);
+                ctx.lineTo(sx + 0.5 * s, eyeY);
+                ctx.stroke();
+            }
+
+            // Mouth - big smile for arrived
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            if (c.arrived) {
+                ctx.arc(sx, headY + 6 * s, 4 * s, 0.15 * Math.PI, 0.85 * Math.PI);
+            } else {
+                ctx.arc(sx, headY + 6 * s, 3 * s, 0.2 * Math.PI, 0.8 * Math.PI);
+            }
+            ctx.stroke();
+
+            // Name label below
+            if (c.arrived) {
+                ctx.fillStyle = c.isPlayer ? '#fbbf24' : 'rgba(255,255,255,0.6)';
+                ctx.font = (c.isPlayer ? 'bold ' : '') + Math.round(7 * s) + 'px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(c.name, sx, c.y + 14);
+            }
+        };
+
+        const drawAuthor = (a, t) => {
+            const sx = a.x;
+            const ny = a.y - 42;
+            ctx.globalAlpha = 0.7;
+            ctx.fillStyle = 'rgba(0,0,0,0.08)';
+            ctx.beginPath();
+            ctx.ellipse(sx, a.y + 1, 10, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Small body
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(sx - 8, ny + 8, 16, 24);
+            // Legs
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(sx - 5, ny + 30, 4, 14);
+            ctx.fillRect(sx + 1, ny + 30, 4, 14);
+            // Head
+            ctx.fillStyle = '#d4b896';
+            ctx.beginPath();
+            ctx.arc(sx, ny + 2, 8, 0, Math.PI * 2);
+            ctx.fill();
+            // Hair
+            ctx.fillStyle = '#555';
+            ctx.beginPath();
+            ctx.arc(sx, ny - 1, 8.5, Math.PI, Math.PI * 2);
+            ctx.fill();
+            // Name
+            if (a.arrived) {
+                ctx.fillStyle = 'rgba(255,255,255,0.45)';
+                ctx.font = '6px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(a.name, sx, a.y + 10);
+            }
+            ctx.globalAlpha = 1.0;
+        };
+
+        const animate = (now) => {
+            const elapsed = now - startTime;
+            ctx.clearRect(0, 0, W, H);
+
+            // Sky gradient (night celebration)
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+            skyGrad.addColorStop(0, '#0a0e2a');
+            skyGrad.addColorStop(0.5, '#1a1e3a');
+            skyGrad.addColorStop(1, '#0f172a');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, W, H);
+
+            // Stars
+            ctx.fillStyle = '#fff';
+            for (let i = 0; i < 60; i++) {
+                const sx = (i * 137.508 + Math.sin(now * 0.001 + i) * 2) % W;
+                const sy = (i * 89.3 + Math.cos(now * 0.0008 + i) * 1.5) % (H * 0.5);
+                const sz = 0.5 + (i % 3) * 0.5;
+                ctx.globalAlpha = 0.3 + Math.sin(now * 0.002 + i * 0.5) * 0.3;
+                ctx.beginPath();
+                ctx.arc(sx, sy, sz, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1.0;
+
+            // Ground
+            ctx.fillStyle = '#1a2744';
+            ctx.fillRect(0, GROUND, W, H - GROUND);
+            ctx.fillStyle = '#243352';
+            ctx.fillRect(0, GROUND, W, 3);
+
+            // "Vale do Silicio" sign (back, behind characters)
+            ctx.save();
+            // Sign post
+            ctx.fillStyle = '#5c3d1e';
+            ctx.fillRect(signX + signW / 2 - 6, signY + signH, 12, GROUND - signY - signH + 5);
+            // Sign board
+            ctx.fillStyle = '#2d1f0e';
+            ctx.fillRect(signX, signY, signW, signH);
+            ctx.strokeStyle = '#c9a34e';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(signX, signY, signW, signH);
+            // Text
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = 'bold 28px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('VALE DO SILICIO', signX + signW / 2, signY + signH / 2 - 8);
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '13px sans-serif';
+            ctx.fillText('Silicon Valley', signX + signW / 2, signY + signH / 2 + 16);
+            ctx.restore();
+
+            // Draw authors (background row, smaller)
+            authors.forEach(a => {
+                if (elapsed > a.delay) {
+                    if (!a.arrived) {
+                        const speed = 1.8;
+                        if (a.fromLeft) {
+                            a.x += speed;
+                            if (a.x >= a.targetX) { a.x = a.targetX; a.arrived = true; }
+                        } else {
+                            a.x -= speed;
+                            if (a.x <= a.targetX) { a.x = a.targetX; a.arrived = true; }
+                        }
+                    }
+                    drawAuthor(a, now);
+                }
+            });
+
+            // Draw NPC and player characters
+            characters.forEach(c => {
+                if (elapsed > c.delay) {
+                    if (!c.arrived) {
+                        const speed = 2.2;
+                        if (c.fromLeft) {
+                            c.x += speed;
+                            if (c.x >= c.targetX) { c.x = c.targetX; c.arrived = true; }
+                        } else {
+                            c.x -= speed;
+                            if (c.x <= c.targetX) { c.x = c.targetX; c.arrived = true; }
+                        }
+                    }
+                    // Celebrating bounce when arrived
+                    if (c.arrived) {
+                        const bounce = Math.abs(Math.sin(now * 0.003 + c.targetX * 0.05)) * 4;
+                        const origY = c.y;
+                        c.y -= bounce;
+                        drawMiniChar(c, now, c.isPlayer ? 1.2 : 0.9);
+                        c.y = origY;
+                    } else {
+                        drawMiniChar(c, now, c.isPlayer ? 1.2 : 0.9);
+                    }
+                }
+            });
+
+            // Confetti
+            confetti.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.rot += p.rotV;
+                if (p.y > H + 20) { p.y = -10; p.x = Math.random() * W; }
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rot * Math.PI / 180);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = 0.8;
+                ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+                ctx.globalAlpha = 1.0;
+                ctx.restore();
+            });
+
+            // Fireworks (sparkles)
+            if (elapsed > 3000) {
+                for (let i = 0; i < 3; i++) {
+                    const fx = (Math.sin(now * 0.001 + i * 2.1) * 0.4 + 0.5) * W;
+                    const fy = 40 + Math.sin(now * 0.0015 + i * 1.5) * 60;
+                    const sparkCount = 8;
+                    for (let j = 0; j < sparkCount; j++) {
+                        const angle = (j / sparkCount) * Math.PI * 2 + now * 0.002;
+                        const dist = 15 + Math.sin(now * 0.006 + j) * 10;
+                        const sx = fx + Math.cos(angle) * dist;
+                        const sy = fy + Math.sin(angle) * dist;
+                        ctx.fillStyle = confetti[i * 8 + j] ? confetti[i * 8 + j].color : '#fbbf24';
+                        ctx.globalAlpha = 0.5 + Math.sin(now * 0.005 + j) * 0.4;
+                        ctx.beginPath();
+                        ctx.arc(sx, sy, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                ctx.globalAlpha = 1.0;
+            }
+
+            animId = requestAnimationFrame(animate);
+        };
+
+        // Cancel previous animation if any
+        if (this._victoryAnimId) cancelAnimationFrame(this._victoryAnimId);
+        this._victoryAnimId = null;
+
+        animId = requestAnimationFrame(animate);
+        this._victoryAnimId = animId;
     },
 };
 
