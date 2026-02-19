@@ -3639,8 +3639,8 @@ const UI = {
             const W = canvas.width;
             const H = canvas.height;
             const elapsed = now - startTime;
-            const FRONT_GROUND = H * 0.48;
-            const BACK_GROUND = H * 0.34;
+            const FRONT_GROUND = H * 0.38;
+            const BACK_GROUND = H * 0.24;
 
             // Camera panning logic
             if (panPhase === 0 && elapsed > 4000) { panPhase = 1; panTimer = now; }

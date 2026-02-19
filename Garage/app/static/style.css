@@ -1672,6 +1672,7 @@ body {
     justify-content: flex-end;
     background: #0a0e1a;
     overflow: hidden;
+    padding-bottom: 3%;    /* garante que o card nunca encoste na borda */
 }
 
 #victoryCanvas {
