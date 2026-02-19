@@ -41,14 +41,14 @@ const SFX = {
     masterVol: null,
     musicGain: null,
     musicVol: 0.018,
-    sfxVol: 0.04,
+    sfxVol: 0.18,
     _audioElement: null,
 
     _getAudio() {
         if (!this._audioElement) {
             this._audioElement = new Audio('/static/music_game.mp3');
             this._audioElement.loop = true;
-            this._audioElement.volume = 0.35;
+            this._audioElement.volume = 0.10;
         }
         return this._audioElement;
     },
@@ -57,7 +57,7 @@ const SFX = {
         if (!this.ctx) {
             this.ctx = new (window.AudioContext || window.webkitAudioContext)();
             this.masterVol = this.ctx.createGain();
-            this.masterVol.gain.value = 0.5;
+            this.masterVol.gain.value = 0.9;
             this.masterVol.connect(this.ctx.destination);
             this.musicGain = this.ctx.createGain();
             this.musicGain.gain.value = 1.0;
@@ -89,7 +89,7 @@ const SFX = {
     },
 
     _arpeggio(notes, speed, type, vol) {
-        notes.forEach((f, i) => setTimeout(() => this._lofiTone(f, speed * 0.9 / 1000, type || 'sine', vol || 0.03, 1500), i * speed));
+        notes.forEach((f, i) => setTimeout(() => this._lofiTone(f, speed * 0.9 / 1000, type || 'sine', vol || 0.12, 1500), i * speed));
     },
 
     // Warm chord: plays multiple notes as a soft pad
@@ -227,67 +227,67 @@ const SFX = {
     },
 
     land() {
-        this._lofiTone(90, 0.05, 'sine', 0.025, 600);
+        this._lofiTone(90, 0.05, 'sine', 0.10, 600);
     },
 
-    step() { this._lofiTone(100 + Math.random() * 20, 0.025, 'sine', 0.012, 500); },
-    run() { this._lofiTone(140 + Math.random() * 30, 0.02, 'sine', 0.01, 600); },
+    step() { this._lofiTone(100 + Math.random() * 20, 0.025, 'sine', 0.05, 500); },
+    run() { this._lofiTone(140 + Math.random() * 30, 0.02, 'sine', 0.04, 600); },
 
     talk() {
         const notes = [330, 392, 349, 440, 370];
-        notes.forEach((f, i) => setTimeout(() => this._lofiTone(f, 0.035, 'sine', 0.025, 1200), i * 55));
+        notes.forEach((f, i) => setTimeout(() => this._lofiTone(f, 0.035, 'sine', 0.10, 1200), i * 55));
     },
 
     correct() {
-        this._arpeggio([523, 659, 784], 100, 'sine', 0.035);
-        setTimeout(() => this._lofiTone(1047, 0.3, 'sine', 0.025, 1500), 350);
+        this._arpeggio([523, 659, 784], 100, 'sine', 0.14);
+        setTimeout(() => this._lofiTone(1047, 0.3, 'sine', 0.12, 1500), 350);
     },
 
     wrong() {
-        this._lofiTone(250, 0.15, 'triangle', 0.03, 800);
-        setTimeout(() => this._lofiTone(180, 0.2, 'triangle', 0.025, 600), 160);
+        this._lofiTone(250, 0.15, 'triangle', 0.14, 800);
+        setTimeout(() => this._lofiTone(180, 0.2, 'triangle', 0.12, 600), 160);
     },
 
     promote() {
         const notes = [392, 440, 523, 659, 784];
-        notes.forEach((f, i) => setTimeout(() => this._lofiTone(f, 0.25, 'sine', 0.035, 1400), i * 140));
+        notes.forEach((f, i) => setTimeout(() => this._lofiTone(f, 0.25, 'sine', 0.16, 1400), i * 140));
         setTimeout(() => {
-            [262, 330, 392].forEach((f, i) => setTimeout(() => this._lofiTone(f, 0.35, 'triangle', 0.02, 800), i * 180));
+            [262, 330, 392].forEach((f, i) => setTimeout(() => this._lofiTone(f, 0.35, 'triangle', 0.10, 800), i * 180));
         }, 80);
     },
 
     bookCollect() {
         this._init();
         const notes = [659, 784, 988, 1319];
-        notes.forEach((f, i) => setTimeout(() => this._lofiTone(f, 0.1, 'sine', 0.03, 1800), i * 60));
-        setTimeout(() => this._lofiTone(1568, 0.25, 'sine', 0.02, 1200), 280);
+        notes.forEach((f, i) => setTimeout(() => this._lofiTone(f, 0.1, 'sine', 0.14, 1800), i * 60));
+        setTimeout(() => this._lofiTone(1568, 0.25, 'sine', 0.12, 1200), 280);
     },
 
     npcInteract() {
-        this._arpeggio([349, 440, 523], 70, 'sine', 0.03);
+        this._arpeggio([349, 440, 523], 70, 'sine', 0.14);
     },
 
     gameOver() {
         const notes = [392, 349, 330, 294, 262];
-        notes.forEach((f, i) => setTimeout(() => this._lofiTone(f, 0.3, 'triangle', 0.03, 700), i * 200));
+        notes.forEach((f, i) => setTimeout(() => this._lofiTone(f, 0.3, 'triangle', 0.14, 700), i * 200));
     },
 
     victory() {
         const melody = [523, 659, 784, 1047, 784, 1047, 1319];
-        melody.forEach((f, i) => setTimeout(() => this._lofiTone(f, 0.2, 'sine', 0.03, 1600), i * 150));
+        melody.forEach((f, i) => setTimeout(() => this._lofiTone(f, 0.2, 'sine', 0.14, 1600), i * 150));
     },
 
     menuSelect() {
-        this._lofiTone(600, 0.05, 'sine', 0.025, 1500);
-        setTimeout(() => this._lofiTone(900, 0.06, 'sine', 0.02, 1200), 50);
+        this._lofiTone(600, 0.05, 'sine', 0.12, 1500);
+        setTimeout(() => this._lofiTone(900, 0.06, 'sine', 0.10, 1200), 50);
     },
 
     menuConfirm() {
-        this._arpeggio([440, 659, 880], 55, 'sine', 0.03);
+        this._arpeggio([440, 659, 880], 55, 'sine', 0.14);
     },
 
     challengeOpen() {
-        this._arpeggio([330, 392, 494, 587], 80, 'sine', 0.025);
+        this._arpeggio([330, 392, 494, 587], 80, 'sine', 0.12);
     },
 
     // ---------------------------------------------------------------
@@ -850,7 +850,8 @@ const SFX = {
         if (this._audioElement && !this._audioElement.paused) {
             // Fade out MP3 volume over 300ms
             const audio = this._audioElement;
-            const step = audio.volume / 15;
+            const target = 0.10;
+            const step = target / 15;
             const fade = setInterval(() => {
                 if (audio.volume > step) { audio.volume = Math.max(0, audio.volume - step); }
                 else { audio.volume = 0; audio.pause(); clearInterval(fade); }
@@ -873,7 +874,7 @@ const SFX = {
             this._audioElement.volume = 0;
             this._audioElement.play().catch(() => {});
             const audio = this._audioElement;
-            const target = 0.35;
+            const target = 0.10;
             const step = target / 15;
             const fade = setInterval(() => {
                 if (audio.volume < target - step) { audio.volume = Math.min(target, audio.volume + step); }
