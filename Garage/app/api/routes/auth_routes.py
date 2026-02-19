@@ -64,6 +64,9 @@ def api_register(req: RegisterRequest):
     if _user_repo.exists_email(req.email):
         raise HTTPException(status_code=409, detail="Email ja cadastrado.")
 
+    if hasattr(_user_repo, "exists_full_name") and _user_repo.exists_full_name(req.full_name):
+        raise HTTPException(status_code=409, detail="Este nome ja esta em uso por outro usuario.")
+
     pwd_hash = hash_password(req.password)
 
     user = User(

@@ -287,6 +287,33 @@ def api_admin_ranking(current_user: dict = Depends(get_current_user)):
             "created_at": s.get("created_at", ""),
         })
 
+    # Deduplicate: keep only the best session per user.
+    # Key: user_id when available, otherwise player_name (anonymous/unlinked sessions).
+    # "Best" priority: 1) completed beats incomplete  2) highest score  3) fastest duration
+    best_per_user: dict = {}
+    for e in entries:
+        key = e.get("user_email") if e.get("user_email") != "---" else ("anon::" + (e.get("player_name") or "?"))
+        prev = best_per_user.get(key)
+        if prev is None:
+            best_per_user[key] = e
+        else:
+            # completed always beats incomplete
+            if e["completed"] and not prev["completed"]:
+                best_per_user[key] = e
+            elif not e["completed"] and prev["completed"]:
+                pass  # keep prev
+            else:
+                # same completion status: higher score wins; tie-break: faster duration
+                if e["score"] > prev["score"]:
+                    best_per_user[key] = e
+                elif e["score"] == prev["score"]:
+                    e_dur = e["duration_seconds"] if e["duration_seconds"] > 0 else 999999999
+                    p_dur = prev["duration_seconds"] if prev["duration_seconds"] > 0 else 999999999
+                    if e_dur < p_dur:
+                        best_per_user[key] = e
+
+    entries = list(best_per_user.values())
+
     # Sort: completed first (by duration asc), then incomplete (by stage desc, score desc)
     completed = [e for e in entries if e["completed"]]
     incomplete = [e for e in entries if not e["completed"]]

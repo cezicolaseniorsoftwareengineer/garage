@@ -106,6 +106,15 @@ class PgUserRepository:
     def exists_email(self, email: str) -> bool:
         return self.find_by_email(email) is not None
 
+    def exists_full_name(self, full_name: str) -> bool:
+        """Return True if any user already has this display name (case-insensitive)."""
+        target = full_name.strip().lower()
+        with self._sf() as session:
+            row = session.query(UserModel).filter(
+                UserModel.full_name.ilike(target)
+            ).first()
+            return row is not None
+
     # ------------------------------------------------------------------
     # Mapping
     # ------------------------------------------------------------------
