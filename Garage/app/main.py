@@ -76,14 +76,15 @@ if DATABASE_URL:
     if seeded:
         print(f"[GARAGE] Seeded {seeded} challenges into PostgreSQL.")
 
-    # -- Validate challenges are accessible via PostgreSQL ---
+    # -- Validate challenges are accessible and enum-compatible via PostgreSQL ---
     try:
-        _challenge_count = challenge_repo.count()
-        print(f"[GARAGE] PostgreSQL challenges available: {_challenge_count}")
+        _challenges_sample = challenge_repo.get_all()
+        _challenge_count = len(_challenges_sample)
+        print(f"[GARAGE] PostgreSQL challenges available and parsed: {_challenge_count}")
         if _challenge_count == 0:
             raise RuntimeError("challenges table is empty after seed")
     except Exception as _pg_exc:
-        print(f"[GARAGE][WARN] PostgreSQL challenge repo failed ({_pg_exc}). Falling back to JSON.")
+        print(f"[GARAGE][WARN] PostgreSQL challenge repo failed ({type(_pg_exc).__name__}: {_pg_exc}). Falling back to JSON.")
         from app.infrastructure.repositories.challenge_repository import ChallengeRepository as _JsonChallengeRepo
         challenge_repo = _JsonChallengeRepo(
             data_path=os.path.join(DATA_DIR, "challenges.json")
