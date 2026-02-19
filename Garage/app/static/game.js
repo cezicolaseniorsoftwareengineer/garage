@@ -53,6 +53,8 @@ const SFX = {
             this.musicGain.gain.value = 1.0;
             this.musicGain.connect(this.masterVol);
         }
+        // Resume context if suspended (required on mobile/Chrome after policy change)
+        if (this.ctx.state === 'suspended') this.ctx.resume();
     },
 
     // Lo-fi filtered tone: sine/triangle through low-pass filter
@@ -327,6 +329,8 @@ const SFX = {
 
         const playLoop = () => {
             if (!this._musicPlaying || this._currentPhase !== 'title') return;
+            // Prune dead nodes from previous loop iteration to prevent memory leak
+            this._musicNodes = [];
             const now = this.ctx.currentTime + 0.05;
 
             // --- Lead melody (bright square wave) ---
@@ -664,6 +668,8 @@ const SFX = {
 
         const playLoop = () => {
             if (!this._musicPlaying || this._currentPhase !== phase) return;
+            // Prune dead nodes from previous loop iteration to prevent memory leak
+            this._musicNodes = [];
             const now = this.ctx.currentTime + 0.05;
             const swing = 0.12;
 
@@ -4091,6 +4097,7 @@ const Game = {
             World.keys['ArrowRight'] = false;
             World.keys['ArrowUp'] = false;
         }
+        SFX.pauseMusic();
         const overlay = document.getElementById('pauseOverlay');
         if (overlay) { overlay.style.display = 'flex'; }
     },
@@ -4098,6 +4105,7 @@ const Game = {
     resume() {
         if (!State.paused) return;
         State.paused = false;
+        SFX.resumeMusic();
         const overlay = document.getElementById('pauseOverlay');
         if (overlay) { overlay.style.display = 'none'; }
     },
