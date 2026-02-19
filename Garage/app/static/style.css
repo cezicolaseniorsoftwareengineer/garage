@@ -1868,6 +1868,85 @@ body {
 }
 
 /* ==========================================================================
+   PAUSE OVERLAY
+   ========================================================================== */
+.pause-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    backdrop-filter: blur(4px);
+    animation: pauseFadeIn 0.2s ease;
+}
+
+.pause-overlay.active {
+    display: flex;
+}
+
+@keyframes pauseFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.pause-card {
+    background: linear-gradient(145deg, #1e293b, #0f172a);
+    border: 2px solid var(--gold);
+    border-radius: 16px;
+    padding: 40px 48px;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(251, 191, 36, 0.2);
+}
+
+.pause-title {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 3px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+}
+
+.pause-hint {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 28px;
+}
+
+.pause-hint strong {
+    color: var(--text);
+}
+
+.pause-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* HUD pause button — always visible */
+#btnPauseHud {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+/* Mobile pause button */
+.ctrl-pause {
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    color: #facc15;
+    background: rgba(250, 204, 21, 0.15);
+    border-color: rgba(250, 204, 21, 0.4);
+}
+
+.ctrl-pause:active {
+    background: rgba(250, 204, 21, 0.3);
+}
+
+/* ==========================================================================
    IDE CODING CHALLENGE OVERLAY
    ========================================================================== */
 .ide-overlay {

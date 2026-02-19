@@ -842,6 +842,7 @@ const State = {
     isInDialog: false,
     isInChallenge: false,
     isBookPopup: false,
+    paused: false,
     interactionTarget: null,
     _pendingNpcRegion: null,
     collectedBooks: [],
@@ -1314,10 +1315,19 @@ const World = {
             // TAB toggles the metrics overlay
             if (e.key === 'Tab') { e.preventDefault(); UI.toggleMetrics(); return; }
 
-            // ESC closes metrics overlay if open
+            // ESC: resume pause first; then close metrics overlay if open
+            if (e.key === 'Escape' && State.paused) { e.preventDefault(); Game.resume(); return; }
             if (e.key === 'Escape' && UI._metricsOpen) { e.preventDefault(); UI.toggleMetrics(); return; }
 
-            // Block all game input while metrics overlay is open
+            // P toggles pause (when world is active and no overlay is open)
+            if ((e.key === 'p' || e.key === 'P') && !UI._metricsOpen) {
+                e.preventDefault();
+                if (State.paused) Game.resume(); else Game.pause();
+                return;
+            }
+
+            // Block all game input while paused or metrics overlay is open
+            if (State.paused) return;
             if (UI._metricsOpen) return;
 
             this.keys[e.code] = true;
@@ -1343,7 +1353,7 @@ const World = {
         const hold = (id, code) => {
             const el = document.getElementById(id);
             if (!el) return;
-            const on = () => { this.keys[code] = true; el.classList.add('pressed'); };
+            const on = () => { if (State.paused) return; this.keys[code] = true; el.classList.add('pressed'); };
             const off = () => { this.keys[code] = false; el.classList.remove('pressed'); };
             el.addEventListener('mousedown', on);
             el.addEventListener('mouseup', off);
@@ -1359,6 +1369,7 @@ const World = {
         const actBtn = document.getElementById('btnAction');
         if (actBtn) {
             const doAction = () => {
+                if (State.paused) return;
                 if (performance.now() < State._actionCooldownUntil) return;
                 const promoVisible = document.getElementById('promotionOverlay').style.display === 'flex';
                 if (promoVisible) UI.hidePromotion();
@@ -2933,7 +2944,7 @@ const World = {
         const now = performance.now();
         const dt = Math.min((now - this.lastTime) / 1000, 0.05);
         this.lastTime = now;
-        this.update(dt);
+        if (!State.paused) this.update(dt);
         this.draw();
     },
 };
@@ -4063,6 +4074,32 @@ const Game = {
             UI.updateHUD(State.player);
             UI.showScreen('screen-world');
         } catch (e) { alert('Erro ao reiniciar: ' + e.message); }
+    },
+
+    pause() {
+        // Only pause when the world screen is active and not in a challenge/dialog
+        const worldActive = document.getElementById('screen-world') &&
+            document.getElementById('screen-world').classList.contains('active');
+        if (!worldActive) return;
+        if (State.isInChallenge || State.isInDialog || State.isBookPopup) return;
+        if (State.paused) return;
+
+        State.paused = true;
+        // Release all movement keys to prevent the player from moving on resume
+        if (World.keys) {
+            World.keys['ArrowLeft'] = false;
+            World.keys['ArrowRight'] = false;
+            World.keys['ArrowUp'] = false;
+        }
+        const overlay = document.getElementById('pauseOverlay');
+        if (overlay) { overlay.style.display = 'flex'; }
+    },
+
+    resume() {
+        if (!State.paused) return;
+        State.paused = false;
+        const overlay = document.getElementById('pauseOverlay');
+        if (overlay) { overlay.style.display = 'none'; }
     },
 };
 

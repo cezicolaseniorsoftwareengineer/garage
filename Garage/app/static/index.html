@@ -239,6 +239,13 @@
                 </div>
             </div>
             <div class="hud-sep">|</div>
+            <div class="hud-block hud-block-btn" id="btnPauseHud" onclick="Game.pause()" style="pointer-events:auto;cursor:pointer;">
+                <span class="hud-icon" style="color:#facc15;">&#9646;&#9646;</span>
+                <div>
+                    <div class="hud-label">PAUSA</div>
+                </div>
+            </div>
+            <div class="hud-sep">|</div>
             <div class="hud-block hud-block-btn" onclick="Auth.logout()" style="pointer-events:auto;cursor:pointer;">
                 <span class="hud-icon" style="color:#ef4444;">&#10005;</span>
                 <div>
@@ -262,6 +269,7 @@
                 <button class="ctrl-btn" id="btnRight" aria-label="Mover direita">&#9654;</button>
             </div>
             <div class="mobile-right">
+                <button class="ctrl-btn ctrl-pause" id="btnMobilePause" aria-label="Pausar" onclick="Game.pause()">&#9646;&#9646;</button>
                 <button class="ctrl-btn ctrl-jump" id="btnJump" aria-label="Pular">PULAR</button>
                 <button class="ctrl-btn ctrl-action action" id="btnAction" aria-label="Ação">APRENDER</button>
             </div>
@@ -373,6 +381,18 @@
             <p id="bookSummary" class="book-popup-summary">---</p>
             <p id="bookLesson" class="book-popup-lesson">---</p>
             <button class="btn-primary" onclick="World.closeBookPopup()">CONTINUAR</button>
+        </div>
+    </div>
+
+    <!-- ========== PAUSE OVERLAY ========== -->
+    <div id="pauseOverlay" class="pause-overlay" style="display:none;">
+        <div class="pause-card">
+            <div class="pause-title">JOGO PAUSADO</div>
+            <p class="pause-hint">Pressione <strong>P</strong> ou <strong>ESC</strong> para retomar</p>
+            <div class="pause-actions">
+                <button class="btn-primary" onclick="Game.resume()">RETOMAR</button>
+                <button class="btn-secondary" onclick="Auth.logout()">SAIR DO JOGO</button>
+            </div>
         </div>
     </div>
 
