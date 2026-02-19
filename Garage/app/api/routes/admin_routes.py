@@ -135,7 +135,7 @@ def api_admin_online(current_user: dict = Depends(get_current_user)):
             "language": s.get("language", "---"),
             "completed_challenges": s.get("completed_challenges", 0),
             "current_errors": current_errors,
-            "errors_remaining": max(0, 3 - current_errors),
+            "errors_remaining": max(0, 2 - current_errors),
             "game_over_count": s.get("game_over_count", 0),
             "last_active_at": s.get("last_active_at"),
             "seconds_ago": seconds_ago,

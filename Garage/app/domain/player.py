@@ -52,7 +52,7 @@ class Player:
     Enforces invariants: error limits, progression rules, scoring.
     """
 
-    MAX_ERRORS_PER_CHALLENGE = 3
+    MAX_ERRORS_PER_STAGE = 2   # 2 wrong answers within a stage -> game over
     CHALLENGES_TO_PROMOTE = 3
 
     def __init__(
@@ -156,7 +156,9 @@ class Player:
     def record_attempt(self, challenge_id: str, selected_index: int, is_correct: bool, points: int) -> dict:
         """
         Record a challenge attempt. Returns result dict with outcome.
-        Enforces 3-error game over rule.
+        Enforces 2-error-per-stage game over rule.
+        Errors accumulate across all challenges within the same stage.
+        Counter only resets on stage promotion or after a game over recovery.
         """
         if self._status == GameEnding.GAME_OVER:
             raise RuntimeError("Cannot attempt challenges during Game Over state")
@@ -174,21 +176,24 @@ class Player:
             self._score += awarded
             if challenge_id not in self._completed_challenges:
                 self._completed_challenges.append(challenge_id)
-            self._current_errors = 0
+            # Errors are NOT reset on correct answer -- they persist for the whole stage.
             return {
                 "outcome": "correct",
                 "points_awarded": awarded,
                 "total_score": self._score,
+                "current_errors": self._current_errors,
+                "errors_remaining": self.MAX_ERRORS_PER_STAGE - self._current_errors,
                 "stage": self._stage.value,
                 "promotion": False,
             }
         else:
             self._current_errors += 1
-            if self._current_errors >= self.MAX_ERRORS_PER_CHALLENGE:
+            if self._current_errors >= self.MAX_ERRORS_PER_STAGE:
                 return self._trigger_game_over()
             return {
                 "outcome": "wrong",
-                "errors_remaining": self.MAX_ERRORS_PER_CHALLENGE - self._current_errors,
+                "current_errors": self._current_errors,
+                "errors_remaining": self.MAX_ERRORS_PER_STAGE - self._current_errors,
                 "total_score": self._score,
                 "stage": self._stage.value,
                 "promotion": False,
@@ -196,12 +201,13 @@ class Player:
 
     def _trigger_game_over(self) -> dict:
         """
-        Game Over: reset to start of current stage.
+        Game Over: 2 wrong answers accumulated in the current stage.
+        Resets error counter and removes completed challenges for this stage.
         History is NEVER erased. Learning persists.
         """
         self._game_over_count += 1
         self._current_errors = 0
-        # Remove completed challenges from current stage only
+        # Remove completed challenges from current stage only -- player retries this stage
         self._completed_challenges = [
             c for c in self._completed_challenges
             if not c.startswith(self._stage.value.lower())
@@ -209,7 +215,7 @@ class Player:
         self._status = GameEnding.GAME_OVER
         return {
             "outcome": "game_over",
-            "message": "3 errors reached. Returning to start of current stage.",
+            "message": "2 errors in this stage. Returning to start of current stage.",
             "stage": self._stage.value,
             "game_over_count": self._game_over_count,
             "total_attempts": len(self._attempts),
@@ -269,7 +275,7 @@ class Player:
             "stage": self._stage.value,
             "score": self._score,
             "current_errors": self._current_errors,
-            "max_errors": self.MAX_ERRORS_PER_CHALLENGE,
+            "max_errors": self.MAX_ERRORS_PER_STAGE,
             "completed_challenges": self._completed_challenges,
             "game_over_count": self._game_over_count,
             "status": self._status.value,

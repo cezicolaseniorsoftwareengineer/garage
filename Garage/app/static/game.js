@@ -3218,7 +3218,7 @@ const UI = {
         document.getElementById('hudName').textContent = player.name || '---';
         document.getElementById('hudStage').textContent = STAGE_PT[player.stage] || player.stage || 'Estagiario';
         document.getElementById('hudScore').textContent = player.score || 0;
-        document.getElementById('hudErrors').textContent = (player.current_errors || 0) + ' / 3';
+        document.getElementById('hudErrors').textContent = (player.current_errors || 0) + ' / 2';
         // Sync book counter
         const booksEl = document.getElementById('hudBooks');
         if (booksEl) booksEl.textContent = State.collectedBooks.length + ' / ' + BOOKS_DATA.length;
@@ -3365,7 +3365,7 @@ const UI = {
         fb.innerHTML = `<div class="feedback-box ${ok ? 'correct' : 'wrong'}">
             <strong>${ok ? 'CORRETO' : 'INCORRETO'}</strong><br><br>
             ${result.explanation}
-            ${!ok && result.errors_remaining !== undefined ? '<br><br>Erros restantes: ' + result.errors_remaining + ' / 3' : ''}
+            ${!ok && result.errors_remaining !== undefined ? '<br><br>Erros restantes: ' + result.errors_remaining + ' / 2' : ''}
         </div>`;
         document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
         document.getElementById('challengeActions').style.display = 'flex';
