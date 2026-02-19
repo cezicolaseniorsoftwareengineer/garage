@@ -566,12 +566,14 @@ body {
 
 .arcade-footer {
     padding: 16px 0;
-    font-size: 0.5rem;
-    color: #4b5563;
+    font-size: 0.62rem;
+    color: #ffffff;
     letter-spacing: 2px;
     line-height: 2;
     text-align: center;
     flex-shrink: 0;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    font-weight: 700;
 }
 
 /* --- ONBOARDING / CHARACTER SELECT --- */
@@ -2511,7 +2513,7 @@ body {
     }
 
     .arcade-footer {
-        font-size: 0.4rem;
+        font-size: 0.55rem;
         padding: 10px 8px;
         line-height: 1.8;
     }
