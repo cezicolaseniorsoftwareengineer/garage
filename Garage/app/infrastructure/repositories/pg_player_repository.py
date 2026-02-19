@@ -174,6 +174,8 @@ class PgPlayerRepository:
                     "score": r.score,
                     "language": r.language,
                     "completed_challenges": len(r.completed_challenges or []),
+                    "current_errors": r.current_errors,
+                    "game_over_count": r.game_over_count,
                     "last_active_at": r.updated_at.isoformat() if r.updated_at else None,
                 }
                 for r in rows

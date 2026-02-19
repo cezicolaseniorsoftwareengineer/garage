@@ -123,6 +123,7 @@ def api_admin_online(current_user: dict = Depends(get_current_user)):
             "Senior": "Senior", "Staff": "Staff", "Principal": "Principal",
             "Distinguished": "CEO",
         }
+        current_errors = s.get("current_errors", 0)
         result.append({
             "session_id": s.get("session_id"),
             "player_name": s.get("player_name"),
@@ -133,6 +134,9 @@ def api_admin_online(current_user: dict = Depends(get_current_user)):
             "score": s.get("score", 0),
             "language": s.get("language", "---"),
             "completed_challenges": s.get("completed_challenges", 0),
+            "current_errors": current_errors,
+            "errors_remaining": max(0, 3 - current_errors),
+            "game_over_count": s.get("game_over_count", 0),
             "last_active_at": s.get("last_active_at"),
             "seconds_ago": seconds_ago,
         })
