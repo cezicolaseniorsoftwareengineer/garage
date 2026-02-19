@@ -162,6 +162,7 @@ class PgPlayerRepository:
                     GameSessionModel.status == "in_progress",
                 )
                 .order_by(GameSessionModel.updated_at.desc())
+                .limit(500)  # safety cap: 500 concurrent active users is ceiling for this app
                 .all()
             )
             return [

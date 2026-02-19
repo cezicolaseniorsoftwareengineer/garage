@@ -101,11 +101,35 @@ def create_tables() -> None:
     """Create all tables declared in models.Base.metadata.
 
     Safe to call multiple times -- CREATE IF NOT EXISTS semantics.
+    Also ensures performance-critical indexes are present (idempotent).
     """
     if _engine is None:
         return
     from app.infrastructure.database.models import Base
     Base.metadata.create_all(bind=_engine)
+    # Partial index for real-time online monitoring query.
+    # Covers: WHERE updated_at >= cutoff AND status = 'in_progress'
+    # CREATE INDEX IF NOT EXISTS is idempotent -- safe on every startup.
+    _ensure_indexes()
+
+
+def _ensure_indexes() -> None:
+    """Apply performance indexes that cannot be expressed via create_all."""
+    ddl_statements = [
+        """
+        CREATE INDEX IF NOT EXISTS idx_game_sessions_active
+        ON game_sessions (updated_at DESC)
+        WHERE status = 'in_progress'
+        """,
+    ]
+    try:
+        with _engine.begin() as conn:
+            for ddl in ddl_statements:
+                conn.execute(text(ddl))
+        print("[GARAGE] DB indexes verified.")
+    except Exception as exc:
+        # Non-fatal: game runs without the index, just slower at scale.
+        print(f"[GARAGE] WARNING: Could not ensure indexes: {exc}")
 
 
 def check_health() -> bool:
