@@ -3619,12 +3619,19 @@ const UI = {
                 ctx.restore();
             }
 
-            // Name tag
+            // Name tag -- above head with readable background
             if (c.arrived) {
-                ctx.fillStyle = c.isPlayer ? '#fbbf24' : 'rgba(255,255,255,0.55)';
-                ctx.font = (c.isPlayer ? 'bold ' : '') + Math.round(8 * s) + 'px sans-serif';
+                const label = c.isPlayer ? (c.name || '') : (c.fullName || c.name || '');
+                const fSize = Math.round((c.isPlayer ? 9 : 7) * s);
+                ctx.font = (c.isPlayer ? 'bold ' : '') + fSize + 'px sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText(c.name || '', drawX, groundY + 13 * s);
+                const tw = ctx.measureText(label).width;
+                const tagY = topY - 8 * s;
+                const padX = 3, padY = 2;
+                ctx.fillStyle = c.isPlayer ? 'rgba(251,191,36,0.93)' : 'rgba(10,14,26,0.80)';
+                ctx.fillRect(drawX - tw / 2 - padX, tagY - fSize - padY, tw + padX * 2, fSize + padY * 2 + 1);
+                ctx.fillStyle = c.isPlayer ? '#000' : '#e5e7eb';
+                ctx.fillText(label, drawX, tagY);
             }
         };
 
@@ -3632,8 +3639,8 @@ const UI = {
             const W = canvas.width;
             const H = canvas.height;
             const elapsed = now - startTime;
-            const FRONT_GROUND = H * 0.62;
-            const BACK_GROUND = H * 0.50;
+            const FRONT_GROUND = H * 0.48;
+            const BACK_GROUND = H * 0.34;
 
             // Camera panning logic
             if (panPhase === 0 && elapsed > 4000) { panPhase = 1; panTimer = now; }
