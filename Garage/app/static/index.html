@@ -169,17 +169,9 @@
             <input type="text" id="playerName" placeholder="Ex: Ada Lovelace" maxlength="50">
 
             <label>3. LINGUAGEM BACKEND</label>
-            <p class="hint">Define o contexto dos desafios. Não altera dificuldade.</p>
-            <select id="playerLang">
+            <p class="hint">Desafios contextualizados em Java.</p>
+            <select id="playerLang" disabled style="opacity:0.5;cursor:not-allowed;">
                 <option value="Java">Java</option>
-                <option value="Python">Python</option>
-                <option value="C">C</option>
-                <option value="C++">C++</option>
-                <option value="C#">C#</option>
-                <option value=".NET">.NET</option>
-                <option value="Ruby">Ruby</option>
-                <option value="Rust">Rust</option>
-                <option value="Go">Go</option>
             </select>
 
             <button class="btn-primary" onclick="Game.start()">ENTRAR NO VALE</button>
