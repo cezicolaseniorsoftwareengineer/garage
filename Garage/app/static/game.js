@@ -5566,6 +5566,12 @@ const Auth = {
     },
 
     logout() {
+        // Reset pause state before leaving the world screen
+        if (State.paused) {
+            State.paused = false;
+            const po = document.getElementById('pauseOverlay');
+            if (po) po.style.display = 'none';
+        }
         this._user = null;
         this._token = null;
         this._refreshToken = null;
