@@ -116,15 +116,26 @@ def api_get_session(session_id: str, current_user: dict = Depends(get_current_us
 @router.get("/challenges")
 def api_get_challenges(stage: Optional[str] = None):
     """Get available challenges, optionally filtered by stage. Public."""
-    if stage:
-        try:
-            career_stage = CareerStage(stage)
-            challenges = _challenge_repo.get_by_stage(career_stage)
-        except ValueError:
-            raise HTTPException(status_code=400, detail=f"Invalid stage: {stage}")
-    else:
-        challenges = _challenge_repo.get_all()
-    return [c.to_dict_for_player() for c in challenges]
+    try:
+        if stage:
+            try:
+                career_stage = CareerStage(stage)
+                challenges = _challenge_repo.get_by_stage(career_stage)
+            except ValueError:
+                raise HTTPException(status_code=400, detail=f"Invalid stage: {stage}")
+        else:
+            challenges = _challenge_repo.get_all()
+        return [c.to_dict_for_player() for c in challenges]
+    except HTTPException:
+        raise
+    except Exception as exc:
+        import traceback
+        print(f"[GARAGE][ERROR] /api/challenges failed: {type(exc).__name__}: {exc}")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=503,
+            detail=f"Challenge repository unavailable: {type(exc).__name__}"
+        )
 
 
 @router.get("/challenges/{challenge_id}")

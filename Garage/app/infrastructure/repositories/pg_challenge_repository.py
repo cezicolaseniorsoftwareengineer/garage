@@ -13,14 +13,22 @@ class PgChallengeRepository:
         self._sf = session_factory
 
     def get_all(self) -> List[Challenge]:
-        with self._sf() as session:
-            rows = session.query(ChallengeModel).all()
-            return [self._to_domain(r) for r in rows]
+        try:
+            with self._sf() as session:
+                rows = session.query(ChallengeModel).all()
+                return [self._to_domain(r) for r in rows]
+        except Exception as exc:
+            print(f"[GARAGE][ERROR] PgChallengeRepository.get_all() failed: {type(exc).__name__}: {exc}")
+            raise
 
     def get_by_id(self, challenge_id: str) -> Challenge | None:
-        with self._sf() as session:
-            row = session.get(ChallengeModel, challenge_id)
-            return self._to_domain(row) if row else None
+        try:
+            with self._sf() as session:
+                row = session.get(ChallengeModel, challenge_id)
+                return self._to_domain(row) if row else None
+        except Exception as exc:
+            print(f"[GARAGE][ERROR] PgChallengeRepository.get_by_id({challenge_id!r}) failed: {exc}")
+            raise
 
     def get_by_stage(self, stage: CareerStage) -> List[Challenge]:
         with self._sf() as session:

@@ -76,6 +76,19 @@ if DATABASE_URL:
     if seeded:
         print(f"[GARAGE] Seeded {seeded} challenges into PostgreSQL.")
 
+    # -- Validate challenges are accessible via PostgreSQL ---
+    try:
+        _challenge_count = challenge_repo.count()
+        print(f"[GARAGE] PostgreSQL challenges available: {_challenge_count}")
+        if _challenge_count == 0:
+            raise RuntimeError("challenges table is empty after seed")
+    except Exception as _pg_exc:
+        print(f"[GARAGE][WARN] PostgreSQL challenge repo failed ({_pg_exc}). Falling back to JSON.")
+        from app.infrastructure.repositories.challenge_repository import ChallengeRepository as _JsonChallengeRepo
+        challenge_repo = _JsonChallengeRepo(
+            data_path=os.path.join(DATA_DIR, "challenges.json")
+        )
+
     _persistence = "postgresql"
 else:
     # -- JSON file fallback (dev) -------------------------------------------
@@ -144,11 +157,17 @@ def health():
         "status": "online",
         "system": "GARAGE Backend v3.0.0",
         "persistence": _persistence,
-        "challenges_loaded": len(challenge_repo.get_all()),
     }
+    try:
+        result["challenges_loaded"] = len(challenge_repo.get_all())
+    except Exception as exc:
+        result["challenges_loaded"] = f"ERROR: {type(exc).__name__}"
     if DATABASE_URL:
         from app.infrastructure.database.connection import check_health
-        result["database"] = "connected" if check_health() else "disconnected"
+        try:
+            result["database"] = "connected" if check_health() else "disconnected"
+        except Exception as exc:
+            result["database"] = f"ERROR: {type(exc).__name__}"
     return result
 
 
