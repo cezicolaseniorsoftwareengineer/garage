@@ -68,6 +68,14 @@ def api_admin_dashboard(current_user: dict = Depends(get_current_user)):
         else:
             active_count += 1
 
+    # Online now: sessions with activity in the last 5 minutes
+    online_now = 0
+    if hasattr(_player_repo, "get_active_sessions"):
+        try:
+            online_now = len(_player_repo.get_active_sessions(minutes=5))
+        except Exception:
+            online_now = 0
+
     return {
         "total_users": total_users,
         "total_sessions": total_sessions,
@@ -75,7 +83,61 @@ def api_admin_dashboard(current_user: dict = Depends(get_current_user)):
         "completed_games": completed_count,
         "active_games": active_count,
         "game_over_sessions": game_over_count,
+        "online_now": online_now,
     }
+
+
+# ---------------------------------------------------------------------------
+# Online now (active in the last 5 minutes)
+# ---------------------------------------------------------------------------
+
+@router.get("/online")
+def api_admin_online(current_user: dict = Depends(get_current_user)):
+    """Return sessions with activity in the last 5 minutes (online right now)."""
+    _assert_admin(current_user)
+
+    if not hasattr(_player_repo, "get_active_sessions"):
+        return []
+
+    active = _player_repo.get_active_sessions(minutes=5)
+    users = _user_repo.get_all() if hasattr(_user_repo, "get_all") else []
+    user_map = {u.id: u for u in users}
+
+    result = []
+    for s in active:
+        user = user_map.get(s.get("user_id"))
+        now = datetime.now(timezone.utc)
+        last_active = None
+        seconds_ago = None
+        try:
+            last_active = datetime.fromisoformat(s["last_active_at"])
+            # Make timezone-aware if naive
+            if last_active.tzinfo is None:
+                last_active = last_active.replace(tzinfo=timezone.utc)
+            seconds_ago = int((now - last_active).total_seconds())
+        except (TypeError, ValueError, KeyError):
+            pass
+
+        STAGE_PT = {
+            "Intern": "Estagiario", "Junior": "Junior", "Mid": "Pleno",
+            "Senior": "Senior", "Staff": "Staff", "Principal": "Principal",
+            "Distinguished": "CEO",
+        }
+        result.append({
+            "session_id": s.get("session_id"),
+            "player_name": s.get("player_name"),
+            "user_name": user.full_name if user else "---",
+            "user_email": user.email if user else "---",
+            "stage": s.get("stage"),
+            "stage_pt": STAGE_PT.get(s.get("stage", ""), s.get("stage", "")),
+            "score": s.get("score", 0),
+            "language": s.get("language", "---"),
+            "completed_challenges": s.get("completed_challenges", 0),
+            "last_active_at": s.get("last_active_at"),
+            "seconds_ago": seconds_ago,
+        })
+
+    return result
 
 
 # ---------------------------------------------------------------------------

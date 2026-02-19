@@ -282,6 +282,58 @@
             gap: 12px;
         }
 
+        /* Online now */
+        .stat-card-online {
+            border-color: #22c55e;
+        }
+
+        .stat-card-online .stat-value {
+            color: #22c55e;
+        }
+
+        .stat-card-online .stat-label {
+            color: #86efac;
+        }
+
+        .pulse-dot {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            background: #22c55e;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+            animation: pulse-green 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; box-shadow: 0 0 4px #22c55e; }
+            50%       { opacity: 0.4; box-shadow: 0 0 10px #22c55e; }
+        }
+
+        .last-updated {
+            font-size: 0.65rem;
+            color: #475569;
+            margin-left: 4px;
+        }
+
+        .badge-online {
+            background: #14532d;
+            color: #4ade80;
+        }
+
+        .seconds-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.62rem;
+            font-weight: 600;
+        }
+
+        .seconds-fresh  { background: #14532d; color: #4ade80; }
+        .seconds-recent { background: #1e3a5f; color: #93c5fd; }
+        .seconds-old    { background: #1c1917; color: #a8a29e; }
+
         @media (max-width: 768px) {
             .admin-container {
                 padding: 12px;
@@ -329,6 +381,7 @@
             <h1>GARAGE ADMIN</h1>
             <div class="header-right">
                 <span class="admin-user" id="adminUserLabel"></span>
+                <span class="last-updated" id="lastUpdatedLabel"></span>
                 <button class="refresh-btn" onclick="loadAll()">ATUALIZAR</button>
                 <button class="logout-btn" onclick="doLogout()">SAIR</button>
             </div>
@@ -337,6 +390,10 @@
         <div class="admin-container">
             <!-- Stats cards -->
             <div class="stats-grid" id="statsGrid">
+                <div class="stat-card stat-card-online">
+                    <div class="stat-value" id="statOnline"><span class="pulse-dot"></span>--</div>
+                    <div class="stat-label">ONLINE AGORA</div>
+                </div>
                 <div class="stat-card">
                     <div class="stat-value" id="statUsers">--</div>
                     <div class="stat-label">USUARIOS</div>
@@ -365,13 +422,34 @@
 
             <!-- Tabs -->
             <div class="tabs">
-                <button class="tab-btn active" data-tab="ranking" onclick="switchTab('ranking')">RANKING</button>
+                <button class="tab-btn active" data-tab="online" onclick="switchTab('online')"><span class="pulse-dot"></span>ONLINE</button>
+                <button class="tab-btn" data-tab="ranking" onclick="switchTab('ranking')">RANKING</button>
                 <button class="tab-btn" data-tab="users" onclick="switchTab('users')">USUARIOS</button>
                 <button class="tab-btn" data-tab="sessions" onclick="switchTab('sessions')">SESSOES</button>
             </div>
 
+            <!-- Online tab -->
+            <div id="tab-online" class="tab-content active">
+                <div class="loading" id="onlineLoading">Verificando usuarios online...</div>
+                <div id="onlineEmpty" style="display:none; text-align:center; padding:40px; color:#475569; font-size:0.85rem;">Nenhum usuario ativo nos ultimos 5 minutos.</div>
+                <table id="onlineTable" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>JOGADOR</th>
+                            <th>EMAIL</th>
+                            <th>CARGO ATUAL</th>
+                            <th>PONTOS</th>
+                            <th>DESAFIOS</th>
+                            <th>LINGUAGEM</th>
+                            <th>ULTIMA ACAO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="onlineBody"></tbody>
+                </table>
+            </div>
+
             <!-- Ranking tab -->
-            <div id="tab-ranking" class="tab-content active">
+            <div id="tab-ranking" class="tab-content">
                 <div class="loading" id="rankingLoading">Carregando ranking...</div>
                 <table id="rankingTable" style="display:none;">
                     <thead>
@@ -500,27 +578,51 @@
             document.getElementById('dashboardScreen').style.display = 'block';
             document.getElementById('adminUserLabel').textContent = user ? user.full_name : 'Admin';
             loadAll();
+            // Auto-refresh: full reload every 30s; online-only every 10s
+            setInterval(loadOnlineOnly, 10000);
+            setInterval(loadAll, 30000);
         }
 
         async function loadAll() {
             try {
-                const [dash, ranking, users, sessions] = await Promise.all([
+                const [dash, ranking, users, sessions, online] = await Promise.all([
                     apiFetch('/api/admin/dashboard'),
                     apiFetch('/api/admin/ranking'),
                     apiFetch('/api/admin/users'),
                     apiFetch('/api/admin/sessions'),
+                    apiFetch('/api/admin/online'),
                 ]);
                 renderDashboard(dash);
                 renderRanking(ranking);
                 renderUsers(users);
                 renderSessions(sessions);
+                renderOnline(online);
+                const now = new Date();
+                document.getElementById('lastUpdatedLabel').textContent =
+                    'atualizado ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             } catch (e) {
                 alert(e.message);
                 if (e.message.includes('Acesso negado')) doLogout();
             }
         }
 
+        async function loadOnlineOnly() {
+            try {
+                const [dash, online] = await Promise.all([
+                    apiFetch('/api/admin/dashboard'),
+                    apiFetch('/api/admin/online'),
+                ]);
+                renderDashboard(dash);
+                renderOnline(online);
+                const now = new Date();
+                document.getElementById('lastUpdatedLabel').textContent =
+                    'atualizado ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            } catch (_) { /* silent */ }
+        }
+
         function renderDashboard(d) {
+            const dot = '<span class="pulse-dot"></span>';
+            document.getElementById('statOnline').innerHTML = dot + (d.online_now ?? '--');
             document.getElementById('statUsers').textContent = d.total_users;
             document.getElementById('statSessions').textContent = d.total_sessions;
             document.getElementById('statCompleted').textContent = d.completed_games;
@@ -567,6 +669,39 @@
             if (r === 2) return 'rank-silver';
             if (r === 3) return 'rank-bronze';
             return '';
+        }
+
+        function renderOnline(data) {
+            document.getElementById('onlineLoading').style.display = 'none';
+            const table = document.getElementById('onlineTable');
+            const empty = document.getElementById('onlineEmpty');
+            const body = document.getElementById('onlineBody');
+            body.innerHTML = '';
+            if (!data || data.length === 0) {
+                table.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            table.style.display = '';
+            data.forEach(s => {
+                const sec = s.seconds_ago;
+                let secClass = 'seconds-old';
+                let secLabel = sec != null ? sec + 's atras' : '---';
+                if (sec != null && sec < 60)  { secClass = 'seconds-fresh';  secLabel = sec + 's atras'; }
+                else if (sec != null && sec < 180) { secClass = 'seconds-recent'; secLabel = Math.floor(sec/60) + 'min atras'; }
+                else if (sec != null)           { secLabel = Math.floor(sec/60) + 'min atras'; }
+                const tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + esc(s.player_name) + '</td>' +
+                    '<td>' + esc(s.user_email) + '</td>' +
+                    '<td><span class="badge badge-in_progress">' + esc(s.stage_pt) + '</span></td>' +
+                    '<td>' + s.score + '</td>' +
+                    '<td>' + s.completed_challenges + '</td>' +
+                    '<td>' + esc(s.language) + '</td>' +
+                    '<td><span class="seconds-badge ' + secClass + '">' + secLabel + '</span></td>';
+                body.appendChild(tr);
+            });
         }
 
         function renderRanking(data) {

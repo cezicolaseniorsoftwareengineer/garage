@@ -1,5 +1,6 @@
 """PostgreSQL-backed player session repository."""
 from uuid import UUID
+from datetime import datetime, timezone, timedelta
 from typing import Optional, List
 
 from app.domain.player import Player, Attempt
@@ -113,6 +114,66 @@ class PgPlayerRepository:
                     "status": r.status,
                     "language": r.language,
                     "created_at": r.created_at.isoformat() if r.created_at else None,
+                }
+                for r in rows
+            ]
+
+    def get_all(self) -> List[Player]:
+        """Return all sessions as Player domain objects (used by admin dashboard)."""
+        with self._sf() as session:
+            rows = (
+                session.query(GameSessionModel)
+                .order_by(GameSessionModel.created_at.desc())
+                .all()
+            )
+            return [self._to_domain(r) for r in rows]
+
+    def get_all_dict(self) -> List[dict]:
+        """Return all sessions as dicts including attempts (used by admin ranking/sessions)."""
+        with self._sf() as session:
+            rows = (
+                session.query(GameSessionModel)
+                .order_by(GameSessionModel.created_at.desc())
+                .all()
+            )
+            result = []
+            for r in rows:
+                player = self._to_domain(r)
+                d = player.to_dict()
+                d["id"] = str(player.id)
+                d["attempts"] = [a.to_dict() for a in player.attempts]
+                d["created_at"] = r.created_at.isoformat() if r.created_at else None
+                d["updated_at"] = r.updated_at.isoformat() if r.updated_at else None
+                result.append(d)
+            return result
+
+    def get_active_sessions(self, minutes: int = 5) -> List[dict]:
+        """Return sessions with activity in the last N minutes (online now).
+
+        Uses updated_at as the last-active signal -- it is bumped on every
+        save() call, which happens on every submit_answer or progress_stage.
+        """
+        cutoff = datetime.now(timezone.utc) - timedelta(minutes=minutes)
+        with self._sf() as session:
+            rows = (
+                session.query(GameSessionModel)
+                .filter(
+                    GameSessionModel.updated_at >= cutoff,
+                    GameSessionModel.status == "in_progress",
+                )
+                .order_by(GameSessionModel.updated_at.desc())
+                .all()
+            )
+            return [
+                {
+                    "session_id": r.id,
+                    "player_name": r.name,
+                    "user_id": r.user_id,
+                    "stage": r.stage,
+                    "score": r.score,
+                    "language": r.language,
+                    "completed_challenges": len(r.completed_challenges or []),
+                    "last_active_at": r.updated_at.isoformat() if r.updated_at else None,
                 }
                 for r in rows
             ]
