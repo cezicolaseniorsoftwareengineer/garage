@@ -42,6 +42,16 @@ const SFX = {
     musicGain: null,
     musicVol: 0.018,
     sfxVol: 0.04,
+    _audioElement: null,
+
+    _getAudio() {
+        if (!this._audioElement) {
+            this._audioElement = new Audio('/static/music_game.mp3');
+            this._audioElement.loop = true;
+            this._audioElement.volume = 0.35;
+        }
+        return this._audioElement;
+    },
 
     _init() {
         if (!this.ctx) {
@@ -796,14 +806,24 @@ const SFX = {
     playMusic(phase) {
         if (this._currentPhase === phase && this._musicPlaying) return;
         this.stopMusic();
-        this._init();
         this._currentPhase = phase;
         this._musicPlaying = true;
 
         if (phase === 'title') {
+            // Chiptune arcade via Web Audio API
+            this._init();
             this._playArcade();
         } else {
-            this._playLofi(phase);
+            // MP3 via HTML5 Audio for explore/challenge phases
+            const audio = this._getAudio();
+            audio.currentTime = 0;
+            audio.volume = 0.35;
+            audio.play().catch(() => {
+                // Autoplay blocked -- will start on next user interaction
+                const resume = () => { audio.play(); document.removeEventListener('click', resume); document.removeEventListener('keydown', resume); };
+                document.addEventListener('click', resume, { once: true });
+                document.addEventListener('keydown', resume, { once: true });
+            });
         }
     },
 
@@ -811,30 +831,61 @@ const SFX = {
         this._musicPlaying = false;
         this._currentPhase = null;
         this._musicPaused = false;
+        // Stop Web Audio (arcade / SFX nodes)
         clearTimeout(this._musicTimer);
         this._musicNodes.forEach(n => { try { n.stop(); } catch (e) { } });
         this._musicNodes = [];
         this._crackleNode = null;
+        // Stop MP3
+        if (this._audioElement) {
+            this._audioElement.pause();
+            this._audioElement.currentTime = 0;
+        }
     },
 
-    /** Fade out music gain to silence without destroying nodes (seamless resume). */
+    /** Fade out MP3 / arcade music (seamless resume). */
     pauseMusic() {
-        if (!this.ctx || !this.musicGain || this._musicPaused) return;
+        if (this._musicPaused) return;
         this._musicPaused = true;
-        const t = this.ctx.currentTime;
-        this.musicGain.gain.cancelScheduledValues(t);
-        this.musicGain.gain.setValueAtTime(this.musicGain.gain.value, t);
-        this.musicGain.gain.linearRampToValueAtTime(0.0001, t + 0.3);
+        if (this._audioElement && !this._audioElement.paused) {
+            // Fade out MP3 volume over 300ms
+            const audio = this._audioElement;
+            const step = audio.volume / 15;
+            const fade = setInterval(() => {
+                if (audio.volume > step) { audio.volume = Math.max(0, audio.volume - step); }
+                else { audio.volume = 0; audio.pause(); clearInterval(fade); }
+            }, 20);
+        } else if (this.ctx && this.musicGain) {
+            // Fade out Web Audio (arcade)
+            const t = this.ctx.currentTime;
+            this.musicGain.gain.cancelScheduledValues(t);
+            this.musicGain.gain.setValueAtTime(this.musicGain.gain.value, t);
+            this.musicGain.gain.linearRampToValueAtTime(0.0001, t + 0.3);
+        }
     },
 
-    /** Fade music gain back in (seamless resume after pause). */
+    /** Fade music back in (seamless resume after pause). */
     resumeMusic() {
-        if (!this.ctx || !this.musicGain || !this._musicPaused) return;
+        if (!this._musicPaused) return;
         this._musicPaused = false;
-        const t = this.ctx.currentTime;
-        this.musicGain.gain.cancelScheduledValues(t);
-        this.musicGain.gain.setValueAtTime(this.musicGain.gain.value, t);
-        this.musicGain.gain.linearRampToValueAtTime(1.0, t + 0.3);
+        if (this._audioElement) {
+            // Fade in MP3 volume back to 0.35
+            this._audioElement.volume = 0;
+            this._audioElement.play().catch(() => {});
+            const audio = this._audioElement;
+            const target = 0.35;
+            const step = target / 15;
+            const fade = setInterval(() => {
+                if (audio.volume < target - step) { audio.volume = Math.min(target, audio.volume + step); }
+                else { audio.volume = target; clearInterval(fade); }
+            }, 20);
+        } else if (this.ctx && this.musicGain) {
+            // Fade in Web Audio (arcade)
+            const t = this.ctx.currentTime;
+            this.musicGain.gain.cancelScheduledValues(t);
+            this.musicGain.gain.setValueAtTime(this.musicGain.gain.value, t);
+            this.musicGain.gain.linearRampToValueAtTime(1.0, t + 0.3);
+        }
     },
 };
 
