@@ -5630,6 +5630,123 @@ const CODE_CHALLENGES = [
     },
 ];
 
+// ---- challenge scale tracks (Apple/Nubank) ----
+const SCALE_MISSIONS = {
+    code_var: {
+        requiredValidations: 3,
+        mentor: 'STEVE JOBS',
+        steps: [
+            {
+                name: 'Base funcional',
+                objective: 'Monte a versao base com tipos primitivos e 4 prints.',
+            },
+            {
+                name: 'Modularizacao',
+                objective: 'Expanda para um metodo static void printProfile(...) e chame esse metodo no main.',
+                validator(code) {
+                    if (!/static\s+void\s+printProfile\s*\(/.test(code)) {
+                        return { ok: false, msg: 'Apple 2/3: crie o metodo static void printProfile(...).' };
+                    }
+                    const occurrences = (code.match(/printProfile\s*\(/g) || []).length;
+                    if (occurrences < 2) {
+                        return { ok: false, msg: 'Apple 2/3: alem de declarar printProfile, faca a chamada dentro do main.' };
+                    }
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (APPLE 2/3):\n1. Saia do codigo monolitico no main.\n2. Extraia um metodo para encapsular a impressao.\n3. Chame esse metodo com os dados tipados.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class Variables {\n    static void printProfile(int idade, double salario, String nome, boolean ativo) {\n        System.out.println(idade);\n        System.out.println(salario);\n        System.out.println(nome);\n        System.out.println(ativo);\n    }\n\n    public static void main(String[] args) {\n        int idade = 20;\n        double salario = 3500.50;\n        String nome = "Dev";\n        boolean ativo = true;\n\n        printProfile(idade, salario, nome, ativo);\n    }\n}'
+            },
+            {
+                name: 'Seguranca e padrao',
+                objective: 'Expanda para padrao seguro: use constantes final e validacao de idade antes de imprimir.',
+                validator(code) {
+                    if (!/final\s+int\s+\w+\s*=/.test(code)) {
+                        return { ok: false, msg: 'Apple 3/3: adicione pelo menos uma constante final para padrao seguro.' };
+                    }
+                    if (!/if\s*\(\s*\w+\s*<\s*0\s*\)/.test(code)) {
+                        return { ok: false, msg: 'Apple 3/3: valide idade negativa com if (idade < 0).' };
+                    }
+                    if (!/(throw\s+new\s+IllegalArgumentException|return;)/.test(code)) {
+                        return { ok: false, msg: 'Apple 3/3: trate o caso invalido com throw ou return defensivo.' };
+                    }
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (APPLE 3/3):\n1. Defina constantes final para contratos de negocio.\n2. Valide idade/salario antes da saida.\n3. Falhe de forma segura quando dado invalido.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class Variables {\n    static final int IDADE_MINIMA = 0;\n    static final double SALARIO_MINIMO = 0.0;\n\n    static void printProfile(int idade, double salario, String nome, boolean ativo) {\n        if (idade < IDADE_MINIMA) {\n            throw new IllegalArgumentException("idade invalida");\n        }\n        if (salario < SALARIO_MINIMO) {\n            throw new IllegalArgumentException("salario invalido");\n        }\n\n        System.out.println(idade);\n        System.out.println(salario);\n        System.out.println(nome);\n        System.out.println(ativo);\n    }\n\n    public static void main(String[] args) {\n        int idade = 20;\n        double salario = 3500.50;\n        String nome = "Dev";\n        boolean ativo = true;\n\n        printProfile(idade, salario, nome, ativo);\n    }\n}'
+            },
+        ],
+    },
+    code_fizzbuzz: {
+        requiredValidations: 5,
+        mentor: 'DAVID VELEZ',
+        steps: [
+            {
+                name: 'Base funcional',
+                objective: 'Monte o FizzBuzz base funcionando para 1..15.',
+            },
+            {
+                name: 'Parametrizacao',
+                objective: 'Expanda com variavel limite e use esse limite no for.',
+                validator(code) {
+                    if (!/int\s+limite\s*=/.test(code)) {
+                        return { ok: false, msg: 'Nubank 2/5: declare int limite = ... para parametrizar o range.' };
+                    }
+                    if (!/for\s*\([^;]*;[^;]*<=\s*limite\s*;/.test(code)) {
+                        return { ok: false, msg: 'Nubank 2/5: use a variavel limite na condicao do for.' };
+                    }
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (NUBANK 2/5):\n1. Tire numero magico do for.\n2. Use limite como parametro de escala.\n3. Mantenha regra de negocio intacta.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class FizzBuzz {\n    public static void main(String[] args) {\n        int limite = 15;\n        for (int i = 1; i <= limite; i++) {\n            if (i % 3 == 0 && i % 5 == 0) {\n                System.out.println("FizzBuzz");\n            } else if (i % 3 == 0) {\n                System.out.println("Fizz");\n            } else if (i % 5 == 0) {\n                System.out.println("Buzz");\n            } else {\n                System.out.println(i);\n            }\n        }\n    }\n}'
+            },
+            {
+                name: 'Metodo de dominio',
+                objective: 'Expanda para static String classify(int n) e chame no loop.',
+                validator(code) {
+                    if (!/static\s+String\s+classify\s*\(\s*int\s+\w+\s*\)/.test(code)) {
+                        return { ok: false, msg: 'Nubank 3/5: extraia a regra para static String classify(int n).' };
+                    }
+                    const directPrint = /System\s*\.\s*out\s*\.\s*println\s*\(\s*classify\s*\(\s*\w+\s*\)\s*\)/.test(code);
+                    const viaEmit = /emit\s*\(\s*classify\s*\(\s*\w+\s*\)\s*\)/.test(code);
+                    if (!directPrint && !viaEmit) {
+                        return { ok: false, msg: 'Nubank 3/5: use classify(i) dentro do loop (println(classify(i)) ou emit(classify(i))).' };
+                    }
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (NUBANK 3/5):\n1. Separe regra de negocio da camada de exibicao.\n2. classify(int n) decide Fizz/Buzz/FizzBuzz.\n3. main apenas orquestra o fluxo.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class FizzBuzz {\n    static String classify(int n) {\n        if (n % 3 == 0 && n % 5 == 0) return "FizzBuzz";\n        if (n % 3 == 0) return "Fizz";\n        if (n % 5 == 0) return "Buzz";\n        return String.valueOf(n);\n    }\n\n    public static void main(String[] args) {\n        int limite = 15;\n        for (int i = 1; i <= limite; i++) {\n            System.out.println(classify(i));\n        }\n    }\n}'
+            },
+            {
+                name: 'Camada de saida',
+                objective: 'Expanda para static void emit(String out) e passe a imprimir via emit(...).',
+                validator(code) {
+                    if (!/static\s+void\s+emit\s*\(\s*String\s+\w+\s*\)/.test(code)) {
+                        return { ok: false, msg: 'Nubank 4/5: crie static void emit(String out) para centralizar output.' };
+                    }
+                    if (!/emit\s*\(\s*classify\s*\(\s*\w+\s*\)\s*\)/.test(code) && !/emit\s*\(\s*\w+\s*\)/.test(code)) {
+                        return { ok: false, msg: 'Nubank 4/5: use emit(...) no loop para publicar a saida.' };
+                    }
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (NUBANK 4/5):\n1. Centralize output para reduzir duplicacao.\n2. main chama emit(...) e nao println direto.\n3. Fica pronto para trocar console por log/telemetria depois.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class FizzBuzz {\n    static String classify(int n) {\n        if (n % 3 == 0 && n % 5 == 0) return "FizzBuzz";\n        if (n % 3 == 0) return "Fizz";\n        if (n % 5 == 0) return "Buzz";\n        return String.valueOf(n);\n    }\n\n    static void emit(String out) {\n        System.out.println(out);\n    }\n\n    public static void main(String[] args) {\n        int limite = 15;\n        for (int i = 1; i <= limite; i++) {\n            emit(classify(i));\n        }\n    }\n}'
+            },
+            {
+                name: 'Observabilidade',
+                objective: 'Expanda com contadores e resumo final de execucao.',
+                validator(code) {
+                    if (!/int\s+countFizz\b/.test(code) || !/int\s+countBuzz\b/.test(code) || !/int\s+countFizzBuzz\b/.test(code)) {
+                        return { ok: false, msg: 'Nubank 5/5: declare countFizz, countBuzz e countFizzBuzz.' };
+                    }
+                    if (!/countFizz\s*\+\+/.test(code) || !/countBuzz\s*\+\+/.test(code) || !/countFizzBuzz\s*\+\+/.test(code)) {
+                        return { ok: false, msg: 'Nubank 5/5: incremente os contadores durante o loop.' };
+                    }
+                    if (!/System\s*\.\s*out\s*\.\s*println\s*\(\s*"Resumo/.test(code)) {
+                        return { ok: false, msg: 'Nubank 5/5: imprima um resumo final com os contadores.' };
+                    }
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (NUBANK 5/5):\n1. Adicione observabilidade para operacao segura.\n2. Conte cada tipo de evento durante o loop.\n3. Publique resumo final para auditoria.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class FizzBuzz {\n    static String classify(int n) {\n        if (n % 3 == 0 && n % 5 == 0) return "FizzBuzz";\n        if (n % 3 == 0) return "Fizz";\n        if (n % 5 == 0) return "Buzz";\n        return String.valueOf(n);\n    }\n\n    static void emit(String out) {\n        System.out.println(out);\n    }\n\n    public static void main(String[] args) {\n        int limite = 15;\n        int countFizz = 0, countBuzz = 0, countFizzBuzz = 0, countNumero = 0;\n\n        for (int i = 1; i <= limite; i++) {\n            String out = classify(i);\n            if ("FizzBuzz".equals(out)) countFizzBuzz++;\n            else if ("Fizz".equals(out)) countFizz++;\n            else if ("Buzz".equals(out)) countBuzz++;\n            else countNumero++;\n\n            emit(out);\n        }\n\n        System.out.println("Resumo -> FizzBuzz: " + countFizzBuzz\n            + ", Fizz: " + countFizz\n            + ", Buzz: " + countBuzz\n            + ", Numero: " + countNumero);\n    }\n}'
+            },
+        ],
+    },
+};
+
 /**
  * Maps stage name to index for challenge progression.
  */
@@ -5642,6 +5759,10 @@ const IDE = {
     _attempts: 0,
     _maxAttempts: 5,
     _solved: false,
+    _scalePlan: null,
+    _scalePasses: 0,
+    _scaleLastCode: '',
+    _baseChallengeDesc: '',
 
     _selectChallenge(stage, region) {
         // Find a challenge matching the NPC's region (1 unique challenge per company)
@@ -5659,6 +5780,64 @@ const IDE = {
         }
         if (!challenge) challenge = CODE_CHALLENGES[0];
         return challenge;
+    },
+
+    _isScalingActive() {
+        return !!(this._scalePlan && this._scalePlan.requiredValidations > 1);
+    },
+
+    _getScaleStep() {
+        if (!this._isScalingActive()) return null;
+        const idx = Math.min(this._scalePasses, this._scalePlan.steps.length - 1);
+        return this._scalePlan.steps[idx] || null;
+    },
+
+    _getScaleProgressLabel() {
+        if (!this._isScalingActive()) return '';
+        return (this._scalePasses + 1) + '/' + this._scalePlan.requiredValidations;
+    },
+
+    _refreshScaleUI() {
+        if (!this._currentChallenge) return;
+        const descEl = document.getElementById('ideChallengeDesc');
+        const conceptEl = document.getElementById('ideConceptTag');
+
+        if (!this._isScalingActive()) {
+            if (descEl) descEl.textContent = this._baseChallengeDesc || this._currentChallenge.description || '---';
+            if (conceptEl) conceptEl.textContent = this._currentChallenge.concept || '---';
+            return;
+        }
+
+        const step = this._getScaleStep();
+        const progress = this._getScaleProgressLabel();
+        const objective = step && step.objective ? step.objective : 'Evolua o codigo para a proxima fase.';
+        if (descEl) {
+            descEl.textContent = (this._baseChallengeDesc || this._currentChallenge.description || '') +
+                '\n\nESCALABILIDADE ' + progress + ': ' + objective;
+        }
+        if (conceptEl) {
+            conceptEl.textContent = (this._currentChallenge.concept || '---') + ' | ESCALA ' + progress;
+        }
+    },
+
+    _getCurrentHelpText() {
+        const ch = this._currentChallenge;
+        if (!ch) return '---';
+        if (this._isScalingActive()) {
+            const step = this._getScaleStep();
+            if (step && step.helpText) return step.helpText;
+        }
+        return ch.helpText || '---';
+    },
+
+    _getCurrentHelpMentor() {
+        const ch = this._currentChallenge;
+        if (this._isScalingActive() && this._scalePlan && this._scalePlan.mentor) {
+            return this._scalePlan.mentor;
+        }
+        if (ch && ch.helpMentor) return ch.helpMentor;
+        if (this._currentNpc && this._currentNpc.name) return this._currentNpc.name;
+        return 'MENTOR';
     },
 
     _attemptCoachMessage(challenge, attempts) {
@@ -5700,6 +5879,10 @@ const IDE = {
         this._currentNpc = npc || null;
         this._attempts = 0;
         this._solved = false;
+        this._scalePlan = SCALE_MISSIONS[challenge.id] || null;
+        this._scalePasses = 0;
+        this._scaleLastCode = '';
+        this._baseChallengeDesc = challenge.description || '';
 
         // Populate UI
         document.getElementById('ideFileName').textContent = challenge.fileName;
@@ -5707,8 +5890,7 @@ const IDE = {
         document.getElementById('ideStage').textContent = IDE_STAGE_PT[stage] || stage.toUpperCase();
         document.getElementById('ideSideFileName').textContent = challenge.fileName;
         document.getElementById('ideChallengeTitle').textContent = challenge.title;
-        document.getElementById('ideChallengeDesc').textContent = challenge.description;
-        document.getElementById('ideConceptTag').textContent = challenge.concept;
+        this._refreshScaleUI();
         document.getElementById('ideCodeInput').value = challenge.starterCode || '';
         document.getElementById('ideCodeInput').placeholder = '// Escreva seu código ' + challenge.language.toUpperCase() + ' aqui...';
         document.getElementById('ideSkipBtn').style.display = 'none';
@@ -5722,7 +5904,15 @@ const IDE = {
         // Terminal reset
         document.getElementById('ideTermOutput').innerHTML = '<span class="ide-prompt">&gt;</span> Aguardando código...\n<span class="ide-term-info">Desafio: ' + challenge.title + '</span>\n<span class="ide-term-info">Conceito: ' + challenge.concept + '</span>';
         const termStatus = document.getElementById('ideTermStatus');
-        termStatus.textContent = 'Pronto';
+        if (this._isScalingActive()) {
+            const step = this._getScaleStep();
+            const term = document.getElementById('ideTermOutput');
+            term.innerHTML += '\n<span class="ide-term-info">Escalonamento ativo: ' + this._scalePlan.requiredValidations + ' validacoes obrigatorias nesta empresa.</span>';
+            term.innerHTML += '\n<span class="ide-term-info">Fase ' + this._getScaleProgressLabel() + ': ' + (step ? step.objective : 'Evolua o codigo.') + '</span>';
+            termStatus.textContent = 'Escala ' + this._getScaleProgressLabel();
+        } else {
+            termStatus.textContent = 'Pronto';
+        }
         termStatus.className = 'ide-terminal-status';
 
         // Line numbers sync
@@ -5813,12 +6003,48 @@ const IDE = {
         // Compile check
         term.innerHTML += '\n<span class="ide-prompt">&gt;</span> javac ' + ch.fileName + '\n';
 
-        const result = ch.validator(code);
+        let result = ch.validator(code);
+        if (result.ok && this._isScalingActive()) {
+            const progress = this._getScaleProgressLabel();
+            if (this._scalePasses > 0 && code === this._scaleLastCode) {
+                result = {
+                    ok: false,
+                    msg: 'Escala ' + progress + ': expanda o codigo antes de validar novamente. Nao repita exatamente a mesma versao.',
+                };
+            } else {
+                const step = this._getScaleStep();
+                if (step && typeof step.validator === 'function') {
+                    const stepResult = step.validator(code);
+                    if (!stepResult.ok) result = stepResult;
+                }
+            }
+        }
 
         if (result.ok) {
             term.innerHTML += '<span class="ide-term-success">Compilation successful.</span>\n';
             term.innerHTML += '<span class="ide-prompt">&gt;</span> java ' + ch.fileName.replace('.java', '') + '\n';
             term.innerHTML += '<span class="ide-term-success">' + result.msg + '</span>';
+            if (this._isScalingActive()) {
+                this._scalePasses += 1;
+                this._scaleLastCode = code;
+                const required = this._scalePlan.requiredValidations;
+                const finishedScaling = this._scalePasses >= required;
+
+                if (!finishedScaling) {
+                    const nextStep = this._getScaleStep();
+                    term.innerHTML += '\n\n<span class="ide-term-success">FASE VALIDADA (' + this._scalePasses + '/' + required + ').</span>';
+                    term.innerHTML += '\n<span class="ide-term-info">Proxima expansao: ' + (nextStep ? nextStep.objective : 'Evolua o codigo.') + '</span>';
+                    term.innerHTML += '\n<span class="ide-term-info">Use VER SOLUCAO para a cola da proxima fase.</span>';
+                    termStatus.textContent = 'Escala ' + this._getScaleProgressLabel();
+                    termStatus.className = 'ide-terminal-status';
+                    this._refreshScaleUI();
+                    SFX.correct();
+                    term.scrollTop = term.scrollHeight;
+                    return;
+                }
+
+                term.innerHTML += '\n\n<span class="ide-term-success">ESCALABILIDADE CONCLUIDA (' + required + '/' + required + ').</span>';
+            }
             term.innerHTML += '\n\n<span class="ide-term-success">DESAFIO COMPLETO! Código validado com sucesso.</span>';
             termStatus.textContent = 'Compilacao OK';
             termStatus.className = 'ide-terminal-status';
@@ -5863,8 +6089,8 @@ const IDE = {
         const ch = this._currentChallenge;
         if (!ch) return;
 
-        document.getElementById('ideHelpMentor').textContent = ch.helpMentor;
-        document.getElementById('ideHelpContent').textContent = ch.helpText;
+        document.getElementById('ideHelpMentor').textContent = this._getCurrentHelpMentor();
+        document.getElementById('ideHelpContent').textContent = this._getCurrentHelpText();
         document.getElementById('ideHelpOverlay').style.display = 'flex';
     },
 
@@ -5878,9 +6104,10 @@ const IDE = {
         term.innerHTML += '\n<span class="ide-term-warn">Desafio pulado. Estude o conceito para a próxima vez.</span>';
 
         // Show the correct answer in terminal as learning opportunity
-        if (this._currentChallenge && this._currentChallenge.helpText) {
+        const helpText = this._getCurrentHelpText();
+        if (this._currentChallenge && helpText) {
             term.innerHTML += '\n<span class="ide-term-info">--- SOLUCAO DE REFERENCIA ---</span>';
-            term.innerHTML += '\n<span class="ide-term-info">' + this._currentChallenge.helpText + '</span>';
+            term.innerHTML += '\n<span class="ide-term-info">' + helpText + '</span>';
         }
 
         if (State.lockedRegion) {
@@ -5898,6 +6125,10 @@ const IDE = {
         const regionBeingWorked = State.lockedRegion;
         this._currentChallenge = null;
         this._currentNpc = null;
+        this._scalePlan = null;
+        this._scalePasses = 0;
+        this._scaleLastCode = '';
+        this._baseChallengeDesc = '';
         State.isInChallenge = false;
         SFX.resumeMusic();
 
