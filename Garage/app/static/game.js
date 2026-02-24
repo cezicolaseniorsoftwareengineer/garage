@@ -900,6 +900,7 @@ const State = {
     isInDialog: false,
     isInChallenge: false,
     isBookPopup: false,
+    isInPrep: false,
     paused: false,
     interactionTarget: null,
     _pendingNpcRegion: null,
@@ -912,6 +913,11 @@ const State = {
     doorAnimBuilding: null,   // building being entered
     companyComplete: false,   // true when all challenges done in locked region
     completedRegions: [],     // list of fully completed region names
+    learning: {
+        stageBriefingsSeen: [],
+        companyPrepSeen: [],
+        livePrepSeen: [],
+    },
     _actionCooldownUntil: 0,  // timestamp: ignore action keys until this time
 };
 
@@ -1243,6 +1249,147 @@ const BOOKS_DATA = [
     },
 ];
 
+// ---- learning framework: stage mindset + java prep + live coding playbook ----
+const LEARNING_STAGE_ORDER = ['Intern', 'Junior', 'Mid', 'Senior', 'Staff', 'Principal', 'Distinguished'];
+const LEARNING_STAGE_PT = {
+    Intern: 'Estagiario',
+    Junior: 'Junior',
+    Mid: 'Pleno',
+    Senior: 'Senior',
+    Staff: 'Staff',
+    Principal: 'Principal',
+    Distinguished: 'CEO',
+};
+
+const LEARNING_STAGE_PROFILE = {
+    Intern: {
+        thinking: [
+            'Transformar o enunciado em passos pequenos e claros.',
+            'Nomear variaveis para explicar a intencao.',
+            'Validar o resultado com exemplos simples.',
+        ],
+        concerns: [
+            'Compilar sem erro de sintaxe.',
+            'Entender classe, metodo main e tipos primitivos.',
+            'Nao pular etapas do raciocinio.',
+        ],
+        javaFocus: [
+            'Estrutura: class + public static void main(String[] args).',
+            'Tipos primitivos e String com declaracao clara.',
+            'if/for com chaves e ; corretos.',
+        ],
+    },
+    Junior: {
+        thinking: [
+            'Escolher estrutura de dados antes de codar.',
+            'Quebrar o problema em funcoes/metodos pequenos.',
+            'Comparar alternativa simples vs alternativa eficiente.',
+        ],
+        concerns: [
+            'Legibilidade e padrao de codigo do time.',
+            'Complexidade O(n) vs O(n^2).',
+            'Cobrir casos de borda basicos.',
+        ],
+        javaFocus: [
+            'Classes e metodos com responsabilidade unica.',
+            'Colecoes basicas: Array, List, Map, Set.',
+            'Boas assinaturas de metodo e nomes consistentes.',
+        ],
+    },
+    Mid: {
+        thinking: [
+            'Modelar entrada, processamento e saida explicitamente.',
+            'Argumentar trade-off de memoria x tempo.',
+            'Explicar por que a solucao escala para n maior.',
+        ],
+        concerns: [
+            'Corretude em casos extremos.',
+            'Design OO com baixo acoplamento.',
+            'Padroes de iteracao e recursao sem bugs ocultos.',
+        ],
+        javaFocus: [
+            'Interfaces, composicao e polimorfismo pratico.',
+            'Collections e iteradores com uso correto.',
+            'Tratamento de null e contratos de metodo.',
+        ],
+    },
+    Senior: {
+        thinking: [
+            'Projetar para observabilidade e confiabilidade.',
+            'Antecipar falha, concorrencia e regressao.',
+            'Documentar decisao tecnica com criterio.',
+        ],
+        concerns: [
+            'Disponibilidade e performance sob carga.',
+            'Seguranca e consistencia de dados.',
+            'Testabilidade e manutencao futura.',
+        ],
+        javaFocus: [
+            'APIs coesas e contratos imutaveis quando possivel.',
+            'Uso consciente de concorrencia e colecoes.',
+            'Complexidade e custo operacional da solucao.',
+        ],
+    },
+    Staff: {
+        thinking: [
+            'Ajustar arquitetura para varios times simultaneos.',
+            'Definir guardrails tecnicos reutilizaveis.',
+            'Transformar padrao local em pratica organizacional.',
+        ],
+        concerns: [
+            'Padronizacao sem travar autonomia do time.',
+            'Escalabilidade de codigo e de processo.',
+            'Risco tecnico transversal entre servicos.',
+        ],
+        javaFocus: [
+            'Abstracoes estaveis para varios modulos.',
+            'Interfaces e contratos orientados a evolucao.',
+            'Decisoes de estrutura de dados guiadas por dominio.',
+        ],
+    },
+    Principal: {
+        thinking: [
+            'Resolver o problema sistemico, nao so o bug local.',
+            'Construir direcao tecnica para trimestres/anos.',
+            'Conectar engenharia, produto e risco regulatorio.',
+        ],
+        concerns: [
+            'Trade-off entre velocidade, qualidade e governanca.',
+            'Escala global, compliance e resiliencia.',
+            'Capacidade da arquitetura de sobreviver a mudancas.',
+        ],
+        javaFocus: [
+            'Boundary claro entre dominio e infraestrutura.',
+            'Padroes de design para evolucao longa.',
+            'Modelagem de dados orientada a invariantes.',
+        ],
+    },
+    Distinguished: {
+        thinking: [
+            'Definir visao tecnica da organizacao.',
+            'Elevar padrao de engenharia em toda empresa.',
+            'Garantir continuidade de conhecimento.',
+        ],
+        concerns: [
+            'Sustentabilidade tecnica de longo prazo.',
+            'Excelencia de engenharia em escala.',
+            'Formacao de liderancas tecnicas.',
+        ],
+        javaFocus: [
+            'Arquitetura de referencia para toda plataforma.',
+            'Decisoes tecnicas com impacto de negocio.',
+            'Qualidade sistemica fim a fim.',
+        ],
+    },
+};
+
+const LEARNING_CATEGORY_GUIDE = {
+    logic: 'Raciocinio passo a passo, condicoes e loops com ordem correta.',
+    architecture: 'Trade-off tecnico, desacoplamento e impacto em escala.',
+    domain_modeling: 'Classe, metodo e dados representando regras do negocio.',
+    distributed_systems: 'Latencia, falha parcial, consistencia e resiliencia.',
+};
+
 // ---- world engine (canvas side-scroller) ----
 const World = {
     canvas: null,
@@ -1366,6 +1513,15 @@ const World = {
     /* --- INPUT --- */
     setupInput() {
         document.addEventListener('keydown', e => {
+            const prepOpen = Learning.isOpen();
+            if (prepOpen) {
+                if (e.code === 'Enter' || e.code === 'Space' || e.key === 'Escape') {
+                    e.preventDefault();
+                    Learning.continue();
+                }
+                return;
+            }
+
             // If IDE overlay is open, let the textarea handle all input
             const ideOpen = document.getElementById('ideOverlay') && document.getElementById('ideOverlay').classList.contains('visible');
             if (ideOpen) return;
@@ -1401,6 +1557,8 @@ const World = {
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) e.preventDefault();
         });
         document.addEventListener('keyup', e => {
+            const prepOpen = Learning.isOpen();
+            if (prepOpen) return;
             const ideOpen = document.getElementById('ideOverlay') && document.getElementById('ideOverlay').classList.contains('visible');
             if (ideOpen) return;
             // Release keys even if metrics open, to avoid stuck keys
@@ -1411,7 +1569,7 @@ const World = {
         const hold = (id, code) => {
             const el = document.getElementById(id);
             if (!el) return;
-            const on = () => { if (State.paused) return; this.keys[code] = true; el.classList.add('pressed'); };
+            const on = () => { if (State.paused || State.isInPrep) return; this.keys[code] = true; el.classList.add('pressed'); };
             const off = () => { this.keys[code] = false; el.classList.remove('pressed'); };
             el.addEventListener('mousedown', on);
             el.addEventListener('mouseup', off);
@@ -1429,6 +1587,7 @@ const World = {
             const doAction = () => {
                 if (State.paused) return;
                 if (performance.now() < State._actionCooldownUntil) return;
+                if (Learning.isOpen()) { Learning.continue(); return; }
                 const promoVisible = document.getElementById('promotionOverlay').style.display === 'flex';
                 if (promoVisible) UI.hidePromotion();
                 else if (State.isBookPopup) this.closeBookPopup();
@@ -1486,7 +1645,7 @@ const World = {
     },
 
     tryInteract() {
-        if (State.isInChallenge || State.isInDialog || State.enteringDoor) return;
+        if (State.isInChallenge || State.isInDialog || State.enteringDoor || State.isInPrep) return;
         if (!State.interactionTarget) return;
         // If already locked in a company, prevent interaction with other NPCs
         if (State.lockedRegion && State.interactionTarget.region !== State.lockedRegion) {
@@ -1570,7 +1729,7 @@ const World = {
 
     /* --- PHYSICS & UPDATE --- */
     update(dt) {
-        if (State.isInDialog || State.isInChallenge || State.isBookPopup) return;
+        if (State.isInDialog || State.isInChallenge || State.isBookPopup || State.isInPrep) return;
 
         // Door enter animation
         if (State.enteringDoor) {
@@ -3010,6 +3169,9 @@ const World = {
 // ---- UI ----
 const UI = {
     showScreen(id) {
+        if (typeof Learning !== 'undefined' && Learning.isOpen() && id !== 'screen-world') {
+            Learning.cancel();
+        }
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         const el = document.getElementById(id);
         if (el) el.classList.add('active');
@@ -3899,6 +4061,372 @@ const UI = {
     },
 };
 
+const Learning = {
+    _pendingContinue: null,
+
+    _storageKey() {
+        if (!State.sessionId) return null;
+        return 'garage_learning_' + State.sessionId;
+    },
+
+    _safeArray(v) {
+        return Array.isArray(v) ? v.filter(Boolean) : [];
+    },
+
+    _sanitizeState(raw) {
+        const data = raw || {};
+        return {
+            stageBriefingsSeen: this._safeArray(data.stageBriefingsSeen),
+            companyPrepSeen: this._safeArray(data.companyPrepSeen),
+            livePrepSeen: this._safeArray(data.livePrepSeen),
+        };
+    },
+
+    _normalizeRegion(region) {
+        return (region || '').toString().trim().toUpperCase();
+    },
+
+    _pushUnique(list, value) {
+        if (!value) return;
+        if (!list.includes(value)) list.push(value);
+    },
+
+    _setFlags(open) {
+        State.isInPrep = open;
+        if (open && World.keys) {
+            World.keys['ArrowLeft'] = false;
+            World.keys['ArrowRight'] = false;
+            World.keys['ArrowUp'] = false;
+        }
+    },
+
+    _save() {
+        const key = this._storageKey();
+        if (!key) return;
+        try {
+            localStorage.setItem(key, JSON.stringify(State.learning));
+        } catch (_e) {
+            // best effort
+        }
+    },
+
+    _read() {
+        const key = this._storageKey();
+        if (!key) return null;
+        try {
+            const raw = localStorage.getItem(key);
+            if (!raw) return null;
+            return this._sanitizeState(JSON.parse(raw));
+        } catch (_e) {
+            return null;
+        }
+    },
+
+    _buildBootstrap(player, challenges) {
+        const base = this._sanitizeState({});
+        if (!player || !Array.isArray(challenges)) return base;
+
+        const completed = Array.isArray(player.completed_challenges) ? player.completed_challenges : [];
+        const totalAttempts = Number(player.total_attempts || 0);
+
+        if (completed.length > 0) {
+            const regionMap = {};
+            for (const c of challenges) {
+                if (!c.region || !c.id) continue;
+                if (!regionMap[c.region]) regionMap[c.region] = [];
+                regionMap[c.region].push(c.id);
+            }
+
+            const engagedRegions = new Set();
+            for (const c of challenges) {
+                if (c && c.region && completed.includes(c.id)) engagedRegions.add(c.region);
+            }
+            for (const region of engagedRegions) {
+                this._pushUnique(base.companyPrepSeen, region);
+            }
+
+            for (const [region, ids] of Object.entries(regionMap)) {
+                if (ids.length > 0 && ids.every(id => completed.includes(id))) {
+                    this._pushUnique(base.livePrepSeen, region);
+                }
+            }
+        }
+
+        if (totalAttempts > 0) {
+            const idx = LEARNING_STAGE_ORDER.indexOf(player.stage);
+            if (idx >= 0) {
+                for (let i = 0; i <= idx; i++) {
+                    this._pushUnique(base.stageBriefingsSeen, LEARNING_STAGE_ORDER[i]);
+                }
+            }
+        }
+        return base;
+    },
+
+    syncSessionState(player, challenges) {
+        const stored = this._read();
+        if (stored) {
+            State.learning = stored;
+            return;
+        }
+        State.learning = this._buildBootstrap(player, challenges);
+        this._save();
+    },
+
+    _escapeHtml(text) {
+        return String(text || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
+
+    _setList(id, items) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const safe = (Array.isArray(items) ? items : []).filter(Boolean);
+        el.innerHTML = safe.map(item => '<li>' + this._escapeHtml(item) + '</li>').join('');
+    },
+
+    isOpen() {
+        const overlay = document.getElementById('learningOverlay');
+        return !!(overlay && overlay.style.display === 'flex');
+    },
+
+    cancel() {
+        const overlay = document.getElementById('learningOverlay');
+        if (overlay) overlay.style.display = 'none';
+        this._pendingContinue = null;
+        this._setFlags(false);
+    },
+
+    continue() {
+        if (!this.isOpen()) return;
+        const cb = this._pendingContinue;
+        this.cancel();
+        if (cb) cb();
+    },
+
+    _showPanel(config, onContinue) {
+        const overlay = document.getElementById('learningOverlay');
+        if (!overlay) {
+            if (onContinue) onContinue();
+            return;
+        }
+
+        document.getElementById('learningChip').textContent = config.chip || 'PREPARACAO';
+        document.getElementById('learningStageLabel').textContent = config.stageLabel || '';
+        document.getElementById('learningTitle').textContent = config.title || '';
+        document.getElementById('learningSubtitle').textContent = config.subtitle || '';
+        document.getElementById('learningSecAHead').textContent = config.secAHead || '';
+        document.getElementById('learningSecBHead').textContent = config.secBHead || '';
+        document.getElementById('learningSecCHead').textContent = config.secCHead || '';
+        document.getElementById('learningWarmupText').textContent = config.warmup || '';
+
+        this._setList('learningSecAList', config.secAItems || []);
+        this._setList('learningSecBList', config.secBItems || []);
+        this._setList('learningSecCList', config.secCItems || []);
+
+        const btn = document.getElementById('learningContinueBtn');
+        if (btn) btn.onclick = () => this.continue();
+
+        this._pendingContinue = onContinue || null;
+        overlay.style.display = 'flex';
+        this._setFlags(true);
+        State._actionCooldownUntil = performance.now() + 400;
+    },
+
+    _normalizeText(value) {
+        return String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
+    },
+
+    _regionTopics(region) {
+        const regionChallenges = (State.challenges || []).filter(c => c.region === region);
+        if (regionChallenges.length === 0) return ['Foco: leitura do problema e construcao de solucao incremental.'];
+        const categories = [...new Set(regionChallenges.map(c => c.category))];
+        return categories
+            .map(cat => LEARNING_CATEGORY_GUIDE[cat])
+            .filter(Boolean)
+            .slice(0, 3);
+    },
+
+    _buildLiveCodingPlan(challenge) {
+        const concept = this._normalizeText(challenge && challenge.concept);
+        if (concept.includes('hash')) {
+            return [
+                'Escolha Map/Set e defina a chave certa antes de codar.',
+                'Faca uma passada principal e use lookup O(1).',
+                'Valide duplicata, colisao logica e caso nao encontrado.',
+            ];
+        }
+        if (concept.includes('stack') || concept.includes('lifo') || concept.includes('bracket')) {
+            return [
+                'Defina claramente push/pop e o estado inicial da pilha.',
+                'Para cada entrada, atualize estado e valide imediatamente.',
+                'No final, confirme se a pilha ficou no estado esperado.',
+            ];
+        }
+        if (concept.includes('queue') || concept.includes('fifo')) {
+            return [
+                'Defina ordem de entrada e ordem de consumo.',
+                'Use while com condicao de parada explicita.',
+                'Garanta que a fila termina vazia no cenario final.',
+            ];
+        }
+        if (concept.includes('binary') || concept.includes('log n')) {
+            return [
+                'Confirme pre-condicao: estrutura ordenada.',
+                'Atualize low/high sem perder o caso de igualdade.',
+                'Pare quando low > high e retorne fallback correto.',
+            ];
+        }
+        if (concept.includes('sort') || concept.includes('merge')) {
+            return [
+                'Separe fase de dividir e fase de combinar.',
+                'Mantenha indices consistentes em toda iteracao.',
+                'Teste com entrada pequena e elementos repetidos.',
+            ];
+        }
+        if (concept.includes('grafo') || concept.includes('graph') || concept.includes('bfs')) {
+            return [
+                'Declare estrutura de vizinhos e set de visitados.',
+                'Inicialize fila com no inicial antes do loop.',
+                'Marque visitado no momento certo para evitar repeticao.',
+            ];
+        }
+        if (concept.includes('dinamica') || concept.includes('kadane') || concept.includes('subproblemas')) {
+            return [
+                'Defina o estado minimo que precisa ser carregado.',
+                'Escreva a recorrencia em frase antes do codigo.',
+                'Itere com base cases claros e atualizacao deterministica.',
+            ];
+        }
+        if (concept.includes('arvore') || concept.includes('tree') || concept.includes('ponteiro') || concept.includes('pointer')) {
+            return [
+                'Desenhe mentalmente um exemplo pequeno de nos.',
+                'Defina caso base para null/folha primeiro.',
+                'Aplique transformacao e avance ponteiros sem perder referencia.',
+            ];
+        }
+        return [
+            'Traduzir enunciado para entrada, processamento e saida.',
+            'Implementar versao simples primeiro e validar.',
+            'Refinar para legibilidade e complexidade esperada.',
+        ];
+    },
+
+    showStageBriefingIfNeeded(stage, onContinue) {
+        const normalizedStage = stage || 'Intern';
+        if (State.learning.stageBriefingsSeen.includes(normalizedStage)) {
+            if (onContinue) onContinue();
+            return false;
+        }
+
+        const profile = LEARNING_STAGE_PROFILE[normalizedStage] || LEARNING_STAGE_PROFILE.Intern;
+        this._showPanel({
+            chip: 'MENTALIDADE DE CARREIRA',
+            stageLabel: LEARNING_STAGE_PT[normalizedStage] || normalizedStage,
+            title: 'Como pensa um engenheiro ' + (LEARNING_STAGE_PT[normalizedStage] || normalizedStage),
+            subtitle: 'Antes de codar, alinhe o modo de raciocinio esperado neste nivel.',
+            secAHead: 'Forma de pensar',
+            secAItems: profile.thinking || [],
+            secBHead: 'Principais preocupacoes',
+            secBItems: profile.concerns || [],
+            secCHead: 'Base Java deste nivel',
+            secCItems: profile.javaFocus || [],
+            warmup: 'Warm-up: explique em voz alta o plano antes de tocar no teclado. Engenheiro forte pensa primeiro, digita depois.',
+        }, () => {
+            this._pushUnique(State.learning.stageBriefingsSeen, normalizedStage);
+            this._save();
+            if (onContinue) onContinue();
+        });
+        return true;
+    },
+
+    showCompanyPrepIfNeeded(region, npc, onContinue) {
+        if (!region) {
+            if (onContinue) onContinue();
+            return false;
+        }
+
+        const regionKey = this._normalizeRegion(region);
+        const alreadySeen = State.learning.companyPrepSeen.some(r => this._normalizeRegion(r) === regionKey);
+        if (alreadySeen) {
+            if (onContinue) onContinue();
+            return false;
+        }
+
+        const stage = (State.player && State.player.stage) || (npc && npc.stage) || 'Intern';
+        const profile = LEARNING_STAGE_PROFILE[stage] || LEARNING_STAGE_PROFILE.Intern;
+        const topics = this._regionTopics(region);
+
+        this._showPanel({
+            chip: 'PREPARACAO DE EMPRESA',
+            stageLabel: (npc && npc.name) ? npc.name : (LEARNING_STAGE_PT[stage] || stage),
+            title: 'Briefing tecnico: ' + region,
+            subtitle: 'Voce vai resolver teoria + codigo. Prepare a mente antes de entrar na execucao.',
+            secAHead: 'Mapa mental para esta fase',
+            secAItems: profile.thinking || [],
+            secBHead: 'Sintaxe Java para revisar antes',
+            secBItems: profile.javaFocus || [],
+            secCHead: 'Topicos desta empresa',
+            secCItems: topics,
+            warmup: 'Warm-up: defina em uma frase qual estrutura de dados voce pretende usar e por que ela reduz custo.',
+        }, () => {
+            this._pushUnique(State.learning.companyPrepSeen, region);
+            this._save();
+            if (onContinue) onContinue();
+        });
+        return true;
+    },
+
+    showLiveCodingPrepIfNeeded(region, challenge, onContinue) {
+        if (!region || !challenge) {
+            if (onContinue) onContinue();
+            return false;
+        }
+
+        const regionKey = this._normalizeRegion(region);
+        const alreadySeen = State.learning.livePrepSeen.some(r => this._normalizeRegion(r) === regionKey);
+        if (alreadySeen) {
+            if (onContinue) onContinue();
+            return false;
+        }
+
+        const stage = (State.player && State.player.stage) || challenge.stage || 'Intern';
+        const profile = LEARNING_STAGE_PROFILE[stage] || LEARNING_STAGE_PROFILE.Intern;
+        const expectedClass = (challenge.fileName || 'Main.java').replace('.java', '');
+        const plan = this._buildLiveCodingPlan(challenge);
+
+        this._showPanel({
+            chip: 'PRE-LIVE CODING',
+            stageLabel: challenge.title || 'Desafio de codigo',
+            title: 'Roteiro de execucao antes da IDE',
+            subtitle: 'Meta: entrar no live coding com estrategia, nao no improviso.',
+            secAHead: 'Checklist de sintaxe Java',
+            secAItems: [
+                'Classe publica com nome exato: ' + expectedClass + '.',
+                'main/metodo com assinatura valida e chaves balanceadas.',
+                '; no fim de declaracoes e uso coerente de tipos.',
+            ],
+            secBHead: 'Plano de algoritmo',
+            secBItems: plan,
+            secCHead: 'Visao de engenharia do nivel',
+            secCItems: profile.concerns || [],
+            warmup: 'Warm-up: faca um dry-run manual com um exemplo e escreva a saida esperada antes de clicar EXECUTAR.',
+        }, () => {
+            this._pushUnique(State.learning.livePrepSeen, region);
+            this._save();
+            if (onContinue) onContinue();
+        });
+        return true;
+    },
+};
+
 /**
  * Reconstruct State.completedRegions from server data.
  * A region is considered complete when all its theory challenges are in completed_challenges.
@@ -3946,10 +4474,12 @@ const Game = {
             localStorage.setItem('garage_session_id', data.session_id);
 
             State.challenges = await API.get('/api/challenges');
+            Learning.syncSessionState(State.player, State.challenges);
 
             World.init(av.index);
             UI.updateHUD(State.player);
             UI.showScreen('screen-world');
+            Learning.showStageBriefingIfNeeded(State.player.stage);
         } catch (e) { alert('Erro: ' + e.message); }
     },
 
@@ -3960,11 +4490,13 @@ const Game = {
             State.player = await API.get('/api/session/' + id);
             State.sessionId = id;
             State.challenges = await API.get('/api/challenges');
+            Learning.syncSessionState(State.player, State.challenges);
             World.init(State.player.character ? State.player.character.avatar_index : 0);
             State.avatarIndex = State.player.character ? State.player.character.avatar_index : 0;
             _reconstructCompletedRegions();
             UI.updateHUD(State.player);
             UI.showScreen('screen-world');
+            if (!silent) Learning.showStageBriefingIfNeeded(State.player.stage);
 
             // Victory fires ONLY when all 24 companies are fully complete
             if (_allCompaniesComplete()) {
@@ -3984,7 +4516,15 @@ const Game = {
         }
     },
 
-    async enterRegion(regionId) {
+    async enterRegion(regionId, opts = {}) {
+        if (!opts.skipPrep) {
+            const npcForPrep = NPC_DATA.find(n => n.region === regionId);
+            const opened = Learning.showCompanyPrepIfNeeded(regionId, npcForPrep, () => {
+                Game.enterRegion(regionId, { skipPrep: true });
+            });
+            if (opened) return;
+        }
+
         const next = State.challenges.filter(c => c.region === regionId)
             .find(c => !State.player.completed_challenges.includes(c.id));
         if (!next) {
@@ -4067,14 +4607,15 @@ const Game = {
 
         if (pending && pending.type === 'open_ide') {
             UI.hideChallenge();
+            const openIde = () => IDE.open(pending.npc);
             if (pending.promotion && pending.promotion.new_stage) {
                 // All promotions (including Distinguished/CEO) show overlay then open IDE
                 UI.showPromotion(pending.promotion.new_stage, pending.promotion.promotion_message, () => {
-                    IDE.open(pending.npc);
+                    Learning.showStageBriefingIfNeeded(pending.promotion.new_stage, openIde);
                 });
                 return;
             }
-            IDE.open(pending.npc);
+            openIde();
             return;
         }
 
@@ -4083,14 +4624,17 @@ const Game = {
             State.challenges = await API.get('/api/challenges');
             UI.updateHUD(State.player);
             UI.hideChallenge();
+            const continueTheory = () => {
+                if (pending.region) Game.enterRegion(pending.region);
+            };
             if (pending.promotion && pending.promotion.new_stage) {
                 // All promotions (including Distinguished/CEO) show overlay then continue
                 UI.showPromotion(pending.promotion.new_stage, pending.promotion.promotion_message, () => {
-                    if (pending.region) Game.enterRegion(pending.region);
+                    Learning.showStageBriefingIfNeeded(pending.promotion.new_stage, continueTheory);
                 });
                 return;
             }
-            if (pending.region) Game.enterRegion(pending.region);
+            continueTheory();
             return;
         }
 
@@ -4120,6 +4664,7 @@ const Game = {
             State.player = data.player;
             localStorage.setItem('garage_session_id', data.session_id);
             State.challenges = await API.get('/api/challenges');
+            Learning.syncSessionState(State.player, State.challenges);
             State._pendingAfterFeedback = null;
             State.currentChallenge = null;
             State.completedRegions = [];
@@ -4129,6 +4674,7 @@ const Game = {
             World.init(State.avatarIndex || 0);
             UI.updateHUD(State.player);
             UI.showScreen('screen-world');
+            Learning.showStageBriefingIfNeeded(State.player.stage);
         } catch (e) { alert('Erro ao reiniciar: ' + e.message); }
     },
 
@@ -4137,7 +4683,7 @@ const Game = {
         const worldActive = document.getElementById('screen-world') &&
             document.getElementById('screen-world').classList.contains('active');
         if (!worldActive) return;
-        if (State.isInChallenge || State.isInDialog || State.isBookPopup) return;
+        if (State.isInChallenge || State.isInDialog || State.isBookPopup || State.isInPrep) return;
         if (State.paused) return;
 
         State.paused = true;
@@ -5097,13 +5643,7 @@ const IDE = {
     _maxAttempts: 5,
     _solved: false,
 
-    /**
-     * Opens the IDE overlay with a coding challenge appropriate for the player stage.
-     * Called after the theory challenge is answered correctly.
-     */
-    open(npc) {
-        const stage = State.player ? State.player.stage : 'Intern';
-        const region = npc ? npc.region : null;
+    _selectChallenge(stage, region) {
         // Find a challenge matching the NPC's region (1 unique challenge per company)
         let challenge = region ? CODE_CHALLENGES.find(c => c.region === region) : null;
         if (!challenge) {
@@ -5118,6 +5658,43 @@ const IDE = {
             }
         }
         if (!challenge) challenge = CODE_CHALLENGES[0];
+        return challenge;
+    },
+
+    _attemptCoachMessage(challenge, attempts) {
+        const title = (challenge && challenge.title) ? challenge.title : 'este desafio';
+        if (attempts <= 1) {
+            return 'Coach: revise assinatura da classe/metodo em "' + title + '" antes de ajustar algoritmo.';
+        }
+        if (attempts === 2) {
+            return 'Coach: faca dry-run com um exemplo pequeno e confirme cada variavel a cada passo.';
+        }
+        if (attempts === 3) {
+            return 'Coach: quebre o problema em 3 blocos -> entrada, processamento e saida.';
+        }
+        if (attempts === 4) {
+            return 'Coach: valide caso de borda (vazio, unico elemento, limite superior).';
+        }
+        return 'Coach: compare sua versao com o objetivo do enunciado e simplifique o fluxo principal.';
+    },
+
+    /**
+     * Opens the IDE overlay with a coding challenge appropriate for the player stage.
+     * Called after the theory challenge is answered correctly.
+     */
+    open(npc, opts = {}) {
+        const stage = State.player ? State.player.stage : 'Intern';
+        const region = npc ? npc.region : null;
+        const selected = opts.preselectedChallenge || this._selectChallenge(stage, region);
+        const challenge = selected || CODE_CHALLENGES[0];
+
+        if (!opts.skipPrep) {
+            const prepRegion = region || challenge.region || '';
+            const opened = Learning.showLiveCodingPrepIfNeeded(prepRegion, challenge, () => {
+                IDE.open(npc, { skipPrep: true, preselectedChallenge: challenge });
+            });
+            if (opened) return;
+        }
 
         this._currentChallenge = challenge;
         this._currentNpc = npc || null;
@@ -5270,6 +5847,7 @@ const IDE = {
             termStatus.textContent = 'Erro na Compilacao';
             termStatus.className = 'ide-terminal-status error';
             SFX.wrong();
+            term.innerHTML += '\n<span class="ide-term-info">' + this._attemptCoachMessage(ch, this._attempts) + '</span>';
 
             // After 3 failed attempts, show skip button
             if (this._attempts >= 3) {
@@ -5644,6 +6222,9 @@ const Auth = {
             const po = document.getElementById('pauseOverlay');
             if (po) po.style.display = 'none';
         }
+        if (typeof Learning !== 'undefined' && Learning.isOpen()) {
+            Learning.cancel();
+        }
         this._user = null;
         this._token = null;
         this._refreshToken = null;
@@ -5679,6 +6260,9 @@ const Auth = {
     },
 
     handleExpired() {
+        if (typeof Learning !== 'undefined' && Learning.isOpen()) {
+            Learning.cancel();
+        }
         this._user = null;
         this._token = null;
         this._refreshToken = null;
