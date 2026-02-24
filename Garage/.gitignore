@@ -1,0 +1,30 @@
+# Environment variables with secrets
+.env
+.env.local
+.env.*.local
+
+# Python cache / venv
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local data
+data/
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

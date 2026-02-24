@@ -69,8 +69,17 @@ class PlayerRepository:
                 **player.to_dict(),
                 "attempts": [a.to_dict() for a in player.attempts],
             }
-        with open(self._data_path, "w", encoding="utf-8") as f:
+        # Write atomically: write to tempfile then replace
+        tmp_path = f"{self._data_path}.tmp"
+        with open(tmp_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
+        # Atomic replace
+        try:
+            os.replace(tmp_path, self._data_path)
+        except Exception:
+            # Best-effort fallback
+            with open(self._data_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
 
     def _load(self) -> None:
         """Load sessions from JSON file."""

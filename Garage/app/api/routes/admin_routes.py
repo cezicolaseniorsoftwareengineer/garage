@@ -9,7 +9,10 @@ from app.infrastructure.auth.dependencies import get_current_user
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
-ADMIN_EMAIL = "cezicolatecnologia@gmail.com"
+import os
+
+# Prefer role-based admin via JWT claim; fallback to configured admin email for legacy support
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "cezicolatecnologia@gmail.com")
 
 _user_repo = None
 _player_repo = None
@@ -30,10 +33,15 @@ def _assert_admin(current_user: dict):
     user_id = current_user.get("sub")
     if not user_id:
         raise HTTPException(status_code=403, detail="Access denied.")
+    # First, check role claim on token
+    if current_user.get("role") == "admin":
+        return
+
+    # Fallback: legacy email-based admin check
     user = None
     if hasattr(_user_repo, "find_by_id"):
         user = _user_repo.find_by_id(user_id)
-    if not user or user.email != ADMIN_EMAIL:
+    if not user or getattr(user, "email", None) != ADMIN_EMAIL:
         raise HTTPException(status_code=403, detail="Access denied. Admin only.")
 
 

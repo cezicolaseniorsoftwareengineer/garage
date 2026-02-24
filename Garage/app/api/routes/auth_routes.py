@@ -2,6 +2,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+import os
+
 from app.domain.user import User
 from app.infrastructure.auth.jwt_handler import (
     create_access_token,
@@ -14,6 +16,8 @@ from app.infrastructure.auth.password import (
     verify_legacy_sha256,
     is_bcrypt_hash,
 )
+from app.infrastructure.auth.bruteforce import record_failed, is_blocked, clear_failed
+from app.infrastructure.audit import log_event as audit_log
 from app.infrastructure.auth.dependencies import get_current_user
 
 
@@ -81,11 +85,18 @@ def api_register(req: RegisterRequest):
 
     _user_repo.save(user)
 
-    access_token = create_access_token(user.id, user.username)
+    # Assign role claim for admin users if configured
+    admin_email = os.environ.get("ADMIN_EMAIL", "cezicolatecnologia@gmail.com")
+    role = "admin" if user.email == admin_email else None
+    access_token = create_access_token(user.id, user.username, role=role)
     refresh_token = create_refresh_token(user.id)
 
     if _events:
         _events.log("user_registered", user_id=user.id)
+    try:
+        audit_log("user_registered", user.id, {"username": user.username, "email": user.email})
+    except Exception:
+        pass
 
     return {
         "success": True,
@@ -100,8 +111,13 @@ def api_register(req: RegisterRequest):
 @router.post("/login")
 def api_login(req: LoginRequest):
     """Authenticate user. Returns JWT tokens. Upgrades legacy hashes."""
+    # Simple brute-force protection by username
+    if is_blocked(req.username):
+        raise HTTPException(status_code=429, detail="Too many failed login attempts. Try later.")
+
     user = _user_repo.find_by_username(req.username)
     if not user:
+        record_failed(req.username)
         raise HTTPException(status_code=401, detail="Usuario ou senha incorretos.")
 
     user_data = user.to_dict()
@@ -121,9 +137,14 @@ def api_login(req: LoginRequest):
                 pass
 
     if not valid:
+        record_failed(req.username)
         raise HTTPException(status_code=401, detail="Usuario ou senha incorretos.")
 
-    access_token = create_access_token(user_data["id"], user_data["username"])
+    # Attach role claim if the user is configured as admin
+    admin_email = os.environ.get("ADMIN_EMAIL", "cezicolatecnologia@gmail.com")
+    user_obj = _user_repo.find_by_id(user_data["id"]) if hasattr(_user_repo, "find_by_id") else None
+    role = "admin" if (user_obj and getattr(user_obj, "email", None) == admin_email) else None
+    access_token = create_access_token(user_data["id"], user_data["username"], role=role)
     refresh_token = create_refresh_token(user_data["id"])
 
     # Update last login timestamp
@@ -132,8 +153,18 @@ def api_login(req: LoginRequest):
     except (AttributeError, Exception):
         pass
 
+    # successful login: clear brute-force counters
+    try:
+        clear_failed(req.username)
+    except Exception:
+        pass
+
     if _events:
         _events.log("user_logged_in", user_id=user_data["id"])
+    try:
+        audit_log("user_logged_in", user_data["id"], {"username": user_data.get("username")})
+    except Exception:
+        pass
 
     return {
         "success": True,
@@ -156,7 +187,9 @@ def api_refresh(req: RefreshRequest):
     user = _user_repo.find_by_id(user_id) if hasattr(_user_repo, "find_by_id") else None
     username = user.username if user else payload.get("username", "")
 
-    access_token = create_access_token(user_id, username)
+    admin_email = os.environ.get("ADMIN_EMAIL", "cezicolatecnologia@gmail.com")
+    role = "admin" if (user and getattr(user, "email", None) == admin_email) else None
+    access_token = create_access_token(user_id, username, role=role)
     return {
         "access_token": access_token,
         "token_type": "bearer",

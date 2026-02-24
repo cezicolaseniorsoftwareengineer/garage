@@ -1,16 +1,18 @@
 """JWT token creation and verification (HS256)."""
 import os
+import secrets as _secrets
+import logging
 from datetime import datetime, timedelta, timezone
 
 from jose import jwt, JWTError
 
-SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "INSECURE-DEV-KEY-CHANGE-IN-PRODUCTION")
+SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 
-def create_access_token(user_id: str, username: str) -> str:
+def create_access_token(user_id: str, username: str, role: str | None = None) -> str:
     """Create a short-lived access token (1 h default)."""
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     payload = {
@@ -20,6 +22,8 @@ def create_access_token(user_id: str, username: str) -> str:
         "exp": expire,
         "iat": datetime.now(timezone.utc),
     }
+    if role:
+        payload["role"] = role
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -41,6 +45,43 @@ def verify_token(token: str) -> dict | None:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         if payload.get("sub") is None:
             return None
+        # Check revocation for refresh tokens
+        if payload.get("type") == "refresh" and is_refresh_revoked(token):
+            return None
         return payload
     except JWTError:
         return None
+
+
+# Simple in-memory refresh token revocation set (process-lifetime)
+_revoked_refresh_tokens: set = set()
+
+
+def revoke_refresh_token(token: str) -> None:
+    """Mark a refresh token as revoked for the local process lifetime."""
+    try:
+        _revoked_refresh_tokens.add(token)
+    except Exception:
+        pass
+
+
+def is_refresh_revoked(token: str) -> bool:
+    return token in _revoked_refresh_tokens
+
+
+_ENV = os.environ.get("ENV", "").lower()
+_REQUIRE_JWT = os.environ.get("REQUIRE_JWT_SECRET", "").lower() in ("1", "true", "yes")
+
+# In production (ENV=production) or when REQUIRE_JWT_SECRET is set, fail fast.
+if not SECRET_KEY and (_ENV == "production" or _REQUIRE_JWT):
+    raise RuntimeError(
+        "Missing JWT_SECRET_KEY environment variable. Set JWT_SECRET_KEY before starting the application."
+    )
+
+# Development fallback: generate a random secret so the app can run locally.
+if not SECRET_KEY:
+    SECRET_KEY = _secrets.token_urlsafe(32)
+    logging.warning(
+        "JWT_SECRET_KEY not set — using a generated development secret. "
+        "Set JWT_SECRET_KEY or set ENV=production to require it."
+    )

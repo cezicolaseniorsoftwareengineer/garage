@@ -28,9 +28,17 @@ app = FastAPI(
 )
 
 # CORS (required for browser frontend)
+# CORS configuration: read allowed origins from env (comma-separated).
+_allowed = os.environ.get("ALLOWED_ORIGINS", "").strip()
+if _allowed:
+    allow_origins = [o.strip() for o in _allowed.split(",") if o.strip()]
+else:
+    # Default to wildcard for ease of local development.
+    allow_origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Restrict in production
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
