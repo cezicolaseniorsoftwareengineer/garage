@@ -3024,12 +3024,10 @@ const UI = {
         if (continueBtn) {
             continueBtn.style.display = Auth.hasSession() ? '' : 'none';
         }
-        // Show admin dashboard link only for the admin user
+        // Show admin dashboard link for users with admin role on JWT
         const adminBtn = document.getElementById('btnAdminDash');
         if (adminBtn) {
-            const user = Auth.getUser();
-            const isAdmin = user && user.email === 'admin@garage.local';
-            adminBtn.style.display = isAdmin ? '' : 'none';
+            adminBtn.style.display = Auth.isAdmin() ? '' : 'none';
         }
     },
 
@@ -5610,6 +5608,20 @@ const Auth = {
 
     hasSession() {
         return !!localStorage.getItem('garage_session_id');
+    },
+
+    isAdmin() {
+        if (!this._token) return false;
+        try {
+            const parts = this._token.split('.');
+            if (parts.length < 2) return false;
+            const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+            const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4);
+            const payload = JSON.parse(atob(padded));
+            return payload.role === 'admin';
+        } catch (_e) {
+            return false;
+        }
     },
 
     _persist() {

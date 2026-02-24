@@ -33,6 +33,30 @@ def init_auth_routes(user_repo, event_service=None):
     _events = event_service
 
 
+def _configured_admin_emails() -> set[str]:
+    """Return normalized admin emails from env vars."""
+    emails: set[str] = set()
+
+    primary = os.environ.get("ADMIN_EMAIL", "").strip().lower()
+    if primary:
+        emails.add(primary)
+
+    aliases = os.environ.get("ADMIN_EMAILS", "").strip()
+    if aliases:
+        for item in aliases.split(","):
+            value = item.strip().lower()
+            if value:
+                emails.add(value)
+
+    return emails
+
+
+def _is_admin_email(email: str | None) -> bool:
+    if not email:
+        return False
+    return email.strip().lower() in _configured_admin_emails()
+
+
 # ---------------------------------------------------------------------------
 # Request schemas
 # ---------------------------------------------------------------------------
@@ -85,9 +109,8 @@ def api_register(req: RegisterRequest):
 
     _user_repo.save(user)
 
-    # Assign role claim for admin users if configured
-    admin_email = os.environ.get("ADMIN_EMAIL", "admin@garage.local")
-    role = "admin" if user.email == admin_email else None
+    # Assign role claim for configured admin users
+    role = "admin" if _is_admin_email(user.email) else None
     access_token = create_access_token(user.id, user.username, role=role)
     refresh_token = create_refresh_token(user.id)
 
@@ -141,9 +164,8 @@ def api_login(req: LoginRequest):
         raise HTTPException(status_code=401, detail="Usuario ou senha incorretos.")
 
     # Attach role claim if the user is configured as admin
-    admin_email = os.environ.get("ADMIN_EMAIL", "admin@garage.local")
     user_obj = _user_repo.find_by_id(user_data["id"]) if hasattr(_user_repo, "find_by_id") else None
-    role = "admin" if (user_obj and getattr(user_obj, "email", None) == admin_email) else None
+    role = "admin" if _is_admin_email(getattr(user_obj, "email", None) if user_obj else None) else None
     access_token = create_access_token(user_data["id"], user_data["username"], role=role)
     refresh_token = create_refresh_token(user_data["id"])
 
@@ -187,8 +209,7 @@ def api_refresh(req: RefreshRequest):
     user = _user_repo.find_by_id(user_id) if hasattr(_user_repo, "find_by_id") else None
     username = user.username if user else payload.get("username", "")
 
-    admin_email = os.environ.get("ADMIN_EMAIL", "admin@garage.local")
-    role = "admin" if (user and getattr(user, "email", None) == admin_email) else None
+    role = "admin" if _is_admin_email(getattr(user, "email", None) if user else None) else None
     access_token = create_access_token(user_id, username, role=role)
     return {
         "access_token": access_token,

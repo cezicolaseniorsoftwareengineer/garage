@@ -5,6 +5,11 @@ Persistence strategy:
   - Otherwise               -> JSON file fallback (development only).
 """
 import os
+from dotenv import load_dotenv
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(BASE_DIR)
+load_dotenv(os.path.join(PROJECT_DIR, ".env"))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,7 +20,6 @@ from app.api.routes.game_routes import router as game_router, init_routes
 from app.api.routes.auth_routes import router as auth_router, init_auth_routes
 from app.api.routes.admin_routes import router as admin_router, init_admin_routes
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 

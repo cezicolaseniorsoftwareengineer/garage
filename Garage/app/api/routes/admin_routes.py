@@ -1,7 +1,4 @@
-"""Admin API routes -- dashboard, ranking, user management.
-
-Access restricted to the admin user (admin@garage.local).
-"""
+"""Admin API routes -- dashboard, ranking, user management."""
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -10,9 +7,6 @@ from app.infrastructure.auth.dependencies import get_current_user
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 import os
-
-# Prefer role-based admin via JWT claim; fallback to configured admin email for legacy support
-ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@garage.local")
 
 _user_repo = None
 _player_repo = None
@@ -28,6 +22,30 @@ def init_admin_routes(user_repo, player_repo, leaderboard_repo, challenge_repo):
     _challenge_repo = challenge_repo
 
 
+def _configured_admin_emails() -> set[str]:
+    """Return normalized admin emails from env vars."""
+    emails: set[str] = set()
+
+    primary = os.environ.get("ADMIN_EMAIL", "").strip().lower()
+    if primary:
+        emails.add(primary)
+
+    aliases = os.environ.get("ADMIN_EMAILS", "").strip()
+    if aliases:
+        for item in aliases.split(","):
+            value = item.strip().lower()
+            if value:
+                emails.add(value)
+
+    return emails
+
+
+def _is_admin_email(email: str | None) -> bool:
+    if not email:
+        return False
+    return email.strip().lower() in _configured_admin_emails()
+
+
 def _assert_admin(current_user: dict):
     """Raise 403 if the authenticated user is not the admin."""
     user_id = current_user.get("sub")
@@ -41,7 +59,7 @@ def _assert_admin(current_user: dict):
     user = None
     if hasattr(_user_repo, "find_by_id"):
         user = _user_repo.find_by_id(user_id)
-    if not user or getattr(user, "email", None) != ADMIN_EMAIL:
+    if not user or not _is_admin_email(getattr(user, "email", None)):
         raise HTTPException(status_code=403, detail="Access denied. Admin only.")
 
 
