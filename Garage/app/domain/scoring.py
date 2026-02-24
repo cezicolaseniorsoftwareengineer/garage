@@ -50,11 +50,11 @@ class MapConfig:
         "Itau": "Staff",
         "Uber": "Staff",
         "Nvidia": "Staff",
-        "OpenAI": "Staff",
+        "Aurora Labs": "Staff",
         "Santander": "Principal",
         "Bradesco": "Principal",
         "Gemini": "Principal",
-        "Claude": "Principal",
+        "Nexus Labs": "Principal",
         "Cloud Valley": "Principal",
     }
 

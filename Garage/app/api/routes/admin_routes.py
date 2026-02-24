@@ -1,6 +1,6 @@
 """Admin API routes -- dashboard, ranking, user management.
 
-Access restricted to the admin user (cezicolatecnologia@gmail.com).
+Access restricted to the admin user (admin@garage.local).
 """
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
@@ -12,7 +12,7 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 import os
 
 # Prefer role-based admin via JWT claim; fallback to configured admin email for legacy support
-ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "cezicolatecnologia@gmail.com")
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@garage.local")
 
 _user_repo = None
 _player_repo = None

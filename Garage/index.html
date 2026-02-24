@@ -161,13 +161,13 @@
     </div>
     
     <label style="color:#fff; display:block; margin-top:20px; margin-bottom:10px; font-weight:bold;">2. SEU NOME DE ENGENHEIRO</label>
-    <input type="text" id="pName" placeholder="Ex: Cezi Cola" style="width:100%; padding:15px; background:#1e293b; border:2px solid #334155; border-radius:8px; color:#fff; font-size:16px; font-weight:bold; outline:none;">
+    <input type="text" id="pName" placeholder="Ex: Garage Mentor" style="width:100%; padding:15px; background:#1e293b; border:2px solid #334155; border-radius:8px; color:#fff; font-size:16px; font-weight:bold; outline:none;">
 
     <label style="color:#fff; display:block; margin-top:20px; margin-bottom:10px; font-weight:bold;">3. BACKEND STACK (SUA ESPECIALIDADE)</label>
     <div style="font-size:12px; color:#64748b; margin-bottom:10px;">Isso define os desafios técnicos que você enfrentará.</div>
     <select id="pLang" style="width:100%; padding:15px; background:#1e293b; border:2px solid #334155; border-radius:8px; color:#fff; font-size:16px; font-weight:bold; outline:none;" onchange="State.stack = this.value">
         <option value="Java (Spring Boot)" selected>Java (Spring Boot) - Enterprise Standard</option>
-        <option value="Python (FastAPI)">Python (FastAPI) - AI & Data</option>
+        <option value="Python (FastAPI)">Python (FastAPI) - Data Engineering</option>
         <option value="C# (.NET Core)">C# (.NET Core) - Corporate</option>
         <option value="Go (Gin)">Go (Gin) - High Performance</option>
         <option value="Node.js (NestJS)">Node.js (NestJS) - Startup Speed</option>
@@ -244,7 +244,7 @@ const TIMELINE = [
     { year: 1980, title: "PC REVOLUTION", loc: "IBM OFFICE", tech: "⚡ C/C++" },
     { year: 1995, title: "DOT COM", loc: "WEB 1.0", tech: "🌐 HTML" },
     { year: 2005, title: "SOCIAL", loc: "THE CAMPUS", tech: "📱 PHP/JS" },
-    { year: 2024, title: "AI AGE", loc: "NEURAL NET", tech: "🧠 PY/CUDA" }
+    { year: 2024, title: "DATA AGE", loc: "NEURAL NET", tech: "🧠 PY/CUDA" }
 ];
 
 // --- THREE.JS SETUP ---
@@ -500,9 +500,9 @@ function tryInteract() {
     showDialog(speaker, text);
 }
 
-// --- GAME LOGIC (CEZI COLA STANDARD: ULTIMATE EDITION) ---
+// --- GAME LOGIC (GARAGE MENTOR STANDARD: ULTIMATE EDITION) ---
 
-// 1. KNOWLEDGE BASE (The Cezi Cola Curriculum)
+// 1. KNOWLEDGE BASE (The Garage Mentor Curriculum)
 const KNOWLEDGE = {
     intern: {
         title: "LEVEL 1: O MINDSET DO ENGENHEIRO",
@@ -518,7 +518,7 @@ const KNOWLEDGE = {
         ],
         quiz: [
             {
-                q: "Qual a prioridade número 1 ao escrever uma classe Java segundo o padrão Cezi Cola?",
+                q: "Qual a prioridade número 1 ao escrever uma classe Java segundo o padrão Garage Mentor?",
                 options: [
                     "Escrever o código mais curto possível (One-liner)",
                     "Garantir que seja um contrato imutável e auditável para o futuro",
@@ -637,7 +637,7 @@ const KNOWLEDGE = {
         ]
     },
     principal: {
-        title: "LEVEL 5: THE CEZI COLA STANDARD",
+        title: "LEVEL 5: THE GARAGE MENTOR STANDARD",
         lectures: [
             {
                 title: "A VERDADE FINAL",
@@ -671,7 +671,7 @@ const NPC_ROSTER = [
     { id: 3, role: "senior", name: "MARTIN FOWLER", loc: {x: -100, z: 600}, skin: 4, dialog: "Qualquer tolo escreve código que computador entende. Bons programadores escrevem para humanos." },
     
     // THE BOSS
-    { id: 4, role: "principal", name: "CEZI COLA", loc: {x: 0, z: 900}, skin: 5, dialog: "Eu sou o guardião do Padrão. Você prova seu valor modelando o domínio, não usando frameworks. Vamos conversar." }
+    { id: 4, role: "principal", name: "GARAGE MENTOR", loc: {x: 0, z: 900}, skin: 5, dialog: "Eu sou o guardião do Padrão. Você prova seu valor modelando o domínio, não usando frameworks. Vamos conversar." }
 ];
 
 function initNPCs() {

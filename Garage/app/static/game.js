@@ -947,7 +947,7 @@ const NPC_DATA = [
     // -- MID --
     {
         id: 'npc_google', name: 'LARRY & SERGEY', role: 'Cofundadores - Google', region: 'Google', stage: 'Mid', worldX: 7800,
-        dialog: 'Somos Larry Page e Sergey Brin. Em 1998, numa garagem em Menlo Park, criamos o Google -- um buscador que organizou toda a informa\u00e7\u00e3o do mundo. Depois veio o Android, YouTube, Cloud, IA. Como engenheiro Pleno, voc\u00ea enfrentar\u00e1 algoritmos avan\u00e7ados, sistemas distribu\u00eddos e a complexidade computacional que faz o Google funcionar em escala planet\u00e1ria.',
+        dialog: 'Somos Larry Page e Sergey Brin. Em 1998, numa garagem em Menlo Park, criamos o Google -- um buscador que organizou toda a informa\u00e7\u00e3o do mundo. Depois veio o Android, YouTube, Cloud, computacao. Como engenheiro Pleno, voc\u00ea enfrentar\u00e1 algoritmos avan\u00e7ados, sistemas distribu\u00eddos e a complexidade computacional que faz o Google funcionar em escala planet\u00e1ria.',
         look: { hair: '#333', hairStyle: 'curly', beard: null, glasses: false, shirt: '#4285f4', pants: '#333', skinTone: '#F5D0A9', casual: true }
     },
     {
@@ -1009,12 +1009,12 @@ const NPC_DATA = [
     },
     {
         id: 'npc_nvidia', name: 'JENSEN HUANG', role: 'CEO - Nvidia', region: 'Nvidia', stage: 'Staff', worldX: 24600,
-        dialog: 'Jensen Huang, CEO da Nvidia. Fundei a empresa em 1993 num Denny\'s em San Jose. De placas de v\u00eddeo a IA generativa, nossas GPUs s\u00e3o o motor da revolu\u00e7\u00e3o da intelig\u00eancia artificial. Treinamento de modelos, ordena\u00e7\u00e3o eficiente e processamento massivo de dados -- Merge Sort n\u00e3o \u00e9 exerc\u00edcio acad\u00eamico, \u00e9 o que roda em cada GPU nossa.',
+        dialog: 'Jensen Huang, CEO da Nvidia. Fundei a empresa em 1993 num Denny\'s em San Jose. De placas de v\u00eddeo a computacao generativa, nossas GPUs s\u00e3o o motor da revolu\u00e7\u00e3o da intelig\u00eancia artificial. Treinamento de modelos, ordena\u00e7\u00e3o eficiente e processamento massivo de dados -- Merge Sort n\u00e3o \u00e9 exerc\u00edcio acad\u00eamico, \u00e9 o que roda em cada GPU nossa.',
         look: { hair: '#222', hairStyle: 'short', beard: null, glasses: false, shirt: '#111', pants: '#222', skinTone: '#D2A673', jacket: '#111' }
     },
     {
-        id: 'npc_openai', name: 'SAM ALTMAN', role: 'CEO - OpenAI', region: 'OpenAI', stage: 'Staff', worldX: 26000,
-        dialog: 'Sam Altman, CEO da OpenAI. Criamos o ChatGPT, DALL-E e GPT-4 -- modelos que est\u00e3o redefinindo a intelig\u00eancia artificial. Redes neurais s\u00e3o grafos computacionais. Travessia em largura, busca em profundidade e processamento de estruturas conectadas s\u00e3o a base de tudo que constru\u00edmos. Grafos n\u00e3o s\u00e3o teoria, s\u00e3o a realidade da IA.',
+        id: 'npc_aurora_labs', name: 'SAM ALTMAN', role: 'CEO - Aurora Labs', region: 'Aurora Labs', stage: 'Staff', worldX: 26000,
+        dialog: 'Sam Altman, CEO da Aurora Labs. Criamos o assistente conversacional, DALL-E e modelos avançados -- modelos que est\u00e3o redefinindo a intelig\u00eancia artificial. Redes neurais s\u00e3o grafos computacionais. Travessia em largura, busca em profundidade e processamento de estruturas conectadas s\u00e3o a base de tudo que constru\u00edmos. Grafos n\u00e3o s\u00e3o teoria, s\u00e3o a realidade da computacao.',
         look: { hair: '#c4733c', hairStyle: 'short', beard: null, glasses: false, shirt: '#444', pants: '#333', skinTone: '#F5D0A9', casual: true }
     },
     // -- PRINCIPAL --
@@ -1030,12 +1030,12 @@ const NPC_DATA = [
     },
     {
         id: 'npc_gemini', name: 'DEMIS HASSABIS', role: 'CEO - Google DeepMind', region: 'Gemini', stage: 'Principal', worldX: 30200,
-        dialog: 'Demis Hassabis, CEO do Google DeepMind. Criamos o AlphaGo, AlphaFold e o Gemini -- IA que resolve prote\u00ednas, vence campe\u00f5es de Go e raciocina com multimodalidade. Priority Queue e Heap s\u00e3o fundamentais em IA: agendamento de tarefas, busca A*, beam search. Quando cada decis\u00e3o tem um custo, priorizar \u00e9 tudo.',
+        dialog: 'Demis Hassabis, CEO do Google DeepMind. Criamos o AlphaGo, AlphaFold e o Gemini -- computacao que resolve prote\u00ednas, vence campe\u00f5es de Go e raciocina com multimodalidade. Priority Queue e Heap s\u00e3o fundamentais em computacao: agendamento de tarefas, busca A*, beam search. Quando cada decis\u00e3o tem um custo, priorizar \u00e9 tudo.',
         look: { hair: '#333', hairStyle: 'curly', beard: null, glasses: false, shirt: '#4285f4', pants: '#222', skinTone: '#D2A673', casual: true }
     },
     {
-        id: 'npc_claude', name: 'DARIO AMODEI', role: 'CEO - Anthropic', region: 'Claude', stage: 'Principal', worldX: 31600,
-        dialog: 'Dario Amodei, CEO da Anthropic, criadores do Claude. Sa\u00ed da OpenAI para construir IA segura e alinhada. Programa\u00e7\u00e3o din\u00e2mica \u00e9 o cora\u00e7\u00e3o do racioc\u00ednio: decompor problemas grandes em subproblemas menores, memorizar resultados e construir a solu\u00e7\u00e3o de baixo para cima. \u00c9 assim que o Claude pensa -- e \u00e9 assim que voc\u00ea vai pensar.',
+        id: 'npc_nexus_labs', name: 'DARIO AMODEI', role: 'CEO - Anthropic', region: 'Nexus Labs', stage: 'Principal', worldX: 31600,
+        dialog: 'Dario Amodei, CEO da Anthropic, criadores do Nexus Labs. Sa\u00ed da Aurora Labs para construir computacao segura e alinhada. Programa\u00e7\u00e3o din\u00e2mica \u00e9 o cora\u00e7\u00e3o do racioc\u00ednio: decompor problemas grandes em subproblemas menores, memorizar resultados e construir a solu\u00e7\u00e3o de baixo para cima. \u00c9 assim que o Nexus Labs pensa -- e \u00e9 assim que voc\u00ea vai pensar.',
         look: { hair: '#333', hairStyle: 'curly', beard: '#333', glasses: true, glassesStyle: 'round', shirt: '#d4a574', pants: '#333', skinTone: '#F5D0A9' }
     },
     {
@@ -1065,11 +1065,11 @@ const BUILDINGS = [
     { name: 'ITAU', x: 21500, w: 460, h: 280, color: '#003399', roofColor: '#002266' },
     { name: 'UBER', x: 22900, w: 440, h: 260, color: '#000000', roofColor: '#1a1a1a' },
     { name: 'NVIDIA', x: 24300, w: 500, h: 290, color: '#76b900', roofColor: '#5a8c00' },
-    { name: 'OPENAI', x: 25700, w: 480, h: 270, color: '#412991', roofColor: '#2d1b66' },
+    { name: 'AURORA LABS', x: 25700, w: 480, h: 270, color: '#412991', roofColor: '#2d1b66' },
     { name: 'SANTANDER', x: 27100, w: 500, h: 290, color: '#ec0000', roofColor: '#b30000' },
     { name: 'BRADESCO', x: 28500, w: 480, h: 280, color: '#cc092f', roofColor: '#990720' },
     { name: 'GEMINI', x: 29900, w: 480, h: 280, color: '#4285f4', roofColor: '#2b5ea7' },
-    { name: 'CLAUDE', x: 31300, w: 480, h: 280, color: '#d4a574', roofColor: '#b8895c' },
+    { name: 'NEXUS LABS', x: 31300, w: 480, h: 280, color: '#d4a574', roofColor: '#b8895c' },
     { name: 'CLOUD VALLEY', x: 32700, w: 650, h: 350, color: '#8b5cf6', roofColor: '#6d28d9' },
 ];
 
@@ -1093,11 +1093,11 @@ const COMPANY_LOGOS = {
     'ITAU': { icon: '', font: 'bold 28px serif', customDraw: 'itau' },
     'UBER': { icon: '', font: 'bold 28px sans-serif', noLogo: true },
     'NVIDIA': { icon: '\u25B6', font: 'bold 26px sans-serif' },
-    'OPENAI': { icon: '', font: '26px sans-serif', customDraw: 'openai' },
+    'AURORA LABS': { icon: '', font: '26px sans-serif', customDraw: 'aurora_labs' },
     'SANTANDER': { icon: 'S', font: 'bold 28px sans-serif' },
     'BRADESCO': { icon: 'B', font: 'bold 28px serif' },
     'GEMINI': { icon: '\u2733', font: '26px sans-serif' },
-    'CLAUDE': { icon: 'C', font: 'bold 28px sans-serif' },
+    'NEXUS LABS': { icon: 'C', font: 'bold 28px sans-serif' },
     'CLOUD VALLEY': { icon: '\u2601', font: '26px sans-serif' },
 };
 
@@ -2307,8 +2307,8 @@ const World = {
         ctx.restore();
     },
 
-    _draw_openai(ctx, cx, cy, logoR) {
-        // OpenAI hexagonal flower/knot
+    _draw_aurora_labs(ctx, cx, cy, logoR) {
+        // Aurora Labs hexagonal flower/knot
         const s = logoR * 0.7;
         ctx.save();
         ctx.translate(cx, cy);
@@ -3028,7 +3028,7 @@ const UI = {
         const adminBtn = document.getElementById('btnAdminDash');
         if (adminBtn) {
             const user = Auth.getUser();
-            const isAdmin = user && user.email === 'cezicolatecnologia@gmail.com';
+            const isAdmin = user && user.email === 'admin@garage.local';
             adminBtn.style.display = isAdmin ? '' : 'none';
         }
     },
@@ -3356,7 +3356,7 @@ const UI = {
                     logoContent = '<svg viewBox="0 0 24 24" width="22" height="22"><text x="12" y="15" font-size="16" font-weight="bold" text-anchor="middle" fill="#111" font-family="sans-serif">X</text><path d="M3,13 Q12,6 21,9" stroke="#111" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>';
                 } else if (logo.customDraw === 'itau') {
                     logoContent = '<svg viewBox="0 0 24 24" width="22" height="22"><rect x="2" y="2" width="20" height="20" rx="5" fill="#ec7000"/><rect x="4.5" y="4.5" width="15" height="15" rx="4" fill="#fff"/><text x="12" y="15.5" font-size="9" font-weight="bold" text-anchor="middle" fill="#ec7000" font-family="sans-serif">ita\u00fa</text></svg>';
-                } else if (logo.customDraw === 'openai') {
+                } else if (logo.customDraw === 'aurora_labs') {
                     logoContent = '<svg viewBox="0 0 24 24" width="22" height="22"><g transform="translate(12,12)" stroke="#111" stroke-width="1.8" fill="none" stroke-linecap="round"><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(0)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(0)"/><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(60)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(60)"/><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(120)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(120)"/><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(180)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(180)"/><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(240)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(240)"/><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(300)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(300)"/></g></svg>';
                 }
                 html += '<div class="metrics-company-card ' + cardClass + '">';
@@ -5025,9 +5025,9 @@ const CODE_CHALLENGES = [
         },
         helpText: 'COMO PENSAR:\n1. Dividir: parta o array ao meio recursivamente at\u00e9 ter arrays de 1.\n2. Conquistar: arrays de 1 elemento j\u00e1 est\u00e3o ordenados.\n3. Combinar: mescle dois arrays ordenados comparando elementos.\n4. Complexidade: O(n log n) sempre.\n\nCOLA -- Copie este c\u00f3digo na IDE:\n\nimport java.util.Arrays;\n\npublic class MergeSort {\n    static void mergeSort(int[] arr, int left, int right) {\n        if (left < right) {\n            int mid = (left + right) / 2;\n            mergeSort(arr, left, mid);\n            mergeSort(arr, mid + 1, right);\n            merge(arr, left, mid, right);\n        }\n    }\n\n    static void merge(int[] arr, int l, int m, int r) {\n        int n1 = m - l + 1, n2 = r - m;\n        int[] leftArr = new int[n1], rightArr = new int[n2];\n        for (int i = 0; i < n1; i++) leftArr[i] = arr[l + i];\n        for (int j = 0; j < n2; j++) rightArr[j] = arr[m + 1 + j];\n        int i = 0, j = 0, k = l;\n        while (i < n1 && j < n2) {\n            if (leftArr[i] <= rightArr[j]) arr[k++] = leftArr[i++];\n            else arr[k++] = rightArr[j++];\n        }\n        while (i < n1) arr[k++] = leftArr[i++];\n        while (j < n2) arr[k++] = rightArr[j++];\n    }\n\n    public static void main(String[] args) {\n        int[] arr = {38, 27, 43, 3, 9, 82, 10};\n        mergeSort(arr, 0, arr.length - 1);\n        System.out.println(Arrays.toString(arr));\n    }\n}'
     },
-    // ── NEW: OPENAI (Staff) - Graph BFS ─────────────────────────────────────
+    // ── NEW: AURORA LABS (Staff) - Graph BFS ─────────────────────────────────────
     {
-        id: 'code_bfs', stage: 'Staff', region: 'OpenAI',
+        id: 'code_bfs', stage: 'Staff', region: 'Aurora Labs',
         title: 'Travessia BFS em Grafo', concept: 'Grafo / Busca em Largura',
         language: 'java', fileName: 'GraphBFS.java',
         description: 'Implemente BFS (Busca em Largura) num grafo:\n1. Grafo com lista de adjac\u00eancia (HashMap)\n2. M\u00e9todo: static List<Integer> bfs(Map<Integer, List<Integer>> graph, int start)\n3. Use Queue para a fila e Set para visitados\n4. Retorne a ordem de visita\u00e7\u00e3o',
@@ -5066,9 +5066,9 @@ const CODE_CHALLENGES = [
         },
         helpText: 'COMO PENSAR:\n1. PriorityQueue = Min-Heap. O menor elemento sempre sai primeiro.\n2. Implemente Comparable e o m\u00e9todo compareTo() com @Override.\n3. compareTo retorna negativo se this < other, 0 se igual, positivo se >.\n4. Use Integer.compare() -- NUNCA subtra\u00e7\u00e3o direta (causa overflow com valores extremos).\n\nCOLA -- Copie este c\u00f3digo na IDE:\n\nimport java.util.PriorityQueue;\n\npublic class TaskScheduler {\n    static class Task implements Comparable<Task> {\n        String nome;\n        int prioridade;\n        Task(String n, int p) { nome = n; prioridade = p; }\n\n        @Override\n        public int compareTo(Task other) {\n            return Integer.compare(this.prioridade, other.prioridade);\n        }\n    }\n\n    public static void main(String[] args) {\n        PriorityQueue<Task> pq = new PriorityQueue<>();\n        pq.add(new Task(\"Atualizar docs\", 5));\n        pq.add(new Task(\"Deploy em produ\u00e7\u00e3o\", 1));\n        pq.add(new Task(\"Code review\", 2));\n\n        while (!pq.isEmpty()) {\n            Task t = pq.poll();\n            System.out.println(\"[\" + t.prioridade + \"] \" + t.nome);\n        }\n    }\n}'
     },
-    // ── NEW: CLAUDE (Principal) - Climbing Stairs / DP ──────────────────────
+    // ── NEW: NEXUS LABS (Principal) - Climbing Stairs / DP ──────────────────────
     {
-        id: 'code_dp', stage: 'Principal', region: 'Claude',
+        id: 'code_dp', stage: 'Principal', region: 'Nexus Labs',
         title: 'Climbing Stairs (DP)', concept: 'Programa\u00e7\u00e3o Din\u00e2mica / Subproblemas',
         language: 'java', fileName: 'ClimbingStairs.java',
         description: 'Conte quantas formas de subir n degraus:\n1. M\u00e9todo: static int climbStairs(int n)\n2. Pode subir 1 ou 2 degraus por vez\n3. Use Programa\u00e7\u00e3o Din\u00e2mica (N\u00c3O recurs\u00e3o pura)\n4. Teste: n=2 \u2192 2, n=5 \u2192 8, n=10 \u2192 89',

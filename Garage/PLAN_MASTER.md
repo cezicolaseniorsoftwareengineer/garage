@@ -2,7 +2,7 @@
 ## "De Estagiário a Principal Engineer"
 
 **Documento de Design Técnico e Pedagógico v1.0**
-**Author:** Cezi Cola -- Senior Software Engineer | Bio Code Technology ltda
+**Author:** Garage Mentor -- Senior Software Engineer | Bio Code Technology ltda
 **Target**: Transformar o jogo em uma plataforma completa de formação em Engenharia de Software (nível Staff/Principal).
 
 ---
@@ -90,7 +90,7 @@ O jogo será dividido em 6 Atos Históricos, cobrindo 1973 a 2026.
 
 ### ATO VI: O Arquiteto (2020-2026)
 **Local 11: Enterprise Architecture (2020)**
-- **NPC**: O "Mentor" (Cezi Cola Aura).
+- **NPC**: O "Mentor" (Garage Mentor Aura).
 - **Tema**: "Design Limpo e Longevidade".
 - **Currículo**: SOLID, Clean Code, DDD (Domain-Driven Design), Hexagonal Architecture.
 - **Desafio**: Refatorar um sistema legado gigante sem quebrar a produção.

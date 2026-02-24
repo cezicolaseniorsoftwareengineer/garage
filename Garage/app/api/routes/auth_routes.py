@@ -86,7 +86,7 @@ def api_register(req: RegisterRequest):
     _user_repo.save(user)
 
     # Assign role claim for admin users if configured
-    admin_email = os.environ.get("ADMIN_EMAIL", "cezicolatecnologia@gmail.com")
+    admin_email = os.environ.get("ADMIN_EMAIL", "admin@garage.local")
     role = "admin" if user.email == admin_email else None
     access_token = create_access_token(user.id, user.username, role=role)
     refresh_token = create_refresh_token(user.id)
@@ -141,7 +141,7 @@ def api_login(req: LoginRequest):
         raise HTTPException(status_code=401, detail="Usuario ou senha incorretos.")
 
     # Attach role claim if the user is configured as admin
-    admin_email = os.environ.get("ADMIN_EMAIL", "cezicolatecnologia@gmail.com")
+    admin_email = os.environ.get("ADMIN_EMAIL", "admin@garage.local")
     user_obj = _user_repo.find_by_id(user_data["id"]) if hasattr(_user_repo, "find_by_id") else None
     role = "admin" if (user_obj and getattr(user_obj, "email", None) == admin_email) else None
     access_token = create_access_token(user_data["id"], user_data["username"], role=role)
@@ -187,7 +187,7 @@ def api_refresh(req: RefreshRequest):
     user = _user_repo.find_by_id(user_id) if hasattr(_user_repo, "find_by_id") else None
     username = user.username if user else payload.get("username", "")
 
-    admin_email = os.environ.get("ADMIN_EMAIL", "cezicolatecnologia@gmail.com")
+    admin_email = os.environ.get("ADMIN_EMAIL", "admin@garage.local")
     role = "admin" if (user and getattr(user, "email", None) == admin_email) else None
     access_token = create_access_token(user_id, username, role=role)
     return {

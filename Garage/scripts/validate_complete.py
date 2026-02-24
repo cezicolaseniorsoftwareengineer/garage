@@ -13,7 +13,7 @@ env_file = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(env_file)
 
 BASE_URL = "http://localhost:8000"
-ADMIN_EMAIL = "cezicolatecnologia@gmail.com"
+ADMIN_EMAIL = "admin@garage.local"
 
 print("\n" + "="*70)
 print("VALIDACAO COMPLETA: PERSISTENCIA + AUTENTICACAO + AUTORIZACAO")

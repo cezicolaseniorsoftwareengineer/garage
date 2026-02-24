@@ -83,11 +83,11 @@ class MapRegion(str, Enum):
     ITAU = "Itau"
     UBER = "Uber"
     NVIDIA = "Nvidia"
-    OPENAI = "OpenAI"
+    AURORA_LABS = "Aurora Labs"
     SANTANDER = "Santander"
     BRADESCO = "Bradesco"
     GEMINI = "Gemini"
-    CLAUDE = "Claude"
+    NEXUS_LABS = "Nexus Labs"
     CLOUD_VALLEY = "Cloud Valley"
 
 

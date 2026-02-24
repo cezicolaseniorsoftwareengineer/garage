@@ -13,7 +13,7 @@ env_file = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(env_file)
 
 BASE_URL = "http://localhost:8000"
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "cezicolatecnologia@gmail.com")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@garage.local")
 
 print("\n" + "="*80)
 print("VALIDACAO FINAL DO SISTEMA GARAGE")
@@ -25,7 +25,7 @@ admin_token = None
 
 # Tentar login como admin (se já existe)
 admin_creds = {
-    "username": "cezicolatecnologia@gmail.com",
+    "username": "admin@garage.local",
     "password": "123456"  # Try common password
 }
 

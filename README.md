@@ -65,4 +65,4 @@ Garage/
 
 ## Author
 
-Cezi Cola -- Bio Code Technology ltda
+Garage Mentor -- Bio Code Technology ltda
