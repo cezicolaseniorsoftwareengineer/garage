@@ -1,0 +1,10 @@
+---
+# Prompt template for Cezi Cola
+id: ''
+title: ''
+state: RISK
+model_hint: GPT-5 mini
+language: pt-BR
+sensitivity: medium
+prompt: |
+  # Write the prompt text here

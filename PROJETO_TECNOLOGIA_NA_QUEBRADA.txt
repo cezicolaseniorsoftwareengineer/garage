@@ -1,0 +1,780 @@
+================================================================================
+PROJETO: TECNOLOGIA NA QUEBRADA
+SUBTITULO: Uma Aventura no Vale do Silicio
+================================================================================
+Proposta de Politica Publica para Inclusao Digital e Profissionalizacao
+Tecnologica de Criancas, Adolescentes e Adultos em Situacao de Vulnerabilidade Social
+--------------------------------------------------------------------------------
+Versao: 1.0 | Data: Fevereiro de 2026
+Proponente: Bio Code Technology Ltda
+Canal Operacional: ONG Parceira (a definir por municipio)
+Destinatarios: Vereadores, Deputados Estaduais e Federais
+--------------------------------------------------------------------------------
+
+
+================================================================================
+SLIDE 1 - CAPA
+================================================================================
+
+TITULO PRINCIPAL:
+  TECNOLOGIA NA QUEBRADA
+  Uma Aventura no Vale do Silicio
+
+SUBTITULO:
+  Um projeto de politica publica para transformar periferias em
+  polos de formacao tecnologica, usando um jogo educativo como
+  porta de entrada para criancas, adolescentes e adultos
+  em busca de requalificacao profissional.
+
+IMAGEM SUGERIDA:
+  - Crianca de 10 a 15 anos com fone de ouvido, na frente de um
+    computador, sorrindo, com cenario de periferia ao fundo mas
+    iluminado por tela de computador.
+  - Logo do jogo GARAGE - Uma Aventura no Vale do Silicio.
+  - Logo da Bio Code Technology Ltda.
+
+RODAPE:
+  Apresentado por: Bio Code Technology Ltda | biocode.com.br
+  Contato: [email] | [telefone]
+
+
+================================================================================
+SLIDE 2 - O PROBLEMA
+================================================================================
+
+TITULO: O Problema que Precisamos Resolver
+
+TEXTO PRINCIPAL:
+  O Brasil forma menos de 50 mil profissionais de tecnologia por ano.
+  O mercado precisa de mais de 800 mil ate 2025, segundo o BRASSCOM.
+
+  Criancas da periferia nao tem acesso a:
+    - Computadores com software educativo de qualidade
+    - Professores treinados em logica e programacao
+    - Conteudo que fale a lingua delas, com personagens reais
+    - Metodologia que mantenha o engajamento
+
+  Adultos de baixa renda enfrentam uma segunda barreira:
+    - Desemprego estrutural de setores substituidos pela automacao
+    - Ausencia de cursos de requalificacao acessiveis e engajantes
+    - Estigma de que tecnologia nao e para quem nao estudou cedo
+    - Falta de tempo e metodologia adaptada para aprendizagem adulta
+
+  O resultado: uma exclusao digital que se torna exclusao economica
+  e social em qualquer fase da vida.
+
+DADOS DE IMPACTO:
+  - 60% dos jovens de baixa renda nunca tiveram contato com
+    programacao antes dos 18 anos. (fonte: CETIC.br)
+  - Profissionais de TI ganham em media 3x mais que a media
+    nacional. (fonte: IBGE/RAIS 2023)
+  - A profissao de desenvolvedor de software esta entre as
+    top 5 mais contratadas globalmente para os proximos 10 anos.
+    (fonte: World Economic Forum, Future of Jobs 2023)
+
+IMAGEM SUGERIDA:
+  - Grafico de barras comparando salario medio TI vs media nacional
+  - Foto de escola publica com laboratorio sem equipamento
+  - Mapa do Brasil com deficit de profissionais de TI por estado
+
+
+================================================================================
+SLIDE 3 - A SOLUCAO
+================================================================================
+
+TITULO: A Solucao: Um Jogo que Ensina de Verdade
+
+TEXTO PRINCIPAL:
+  GARAGE - Uma Aventura no Vale do Silicio e um jogo 2D educativo
+  que coloca qualquer pessoa — crianca, adolescente ou adulto —
+  no papel de um engenheiro de software que percorre a historia
+  real da tecnologia mundial.
+
+  O jogador caminha pelo Vale do Silicio de 1973 ate 2026,
+  encontrando personagens reais como:
+    - Steve Jobs e Steve Wozniak (Apple, 1976)
+    - Bill Gates (Microsoft, 1975)
+    - Larry Page e Sergey Brin (Google, 1998)
+    - Mark Zuckerberg (Facebook, 2004)
+    - Elon Musk (PayPal, 2000)
+    - Werner Vogels (Amazon AWS, 2015)
+    - E mais 18 empresas e fundadores reais
+
+  Para progredir, o jogador precisa responder desafios reais de
+  logica, programacao e pensamento computacional.
+
+  A progressao e por 7 niveis de carreira:
+    Estagiario -> Junior -> Pleno -> Senior ->
+    Tech Lead -> Staff Engineer -> Principal Engineer
+
+DIFERENCIAIS PEDAGOGICOS:
+  - Narrativa historica real, nao ficticia
+  - 24 empresas de tecnologia jogaveis
+  - Desafios de logica, algoritmos e codigo
+  - Sistema de progresso salvo por usuario
+  - Funciona em qualquer computador ou navegador
+  - Disponivel em portugues do Brasil
+  - Interface gratuita via navegador web (sem instalacao)
+
+IMAGEM SUGERIDA:
+  - Screenshots do jogo em funcionamento (tela do mapa do mundo,
+    tela de desafio, tela de progresso de carreira)
+  - Linha do tempo visual de 1973 a 2026 com logos das empresas
+  - Foto do personagem jogavel dentro do jogo
+
+
+================================================================================
+SLIDE 4 - PARA QUEM E O PROJETO
+================================================================================
+
+TITULO: Para Quem e Este Projeto
+
+PUBLICO-ALVO PRIMARIO:
+  - Criancas e adolescentes de 10 a 17 anos
+  - Moradores de periferias, favelas e comunidades de baixa renda
+  - Alunos de escolas publicas municipais e estaduais
+  - Jovens em situacao de vulnerabilidade social
+
+PUBLICO-ALVO SECUNDARIO (ADULTOS):
+  - Adultos de 18 a 45 anos em situacao de desemprego
+  - Trabalhadores de setores em declinio (industria, comercio)
+  - Participantes de programas EJA (Educacao de Jovens e Adultos)
+  - Egressos do sistema prisional em processo de reintegracao
+  - Maes e pais de familia buscando nova fonte de renda
+  - Adultos atendidos por CRAS e programas de assistencia social
+
+ONDE SERA APLICADO:
+  - Escolas publicas com laboratorio de informatica
+  - Centros de referencia da assistencia social (CRAS)
+  - Casas de cultura e centros comunitarios
+  - ONGs de inclusao digital ja existentes no municipio
+  - Turmas de EJA com acesso a computadores
+  - Centros de reintegracao social e casas de apoio
+  - Telecentros comunitarios municipais
+
+PERFIL DO EDUCADOR:
+  - Nao e necessario o professor ser programador
+  - O jogo e autoguiado com instrucoes integradas
+  - Material de apoio para o educador sera fornecido
+  - Treinamento inicial de 4 horas para professores parceiros
+
+META DE IMPACTO SOCIAL:
+  Para criancas e adolescentes (10 a 17 anos):
+    - Despertar interesse pela tecnologia como carreira
+    - Desenvolver raciocinio logico e resolucao de problemas
+    - Ampliar o repertorio cultural e historico sobre inovacao
+    - Criar base para ingressar em cursos tecnicos e superiores
+
+  Para adultos (18 a 45 anos):
+    - Requalificacao profissional para o mercado de tecnologia
+    - Saida concreta do desemprego estrutural
+    - Certificado com valor de curriculo para processos seletivos
+    - Autonomia economica e geracao de renda familiar
+
+IMAGEM SUGERIDA:
+  - Foto de sala de informatica escolar com criancas
+  - Foto de adulto em telecentro ou CRAS usando computador
+  - Infografico com perfil duplo: crianca + adulto
+  - Mapa do municipio marcando possiveis pontos de aplicacao
+
+
+================================================================================
+SLIDE 4B - GARAGE PARA ADULTOS: TRILHA DE REQUALIFICACAO
+================================================================================
+
+TITULO: Tecnologia Nao Tem Idade: a Trilha Adulto
+
+TEXTO PRINCIPAL:
+  O jogo GARAGE foi concebido com uma arquitetura de progressao
+  de carreira em 7 niveis que e igualmente relevante para adultos:
+
+    Estagiario -> Junior -> Pleno -> Senior ->
+    Tech Lead -> Staff Engineer -> Principal Engineer
+
+  Para um adulto desempregado que nunca programou, esta jornada
+  representa uma porta de entrada real para o mercado de tecnologia
+  — o setor que mais contrata no Brasil e no mundo.
+
+DIFERENCAS DA TRILHA ADULTO:
+  - Ritmo autoguiado: adultos jogam no proprio tempo
+  - Conteudo contextualizado para quem busca emprego ou renda
+  - Certificado com valor de curriculo para processo seletivo
+  - Modulos curtos (30 a 45 minutos) adaptados a rotina adulta
+  - Sem pre-requisito: qualquer pessoa que saiba usar um mouse
+    pode comecar do zero
+
+CONEXAO COM PROGRAMAS JA EXISTENTES:
+  - Complementa o ProUni, PRONATEC e programas de qualificacao
+    do SINE (Sistema Nacional de Emprego)
+  - Pode ser oferecido como contrapartida em programas
+    de transferencia de renda municipais
+  - Alinhado com o eixo de inclusao produtiva do SUAS
+    (Sistema Unico de Assistencia Social)
+  - Integravel com carteira de trabalho digital e historico
+    de qualificacao do trabalhador (e-Social)
+
+IMPACTO ESPERADO NA TRILHA ADULTO:
+  - Ao completar os 4 primeiros niveis (Estagiario a Senior),
+    o participante domina logica de programacao basica
+  - Ao completar os 7 niveis, o participante tem base para
+    ingressar em bootcamps pagos ou cursos tecnicos presenciais
+  - Certificado emitido pela plataforma serve como evidencia
+    de aprendizagem autodirigida em processos seletivos
+
+IMAGEM SUGERIDA:
+  - Colagem: crianca de 12 anos e adulto de 35 anos lado a lado
+    na frente do mesmo jogo, com percursos de carreira diferentes
+  - Grafico: antes e depois de renda media apos qualificacao em TI
+  - Tela do jogo mostrando a progressao de carreira (7 niveis)
+  - Logo do PRONATEC / SINE / SUAS para indicar alinhamento
+
+
+================================================================================
+SLIDE 4C - MATRIZ DE CENARIOS POR PUBLICO
+================================================================================
+
+TITULO: Onde Cada Publico Sera Atendido
+
+CENARIO 1: ESCOLA PUBLICA FUNDAMENTAL (criancas 10-14 anos)
+  Local:      Laboratorio de informatica escolar
+  Horario:    Contra-turno ou aula de informatica
+  Mediador:   Professor da escola (treinado pelo projeto)
+  Duracao:    2 horas por semana durante o ano letivo
+  Meta:       Despertar vocacao tecnologica desde a infancia
+  Vinculo:    Secretaria Municipal ou Estadual de Educacao
+
+CENARIO 2: ESCOLA PUBLICA ENSINO MEDIO (adolescentes 15-17 anos)
+  Local:      Laboratorio de informatica ou sala com notebooks
+  Horario:    Aula de tecnologia ou projeto extraclasse
+  Mediador:   Professor de matematica ou informatica
+  Duracao:    2 horas por semana durante o ano letivo
+  Meta:       Preparar para ENEM, curso tecnico ou primeiro emprego
+  Vinculo:    Secretaria Estadual de Educacao
+
+CENARIO 3: TURMA DE EJA (adolescentes e adultos 16-45 anos)
+  Local:      Sala de aula da EJA ou telecentro
+  Horario:    Durante ou apos as aulas da EJA
+  Mediador:   Professor da EJA (treinado pelo projeto)
+  Duracao:    Modulos de 45 minutos, 2x por semana
+  Meta:       Requalificacao e empregabilidade em TI
+  Vinculo:    Secretaria de Educacao + Assistencia Social
+
+CENARIO 4: CRAS / CENTRO COMUNITARIO (adultos 18-45 anos)
+  Local:      Telecentro do CRAS ou sala de reunioes com computadores
+  Horario:    Manha ou tarde, turno compativel com beneficiarios
+  Mediador:   Assistente social ou educador social do CRAS
+  Duracao:    Modulos de 45 minutos, 3x por semana
+  Meta:       Insercao produtiva de adultos em vulnerabilidade
+  Vinculo:    Secretaria de Assistencia Social (SUAS)
+
+CENARIO 5: CENTRO DE REINTEGRACAO SOCIAL (adultos 18-50 anos)
+  Local:      Sala de informatica de casa de apoio ou fundacao
+  Horario:    Programacao definida pela instituicao parceira
+  Mediador:   Educador da instituicao (treinado pelo projeto)
+  Duracao:    Modulos de 45 minutos, ritmo autoguiado
+  Meta:       Ressocializacao e preparacao para o mercado de trabalho
+  Vinculo:    Secretaria de Justica ou fundacoes municipais
+
+CENARIO 6: TELECENTRO COMUNITARIO (publico misto: todos os perfis)
+  Local:      Telecentro municipal de acesso livre
+  Horario:    Acesso livre com sessoes guiadas agendadas
+  Mediador:   Monitor voluntario ou tecnico do telecentro
+  Duracao:    Livre, com metas minimas mensais por usuario
+  Meta:       Inclusao digital ampla, sem restricao de perfil
+  Vinculo:    Secretaria de Ciencia, Tecnologia ou Inovacao
+
+IMAGEM SUGERIDA:
+  - Infografico com os 6 cenarios em cards visuais distintos
+  - Icone diferente por cenario (escola, CRAS, EJA, etc.)
+  - Linha colorida conectando cada cenario ao seu orgao vinculado
+
+TITULO: Como o Projeto Funciona
+
+MODELO OPERACIONAL:
+
+  [VEREADOR / DEPUTADO]
+      |
+      | Emenda Parlamentar
+      v
+  [ONG PARCEIRA]
+      |
+      | Repasse conforme contrato
+      v
+  [BIO CODE TECHNOLOGY LTDA]
+      |
+      | Disponibilizacao, escalonamento
+      | e manutencao da plataforma
+      v
+  [CRIANCAS, ADOLESCENTES E ADULTOS]
+      Acesso ao jogo educativo GARAGE
+      (Trilha Infanto-Juvenil ou Trilha de Requalificacao Adulto)
+
+ESTRUTURA DE DISTRIBUICAO DOS RECURSOS:
+
+  - 15% de devolucao de visibilidade e gestao ao parlamentar
+    (devolutiva institucional conforme pratica vigente)
+  - 5% para a ONG parceira (administracao local, inscricoes,
+    acompanhamento social)
+  - 80% para a Bio Code Technology Ltda (infraestrutura,
+    plataforma, equipe de desenvolvimento, suporte e escalonamento
+    para o numero de acessos contratados)
+
+ENTREGAVEIS COMPROVADOS:
+  - Relatorio mensal de acessos e tempo de jogo por aluno
+  - Dashboard de progresso por escola e por municipio
+  - Certificado de participacao para cada crianca
+  - Relatorio de impacto semestral para o parlamentar
+  - Evento presencial de encerramento ao final do ciclo
+
+IMAGEM SUGERIDA:
+  - Diagrama de fluxo operacional (parlamentar -> ONG -> empresa)
+  - Tela do dashboard de progresso do jogo
+  - Modelo de certificado de participacao
+
+
+================================================================================
+SLIDE 6 - TECNOLOGIA UTILIZADA
+================================================================================
+
+TITULO: A Plataforma Tecnologica
+
+STACK TECNICA:
+  - Linguagem Backend: Python 3.12 + FastAPI
+  - Frontend: HTML5 Canvas + JavaScript (sem dependencias)
+  - Arquitetura: Domain-Driven Design + Hexagonal Architecture
+  - Persistencia: JSON + PostgreSQL (producao)
+  - Deploy: Render.com (cloud escalavel)
+  - Acesso: 100% via navegador web (Chrome, Firefox, Edge)
+
+REQUISITOS MINIMOS POR ESTACAO:
+  - Computador com qualquer sistema operacional (Windows, Linux, Mac)
+  - Navegador web atualizado
+  - Conexao a internet (minimo 1 Mbps por estacao)
+  - Sem necessidade de instalacao de software adicional
+
+ESCALABILIDADE:
+  - A plataforma suporta acessos simultaneos ilimitados
+  - Sistema de usuarios com login individual e progresso salvo
+  - Dados protegidos por autenticacao JWT (padrao industria)
+  - Backup diario automatico de todos os dados de progresso
+
+SEGURANCA E LGPD:
+  - Dados de menores protegidos conforme LGPD (Lei 13.709/2018)
+  - Nenhum dado sensivel coletado alem de nome e progresso
+  - Servidores no Brasil ou com conformidade brasileira
+  - Politica de privacidade especifica para publico infanto-juvenil
+
+IMAGEM SUGERIDA:
+  - Logo das tecnologias usadas (Python, FastAPI, HTML5)
+  - Diagrama de arquitetura simplificado da plataforma
+  - Icone de cadeado representando seguranca e LGPD
+
+
+================================================================================
+SLIDE 7 - TABELA DE EMENDAS E IMPACTO
+================================================================================
+
+TITULO: Quanto Investir e Quantos Participantes Atingir
+        (Criancas, Adolescentes e Adultos)
+
+------------------------------------------------------------------------
+EMENDA DE R$ 100.000,00
+------------------------------------------------------------------------
+  Distribuicao:
+    - Devolutiva parlamentar (15%): R$ 15.000,00
+    - ONG parceira (5%):           R$  5.000,00
+    - Bio Code Technology (80%):   R$ 80.000,00
+
+  Impacto:
+    - Participantes atendidos:     ate 200 alunos
+    - Duracao do programa:         12 meses
+    - Escolas ou pontos:           ate 2 unidades
+    - Horas estimadas de jogo:     96 horas por aluno (media)
+    - Certificados emitidos:       200 certificados
+    - Suporte ao educador:         incluido
+
+------------------------------------------------------------------------
+EMENDA DE R$ 200.000,00
+------------------------------------------------------------------------
+  Distribuicao:
+    - Devolutiva parlamentar (15%): R$ 30.000,00
+    - ONG parceira (5%):            R$ 10.000,00
+    - Bio Code Technology (80%):    R$160.000,00
+
+  Impacto:
+    - Participantes atendidos:      ate 500 alunos
+    - Duracao do programa:          12 meses
+    - Escolas ou pontos:            ate 5 unidades
+    - Horas estimadas de jogo:      96 horas por aluno (media)
+    - Certificados emitidos:        500 certificados
+    - Treinamento de professores:   incluido (1 turma por escola)
+
+------------------------------------------------------------------------
+EMENDA DE R$ 300.000,00
+------------------------------------------------------------------------
+  Distribuicao:
+    - Devolutiva parlamentar (15%): R$ 45.000,00
+    - ONG parceira (5%):            R$ 15.000,00
+    - Bio Code Technology (80%):    R$240.000,00
+
+  Impacto:
+    - Participantes atendidos:      ate 800 alunos
+    - Duracao do programa:          12 meses
+    - Escolas ou pontos:            ate 8 unidades
+    - Horas estimadas de jogo:      96 horas por aluno (media)
+    - Certificados emitidos:        800 certificados
+    - Evento de encerramento:       1 evento publico por semestre
+    - Relatorio de impacto:         semestral para o parlamentar
+
+------------------------------------------------------------------------
+EMENDA DE R$ 500.000,00
+------------------------------------------------------------------------
+  Distribuicao:
+    - Devolutiva parlamentar (15%): R$  75.000,00
+    - ONG parceira (5%):            R$  25.000,00
+    - Bio Code Technology (80%):    R$ 400.000,00
+
+  Impacto:
+    - Participantes atendidos:      ate 1.500 alunos
+    - Duracao do programa:          18 meses
+    - Escolas ou pontos:            ate 15 unidades
+    - Horas estimadas de jogo:      96 horas por aluno (media)
+    - Certificados emitidos:        1.500 certificados
+    - Workshop presencial:          1 por bimestre
+    - Producao de conteudo local:   customizacao com nomes e
+                                    referencias do municipio
+    - Relatorio de impacto:         mensal para o parlamentar
+
+------------------------------------------------------------------------
+EMENDA DE R$ 1.000.000,00 (1 MILHAO)
+------------------------------------------------------------------------
+  Distribuicao:
+    - Devolutiva parlamentar (15%): R$ 150.000,00
+    - ONG parceira (5%):            R$  50.000,00
+    - Bio Code Technology (80%):    R$ 800.000,00
+
+  Impacto:
+    - Participantes atendidos:      ate 5.000 alunos
+    - Duracao do programa:          24 meses (2 anos completos)
+    - Escolas ou pontos:            ate 30 unidades no municipio
+    - Horas estimadas de jogo:      96 horas por aluno (media)
+    - Certificados emitidos:        5.000 certificados
+    - Evento de formatura:          1 evento anual de grande porte
+    - Hackathon local:              1 por ano com premiacao
+    - Bolsas de continuidade:       10 bolsas para cursos tecnicos
+                                    para os melhores alunos
+    - Customizacao completa:        versao do jogo com identidade
+                                    visual do municipio ou projeto
+    - Relatorio de impacto:         mensal + auditoria semestral
+    - Presenca de imprensa:         assessoria para divulgacao
+                                    do projeto pelo parlamentar
+
+------------------------------------------------------------------------
+
+NOTA IMPORTANTE SOBRE A DEVOLUTIVA PARLAMENTAR:
+  A devolutiva de 15% e pratica institucionalizada em projetos
+  sociais financiados por emendas parlamentares. Representa o
+  retorno de visibilidade politica, relatorios de impacto,
+  eventos publicos com presenca do parlamentar e material
+  de comunicacao credenciado ao mandato.
+
+
+================================================================================
+SLIDE 8 - QUEM SOMOS
+================================================================================
+
+TITULO: Bio Code Technology Ltda
+
+DESCRICAO DA EMPRESA:
+  A Bio Code Technology Ltda e uma empresa brasileira de
+  desenvolvimento de software educativo, especializada em
+  plataformas de gamificacao para formacao tecnica e
+  profissionalizacao.
+
+  O jogo GARAGE - Uma Aventura no Vale do Silicio foi
+  desenvolvido com arquitetura de nivel enterprise, capaz
+  de suportar milhares de usuarios simultaneos com
+  rastreabilidade completa de aprendizagem.
+
+DIFERENCIAIS DA EMPRESA:
+  - Produto proprio ja desenvolvido e em operacao
+  - Arquitetura cloud-native escalavel
+  - Equipe tecnica especializada em educacao e gamificacao
+  - Experiencia em projetos sociais e educacionais
+  - Compromisso com LGPD e seguranca de dados de menores
+
+MISSAO:
+  Democratizar o acesso ao conhecimento tecnologico,
+  transformando periferias em celeiros de inovacao.
+
+VISAO:
+  Ser a principal plataforma de formacao tecnologica
+  para criancas, adolescentes e adultos de baixa renda no Brasil,
+  conectando periferias ao mercado de tecnologia.
+
+IMAGEM SUGERIDA:
+  - Logo da Bio Code Technology Ltda
+  - Foto da equipe de desenvolvimento (se disponivel)
+  - Numero de usuarios atuais da plataforma
+
+
+================================================================================
+SLIDE 9 - CRONOGRAMA DE IMPLANTACAO
+================================================================================
+
+TITULO: Cronograma de Implantacao
+
+MES 1 - ESTRUTURACAO:
+  - Assinatura do contrato entre ONG, parlamentar e empresa
+  - Configuracao da plataforma para o municipio
+  - Cadastro das escolas e pontos de acesso
+  - Treinamento dos educadores parceiros
+
+MES 2 - LANCAMENTO:
+  - Evento de lancamento com presenca do parlamentar
+  - Abertura dos cadastros de alunos
+  - Inicio das sessoes de jogo nas unidades
+
+MESES 3 A 11 - OPERACAO:
+  - Sessoes semanais de jogo (minimo 2h por semana por aluno)
+  - Acompanhamento de progresso via dashboard
+  - Relatorios mensais ao parlamentar
+  - Suporte tecnico continuo
+
+MES 12 - ENCERRAMENT0:
+  - Evento de formatura e premiacao dos melhores alunos
+  - Emissao de certificados
+  - Relatorio final de impacto
+  - Avaliacao para renovacao ou expansao do projeto
+
+IMAGEM SUGERIDA:
+  - Linha do tempo visual do cronograma
+  - Foto de evento de formatura escolar
+  - Icones representando cada fase
+
+
+================================================================================
+SLIDE 10 - VISAO DE FUTURO: PARA ONDE ESTE PROJETO PODE IR
+================================================================================
+
+TITULO: O Que Estamos Construindo Para os Proximos Anos
+
+TEXTO PRINCIPAL:
+  O que começa como um projeto de emenda parlamentar municipal
+  pode se tornar uma das maiores plataformas de formacao
+  tecnologica da America Latina. O GARAGE ja foi construido
+  com arquitetura que suporta esse crescimento.
+
+FASE 1 - PRESENTE (2026): PROJETO PILOTO MUNICIPAL
+  O que existe hoje e funciona:
+    - Plataforma web 100% operacional
+    - 24 empresas e fundadores reais jogaveis
+    - Sistema de login, progresso e certificados
+    - Pronto para ser implantado com emenda parlamentar
+
+FASE 2 - CURTO PRAZO (2027): ESCALA ESTADUAL
+  Com resultados dos pilotos municipais:
+    - Proposta para secretarias estaduais de educacao
+    - Parceria com programas estaduais de inclusao digital
+    - GARAGE Mobile: app nativo para iOS e Android
+      (alcanca alunos que tem celular mas nao tem computador)
+    - Dashboard estadual unificado de impacto por municipio
+
+FASE 3 - MEDIO PRAZO (2027-2028): ESCALA NACIONAL
+  Caminhos possiveis para escala federal:
+    - Parceria com MEC (Ministerio da Educacao) como ferramenta
+      de apoio ao ensino de computacao na BNCC
+    - Integracao com o PRONATEC como modulo de nivelamento
+    - Programa federal "Tecnologia na Quebrada" lancado por
+      deputado ou senador com base nos pilotos estaduais
+    - Meta: 500.000 criancas e adultos atendidos em 36 meses
+
+FASE 4 - LONGO PRAZO (2029+): INTERNACIONALIZACAO
+  A historia da tecnologia e universal:
+    - GARAGE em espanhol para Colombia, Peru, Argentina, Mexico
+    - Parceria com organismos internacionais (UNESCO, BID, PNUD)
+      para programas de inclusao digital na America Latina
+    - GARAGE Enterprise: versao para empresas usarem no
+      onboarding de desenvolvedores junior recém-contratados
+    - Licenciamento da plataforma para governos estrangeiros
+
+INOVACOES TECNOLOGICAS PLANEJADAS:
+    - GARAGE AI Tutor: inteligencia artificial que adapta
+      o nivel de dificuldade em tempo real por aluno
+    - GARAGE Job Board: conectar alunos certificados
+      diretamente a empresas parceiras de tecnologia
+    - GARAGE Hackathon Module: modulo de competicao entre
+      escolas e municipios com ranking nacional
+    - GARAGE Creator: ferramenta para professores criarem
+      seus proprios desafios dentro do jogo
+    - Certificacao reconhecida por parceiros corporativos
+      (Google, AWS, Microsoft, Oracle) como pre-requisito
+      para programas de trainee e estagio
+
+O PAPEL DO PARLAMENTAR NESSA JORNADA:
+  Quem financiar o piloto municipal hoje entra para a historia
+  como o parlamentar que plantou a semente de um programa
+  que pode alcançar milhoes de brasileiros.
+  O municipio se torna referencia nacional. O mandato ganha
+  visibilidade real e mensuravel em impacto social.
+
+IMAGEM SUGERIDA:
+  - Diagrama de fase 1 a 4 em linha do tempo visual
+  - Mapa do Brasil com expansao de pontos por fase
+  - Mapa da America Latina para a fase de internacionalizacao
+  - Mockup do GARAGE Mobile (tela de celular com o jogo)
+  - Logos de possiveis parceiros: MEC, Google, AWS, UNESCO
+
+
+================================================================================
+SLIDE 11 - CHAMADA PARA ACAO
+================================================================================
+
+TITULO: Vamos Juntos Transformar a Periferia
+
+MENSAGEM CENTRAL:
+  Cada crianca que aprende a programar hoje e um engenheiro,
+  um empreendedor, um criador de empregos amanha.
+
+  Cada adulto desempregado que aprende logica hoje pode mudar
+  de setor, aumentar sua renda e transformar a vida da sua familia.
+
+  A tecnologia e o unico setor que cresce sem parar.
+  A periferia tem talento. Falta oportunidade.
+
+  Com uma emenda parlamentar, o senhor (a) pode ser o responsavel
+  por plantar essa semente em centenas ou milhares de vidas.
+
+  O projeto esta pronto. A plataforma esta funcionando.
+  Os educadores serao treinados. Os relatorios serao entregues.
+
+  So falta a decisao politica de fazer acontecer.
+
+CHAMADA PARA ACAO:
+  Entre em contato conosco para uma apresentacao personalizada
+  para o seu municipio ou estado.
+
+CONTATO:
+  Bio Code Technology Ltda
+  E-mail:   [inserir email]
+  Telefone: [inserir telefone]
+  Site:     [inserir site]
+  Jogo:     https://garage-game-latest.onrender.com
+
+IMAGEM SUGERIDA:
+  - Foto impactante: crianca sorrindo na frente do computador
+    com o jogo GARAGE na tela
+  - QR Code para acessar o jogo ao vivo
+  - Logo do projeto TECNOLOGIA NA QUEBRADA
+  - Logo da Bio Code Technology Ltda
+
+
+================================================================================
+NOTAS PARA PRODUCAO DO POWERPOINT
+================================================================================
+
+PALETA DE CORES SUGERIDA:
+  - Fundo principal:    Preto profundo (#0A0A0A) ou Azul escuro (#0D1B2A)
+  - Cor de destaque 1:  Laranja vibrante (#FF6B00)
+  - Cor de destaque 2:  Verde tecnologico (#00FF88)
+  - Texto principal:    Branco (#FFFFFF)
+  - Texto secundario:   Cinza claro (#CCCCCC)
+  - Bordas e separadores: Roxo eletrico (#7B2FBE)
+
+  Referencia visual: estetica de terminal de codigo / hacker /
+  videogame retro futurista. Deve remeter a tecnologia mas
+  sem ser frio ou corporativo demais.
+
+TIPOGRAFIA SUGERIDA:
+  - Titulos:    Orbitron Bold ou Rajdhani Bold (fontes tecnologicas)
+  - Corpo:      Inter Regular ou Roboto (leitura limpa)
+  - Destaques:  Source Code Pro (para trechos que remetem a codigo)
+
+  Alternativas gratuitas no Google Fonts: Orbitron, Rajdhani, Inter.
+
+ELEMENTOS VISUAIS RECOMENDADOS:
+  - Screenshots reais do jogo GARAGE em funcionamento
+  - Linha do tempo animada de 1973 a 2026 com logos das empresas
+  - Graficos de impacto com barras coloridas
+  - Icones flat tech (computador, codigo, diploma, seta de crescimento)
+  - Foto de criancas brasileiras de periferia com computador
+    (banco de imagens: Pexels, Unsplash - buscar "children computer
+    Brazil" ou "criancas informatica")
+  - QR Code funcional apontando para o jogo ao vivo
+
+NUMERO DE SLIDES RECOMENDADO: 12 a 14 slides
+DURACAO ESTIMADA DA APRESENTACAO: 18 a 25 minutos
+
+ORDEM DOS SLIDES:
+  1.  Capa (projeto + logos)
+  2.  O Problema (dados de exclusao digital - criancas e adultos)
+  3.  A Solucao (o jogo GARAGE)
+  4.  Para Quem e o Projeto (publico-alvo: criancas e adultos)
+  4B. GARAGE Para Adultos: Trilha de Requalificacao [SLIDE EXTRA]
+  5.  Como Funciona Operacionalmente (fluxo ONG + empresa)
+  6.  Tecnologia Utilizada (plataforma e seguranca)
+  7.  Tabela de Emendas e Impacto (pagina central do documento)
+  8.  Quem Somos (Bio Code Technology)
+  9.  Cronograma de Implantacao
+  10. Visao de Futuro: Para Onde Este Projeto Pode Ir [SLIDE NOVO]
+  11. Chamada para Acao (contato + QR Code)
+
+NOTA SOBRE O SLIDE 4B:
+  Este slide pode ser omitido em apresentacoes curtas (ate 15 min)
+  ou para parlamentares focados exclusivamente em publico escolar.
+  Para vereadores com atuacao em CRAS ou assistencia social,
+  este slide e de alto impacto e deve ser mantido.
+
+NOTA SOBRE O SLIDE 10 (VISAO DE FUTURO):
+  Este slide diferencia o projeto de propostas pontuais.
+  Demonstra que o parlamentar nao esta comprando uma solucao
+  momentanea, mas entrando em uma plataforma com trajetoria
+  de crescimento nacional e internacional. Essencial para
+  deputados federais e estaduais.
+
+
+================================================================================
+ULTIMA PAGINA - TABELA RESUMO OFICIAL DE EMENDAS
+(Esta pagina deve ser impressa separadamente como documento anexo)
+================================================================================
+
+PROJETO: TECNOLOGIA NA QUEBRADA - Uma Aventura no Vale do Silicio
+PROPONENTE: Bio Code Technology Ltda | Canal: ONG Parceira Local
+
++------------------+------------------+----------+----------+------------------+
+| VALOR DA EMENDA  | PARTICIPANTES    | DURACAO  | PONTOS   | DEVOLUTIVA PARL. |
++------------------+------------------+----------+----------+------------------+
+| R$  100.000,00   |    ate 200       | 12 meses | 2 unid.  | R$  15.000,00    |
+| R$  200.000,00   |    ate 500       | 12 meses | 5 unid.  | R$  30.000,00    |
+| R$  300.000,00   |    ate 800       | 12 meses | 8 unid.  | R$  45.000,00    |
+| R$  500.000,00   |   ate 1.500      | 18 meses | 15 unid. | R$  75.000,00    |
+| R$ 1.000.000,00  |   ate 5.000      | 24 meses | 30 unid. | R$ 150.000,00    |
++------------------+------------------+----------+----------+------------------+
+
+NOTA: "Participantes" inclui criancas (10-17 anos), adolescentes e adultos
+(18-45 anos), conforme perfil do municipio e modalidade contratada.
+A proporcao entre trilha infanto-juvenil e trilha adulto e definida
+com o parlamentar e a ONG parceira no momento da contratacao.
+
+DISTRIBUICAO DOS RECURSOS (TODOS OS VALORES):
+  15% -> Devolutiva institucional ao parlamentar
+   5% -> ONG parceira local (operacao e acompanhamento social)
+  80% -> Bio Code Technology Ltda (plataforma, escalonamento e equipe)
+
+ENTREGAVEIS GARANTIDOS EM TODOS OS NIVEIS DE EMENDA:
+  - Relatorio mensal de uso e progresso por participante
+  - Certificado digital de participacao para cada participante
+  - Dashboard de progresso em tempo real para o parlamentar
+  - Treinamento inicial para educadores e mediadores
+  - Suporte tecnico durante toda a vigencia do contrato
+
+CONTATO PARA FORMALIZACAO:
+  Bio Code Technology Ltda
+  CNPJ: [inserir]
+  E-mail: [inserir]
+  Telefone: [inserir]
+  Plataforma: https://garage-game-latest.onrender.com
+
+================================================================================
+FIM DO DOCUMENTO
+================================================================================
