@@ -1445,6 +1445,132 @@ body {
     margin-bottom: 24px;
 }
 
+/* --- LEARNING PREP OVERLAY --- */
+.learning-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.94);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 47;
+    padding: 20px;
+}
+
+.learning-card {
+    width: min(980px, 96vw);
+    max-height: 92vh;
+    overflow-y: auto;
+    background: linear-gradient(160deg, #0f172a 0%, #111827 55%, #0b1222 100%);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    box-shadow: 0 20px 50px rgba(2, 6, 23, 0.65);
+    border-radius: 14px;
+    padding: 18px 18px 16px;
+}
+
+.learning-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.learning-chip {
+    font-size: 0.62rem;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #93c5fd;
+    border: 1px solid rgba(59, 130, 246, 0.45);
+    background: rgba(37, 99, 235, 0.18);
+    border-radius: 999px;
+    padding: 4px 10px;
+}
+
+.learning-stage-label {
+    font-size: 0.7rem;
+    color: #fbbf24;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.learning-card h2 {
+    color: #e2e8f0;
+    font-size: 1.15rem;
+    margin: 0 0 6px;
+    letter-spacing: 0.3px;
+}
+
+.learning-subtitle {
+    color: #cbd5e1;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    margin: 0 0 14px;
+}
+
+.learning-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.learning-section {
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.learning-section h3 {
+    margin: 0 0 8px;
+    color: #93c5fd;
+    font-size: 0.74rem;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+}
+
+.learning-section ul {
+    margin: 0;
+    padding-left: 16px;
+    color: #e2e8f0;
+    font-size: 0.74rem;
+    line-height: 1.5;
+}
+
+.learning-section li {
+    margin-bottom: 6px;
+}
+
+.learning-warmup {
+    margin-top: 12px;
+    padding: 11px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.08);
+}
+
+.learning-warmup-title {
+    font-size: 0.68rem;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    color: #fbbf24;
+    margin-bottom: 6px;
+}
+
+.learning-warmup p {
+    margin: 0;
+    color: #fde68a;
+    font-size: 0.75rem;
+    line-height: 1.48;
+}
+
+.learning-actions {
+    margin-top: 14px;
+    display: flex;
+    justify-content: flex-end;
+}
+
 /* --- GAME OVER & VICTORY --- */
 #screen-gameover {
     background: linear-gradient(135deg, #1a0000 0%, #0a0a0f 100%);
@@ -2648,6 +2774,47 @@ body {
 
     .challenge-actions .btn-primary,
     .challenge-actions .btn-secondary {
+        width: 100%;
+        min-height: 48px;
+    }
+
+    /* learning prep */
+    .learning-overlay {
+        padding: 10px;
+    }
+
+    .learning-card {
+        width: 100%;
+        max-height: 95vh;
+        padding: 14px 12px;
+    }
+
+    .learning-card h2 {
+        font-size: 0.98rem;
+    }
+
+    .learning-subtitle {
+        font-size: 0.7rem;
+    }
+
+    .learning-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .learning-section {
+        padding: 10px;
+    }
+
+    .learning-section h3 {
+        font-size: 0.66rem;
+    }
+
+    .learning-section ul {
+        font-size: 0.7rem;
+    }
+
+    .learning-actions .btn-primary {
         width: 100%;
         min-height: 48px;
     }

@@ -364,6 +364,42 @@
         </div>
     </div>
 
+    <!-- ========== LEARNING PREP OVERLAY ========== -->
+    <div id="learningOverlay" class="learning-overlay" style="display:none;">
+        <div class="learning-card">
+            <div class="learning-topbar">
+                <span class="learning-chip" id="learningChip">PREPARACAO</span>
+                <span class="learning-stage-label" id="learningStageLabel">Intern</span>
+            </div>
+            <h2 id="learningTitle">Briefing de Aprendizagem</h2>
+            <p class="learning-subtitle" id="learningSubtitle"></p>
+
+            <div class="learning-grid">
+                <section class="learning-section">
+                    <h3 id="learningSecAHead">Forma de pensar</h3>
+                    <ul id="learningSecAList"></ul>
+                </section>
+                <section class="learning-section">
+                    <h3 id="learningSecBHead">Base Java</h3>
+                    <ul id="learningSecBList"></ul>
+                </section>
+                <section class="learning-section">
+                    <h3 id="learningSecCHead">Missao tecnica</h3>
+                    <ul id="learningSecCList"></ul>
+                </section>
+            </div>
+
+            <div class="learning-warmup">
+                <div class="learning-warmup-title">Warm-up</div>
+                <p id="learningWarmupText"></p>
+            </div>
+
+            <div class="learning-actions">
+                <button class="btn-primary" id="learningContinueBtn" onclick="Learning.continue()">CONTINUAR</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ========== BOOK POPUP ========== -->
     <div id="bookPopup" class="book-popup">
         <div class="book-popup-card">
