@@ -1820,10 +1820,10 @@
         ]
     },
     {
-        "id": "staff_18_aurora_labs_neural_graphs",
-        "title": "Grafos (Redes de Conexões) em Redes Neurais",
-        "description": "Por que redes neurais podem ser modeladas como grafos (redes com direção) direcionados?",
-        "context_code": "// Camada de entrada → Camada oculta → Camada de saída\n// Cada neurônio conecta a neurônios da próxima camada",
+        "id": "staff_18_aurora_labs_connection_graphs",
+        "title": "Grafos (Redes de Conexoes) em Pipelines",
+        "description": "Por que pipelines de processamento podem ser modelados como grafos direcionados?",
+        "context_code": "// Etapa de entrada -> etapa de processamento -> etapa de saida\n// Cada etapa conecta para a proxima etapa",
         "category": "architecture",
         "required_stage": "Staff",
         "region": "Aurora Labs",
@@ -1831,19 +1831,19 @@
         "points_on_correct": 250,
         "options": [
             {
-                "text": "Redes neurais não são grafos (redes de conexões), são matrizes de pesos",
+                "text": "Pipelines nao sao grafos, sao apenas listas lineares",
                 "is_correct": false,
-                "explanation": "Matrizes de pesos REPRESENTAM as arestas do grafo (rede). Cada peso é uma aresta entre dois neurônios."
+                "explanation": "Dependencias entre etapas formam as arestas do grafo. Cada ligacao representa o fluxo de dados."
             },
             {
-                "text": "Cada neurônio é um nó. Cada conexão (com peso) é uma aresta direcionada. Forward propagation é uma travessia do grafo (rede)",
+                "text": "Cada etapa e um no. Cada conexao de dependencia e uma aresta direcionada. Execucao em ordem e uma travessia do grafo",
                 "is_correct": true,
-                "explanation": "Forward pass = travessia topológica do grafo (rede). Backpropagation = travessia reversa. Grafos (redes de conexões) são a base da computacao."
+                "explanation": "Execucao por dependencias equivale a percorrer o grafo em ordem valida. Grafos sao base da computacao."
             },
             {
-                "text": "Grafos (redes de conexões) são apenas uma analogia visual, não têm aplicação computacional real em computacao",
+                "text": "Grafos sao apenas uma analogia visual, sem aplicacao real em sistemas",
                 "is_correct": false,
-                "explanation": "Graph Neural Networks (GNN — redes que aprendem sobre redes) são uma área inteira de pesquisa. Grafos (redes de conexões) são estrutura fundamental em computacao moderna."
+                "explanation": "Orquestracao, roteamento e analise de dependencias usam grafos diariamente em producao."
             }
         ]
     },

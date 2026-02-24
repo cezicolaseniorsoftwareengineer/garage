@@ -1015,12 +1015,12 @@ const NPC_DATA = [
     },
     {
         id: 'npc_nvidia', name: 'JENSEN HUANG', role: 'CEO - Nvidia', region: 'Nvidia', stage: 'Staff', worldX: 24600,
-        dialog: 'Jensen Huang, CEO da Nvidia. Fundei a empresa em 1993 num Denny\'s em San Jose. De placas de v\u00eddeo a computacao generativa, nossas GPUs s\u00e3o o motor da revolu\u00e7\u00e3o da intelig\u00eancia artificial. Treinamento de modelos, ordena\u00e7\u00e3o eficiente e processamento massivo de dados -- Merge Sort n\u00e3o \u00e9 exerc\u00edcio acad\u00eamico, \u00e9 o que roda em cada GPU nossa.',
+        dialog: 'Jensen Huang, CEO da Nvidia. Fundei a empresa em 1993 num Denny\'s em San Jose. De placas de video a computacao de alto desempenho, nossas GPUs movem simulacao, renderizacao e processamento massivo de dados. Ordenacao eficiente e pipelines robustos -- Merge Sort nao e exercicio academico, e o que roda em cada GPU nossa.',
         look: { hair: '#222', hairStyle: 'short', beard: null, glasses: false, shirt: '#111', pants: '#222', skinTone: '#D2A673', jacket: '#111' }
     },
     {
         id: 'npc_aurora_labs', name: 'SAM ALTMAN', role: 'CEO - Aurora Labs', region: 'Aurora Labs', stage: 'Staff', worldX: 26000,
-        dialog: 'Sam Altman, CEO da Aurora Labs. Criamos o assistente conversacional, DALL-E e modelos avançados -- modelos que est\u00e3o redefinindo a intelig\u00eancia artificial. Redes neurais s\u00e3o grafos computacionais. Travessia em largura, busca em profundidade e processamento de estruturas conectadas s\u00e3o a base de tudo que constru\u00edmos. Grafos n\u00e3o s\u00e3o teoria, s\u00e3o a realidade da computacao.',
+        dialog: 'Sam Altman, CEO da Aurora Labs. Construimos plataformas de software em escala global, com pipelines de dados e servicos distribuidos. Grafos sao estruturas computacionais centrais. Travessia em largura, busca em profundidade e processamento de estruturas conectadas sustentam sistemas criticos. Grafos nao sao teoria, sao a realidade da computacao.',
         look: { hair: '#c4733c', hairStyle: 'short', beard: null, glasses: false, shirt: '#444', pants: '#333', skinTone: '#F5D0A9', casual: true }
     },
     // -- PRINCIPAL --
@@ -1036,7 +1036,7 @@ const NPC_DATA = [
     },
     {
         id: 'npc_gemini', name: 'DEMIS HASSABIS', role: 'CEO - Google DeepMind', region: 'Gemini', stage: 'Principal', worldX: 30200,
-        dialog: 'Demis Hassabis, CEO do Google DeepMind. Criamos o AlphaGo, AlphaFold e o Gemini -- computacao que resolve prote\u00ednas, vence campe\u00f5es de Go e raciocina com multimodalidade. Priority Queue e Heap s\u00e3o fundamentais em computacao: agendamento de tarefas, busca A*, beam search. Quando cada decis\u00e3o tem um custo, priorizar \u00e9 tudo.',
+        dialog: 'Demis Hassabis, CEO do Google DeepMind. Lideramos pesquisa e produtos de computacao em larga escala, da ciencia aplicada a sistemas de decisao. Priority Queue e Heap sao fundamentais em computacao: agendamento de tarefas, busca A* e processamento por prioridade. Quando cada decisao tem um custo, priorizar e tudo.',
         look: { hair: '#333', hairStyle: 'curly', beard: null, glasses: false, shirt: '#4285f4', pants: '#222', skinTone: '#D2A673', casual: true }
     },
     {
@@ -5585,7 +5585,7 @@ const CODE_CHALLENGES = [
             if (!/Set/.test(code) && !/visited/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use um Set para rastrear n\u00f3s j\u00e1 visitados.' };
             if (!/\.poll\s*\(/.test(code) && !/\.remove\s*\(/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use queue.poll() para desenfileirar o pr\u00f3ximo n\u00f3.' };
             if (!/while/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use while (!queue.isEmpty()) para processar todos os n\u00f3s.' };
-            return { ok: true, msg: 'BUILD SUCCESSFUL\n> [0, 1, 2, 3, 4]\n\nBFS: visita todos os n\u00f3s por camada (n\u00edvel).\nBase de redes neurais, redes sociais e shortest path.\nProcesso finalizado com c\u00f3digo de sa\u00edda 0.' };
+            return { ok: true, msg: 'BUILD SUCCESSFUL\n> [0, 1, 2, 3, 4]\n\nBFS: visita todos os n\u00f3s por camada (n\u00edvel).\nBase de sistemas conectados, redes sociais e shortest path.\nProcesso finalizado com c\u00f3digo de sa\u00edda 0.' };
         },
         helpText: 'COMO PENSAR:\n1. BFS = visitar n\u00f3s por camada. Primeiro os vizinhos, depois os vizinhos dos vizinhos.\n2. Estrutura: Queue (fila FIFO) + Set (visitados).\n3. Comece pelo n\u00f3 inicial: adicione \u00e0 fila e ao set.\n4. Enquanto a fila n\u00e3o estiver vazia: retire um n\u00f3, processe, adicione vizinhos.\n5. Complexidade: O(V + E) onde V=v\u00e9rtices, E=arestas.\n\nCOLA -- Copie este c\u00f3digo na IDE:\n\nimport java.util.*;\n\npublic class GraphBFS {\n    static List<Integer> bfs(Map<Integer, List<Integer>> graph, int start) {\n        List<Integer> result = new ArrayList<>();\n        Queue<Integer> queue = new LinkedList<>();\n        Set<Integer> visited = new HashSet<>();\n        queue.add(start);\n        visited.add(start);\n        while (!queue.isEmpty()) {\n            int node = queue.poll();\n            result.add(node);\n            for (int neighbor : graph.getOrDefault(node, List.of())) {\n                if (!visited.contains(neighbor)) {\n                    visited.add(neighbor);\n                    queue.add(neighbor);\n                }\n            }\n        }\n        return result;\n    }\n\n    public static void main(String[] args) {\n        Map<Integer, List<Integer>> graph = new HashMap<>();\n        graph.put(0, Arrays.asList(1, 2));\n        graph.put(1, Arrays.asList(0, 3, 4));\n        graph.put(2, Arrays.asList(0, 4));\n        graph.put(3, Arrays.asList(1));\n        graph.put(4, Arrays.asList(1, 2));\n        System.out.println(bfs(graph, 0));\n    }\n}'
     },
