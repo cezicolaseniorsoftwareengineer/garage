@@ -526,6 +526,17 @@ const StudyChat = {
         }
     },
 
+    /**
+     * Reset chat history for a fresh start on a new challenge.
+     */
+    reset() {
+        this._messages = [];
+        this._persist();
+        const { messages } = this._els();
+        if (messages) messages.innerHTML = '';
+        console.log('[StudyChat] History cleared for new challenge.');
+    },
+
     toggle() {
         if (this._open) this.close();
         else this.open(true);
@@ -6548,6 +6559,11 @@ const IDE = {
      * Called after the theory challenge is answered correctly.
      */
     open(npc, opts = {}) {
+        // Reset study chat for fresh context on each new challenge
+        if (typeof StudyChat !== 'undefined') {
+            StudyChat.reset();
+        }
+
         const stage = State.player ? State.player.stage : 'Intern';
         const region = npc ? npc.region : null;
         const selected = opts.preselectedChallenge || this._selectChallenge(stage, region);
