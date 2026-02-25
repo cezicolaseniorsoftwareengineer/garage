@@ -50,6 +50,11 @@ class PgPlayerRepository:
                 gs.completed_challenges = list(player.completed_challenges)
                 gs.game_over_count = player.game_over_count
                 gs.status = player.status.value
+                # World state persistence
+                gs.collected_books = list(player.collected_books)
+                gs.completed_regions = list(player.completed_regions)
+                gs.current_region = player.current_region
+                gs.player_world_x = player.player_world_x
             else:
                 gs = GameSessionModel(
                     id=pid,
@@ -63,6 +68,11 @@ class PgPlayerRepository:
                     completed_challenges=list(player.completed_challenges),
                     game_over_count=player.game_over_count,
                     status=player.status.value,
+                    # World state persistence
+                    collected_books=list(player.collected_books),
+                    completed_regions=list(player.completed_regions),
+                    current_region=player.current_region,
+                    player_world_x=player.player_world_x,
                 )
                 session.add(gs)
 
@@ -218,4 +228,9 @@ class PgPlayerRepository:
             game_over_count=gs.game_over_count,
             status=GameEnding(gs.status),
             created_at=gs.created_at.isoformat() if gs.created_at else None,
+            # World state persistence
+            collected_books=list(gs.collected_books or []),
+            completed_regions=list(gs.completed_regions or []),
+            current_region=gs.current_region,
+            player_world_x=gs.player_world_x or 100,
         )

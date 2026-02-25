@@ -80,6 +80,11 @@ class GameSessionModel(Base):
     completed_challenges = Column(ARRAY(String), nullable=False, default=list)
     game_over_count = Column(Integer, nullable=False, default=0)
     status = Column(String(20), nullable=False, default="in_progress")
+    # World state persistence
+    collected_books = Column(ARRAY(String), nullable=False, default=list)
+    completed_regions = Column(ARRAY(String), nullable=False, default=list)
+    current_region = Column(String(50), nullable=True)
+    player_world_x = Column(Integer, nullable=False, default=100)
     created_at = Column(DateTime(timezone=True), nullable=False, default=_utcnow)
     updated_at = Column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow)
 

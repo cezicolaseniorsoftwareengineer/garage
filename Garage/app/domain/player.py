@@ -70,6 +70,11 @@ class Player:
         game_over_count: int = 0,
         status: GameEnding = GameEnding.IN_PROGRESS,
         created_at: str | None = None,
+        # World state persistence
+        collected_books: list | None = None,
+        completed_regions: list | None = None,
+        current_region: str | None = None,
+        player_world_x: int = 100,
     ):
         if not name or not name.strip():
             raise ValueError("Player name cannot be empty")
@@ -87,6 +92,11 @@ class Player:
         self._game_over_count = game_over_count
         self._status = status
         self._created_at = created_at or datetime.now(timezone.utc).isoformat()
+        # World state persistence
+        self._collected_books: List[str] = collected_books or []
+        self._completed_regions: List[str] = completed_regions or []
+        self._current_region = current_region
+        self._player_world_x = player_world_x
 
     # --- Properties (Read-Only) ---
 
@@ -137,6 +147,22 @@ class Player:
     @property
     def status(self) -> GameEnding:
         return self._status
+
+    @property
+    def collected_books(self) -> List[str]:
+        return list(self._collected_books)
+
+    @property
+    def completed_regions(self) -> List[str]:
+        return list(self._completed_regions)
+
+    @property
+    def current_region(self) -> str | None:
+        return self._current_region
+
+    @property
+    def player_world_x(self) -> int:
+        return self._player_world_x
 
     # --- Domain Logic ---
 
@@ -263,6 +289,50 @@ class Player:
                 }
         return None
 
+    # --- World State Management ---
+
+    def collect_book(self, book_id: str) -> None:
+        """Record that a book was collected."""
+        if book_id not in self._collected_books:
+            self._collected_books.append(book_id)
+
+    def complete_region(self, region_name: str) -> None:
+        """Record that a region/company was fully completed."""
+        if region_name not in self._completed_regions:
+            self._completed_regions.append(region_name)
+
+    def set_current_region(self, region_name: str | None) -> None:
+        """Set the current region the player is in (for persistence)."""
+        self._current_region = region_name
+
+    def set_world_position(self, x: int) -> None:
+        """Set the player's world X position (for persistence)."""
+        self._player_world_x = x
+
+    def update_world_state(
+        self,
+        collected_books: list | None = None,
+        completed_regions: list | None = None,
+        current_region: str | None = None,
+        player_world_x: int | None = None,
+    ) -> None:
+        """Batch update world state for efficiency."""
+        if collected_books is not None:
+            self._collected_books = list(collected_books)
+        if completed_regions is not None:
+            self._completed_regions = list(completed_regions)
+        if current_region is not None:
+            self._current_region = current_region
+        if player_world_x is not None:
+            self._player_world_x = player_world_x
+
+    def reset_world_state(self) -> None:
+        """Reset world state when starting a new game."""
+        self._collected_books = []
+        self._completed_regions = []
+        self._current_region = None
+        self._player_world_x = 100
+
     # --- Serialization ---
 
     def to_dict(self) -> dict:
@@ -281,4 +351,9 @@ class Player:
             "status": self._status.value,
             "total_attempts": len(self._attempts),
             "created_at": self._created_at,
+            # World state persistence
+            "collected_books": self._collected_books,
+            "completed_regions": self._completed_regions,
+            "current_region": self._current_region,
+            "player_world_x": self._player_world_x,
         }

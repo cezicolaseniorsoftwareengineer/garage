@@ -182,7 +182,6 @@ def _build_stream_body(system_prompt: str, user_prompt: str, model: str, max_tok
 
 
 def _stream_openai_sse(system_prompt: str, user_prompt: str):
-def _stream_openai_sse(system_prompt: str, user_prompt: str):
     """Generator: yields SSE lines to the client token-by-token.
 
     Falls back gracefully to emitting the full answer as a single event when

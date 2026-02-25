@@ -31,6 +31,130 @@ const API = {
     },
 };
 
+// ---- world state persistence ----
+const WorldStatePersistence = {
+    _saveTimeout: null,
+    _lastSavedState: null,
+    _saveIntervalId: null,
+
+    /**
+     * Save world state to the backend.
+     * Called when books are collected, regions completed, or periodically for position.
+     */
+    async save(immediate = false) {
+        if (!State.sessionId) return;
+
+        const currentState = {
+            collected_books: [...State.collectedBooks],
+            completed_regions: [...State.completedRegions],
+            current_region: State.lockedRegion,
+            player_world_x: World.player ? Math.round(World.player.x) : 100,
+        };
+
+        // Skip if state hasn't changed (to reduce API calls)
+        const stateStr = JSON.stringify(currentState);
+        if (this._lastSavedState === stateStr && !immediate) return;
+
+        // Debounce saves unless immediate is requested
+        if (!immediate) {
+            if (this._saveTimeout) clearTimeout(this._saveTimeout);
+            this._saveTimeout = setTimeout(() => this._doSave(currentState, stateStr), 1000);
+            return;
+        }
+
+        await this._doSave(currentState, stateStr);
+    },
+
+    async _doSave(currentState, stateStr) {
+        try {
+            await API.post('/api/save-world-state', {
+                session_id: State.sessionId,
+                ...currentState,
+            });
+            this._lastSavedState = stateStr;
+            console.log('[WorldStatePersistence] State saved:', currentState);
+        } catch (e) {
+            console.error('[WorldStatePersistence] Failed to save state:', e);
+        }
+    },
+
+    /**
+     * Restore world state from the player data received from the server.
+     */
+    restore(playerData) {
+        if (!playerData) return;
+
+        // Restore collected books
+        if (Array.isArray(playerData.collected_books)) {
+            State.collectedBooks = [...playerData.collected_books];
+        }
+
+        // Restore completed regions
+        if (Array.isArray(playerData.completed_regions)) {
+            State.completedRegions = [...playerData.completed_regions];
+        }
+
+        // Restore current region (if player was inside a company)
+        if (playerData.current_region) {
+            State.lockedRegion = playerData.current_region;
+            // Find the NPC and building for the locked region
+            const npc = NPC_DATA.find(n => n.region === playerData.current_region);
+            if (npc) {
+                State.lockedNpc = npc;
+                const building = BUILDINGS.find(b => b.name === playerData.current_region);
+                if (building) {
+                    State.doorAnimBuilding = building;
+                }
+            }
+        }
+
+        // Set the last saved state to prevent immediate re-save
+        this._lastSavedState = JSON.stringify({
+            collected_books: State.collectedBooks,
+            completed_regions: State.completedRegions,
+            current_region: State.lockedRegion,
+            player_world_x: playerData.player_world_x || 100,
+        });
+
+        console.log('[WorldStatePersistence] State restored:', {
+            books: State.collectedBooks.length,
+            regions: State.completedRegions.length,
+            currentRegion: State.lockedRegion,
+            worldX: playerData.player_world_x,
+        });
+    },
+
+    /**
+     * Start periodic saves to persist player position.
+     */
+    startPeriodicSave(intervalMs = 30000) {
+        this.stopPeriodicSave();
+        this._saveIntervalId = setInterval(() => {
+            if (State.sessionId && !State.paused) {
+                this.save(false);
+            }
+        }, intervalMs);
+    },
+
+    stopPeriodicSave() {
+        if (this._saveIntervalId) {
+            clearInterval(this._saveIntervalId);
+            this._saveIntervalId = null;
+        }
+    },
+
+    /**
+     * Reset state tracking (used when starting a new game).
+     */
+    reset() {
+        this._lastSavedState = null;
+        if (this._saveTimeout) {
+            clearTimeout(this._saveTimeout);
+            this._saveTimeout = null;
+        }
+    },
+};
+
 // ---- study chat (authenticated) ----
 const StudyChat = {
     _open: false,
@@ -1867,7 +1991,7 @@ const World = {
     trees: [],
     mountains: [],
 
-    init(avatarIndex) {
+    init(avatarIndex, startX = 100) {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.player.skinIndex = avatarIndex || 0;
@@ -1886,15 +2010,16 @@ const World = {
         // Input
         this.setupInput();
 
-        // Reset player
-        this.player.x = 100;
+        // Reset player with saved position
+        this.player.x = startX;
         this.player.y = 0;
         this.player.vx = 0;
         this.player.vy = 0;
         this.player.onGround = true;
         this.player.facing = 1;
         this.player.state = 'idle';
-        this.camera.x = 0;
+        // Set camera to follow player position
+        this.camera.x = Math.max(0, startX - this.W * 0.35);
     },
 
     resize() {
@@ -2143,6 +2268,8 @@ const World = {
             this._doorAnimCallback = () => {
                 State.enteringDoor = false;
                 State.lockedRegion = npc.region;
+                // Persist entry into company
+                WorldStatePersistence.save(true);
                 this.showDialog(npc.name, npc.role, npc.dialog + '\n\nVocê entrou na ' + npc.region + '. Resolva TODOS os desafios para poder sair.');
                 State._pendingNpcRegion = npc.region;
             };
@@ -2150,6 +2277,8 @@ const World = {
             // Fallback if no building found
             State.lockedRegion = npc.region;
             State.lockedNpc = npc;
+            // Persist entry into company
+            WorldStatePersistence.save(true);
             this.showDialog(npc.name, npc.role, npc.dialog + '\n\nResolva TODOS os desafios para poder sair.');
             State._pendingNpcRegion = npc.region;
         }
@@ -2304,6 +2433,8 @@ const World = {
                     SFX.bookCollect();
                     this.showBookPopup(book);
                     this.updateBookHUD();
+                    // Persist book collection immediately
+                    WorldStatePersistence.save(true);
                 }
             });
         }
@@ -4917,6 +5048,9 @@ const Game = {
         SFX.menuConfirm();
 
         try {
+            // Reset any previous world state tracking
+            WorldStatePersistence.reset();
+
             const data = await API.post('/api/start', {
                 player_name: name,
                 gender: av.gender,
@@ -4929,12 +5063,23 @@ const Game = {
             State.avatarIndex = av.index;
             localStorage.setItem('garage_session_id', data.session_id);
 
+            // Reset world state for new game
+            State.collectedBooks = [];
+            State.completedRegions = [];
+            State.lockedRegion = null;
+            State.lockedNpc = null;
+            State.doorAnimBuilding = null;
+
             State.challenges = await API.get('/api/challenges');
             Learning.syncSessionState(State.player, State.challenges);
 
-            World.init(av.index);
+            World.init(av.index, 100);
             UI.updateHUD(State.player);
             UI.showScreen('screen-world');
+
+            // Start periodic save for position persistence
+            WorldStatePersistence.startPeriodicSave(30000);
+
             Learning.showStageBriefingIfNeeded(State.player.stage);
         } catch (e) { alert('Erro: ' + e.message); }
     },
@@ -4947,11 +5092,27 @@ const Game = {
             State.sessionId = id;
             State.challenges = await API.get('/api/challenges');
             Learning.syncSessionState(State.player, State.challenges);
-            World.init(State.player.character ? State.player.character.avatar_index : 0);
+
+            // Restore world state from server (books, regions, position)
+            WorldStatePersistence.restore(State.player);
+
+            // Initialize world with saved position
+            const savedX = State.player.player_world_x || 100;
+            World.init(State.player.character ? State.player.character.avatar_index : 0, savedX);
             State.avatarIndex = State.player.character ? State.player.character.avatar_index : 0;
-            _reconstructCompletedRegions();
+
+            // _reconstructCompletedRegions is no longer needed as we restore from server
+            // but keep it as fallback for backward compatibility
+            if (!State.completedRegions || State.completedRegions.length === 0) {
+                _reconstructCompletedRegions();
+            }
+
             UI.updateHUD(State.player);
             UI.showScreen('screen-world');
+
+            // Start periodic save for position persistence
+            WorldStatePersistence.startPeriodicSave(30000);
+
             if (!silent) Learning.showStageBriefingIfNeeded(State.player.stage);
 
             // Victory fires ONLY when all 24 companies are fully complete
@@ -5116,6 +5277,10 @@ const Game = {
     async resetAndReplay() {
         if (!State.sessionId) { location.reload(); return; }
         try {
+            // Stop periodic save before reset
+            WorldStatePersistence.stopPeriodicSave();
+            WorldStatePersistence.reset();
+
             const data = await API.post('/api/reset', { session_id: State.sessionId });
             State.sessionId = data.session_id;
             State.player = data.player;
@@ -5127,10 +5292,15 @@ const Game = {
             State.completedRegions = [];
             State.lockedRegion = null;
             State.lockedNpc = null;
+            State.doorAnimBuilding = null;
             State.collectedBooks = [];
-            World.init(State.avatarIndex || 0);
+            World.init(State.avatarIndex || 0, 100);
             UI.updateHUD(State.player);
             UI.showScreen('screen-world');
+
+            // Restart periodic save
+            WorldStatePersistence.startPeriodicSave(30000);
+
             Learning.showStageBriefingIfNeeded(State.player.stage);
         } catch (e) { alert('Erro ao reiniciar: ' + e.message); }
     },
@@ -6602,6 +6772,8 @@ const IDE = {
                 State.lockedRegion = null;
                 State.lockedNpc = null;
                 State.doorAnimBuilding = null;
+                // Persist region completion immediately
+                WorldStatePersistence.save(true);
                 State.companyComplete = true;
 
                 // Check if ALL 24 companies are now complete -> VICTORY
@@ -7072,5 +7244,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } else {
         UI.showScreen('screen-login');
+    }
+});
+
+// Save world state before page unload
+window.addEventListener('beforeunload', () => {
+    if (State.sessionId) {
+        // Use sendBeacon for reliable delivery during page unload
+        const data = {
+            session_id: State.sessionId,
+            collected_books: [...State.collectedBooks],
+            completed_regions: [...State.completedRegions],
+            current_region: State.lockedRegion,
+            player_world_x: World.player ? Math.round(World.player.x) : 100,
+        };
+        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+        const token = Auth.getToken();
+        // Use fetch with keepalive for authenticated request during unload
+        if (token) {
+            navigator.sendBeacon('/api/save-world-state-beacon', blob);
+        }
+    }
+});
+
+// Also save on visibility change (tab hidden, mobile app backgrounded)
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && State.sessionId) {
+        WorldStatePersistence.save(true);
     }
 });

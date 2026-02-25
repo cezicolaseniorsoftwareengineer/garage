@@ -35,6 +35,14 @@ class ResetGameRequest(BaseModel):
     session_id: str
 
 
+class SaveWorldStateRequest(BaseModel):
+    session_id: str
+    collected_books: Optional[list] = None
+    completed_regions: Optional[list] = None
+    current_region: Optional[str] = None
+    player_world_x: Optional[int] = None
+
+
 _player_repo = None
 _challenge_repo = None
 _leaderboard_repo = None
@@ -216,6 +224,66 @@ def api_recover(req: RecoverRequest, current_user: dict = Depends(get_current_us
                      session_id=req.session_id)
 
     return result
+
+
+@router.post("/save-world-state")
+def api_save_world_state(req: SaveWorldStateRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Save the current world state: collected books, completed regions,
+    current region, and player position. Called periodically by the frontend
+    to persist game progress.
+    """
+    player = _player_repo.get(req.session_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Session not found")
+    _assert_owner(player, current_user)
+
+    # Batch update world state
+    player.update_world_state(
+        collected_books=req.collected_books,
+        completed_regions=req.completed_regions,
+        current_region=req.current_region,
+        player_world_x=req.player_world_x,
+    )
+    _player_repo.save(player)
+
+    if _events:
+        _events.log("world_state_saved", user_id=current_user["sub"],
+                    session_id=req.session_id,
+                    payload={
+                        "collected_books_count": len(req.collected_books or []),
+                        "completed_regions_count": len(req.completed_regions or []),
+                        "current_region": req.current_region,
+                        "player_world_x": req.player_world_x,
+                    })
+
+    return {"status": "ok", "saved": True}
+
+
+@router.post("/save-world-state-beacon")
+def api_save_world_state_beacon(req: SaveWorldStateRequest):
+    """
+    Special endpoint for navigator.sendBeacon during page unload.
+    No JWT auth required - validates session exists and is valid.
+    This is less secure but necessary for reliable save during tab close.
+    """
+    if not req.session_id:
+        raise HTTPException(status_code=400, detail="Session ID required")
+
+    player = _player_repo.get(req.session_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Batch update world state
+    player.update_world_state(
+        collected_books=req.collected_books,
+        completed_regions=req.completed_regions,
+        current_region=req.current_region,
+        player_world_x=req.player_world_x,
+    )
+    _player_repo.save(player)
+
+    return {"status": "ok", "saved": True}
 
 
 @router.post("/reset")
