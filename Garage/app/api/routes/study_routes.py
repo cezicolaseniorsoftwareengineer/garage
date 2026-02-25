@@ -182,7 +182,13 @@ def _build_stream_body(system_prompt: str, user_prompt: str, model: str, max_tok
 
 
 def _stream_openai_sse(system_prompt: str, user_prompt: str):
-    """Generator: yields SSE lines to the client token-by-token."""
+def _stream_openai_sse(system_prompt: str, user_prompt: str):
+    """Generator: yields SSE lines to the client token-by-token.
+
+    Falls back gracefully to emitting the full answer as a single event when
+    the model returns a plain JSON response instead of an SSE stream (e.g.
+    when the 'stream' parameter is silently ignored or unsupported).
+    """
     api_key = os.environ.get("OPENAI_API_KEY", "").strip()
     if not api_key:
         yield 'data: {"err": "Study chat unavailable: missing API key."}\n\n'
@@ -194,22 +200,38 @@ def _stream_openai_sse(system_prompt: str, user_prompt: str):
     timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
 
     for model in _candidate_models():
-        body = _build_stream_body(system_prompt, user_prompt, model, max_tokens)
+        # Try WITHOUT stream first for maximum compatibility; if successful but
+        # the model also supports SSE the non-stream path is just as correct.
+        body_nostream = {
+            "model": model,
+            "max_output_tokens": max_tokens,
+            "input": [
+                {"role": "system", "content": [{"type": "input_text", "text": system_prompt}]},
+                {"role": "user",   "content": [{"type": "input_text", "text": user_prompt}]},
+            ],
+        }
+        body_stream = dict(body_nostream, stream=True)
+
+        # --- Attempt 1: streaming SSE ---
         request = urllib.request.Request(
             endpoint,
-            data=json.dumps(body).encode("utf-8"),
+            data=json.dumps(body_stream).encode("utf-8"),
             headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
             method="POST",
         )
         try:
+            raw_bytes = b""
+            got_delta = False
             with urllib.request.urlopen(request, timeout=timeout) as resp:
                 for raw in resp:
-                    line = raw.decode("utf-8").rstrip("\n").rstrip("\r")
+                    raw_bytes += raw
+                    line = raw.decode("utf-8").rstrip("\r\n")
                     if not line:
                         continue
                     if line == "data: [DONE]":
-                        yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
-                        return
+                        if got_delta:
+                            yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
+                        break
                     if not line.startswith("data: "):
                         continue
                     try:
@@ -217,14 +239,60 @@ def _stream_openai_sse(system_prompt: str, user_prompt: str):
                     except Exception:
                         continue
                     ev = chunk.get("type", "")
-                    if ev == "response.output_text.delta":
+                    if ev in ("response.output_text.delta", "content_block_delta"):
                         delta = chunk.get("delta", "")
+                        if isinstance(delta, dict):
+                            delta = delta.get("text", "")
                         if delta:
+                            got_delta = True
                             yield f'data: {json.dumps({"d": delta})}\n\n'
-                    elif ev == "response.done":
-                        yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
-                        return
-            return  # success, no fallback needed
+                    elif ev in ("response.done", "response.completed", "message_stop"):
+                        if got_delta:
+                            yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
+                        break
+
+            if got_delta:
+                return  # streaming worked fine
+
+            # --- Fallback: response was non-SSE JSON (stream ignored/unsupported) ---
+            try:
+                payload = json.loads(raw_bytes.decode("utf-8"))
+                text = _extract_output_text(payload)
+                if text:
+                    yield f'data: {json.dumps({"d": text})}\n\n'
+                    yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
+                    return
+            except Exception:
+                pass
+
+            # --- Attempt 2: explicit non-stream call ---
+            request2 = urllib.request.Request(
+                endpoint,
+                data=json.dumps(body_nostream).encode("utf-8"),
+                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                method="POST",
+            )
+            try:
+                with urllib.request.urlopen(request2, timeout=timeout) as resp2:
+                    payload2 = json.loads(resp2.read().decode("utf-8"))
+                text2 = _extract_output_text(payload2)
+                if text2:
+                    yield f'data: {json.dumps({"d": text2})}\n\n'
+                    yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
+                    return
+            except urllib.error.HTTPError as exc2:
+                try:
+                    err_body = json.loads(exc2.read().decode("utf-8"))
+                    msg = err_body.get("error", {}).get("message", "")
+                except Exception:
+                    msg = f"HTTP {exc2.code}"
+                if _is_model_unavailable_error(msg):
+                    continue
+                yield f'data: {{"err": {json.dumps(msg)}}}\n\n'
+                return
+            except (urllib.error.URLError, TimeoutError, socket.timeout):
+                continue
+
         except urllib.error.HTTPError as exc:
             try:
                 err_body = json.loads(exc.read().decode("utf-8"))
@@ -232,13 +300,33 @@ def _stream_openai_sse(system_prompt: str, user_prompt: str):
             except Exception:
                 msg = f"HTTP {exc.code}"
             if _is_model_unavailable_error(msg):
-                continue  # try next model
+                continue
+            # If 'stream' param itself is unsupported, retry without it
+            if _unsupported_parameter_name(msg) == "stream":
+                request3 = urllib.request.Request(
+                    endpoint,
+                    data=json.dumps(body_nostream).encode("utf-8"),
+                    headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                    method="POST",
+                )
+                try:
+                    with urllib.request.urlopen(request3, timeout=timeout) as resp3:
+                        payload3 = json.loads(resp3.read().decode("utf-8"))
+                    text3 = _extract_output_text(payload3)
+                    if text3:
+                        yield f'data: {json.dumps({"d": text3})}\n\n'
+                        yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
+                        return
+                except Exception:
+                    continue
+                continue
             yield f'data: {{"err": {json.dumps(msg)}}}\n\n'
             return
         except (urllib.error.URLError, TimeoutError, socket.timeout):
-            continue  # try next model
+            continue
 
     yield 'data: {"err": "Nenhum modelo disponivel no momento. Tente novamente."}\n\n'
+
 
 
 
