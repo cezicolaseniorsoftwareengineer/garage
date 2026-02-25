@@ -7062,6 +7062,15 @@ const IDE = {
         const ch = this._currentChallenge;
         if (!ch) return '---';
         if (this._isScalingActive()) {
+            // Step 0 (Base funcional): use the original challenge helpText
+            if (this._scalePasses === 0) {
+                const step = this._scalePlan.steps[0];
+                let baseHelp = step && step.helpText ? step.helpText : ch.helpText || '';
+                baseHelp += '\n\n=== EXPANSAO 1/' + this._scalePlan.requiredValidations + ' ===\n';
+                baseHelp += 'Objetivo: ' + (step ? step.objective : 'Monte a base funcional.');
+                baseHelp += '\n\n--- NOTA ---\nA validacao aceita solucoes alternativas criativas!\nSe seu codigo compila e resolve o problema de forma diferente,\napenas garanta que contenha os elementos-chave solicitados.\nO importante e o aprendizado, nao o engessamento.';
+                return baseHelp;
+            }
             // Accumulate help text from all completed steps + current step
             const steps = this._scalePlan.steps;
             let accumulatedHelp = '';
