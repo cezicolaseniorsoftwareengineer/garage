@@ -2158,6 +2158,8 @@ body {
     padding: 10px 12px;
     line-height: 1.45;
     font-size: 0.8rem;
+}
+.study-msg-user {
     white-space: pre-wrap;
 }
 
@@ -2219,6 +2221,71 @@ body {
 
 .study-chat-actions .btn-primary {
     min-width: 130px;
+}
+
+/* --- Study Chat Markdown Rendering ---------------------------------------- */
+.study-msg-body p.study-p {
+    margin: 2px 0 4px;
+}
+.study-msg-body .study-code-block {
+    position: relative;
+    background: #020817;
+    border: 1px solid #22d3ee33;
+    border-radius: 7px;
+    padding: 10px 12px;
+    margin: 8px 0;
+    overflow-x: auto;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: #7dd3fc;
+    white-space: pre;
+}
+.study-msg-body .study-code-lang {
+    display: block;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #22d3ee;
+    margin-bottom: 4px;
+    opacity: 0.7;
+}
+.study-msg-body .study-inline-code {
+    background: #0f2845;
+    border: 1px solid #1e4d8080;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 0.78em;
+    color: #7dd3fc;
+}
+.study-msg-body strong {
+    color: #f0feff;
+    font-weight: 700;
+}
+.study-msg-body em {
+    color: #93c5fd;
+    font-style: italic;
+}
+.study-msg-body .study-list {
+    margin: 4px 0 4px 16px;
+    padding-left: 8px;
+}
+.study-msg-body .study-list li {
+    margin: 2px 0;
+    line-height: 1.5;
+}
+.study-msg-body .study-heading {
+    color: #22d3ee;
+    font-size: 0.82rem;
+    margin: 8px 0 4px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.study-msg-body .study-hr {
+    border: none;
+    border-top: 1px solid #1e293b;
+    margin: 8px 0;
 }
 
 /* ==========================================================================

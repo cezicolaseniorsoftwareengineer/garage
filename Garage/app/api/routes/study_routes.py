@@ -1,6 +1,7 @@
 """Study Chat API routes -- authenticated learning coach for game content."""
 from __future__ import annotations
 
+import collections
 import json
 import os
 import re
@@ -20,6 +21,25 @@ router = APIRouter(prefix="/api/study", tags=["study"])
 
 _player_repo = None
 _challenge_repo = None
+
+# In-memory rate limiter: max 12 requests per 60 s per user
+_RATE_LIMIT_MAX = 12
+_RATE_LIMIT_WINDOW = 60  # seconds
+_rate_buckets: dict[str, collections.deque] = {}
+
+
+def _check_rate_limit(user_id: str) -> None:
+    now = time.monotonic()
+    dq = _rate_buckets.setdefault(user_id, collections.deque())
+    # Purge timestamps outside the window
+    while dq and now - dq[0] > _RATE_LIMIT_WINDOW:
+        dq.popleft()
+    if len(dq) >= _RATE_LIMIT_MAX:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Limite de {_RATE_LIMIT_MAX} mensagens por minuto atingido. Aguarde um momento.",
+        )
+    dq.append(now)
 
 
 def init_study_routes(player_repo, challenge_repo):
@@ -240,6 +260,10 @@ def api_study_chat(req: StudyChatRequest, current_user: dict = Depends(get_curre
         raise HTTPException(status_code=404, detail="Session not found")
     _assert_owner(player, current_user)
 
+    # Rate limit per authenticated user
+    uid = (current_user or {}).get("sub") or req.session_id
+    _check_rate_limit(uid)
+
     challenge = _challenge_repo.get_by_id(req.challenge_id) if req.challenge_id else None
 
     stage = (req.stage or player.stage.value or "").strip() if hasattr(player.stage, "value") else (req.stage or "").strip()
@@ -258,7 +282,7 @@ def api_study_chat(req: StudyChatRequest, current_user: dict = Depends(get_curre
         challenge_title = challenge.title
         challenge_desc = challenge.description
 
-    recent = req.recent_messages[-4:]
+    recent = req.recent_messages[-8:]
     books = req.books[:40]
     collected_count = sum(1 for b in books if b.collected)
     prompt_books = [b for b in books if b.collected]

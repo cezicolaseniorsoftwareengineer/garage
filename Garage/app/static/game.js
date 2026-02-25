@@ -197,6 +197,64 @@ const StudyChat = {
         if (input) input.disabled = busy;
     },
 
+    _renderMarkdown(text) {
+        if (!text) return '';
+        // Escape HTML entities first to avoid XSS
+        const esc = (s) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+        // Fenced code blocks: ```lang\ncode\n```
+        text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_m, lang, code) => {
+            const langLabel = lang ? `<span class="study-code-lang">${esc(lang)}</span>` : '';
+            return `<pre class="study-code-block">${langLabel}<code>${esc(code.trimEnd())}</code></pre>`;
+        });
+        // Inline code: `code`
+        text = text.replace(/`([^`\n]+)`/g, (_m, code) => `<code class="study-inline-code">${esc(code)}</code>`);
+        // Bold: **text**
+        text = text.replace(/\*\*([^*\n]+)\*\*/g, (_m, t) => `<strong>${esc(t)}</strong>`);
+        // Italic: *text* or _text_
+        text = text.replace(/\*([^*\n]+)\*/g, (_m, t) => `<em>${esc(t)}</em>`);
+        text = text.replace(/_([^_\n]+)_/g, (_m, t) => `<em>${esc(t)}</em>`);
+
+        // Process line-by-line for lists and paragraphs
+        const lines = text.split('\n');
+        const out = [];
+        let inUl = false, inOl = false;
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const ulMatch = line.match(/^[-*] (.+)/);
+            const olMatch = line.match(/^\d+\. (.+)/);
+            const hrMatch = /^---+$/.test(line.trim());
+
+            if (ulMatch) {
+                if (inOl) { out.push('</ol>'); inOl = false; }
+                if (!inUl) { out.push('<ul class="study-list">'); inUl = true; }
+                out.push(`<li>${ulMatch[1]}</li>`);
+            } else if (olMatch) {
+                if (inUl) { out.push('</ul>'); inUl = false; }
+                if (!inOl) { out.push('<ol class="study-list">'); inOl = true; }
+                out.push(`<li>${olMatch[1]}</li>`);
+            } else {
+                if (inUl) { out.push('</ul>'); inUl = false; }
+                if (inOl) { out.push('</ol>'); inOl = false; }
+                if (hrMatch) {
+                    out.push('<hr class="study-hr">');
+                } else if (line.trim() === '') {
+                    out.push('<br>');
+                } else if (/^#{1,3} /.test(line)) {
+                    const lvl = line.match(/^(#{1,3}) /)[1].length;
+                    const heading = line.replace(/^#{1,3} /, '');
+                    out.push(`<h${lvl + 2} class="study-heading">${heading}</h${lvl + 2}>`);
+                } else {
+                    out.push(`<p class="study-p">${line}</p>`);
+                }
+            }
+        }
+        if (inUl) out.push('</ul>');
+        if (inOl) out.push('</ol>');
+        return out.join('\n');
+    },
+
     _render() {
         const { messages } = this._els();
         if (!messages) return;
@@ -212,7 +270,12 @@ const StudyChat = {
                 : (m.meta ? ('INTELIGÊNCIA ARTIFICIAL - ' + m.meta) : 'INTELIGÊNCIA ARTIFICIAL');
 
             const body = document.createElement('div');
-            body.textContent = m.content;
+            body.className = 'study-msg-body';
+            if (m.role === 'assistant') {
+                body.innerHTML = this._renderMarkdown(m.content);
+            } else {
+                body.textContent = m.content;
+            }
 
             wrap.appendChild(meta);
             wrap.appendChild(body);
@@ -306,7 +369,11 @@ const StudyChat = {
             });
             this._append('assistant', res.reply || 'Sem resposta.', res.model || '');
         } catch (e) {
-            this._append('assistant', 'Falha ao consultar a Inteligência Artificial: ' + (e.message || 'erro desconhecido'), 'erro');
+            const msg = (e.message || '');
+            const friendly = msg.includes('429') || msg.toLowerCase().includes('limite')
+                ? 'Limite de mensagens por minuto atingido. Aguarde um momento e tente novamente.'
+                : 'Falha ao consultar a Inteligência Artificial: ' + (msg || 'erro desconhecido');
+            this._append('assistant', friendly, 'erro');
         } finally {
             this._setBusy(false);
             if (input) input.focus();
