@@ -292,6 +292,26 @@ const StudyChat = {
         context.textContent = 'Stage: ' + stage + ' | Regiao: ' + region;
     },
 
+    _renderLast() {
+        // Efficiently update only the last message element during streaming
+        const { messages } = this._els();
+        if (!messages) return;
+        const last = this._messages[this._messages.length - 1];
+        if (!last) return;
+        const children = messages.children;
+        const lastEl = children[children.length - 1];
+        if (lastEl) {
+            const body = lastEl.querySelector('.study-msg-body');
+            if (body) {
+                body.innerHTML = this._renderMarkdown(last.content);
+                messages.scrollTop = messages.scrollHeight;
+                return;
+            }
+        }
+        // Fallback: full render
+        this._render();
+    },
+
     open(focusInput = true) {
         if (!Auth.isLoggedIn()) return;
         if (!this._isIdeVisible()) return;
@@ -357,24 +377,96 @@ const StudyChat = {
         input.value = '';
         this._setBusy(true);
 
+        // --- Streaming SSE: text appears token-by-token ---
+        const body = JSON.stringify({
+            session_id: State.sessionId,
+            message,
+            challenge_id: challengeId,
+            region,
+            stage,
+            recent_messages: this._recentPayload(),
+            books: this._bookPayload(),
+        });
+
+        // Insert placeholder bubble with typing cursor immediately
+        this._messages.push({ role: 'assistant', content: '▌', meta: '', ts: Date.now() });
+        this._messages = this._messages.slice(-20);
+        this._render();
+
+        let fullText = '';
+        let finalModel = '';
+        let streamFailed = false;
+
         try {
-            const res = await API.post('/api/study/chat', {
-                session_id: State.sessionId,
-                message,
-                challenge_id: challengeId,
-                region,
-                stage,
-                recent_messages: this._recentPayload(),
-                books: this._bookPayload(),
+            const resp = await fetch('/api/study/chat/stream', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(Auth.getToken() ? { 'Authorization': 'Bearer ' + Auth.getToken() } : {}),
+                },
+                body,
             });
-            this._append('assistant', res.reply || 'Sem resposta.', res.model || '');
+
+            if (!resp.ok) {
+                let errMsg = `Erro ${resp.status}`;
+                try { const j = await resp.json(); errMsg = j.detail || errMsg; } catch (_e) { }
+                if (resp.status === 429 || errMsg.toLowerCase().includes('limite')) {
+                    errMsg = 'Limite de mensagens por minuto atingido. Aguarde um momento.';
+                }
+                throw new Error(errMsg);
+            }
+
+            const reader = resp.body.getReader();
+            const decoder = new TextDecoder();
+            let buf = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buf += decoder.decode(value, { stream: true });
+                const lines = buf.split('\n');
+                buf = lines.pop(); // keep incomplete line in buffer
+
+                for (const line of lines) {
+                    if (!line.startsWith('data: ')) continue;
+                    const raw = line.slice(6).trim();
+                    if (!raw || raw === '[DONE]') continue;
+                    let parsed;
+                    try { parsed = JSON.parse(raw); } catch (_e) { continue; }
+
+                    if (parsed.err) {
+                        throw new Error(parsed.err);
+                    }
+                    if (parsed.d !== undefined) {
+                        fullText += parsed.d;
+                        // Update last message in-place (avoid full re-render on each token)
+                        const last = this._messages[this._messages.length - 1];
+                        if (last && last.role === 'assistant') {
+                            last.content = fullText + '▌';
+                            this._renderLast();
+                        }
+                    }
+                    if (parsed.done) {
+                        finalModel = parsed.model || '';
+                    }
+                }
+            }
         } catch (e) {
+            streamFailed = true;
             const msg = (e.message || '');
-            const friendly = msg.includes('429') || msg.toLowerCase().includes('limite')
+            fullText = msg.includes('429') || msg.toLowerCase().includes('limite')
                 ? 'Limite de mensagens por minuto atingido. Aguarde um momento e tente novamente.'
                 : 'Falha ao consultar a Inteligência Artificial: ' + (msg || 'erro desconhecido');
-            this._append('assistant', friendly, 'erro');
+            finalModel = 'erro';
         } finally {
+            // Finalize last message: remove cursor, persist
+            const last = this._messages[this._messages.length - 1];
+            if (last && last.role === 'assistant') {
+                last.content = fullText || (streamFailed ? fullText : 'Sem resposta.');
+                last.meta = finalModel;
+                this._persist();
+                this._render();
+            }
             this._setBusy(false);
             if (input) input.focus();
         }

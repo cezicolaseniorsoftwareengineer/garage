@@ -12,6 +12,7 @@ import urllib.request
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from app.infrastructure.auth.dependencies import get_current_user
@@ -168,7 +169,80 @@ def _post_responses_request(endpoint: str, api_key: str, body: dict) -> dict:
         raise HTTPException(status_code=502, detail="Invalid response from study provider.")
 
 
-def _call_openai_responses(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
+def _build_stream_body(system_prompt: str, user_prompt: str, model: str, max_tokens: int) -> dict:
+    return {
+        "model": model,
+        "stream": True,
+        "temperature": 0.2,
+        "max_output_tokens": max_tokens,
+        "input": [
+            {"role": "system", "content": [{"type": "input_text", "text": system_prompt}]},
+            {"role": "user",   "content": [{"type": "input_text", "text": user_prompt}]},
+        ],
+    }
+
+
+def _stream_openai_sse(system_prompt: str, user_prompt: str):
+    """Generator: yields SSE lines to the client token-by-token."""
+    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if not api_key:
+        yield 'data: {"err": "Study chat unavailable: missing API key."}\n\n'
+        return
+
+    base_url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1").strip().rstrip("/")
+    endpoint = base_url + "/responses"
+    max_tokens = int(os.environ.get("OPENAI_MAX_OUTPUT_TOKENS", "420") or "420")
+    timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
+
+    for model in _candidate_models():
+        body = _build_stream_body(system_prompt, user_prompt, model, max_tokens)
+        request = urllib.request.Request(
+            endpoint,
+            data=json.dumps(body).encode("utf-8"),
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as resp:
+                for raw in resp:
+                    line = raw.decode("utf-8").rstrip("\n").rstrip("\r")
+                    if not line:
+                        continue
+                    if line == "data: [DONE]":
+                        yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
+                        return
+                    if not line.startswith("data: "):
+                        continue
+                    try:
+                        chunk = json.loads(line[6:])
+                    except Exception:
+                        continue
+                    ev = chunk.get("type", "")
+                    if ev == "response.output_text.delta":
+                        delta = chunk.get("delta", "")
+                        if delta:
+                            yield f'data: {json.dumps({"d": delta})}\n\n'
+                    elif ev == "response.done":
+                        yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
+                        return
+            return  # success, no fallback needed
+        except urllib.error.HTTPError as exc:
+            try:
+                err_body = json.loads(exc.read().decode("utf-8"))
+                msg = err_body.get("error", {}).get("message", "")
+            except Exception:
+                msg = f"HTTP {exc.code}"
+            if _is_model_unavailable_error(msg):
+                continue  # try next model
+            yield f'data: {{"err": {json.dumps(msg)}}}\n\n'
+            return
+        except (urllib.error.URLError, TimeoutError, socket.timeout):
+            continue  # try next model
+
+    yield 'data: {"err": "Nenhum modelo disponivel no momento. Tente novamente."}\n\n'
+
+
+
     api_key = os.environ.get("OPENAI_API_KEY", "").strip()
     if not api_key:
         raise HTTPException(
@@ -178,7 +252,7 @@ def _call_openai_responses(system_prompt: str, user_prompt: str) -> tuple[str, s
 
     base_url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1").strip().rstrip("/")
     endpoint = base_url + "/responses"
-    max_output_tokens = int(os.environ.get("OPENAI_MAX_OUTPUT_TOKENS", "700") or "700")
+    max_output_tokens = int(os.environ.get("OPENAI_MAX_OUTPUT_TOKENS", "420") or "420")
     request_retries = int(os.environ.get("OPENAI_REQUEST_RETRIES", "2") or "2")
     request_retries = max(1, min(request_retries, 4))
     attempted: list[str] = []
@@ -288,14 +362,14 @@ def api_study_chat(req: StudyChatRequest, current_user: dict = Depends(get_curre
     prompt_books = [b for b in books if b.collected]
     if not prompt_books:
         prompt_books = books
-    prompt_books = prompt_books[:12]
+    prompt_books = prompt_books[:5]  # keep prompt small for speed
 
     history_lines = []
     for msg in recent:
         prefix = "Aluno" if msg.role == "user" else "Inteligencia Artificial"
         compact = (msg.content or "").strip()
-        if len(compact) > 450:
-            compact = compact[:450].rstrip() + "..."
+        if len(compact) > 180:
+            compact = compact[:180].rstrip() + "..."
         history_lines.append(f"- {prefix}: {compact}")
     history_text = "\n".join(history_lines) if history_lines else "- Sem historico anterior."
 
@@ -304,8 +378,8 @@ def api_study_chat(req: StudyChatRequest, current_user: dict = Depends(get_curre
         for b in prompt_books:
             status = "coletado" if b.collected else "nao coletado"
             insight = (b.lesson or b.summary or "").strip()
-            if len(insight) > 140:
-                insight = insight[:140].rstrip() + "..."
+            if len(insight) > 70:
+                insight = insight[:70].rstrip() + "..."
             book_lines.append(f"- [{status}] {b.title} ({b.author}): {insight}")
         omitted = max(0, len(books) - len(prompt_books))
         if omitted:
@@ -336,13 +410,11 @@ def api_study_chat(req: StudyChatRequest, current_user: dict = Depends(get_curre
         f"{history_text}\n\n"
         "Catalogo de livros no jogo:\n"
         f"{books_text}\n\n"
-        "Instrucao de resposta:\n"
-        "1) Explique a intuicao em linguagem simples.\n"
-        "2) Traga a modelagem mental por nivel (junior/pleno/senior quando fizer sentido).\n"
-        "3) Mostre abordagem Java com foco em sintaxe correta e estrutura de dados adequada.\n"
-        "4) Inclua complexidade Big-O e trade-offs.\n"
-        "5) Entregue um codigo Java de referencia (curto e executavel).\n"
-        "6) Feche com checklist de validacao e um mini exercicio.\n\n"
+        "Instrucao de resposta:"
+        "1) Explique a intuicao de forma direta e concisa.\n"
+        "2) Mostre a abordagem Java com sintaxe correta e estrutura de dados adequada.\n"
+        "3) Inclua complexidade Big-O e principal trade-off.\n"
+        "4) Entregue um codigo Java executavel (curto) e um mini exercicio.\n\n"
         f"Pergunta do jogador:\n{req.message.strip()}"
     )
 
@@ -354,3 +426,76 @@ def api_study_chat(req: StudyChatRequest, current_user: dict = Depends(get_curre
         "stage": stage,
         "region": region,
     }
+
+
+@router.post("/chat/stream")
+def api_study_chat_stream(req: StudyChatRequest, current_user: dict = Depends(get_current_user)):
+    """Streaming SSE version of study chat — sends tokens as they arrive."""
+    player = _player_repo.get(req.session_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Session not found")
+    _assert_owner(player, current_user)
+
+    uid = (current_user or {}).get("sub") or req.session_id
+    _check_rate_limit(uid)
+
+    challenge = _challenge_repo.get_by_id(req.challenge_id) if req.challenge_id else None
+
+    stage = (req.stage or player.stage.value or "").strip() if hasattr(player.stage, "value") else (req.stage or "").strip()
+    if not stage:
+        stage = "Intern"
+
+    region = (req.region or "").strip()
+    if not region and challenge:
+        region = challenge.region.value if hasattr(challenge.region, "value") else str(challenge.region)
+    if not region:
+        region = "Garage"
+
+    challenge_title = challenge.title if challenge else ""
+    challenge_desc  = challenge.description if challenge else ""
+
+    recent = req.recent_messages[-8:]
+    books  = req.books[:40]
+    collected_count = sum(1 for b in books if b.collected)
+    prompt_books = [b for b in books if b.collected] or books
+    prompt_books = prompt_books[:5]
+
+    history_lines = []
+    for msg in recent:
+        prefix  = "Aluno" if msg.role == "user" else "IA"
+        compact = (msg.content or "").strip()[:180]
+        history_lines.append(f"- {prefix}: {compact}")
+    history_text = "\n".join(history_lines) or "- Sem historico."
+
+    book_lines = []
+    for b in prompt_books:
+        status  = "OK" if b.collected else "--"
+        insight = (b.lesson or b.summary or "").strip()[:70]
+        book_lines.append(f"[{status}] {b.title}: {insight}")
+    books_text = "\n".join(book_lines) or "(sem livros)"
+
+    system_prompt = (
+        "Voce e a Inteligencia Artificial de Engenharia do jogo GARAGE. "
+        "Ensine Java e Estruturas de Dados de forma profissional, progressiva e pratica. "
+        "Seja direto, rigoroso e engenheiro. Nao invente APIs."
+    )
+
+    user_prompt = (
+        f"Stage: {stage} | Regiao: {region} | Desafio: {challenge_title or 'N/A'}\n"
+        f"Enunciado: {challenge_desc[:200] if challenge_desc else 'N/A'}\n\n"
+        f"Historico:\n{history_text}\n\n"
+        f"Livros coletados:\n{books_text}\n\n"
+        "Instrucao: Responda de forma concisa. "
+        "1) Intuicao clara. 2) Codigo Java executavel. 3) Big-O. 4) Mini exercicio.\n\n"
+        f"Pergunta: {req.message.strip()}"
+    )
+
+    gen = _stream_openai_sse(system_prompt, user_prompt)
+    return StreamingResponse(
+        gen,
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )

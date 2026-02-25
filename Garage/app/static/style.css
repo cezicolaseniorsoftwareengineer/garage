@@ -2304,6 +2304,32 @@ body {
     margin: 8px 0;
 }
 
+/* Streaming typing cursor */
+@keyframes studyCursorBlink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+.study-msg-body p.study-p:last-child>*:last-child,
+.study-msg-body>p.study-p:last-child {
+    /* cursor blink on last element during stream */
+}
+
+.study-msg-assistant .study-msg-body p:last-of-type::after,
+.study-msg-assistant .study-msg-body code:last-of-type::after {
+    content: '';
+}
+
+/* Cursor visible only while content ends with ▌ — handled by JS via renderMarkdown text */
+
+
 /* ==========================================================================
    IDE CODING CHALLENGE OVERLAY
    ========================================================================== */
