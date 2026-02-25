@@ -200,7 +200,7 @@ const StudyChat = {
     _renderMarkdown(text) {
         if (!text) return '';
         // Escape HTML entities first to avoid XSS
-        const esc = (s) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
         // Fenced code blocks: ```lang\ncode\n```
         text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_m, lang, code) => {
@@ -1223,7 +1223,7 @@ const SFX = {
         if (this._audioElement) {
             // Fade in MP3 volume back to the in-game target.
             this._audioElement.volume = 0;
-            this._audioElement.play().catch(() => {});
+            this._audioElement.play().catch(() => { });
             const audio = this._audioElement;
             const target = this.musicTargetVol;
             const step = target / 15;
