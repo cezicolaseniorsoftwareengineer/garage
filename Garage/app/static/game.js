@@ -6558,7 +6558,7 @@ const SCALE_MISSIONS = {
                     if (!/(NOT_FOUND|not.?found)/i.test(code)) return { ok: false, msg: 'Amazon 2/3: retorne "NOT_FOUND" quando a chave nao existir.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (AMAZON 2/3):\n1. Extraia a logica de busca para um metodo.\n2. Use getOrDefault() ou containsKey() para verificar.\n3. Retorne "NOT_FOUND" se a chave nao existir.\n\nCOLA:\nstatic String findValue(HashMap<String,String> map, String key) {\n    return map.getOrDefault(key, "NOT_FOUND");\n}'
+                helpText: 'COMO EXPANDIR (AMAZON 2/3):\n1. Extraia a logica de busca para um metodo.\n2. Use getOrDefault() para tratamento elegante.\n3. Chame o metodo no main.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashMap;\n\npublic class HashMapLookup {\n    static String findValue(HashMap<String,String> map, String key) {\n        return map.getOrDefault(key, \"NOT_FOUND\");\n    }\n\n    public static void main(String[] args) {\n        HashMap<String, String> map = new HashMap<>();\n        map.put(\"produto\", \"Notebook\");\n        map.put(\"preco\", \"2500\");\n\n        System.out.println(findValue(map, \"produto\"));\n        System.out.println(findValue(map, \"estoque\"));\n    }\n}'
             },
             {
                 name: 'Tratamento null-safe',
@@ -6568,7 +6568,7 @@ const SCALE_MISSIONS = {
                     if (!/(if\s*\(|Objects\.|Optional\.)/.test(code)) return { ok: false, msg: 'Amazon 3/3: use if, Objects ou Optional para tratar null.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (AMAZON 3/3):\n1. Verifique se a chave e nula antes de buscar.\n2. Use Objects.requireNonNull() ou if (key == null).\n3. Proteja contra NullPointerException.\n\nCOLA:\nif (key == null) return "NOT_FOUND";\nreturn map.getOrDefault(key, "NOT_FOUND");'
+                helpText: 'COMO EXPANDIR (AMAZON 3/3):\n1. Verifique se a chave e nula antes de buscar.\n2. Proteja contra NullPointerException.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashMap;\n\npublic class HashMapLookup {\n    static String findValue(HashMap<String,String> map, String key) {\n        if (key == null) return \"NOT_FOUND\";\n        return map.getOrDefault(key, \"NOT_FOUND\");\n    }\n\n    public static void main(String[] args) {\n        HashMap<String, String> map = new HashMap<>();\n        map.put(\"produto\", \"Notebook\");\n        map.put(\"preco\", \"2500\");\n\n        System.out.println(findValue(map, \"produto\"));\n        System.out.println(findValue(map, \"estoque\"));\n        System.out.println(findValue(map, null));\n    }\n}'
             },
         ],
     },
@@ -6586,7 +6586,7 @@ const SCALE_MISSIONS = {
                     if (!/while\s*\(\s*!\s*\w+\.isEmpty\(\)/.test(code)) return { ok: false, msg: 'Mercado Livre 2/3: use while(!queue.isEmpty()) para processar.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (MERCADO LIVRE 2/3):\n1. Extraia o loop de processamento para um metodo.\n2. Use while(!q.isEmpty()) { q.poll(); }\n\nCOLA:\nstatic void processQueue(Queue<String> q) {\n    while (!q.isEmpty()) {\n        System.out.println(q.poll());\n    }\n}'
+                helpText: 'COMO EXPANDIR (MERCADO LIVRE 2/3):\n1. Extraia o loop de processamento para um metodo.\n2. Use while(!q.isEmpty()) { q.poll(); }\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.LinkedList;\nimport java.util.Queue;\n\npublic class QueueFIFO {\n    static void processQueue(Queue<String> q) {\n        while (!q.isEmpty()) {\n            System.out.println(q.poll());\n        }\n    }\n\n    public static void main(String[] args) {\n        Queue<String> pedidos = new LinkedList<>();\n        pedidos.add(\"Pedido 001\");\n        pedidos.add(\"Pedido 002\");\n        pedidos.add(\"Pedido 003\");\n\n        processQueue(pedidos);\n    }\n}'
             },
             {
                 name: 'Contagem de elementos',
@@ -6596,7 +6596,7 @@ const SCALE_MISSIONS = {
                     if (!/\+\+|\+=/.test(code)) return { ok: false, msg: 'Mercado Livre 3/3: incremente o contador a cada elemento.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (MERCADO LIVRE 3/3):\n1. Declare int count = 0 antes do loop.\n2. Incremente count++ a cada poll().\n3. Imprima o total no final.\n\nCOLA:\nint count = 0;\nwhile (!q.isEmpty()) { q.poll(); count++; }\nSystem.out.println("Total: " + count);'
+                helpText: 'COMO EXPANDIR (MERCADO LIVRE 3/3):\n1. Declare int count = 0 antes do loop.\n2. Incremente count++ a cada poll().\n3. Imprima o total no final.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.LinkedList;\nimport java.util.Queue;\n\npublic class QueueFIFO {\n    static void processQueue(Queue<String> q) {\n        int count = 0;\n        while (!q.isEmpty()) {\n            System.out.println(q.poll());\n            count++;\n        }\n        System.out.println(\"Total processados: \" + count);\n    }\n\n    public static void main(String[] args) {\n        Queue<String> pedidos = new LinkedList<>();\n        pedidos.add(\"Pedido 001\");\n        pedidos.add(\"Pedido 002\");\n        pedidos.add(\"Pedido 003\");\n\n        processQueue(pedidos);\n    }\n}'
             },
         ],
     },
@@ -6618,7 +6618,7 @@ const SCALE_MISSIONS = {
                     }
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (JP MORGAN 2/3):\n1. Extraia a logica para um metodo.\n2. Retorne o indice encontrado ou -1.\n3. Chame o metodo no main.\n\nCOLA:\nstatic int binarySearch(int[] arr, int target) {\n    int left = 0, right = arr.length - 1;\n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        if (arr[mid] == target) return mid;\n        if (arr[mid] < target) left = mid + 1;\n        else right = mid - 1;\n    }\n    return -1;\n}'
+                helpText: 'COMO EXPANDIR (JP MORGAN 2/3):\n1. Extraia a logica para um metodo reutilizavel.\n2. Retorne o indice encontrado ou -1.\n3. Chame o metodo no main.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class BinarySearch {\n    static int binarySearch(int[] arr, int target) {\n        int left = 0, right = arr.length - 1;\n        while (left <= right) {\n            int mid = left + (right - left) / 2;\n            if (arr[mid] == target) return mid;\n            if (arr[mid] < target) left = mid + 1;\n            else right = mid - 1;\n        }\n        return -1;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {1, 3, 5, 7, 9, 11, 13};\n        int target = 7;\n\n        int result = binarySearch(nums, target);\n        System.out.println(\"Indice: \" + result);\n    }\n}'
             },
             {
                 name: 'Tratamento de bordas',
@@ -6628,7 +6628,7 @@ const SCALE_MISSIONS = {
                     if (!/(return\s*-1|throw)/.test(code)) return { ok: false, msg: 'JP Morgan 3/3: retorne -1 ou lance excecao para casos invalidos.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (JP MORGAN 3/3):\n1. Verifique if (arr == null || arr.length == 0).\n2. Retorne -1 imediatamente nesses casos.\n\nCOLA:\nif (arr == null || arr.length == 0) return -1;'
+                helpText: 'COMO EXPANDIR (JP MORGAN 3/3):\n1. Verifique if (arr == null || arr.length == 0).\n2. Retorne -1 imediatamente nesses casos.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class BinarySearch {\n    static int binarySearch(int[] arr, int target) {\n        if (arr == null || arr.length == 0) return -1;\n\n        int left = 0, right = arr.length - 1;\n        while (left <= right) {\n            int mid = left + (right - left) / 2;\n            if (arr[mid] == target) return mid;\n            if (arr[mid] < target) left = mid + 1;\n            else right = mid - 1;\n        }\n        return -1;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {1, 3, 5, 7, 9, 11, 13};\n        int[] vazio = {};\n\n        System.out.println(\"Indice de 7: \" + binarySearch(nums, 7));\n        System.out.println(\"Array vazio: \" + binarySearch(vazio, 5));\n        System.out.println(\"Array null: \" + binarySearch(null, 5));\n    }\n}'
             },
         ],
     },
@@ -6645,7 +6645,7 @@ const SCALE_MISSIONS = {
                     if (!/static\s+boolean\s+\w+\s*\(\s*String/.test(code)) return { ok: false, msg: 'PayPal 2/3: crie um metodo static boolean isAnagram.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (PAYPAL 2/3):\n1. Extraia a logica para um metodo boolean.\n2. Compare os caracteres ordenados ou use contagem.\n\nCOLA:\nstatic boolean isAnagram(String a, String b) {\n    char[] ca = a.toLowerCase().toCharArray();\n    char[] cb = b.toLowerCase().toCharArray();\n    Arrays.sort(ca); Arrays.sort(cb);\n    return Arrays.equals(ca, cb);\n}'
+                helpText: 'COMO EXPANDIR (PAYPAL 2/3):\n1. Extraia a logica para um metodo boolean.\n2. Compare os caracteres ordenados.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class AnagramCheck {\n    static boolean isAnagram(String a, String b) {\n        char[] ca = a.toCharArray();\n        char[] cb = b.toCharArray();\n        Arrays.sort(ca);\n        Arrays.sort(cb);\n        return Arrays.equals(ca, cb);\n    }\n\n    public static void main(String[] args) {\n        String s1 = \"listen\";\n        String s2 = \"silent\";\n\n        System.out.println(isAnagram(s1, s2));\n    }\n}'
             },
             {
                 name: 'Normalizacao',
@@ -6655,7 +6655,7 @@ const SCALE_MISSIONS = {
                     if (!/replace|replaceAll|trim/.test(code)) return { ok: false, msg: 'PayPal 3/3: remova espacos com replace/trim.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (PAYPAL 3/3):\n1. Normalize ambas strings antes de comparar.\n2. Use toLowerCase() e replaceAll("[^a-z]", "").\n\nCOLA:\nString na = a.toLowerCase().replaceAll("[^a-z]", "");\nString nb = b.toLowerCase().replaceAll("[^a-z]", "");'
+                helpText: 'COMO EXPANDIR (PAYPAL 3/3):\n1. Normalize ambas strings antes de comparar.\n2. Use toLowerCase() e replaceAll para limpar.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class AnagramCheck {\n    static boolean isAnagram(String a, String b) {\n        String na = a.toLowerCase().replaceAll(\"[^a-z]\", \"\");\n        String nb = b.toLowerCase().replaceAll(\"[^a-z]\", \"\");\n\n        char[] ca = na.toCharArray();\n        char[] cb = nb.toCharArray();\n        Arrays.sort(ca);\n        Arrays.sort(cb);\n        return Arrays.equals(ca, cb);\n    }\n\n    public static void main(String[] args) {\n        String s1 = \"Listen!\";\n        String s2 = \"Silent...\";\n\n        System.out.println(isAnagram(s1, s2));\n        System.out.println(isAnagram(\"Hello\", \"World\"));\n    }\n}'
             },
         ],
     },
@@ -6672,7 +6672,7 @@ const SCALE_MISSIONS = {
                     if (!/static\s+int\s+\w+\s*\(\s*int\s*\[\]/.test(code)) return { ok: false, msg: 'Netflix 2/3: crie um metodo static int maxSubarray(int[]).' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (NETFLIX 2/3):\n1. Extraia Kadane para um metodo.\n2. Mantenha currentSum e maxSum.\n\nCOLA:\nstatic int maxSubarray(int[] arr) {\n    int max = arr[0], current = arr[0];\n    for (int i = 1; i < arr.length; i++) {\n        current = Math.max(arr[i], current + arr[i]);\n        max = Math.max(max, current);\n    }\n    return max;\n}'
+                helpText: 'COMO EXPANDIR (NETFLIX 2/3):\n1. Extraia Kadane para um metodo reutilizavel.\n2. Mantenha currentSum e maxSum.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class KadaneMax {\n    static int maxSubarray(int[] arr) {\n        int max = arr[0], current = arr[0];\n        for (int i = 1; i < arr.length; i++) {\n            current = Math.max(arr[i], current + arr[i]);\n            max = Math.max(max, current);\n        }\n        return max;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};\n\n        int resultado = maxSubarray(nums);\n        System.out.println(\"Max subarray: \" + resultado);\n    }\n}'
             },
             {
                 name: 'Tratamento array vazio',
@@ -6682,7 +6682,7 @@ const SCALE_MISSIONS = {
                     if (!/(return\s*0|throw|Integer\.MIN)/.test(code)) return { ok: false, msg: 'Netflix 3/3: trate o caso vazio (return 0 ou throw).' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (NETFLIX 3/3):\n1. Verifique if (arr == null || arr.length == 0).\n2. Retorne 0 ou lance IllegalArgumentException.\n\nCOLA:\nif (arr == null || arr.length == 0) return 0;'
+                helpText: 'COMO EXPANDIR (NETFLIX 3/3):\n1. Verifique if (arr == null || arr.length == 0).\n2. Retorne 0 ou lance excecao.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class KadaneMax {\n    static int maxSubarray(int[] arr) {\n        if (arr == null || arr.length == 0) return 0;\n\n        int max = arr[0], current = arr[0];\n        for (int i = 1; i < arr.length; i++) {\n            current = Math.max(arr[i], current + arr[i]);\n            max = Math.max(max, current);\n        }\n        return max;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};\n        int[] vazio = {};\n\n        System.out.println(\"Max subarray: \" + maxSubarray(nums));\n        System.out.println(\"Array vazio: \" + maxSubarray(vazio));\n        System.out.println(\"Array null: \" + maxSubarray(null));\n    }\n}'
             },
         ],
     },
@@ -6699,7 +6699,7 @@ const SCALE_MISSIONS = {
                     if (!/static\s+(Set|HashSet)\s*</.test(code)) return { ok: false, msg: 'SpaceX 2/3: crie um metodo que retorna Set<Integer>.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (SPACEX 2/3):\n1. Crie metodo que retorna Set.\n2. Adicione todos elementos ao HashSet.\n\nCOLA:\nstatic Set<Integer> removeDuplicates(int[] arr) {\n    Set<Integer> set = new HashSet<>();\n    for (int n : arr) set.add(n);\n    return set;\n}'
+                helpText: 'COMO EXPANDIR (SPACEX 2/3):\n1. Crie metodo que retorna Set.\n2. Adicione todos elementos ao HashSet.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashSet;\nimport java.util.Set;\n\npublic class HashSetDedup {\n    static Set<Integer> removeDuplicates(int[] arr) {\n        Set<Integer> set = new HashSet<>();\n        for (int n : arr) {\n            set.add(n);\n        }\n        return set;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {1, 2, 2, 3, 3, 3, 4, 5, 5};\n\n        Set<Integer> unicos = removeDuplicates(nums);\n        System.out.println(\"Unicos: \" + unicos);\n    }\n}'
             },
             {
                 name: 'Contagem de duplicatas',
@@ -6708,7 +6708,7 @@ const SCALE_MISSIONS = {
                     if (!/(length|size).*-/.test(code) && !/-\s*\w+\.(length|size)/.test(code)) return { ok: false, msg: 'SpaceX 3/3: calcule o numero de duplicatas removidas.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (SPACEX 3/3):\n1. Guarde o tamanho original.\n2. Compare com o tamanho do Set.\n3. Imprima a diferenca.\n\nCOLA:\nint duplicates = arr.length - set.size();\nSystem.out.println("Duplicatas: " + duplicates);'
+                helpText: 'COMO EXPANDIR (SPACEX 3/3):\n1. Guarde o tamanho original.\n2. Compare com o tamanho do Set.\n3. Imprima a diferenca.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashSet;\nimport java.util.Set;\n\npublic class HashSetDedup {\n    static Set<Integer> removeDuplicates(int[] arr) {\n        Set<Integer> set = new HashSet<>();\n        for (int n : arr) {\n            set.add(n);\n        }\n        return set;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {1, 2, 2, 3, 3, 3, 4, 5, 5};\n\n        Set<Integer> unicos = removeDuplicates(nums);\n        int duplicatas = nums.length - unicos.size();\n\n        System.out.println(\"Unicos: \" + unicos);\n        System.out.println(\"Duplicatas removidas: \" + duplicatas);\n    }\n}'
             },
         ],
     },
@@ -6725,7 +6725,7 @@ const SCALE_MISSIONS = {
                     if (!/static\s+int\s*\[\]\s*\w+\s*\(\s*int\s*\[\]/.test(code)) return { ok: false, msg: 'Tesla 2/3: crie metodo static int[] twoSum(int[], int target).' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (TESLA 2/3):\n1. Extraia para um metodo.\n2. Use HashMap para O(n).\n\nCOLA:\nstatic int[] twoSum(int[] nums, int target) {\n    Map<Integer, Integer> map = new HashMap<>();\n    for (int i = 0; i < nums.length; i++) {\n        int comp = target - nums[i];\n        if (map.containsKey(comp)) return new int[]{map.get(comp), i};\n        map.put(nums[i], i);\n    }\n    return new int[]{};\n}'
+                helpText: 'COMO EXPANDIR (TESLA 2/3):\n1. Extraia para um metodo reutilizavel.\n2. Use HashMap para O(n).\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashMap;\nimport java.util.Map;\nimport java.util.Arrays;\n\npublic class TwoSum {\n    static int[] twoSum(int[] nums, int target) {\n        Map<Integer, Integer> map = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int complemento = target - nums[i];\n            if (map.containsKey(complemento)) {\n                return new int[]{map.get(complemento), i};\n            }\n            map.put(nums[i], i);\n        }\n        return new int[]{};\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {2, 7, 11, 15};\n        int target = 9;\n\n        int[] result = twoSum(nums, target);\n        System.out.println(\"Indices: \" + Arrays.toString(result));\n    }\n}'
             },
             {
                 name: 'Tratamento sem solucao',
@@ -6734,7 +6734,7 @@ const SCALE_MISSIONS = {
                     if (!/(return\s+new\s+int\s*\[\s*\]|throw|null)/.test(code)) return { ok: false, msg: 'Tesla 3/3: trate o caso sem solucao (array vazio ou throw).' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (TESLA 3/3):\n1. Se nao encontrar, retorne new int[]{}.\n2. Ou lance IllegalArgumentException.\n\nCOLA:\nreturn new int[]{}; // no solution found'
+                helpText: 'COMO EXPANDIR (TESLA 3/3):\n1. Se nao encontrar, retorne array vazio.\n2. Trate o caso sem solucao adequadamente.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashMap;\nimport java.util.Map;\nimport java.util.Arrays;\n\npublic class TwoSum {\n    static int[] twoSum(int[] nums, int target) {\n        Map<Integer, Integer> map = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int complemento = target - nums[i];\n            if (map.containsKey(complemento)) {\n                return new int[]{map.get(complemento), i};\n            }\n            map.put(nums[i], i);\n        }\n        return new int[]{}; // sem solucao\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {2, 7, 11, 15};\n\n        System.out.println(\"Target 9: \" + Arrays.toString(twoSum(nums, 9)));\n        System.out.println(\"Target 100: \" + Arrays.toString(twoSum(nums, 100)));\n    }\n}'
             },
         ],
     },
@@ -6751,7 +6751,7 @@ const SCALE_MISSIONS = {
                     if (!/static\s+int\s+\w+\s*\(\s*int\s+\w+\s*\)/.test(code)) return { ok: false, msg: 'Itau 2/3: crie metodo static int fibonacci(int n).' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (ITAU 2/3):\n1. Extraia para um metodo.\n2. Use variaveis prev e curr.\n\nCOLA:\nstatic int fibonacci(int n) {\n    if (n <= 1) return n;\n    int prev = 0, curr = 1;\n    for (int i = 2; i <= n; i++) {\n        int next = prev + curr;\n        prev = curr;\n        curr = next;\n    }\n    return curr;\n}'
+                helpText: 'COMO EXPANDIR (ITAU 2/3):\n1. Extraia para um metodo reutilizavel.\n2. Use variaveis prev e curr.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class Fibonacci {\n    static int fibonacci(int n) {\n        if (n <= 1) return n;\n        int prev = 0, curr = 1;\n        for (int i = 2; i <= n; i++) {\n            int next = prev + curr;\n            prev = curr;\n            curr = next;\n        }\n        return curr;\n    }\n\n    public static void main(String[] args) {\n        for (int i = 0; i <= 10; i++) {\n            System.out.println(\"F(\" + i + \") = \" + fibonacci(i));\n        }\n    }\n}'
             },
             {
                 name: 'Validacao de entrada',
@@ -6761,7 +6761,7 @@ const SCALE_MISSIONS = {
                     if (!/(return\s*0|return\s*-1|throw)/.test(code)) return { ok: false, msg: 'Itau 3/3: trate n negativo (return 0/-1 ou throw).' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (ITAU 3/3):\n1. Verifique if (n < 0).\n2. Retorne 0 ou lance excecao.\n\nCOLA:\nif (n < 0) throw new IllegalArgumentException("n negativo");'
+                helpText: 'COMO EXPANDIR (ITAU 3/3):\n1. Verifique if (n < 0).\n2. Lance excecao ou retorne valor especial.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class Fibonacci {\n    static int fibonacci(int n) {\n        if (n < 0) throw new IllegalArgumentException(\"n negativo\");\n        if (n <= 1) return n;\n        int prev = 0, curr = 1;\n        for (int i = 2; i <= n; i++) {\n            int next = prev + curr;\n            prev = curr;\n            curr = next;\n        }\n        return curr;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(\"F(10) = \" + fibonacci(10));\n        System.out.println(\"F(0) = \" + fibonacci(0));\n\n        try {\n            fibonacci(-1);\n        } catch (IllegalArgumentException e) {\n            System.out.println(\"Erro: \" + e.getMessage());\n        }\n    }\n}'
             },
         ],
     },
@@ -6778,7 +6778,7 @@ const SCALE_MISSIONS = {
                     if (!/static\s+void\s+\w+\s*\(\s*int\s*\[\]/.test(code)) return { ok: false, msg: 'Uber 2/3: crie metodo static void bubbleSort(int[]).' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (UBER 2/3):\n1. Extraia para um metodo void.\n2. Modifique o array in-place.\n\nCOLA:\nstatic void bubbleSort(int[] arr) {\n    for (int i = 0; i < arr.length-1; i++)\n        for (int j = 0; j < arr.length-1-i; j++)\n            if (arr[j] > arr[j+1]) {\n                int t = arr[j]; arr[j] = arr[j+1]; arr[j+1] = t;\n            }\n}'
+                helpText: 'COMO EXPANDIR (UBER 2/3):\n1. Extraia para um metodo void.\n2. Modifique o array in-place.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class BubbleSort {\n    static void bubbleSort(int[] arr) {\n        for (int i = 0; i < arr.length - 1; i++) {\n            for (int j = 0; j < arr.length - 1 - i; j++) {\n                if (arr[j] > arr[j + 1]) {\n                    int temp = arr[j];\n                    arr[j] = arr[j + 1];\n                    arr[j + 1] = temp;\n                }\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {64, 34, 25, 12, 22, 11, 90};\n\n        bubbleSort(nums);\n        System.out.println(\"Ordenado: \" + Arrays.toString(nums));\n    }\n}'
             },
             {
                 name: 'Otimizacao early-exit',
@@ -6788,7 +6788,7 @@ const SCALE_MISSIONS = {
                     if (!/break/.test(code)) return { ok: false, msg: 'Uber 3/3: use break para sair quando nao houver trocas.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (UBER 3/3):\n1. Declare boolean swapped = false antes do loop interno.\n2. Se nao houve troca, break.\n\nCOLA:\nboolean swapped = false;\nfor (int j = ...) {\n    if (arr[j] > arr[j+1]) { swap; swapped = true; }\n}\nif (!swapped) break;'
+                helpText: 'COMO EXPANDIR (UBER 3/3):\n1. Declare boolean swapped antes do loop interno.\n2. Se nao houve troca, break.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class BubbleSort {\n    static void bubbleSort(int[] arr) {\n        for (int i = 0; i < arr.length - 1; i++) {\n            boolean swapped = false;\n            for (int j = 0; j < arr.length - 1 - i; j++) {\n                if (arr[j] > arr[j + 1]) {\n                    int temp = arr[j];\n                    arr[j] = arr[j + 1];\n                    arr[j + 1] = temp;\n                    swapped = true;\n                }\n            }\n            if (!swapped) break;\n        }\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {64, 34, 25, 12, 22, 11, 90};\n        int[] jaOrdenado = {1, 2, 3, 4, 5};\n\n        bubbleSort(nums);\n        System.out.println(\"Ordenado: \" + Arrays.toString(nums));\n\n        bubbleSort(jaOrdenado);\n        System.out.println(\"Ja ordenado: \" + Arrays.toString(jaOrdenado));\n    }\n}'
             },
         ],
     },
@@ -6805,7 +6805,7 @@ const SCALE_MISSIONS = {
                     if (!/static\s+void\s+merge\s*\(/.test(code)) return { ok: false, msg: 'Nvidia 2/3: crie metodo static void merge(int[], int, int, int).' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (NVIDIA 2/3):\n1. Separe o merge em um metodo proprio.\n2. Receba indices left, mid, right.\n\nCOLA:\nstatic void merge(int[] arr, int l, int m, int r) {\n    // cria arrays temporarios e faz o merge\n}'
+                helpText: 'COMO EXPANDIR (NVIDIA 2/3):\n1. Separe o merge em um metodo proprio.\n2. Receba indices left, mid, right.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class MergeSort {\n    static void merge(int[] arr, int l, int m, int r) {\n        int n1 = m - l + 1;\n        int n2 = r - m;\n        int[] L = new int[n1];\n        int[] R = new int[n2];\n\n        for (int i = 0; i < n1; i++) L[i] = arr[l + i];\n        for (int j = 0; j < n2; j++) R[j] = arr[m + 1 + j];\n\n        int i = 0, j = 0, k = l;\n        while (i < n1 && j < n2) {\n            if (L[i] <= R[j]) arr[k++] = L[i++];\n            else arr[k++] = R[j++];\n        }\n        while (i < n1) arr[k++] = L[i++];\n        while (j < n2) arr[k++] = R[j++];\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {12, 11, 13, 5, 6, 7};\n        merge(nums, 0, 2, 5);\n        System.out.println(Arrays.toString(nums));\n    }\n}'
             },
             {
                 name: 'Metodo mergeSort recursivo',
@@ -6815,7 +6815,7 @@ const SCALE_MISSIONS = {
                     if (!/mergeSort\s*\([^)]*\)\s*;[^}]*mergeSort\s*\(/.test(code)) return { ok: false, msg: 'Nvidia 3/3: faca duas chamadas recursivas para as metades.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (NVIDIA 3/3):\n1. Divida recursivamente.\n2. Chame mergeSort para cada metade.\n3. Chame merge para juntar.\n\nCOLA:\nstatic void mergeSort(int[] arr, int l, int r) {\n    if (l < r) {\n        int m = (l + r) / 2;\n        mergeSort(arr, l, m);\n        mergeSort(arr, m+1, r);\n        merge(arr, l, m, r);\n    }\n}'
+                helpText: 'COMO EXPANDIR (NVIDIA 3/3):\n1. Divida recursivamente.\n2. Chame mergeSort para cada metade.\n3. Chame merge para juntar.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class MergeSort {\n    static void merge(int[] arr, int l, int m, int r) {\n        int n1 = m - l + 1;\n        int n2 = r - m;\n        int[] L = new int[n1];\n        int[] R = new int[n2];\n\n        for (int i = 0; i < n1; i++) L[i] = arr[l + i];\n        for (int j = 0; j < n2; j++) R[j] = arr[m + 1 + j];\n\n        int i = 0, j = 0, k = l;\n        while (i < n1 && j < n2) {\n            if (L[i] <= R[j]) arr[k++] = L[i++];\n            else arr[k++] = R[j++];\n        }\n        while (i < n1) arr[k++] = L[i++];\n        while (j < n2) arr[k++] = R[j++];\n    }\n\n    static void mergeSort(int[] arr, int l, int r) {\n        if (l < r) {\n            int m = (l + r) / 2;\n            mergeSort(arr, l, m);\n            mergeSort(arr, m + 1, r);\n            merge(arr, l, m, r);\n        }\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {12, 11, 13, 5, 6, 7};\n        mergeSort(nums, 0, nums.length - 1);\n        System.out.println(\"Ordenado: \" + Arrays.toString(nums));\n    }\n}'
             },
         ],
     },
@@ -6832,7 +6832,7 @@ const SCALE_MISSIONS = {
                     if (!/static\s+void\s+bfs\s*\(/.test(code)) return { ok: false, msg: 'Aurora Labs 2/3: crie metodo static void bfs(...).' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (AURORA LABS 2/3):\n1. Extraia BFS para um metodo.\n2. Receba o grafo e o no inicial.\n\nCOLA:\nstatic void bfs(Map<Integer, List<Integer>> graph, int start) {\n    Queue<Integer> q = new LinkedList<>();\n    Set<Integer> visited = new HashSet<>();\n    q.add(start); visited.add(start);\n    while (!q.isEmpty()) {\n        int node = q.poll();\n        System.out.println(node);\n        for (int neighbor : graph.getOrDefault(node, List.of()))\n            if (!visited.contains(neighbor)) {\n                visited.add(neighbor); q.add(neighbor);\n            }\n    }\n}'
+                helpText: 'COMO EXPANDIR (AURORA LABS 2/3):\n1. Extraia BFS para um metodo.\n2. Receba o grafo e o no inicial.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.*;\n\npublic class BFSGraph {\n    static void bfs(Map<Integer, List<Integer>> graph, int start) {\n        Queue<Integer> queue = new LinkedList<>();\n        Set<Integer> visited = new HashSet<>();\n\n        queue.add(start);\n        visited.add(start);\n\n        while (!queue.isEmpty()) {\n            int node = queue.poll();\n            System.out.println(node);\n\n            for (int neighbor : graph.getOrDefault(node, List.of())) {\n                if (!visited.contains(neighbor)) {\n                    visited.add(neighbor);\n                    queue.add(neighbor);\n                }\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        Map<Integer, List<Integer>> graph = new HashMap<>();\n        graph.put(1, Arrays.asList(2, 3));\n        graph.put(2, Arrays.asList(4, 5));\n        graph.put(3, Arrays.asList(6));\n\n        bfs(graph, 1);\n    }\n}'
             },
             {
                 name: 'Retorno de lista de nos',
@@ -6842,7 +6842,7 @@ const SCALE_MISSIONS = {
                     if (!/return\s+\w+/.test(code)) return { ok: false, msg: 'Aurora Labs 3/3: retorne a lista de nos visitados.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (AURORA LABS 3/3):\n1. Mude void para List<Integer>.\n2. Adicione nos a uma lista result.\n3. Retorne a lista.\n\nCOLA:\nstatic List<Integer> bfs(...) {\n    List<Integer> result = new ArrayList<>();\n    // ... result.add(node); ...\n    return result;\n}'
+                helpText: 'COMO EXPANDIR (AURORA LABS 3/3):\n1. Mude void para List<Integer>.\n2. Adicione nos a uma lista result.\n3. Retorne a lista.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.*;\n\npublic class BFSGraph {\n    static List<Integer> bfs(Map<Integer, List<Integer>> graph, int start) {\n        List<Integer> result = new ArrayList<>();\n        Queue<Integer> queue = new LinkedList<>();\n        Set<Integer> visited = new HashSet<>();\n\n        queue.add(start);\n        visited.add(start);\n\n        while (!queue.isEmpty()) {\n            int node = queue.poll();\n            result.add(node);\n\n            for (int neighbor : graph.getOrDefault(node, List.of())) {\n                if (!visited.contains(neighbor)) {\n                    visited.add(neighbor);\n                    queue.add(neighbor);\n                }\n            }\n        }\n        return result;\n    }\n\n    public static void main(String[] args) {\n        Map<Integer, List<Integer>> graph = new HashMap<>();\n        graph.put(1, Arrays.asList(2, 3));\n        graph.put(2, Arrays.asList(4, 5));\n        graph.put(3, Arrays.asList(6));\n\n        List<Integer> ordem = bfs(graph, 1);\n        System.out.println(\"Ordem de visita: \" + ordem);\n    }\n}'
             },
         ],
     },
@@ -6859,7 +6859,7 @@ const SCALE_MISSIONS = {
                     if (!/static\s+boolean\s+\w+\s*\(\s*String/.test(code)) return { ok: false, msg: 'Santander 2/3: crie metodo static boolean isPalindrome(String).' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (SANTANDER 2/3):\n1. Extraia para um metodo boolean.\n2. Use dois ponteiros.\n\nCOLA:\nstatic boolean isPalindrome(String s) {\n    int l = 0, r = s.length() - 1;\n    while (l < r) {\n        if (s.charAt(l++) != s.charAt(r--)) return false;\n    }\n    return true;\n}'
+                helpText: 'COMO EXPANDIR (SANTANDER 2/3):\n1. Extraia para um metodo boolean.\n2. Use dois ponteiros.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class Palindrome {\n    static boolean isPalindrome(String s) {\n        int left = 0, right = s.length() - 1;\n        while (left < right) {\n            if (s.charAt(left) != s.charAt(right)) {\n                return false;\n            }\n            left++;\n            right--;\n        }\n        return true;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isPalindrome(\"radar\"));\n        System.out.println(isPalindrome(\"hello\"));\n    }\n}'
             },
             {
                 name: 'Normalizacao case-insensitive',
@@ -6869,7 +6869,7 @@ const SCALE_MISSIONS = {
                     if (!/(replaceAll|Character\.isLetterOrDigit)/.test(code)) return { ok: false, msg: 'Santander 3/3: filtre caracteres nao alfanumericos.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (SANTANDER 3/3):\n1. Normalize a string antes.\n2. Use replaceAll("[^a-zA-Z0-9]", "").\n\nCOLA:\nString clean = s.toLowerCase().replaceAll("[^a-z0-9]", "");'
+                helpText: 'COMO EXPANDIR (SANTANDER 3/3):\n1. Normalize a string antes de comparar.\n2. Use toLowerCase() e replaceAll.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class Palindrome {\n    static boolean isPalindrome(String s) {\n        String clean = s.toLowerCase().replaceAll(\"[^a-z0-9]\", \"\");\n\n        int left = 0, right = clean.length() - 1;\n        while (left < right) {\n            if (clean.charAt(left) != clean.charAt(right)) {\n                return false;\n            }\n            left++;\n            right--;\n        }\n        return true;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isPalindrome(\"A man, a plan, a canal: Panama\"));\n        System.out.println(isPalindrome(\"race a car\"));\n    }\n}'
             },
         ],
     },
@@ -6886,7 +6886,7 @@ const SCALE_MISSIONS = {
                     if (!/static\s+Node\s+\w+\s*\(\s*Node/.test(code)) return { ok: false, msg: 'Bradesco 2/3: crie metodo static Node reverseList(Node).' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (BRADESCO 2/3):\n1. Extraia para um metodo.\n2. Use prev, curr, next.\n\nCOLA:\nstatic Node reverseList(Node head) {\n    Node prev = null, curr = head;\n    while (curr != null) {\n        Node next = curr.next;\n        curr.next = prev;\n        prev = curr;\n        curr = next;\n    }\n    return prev;\n}'
+                helpText: 'COMO EXPANDIR (BRADESCO 2/3):\n1. Extraia para um metodo.\n2. Use prev, curr, next.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class ReverseList {\n    static class Node {\n        int val;\n        Node next;\n        Node(int val) { this.val = val; }\n    }\n\n    static Node reverseList(Node head) {\n        Node prev = null, curr = head;\n        while (curr != null) {\n            Node next = curr.next;\n            curr.next = prev;\n            prev = curr;\n            curr = next;\n        }\n        return prev;\n    }\n\n    static void printList(Node head) {\n        while (head != null) {\n            System.out.print(head.val + \" \");\n            head = head.next;\n        }\n        System.out.println();\n    }\n\n    public static void main(String[] args) {\n        Node head = new Node(1);\n        head.next = new Node(2);\n        head.next.next = new Node(3);\n\n        System.out.print(\"Original: \");\n        printList(head);\n\n        head = reverseList(head);\n        System.out.print(\"Invertida: \");\n        printList(head);\n    }\n}'
             },
             {
                 name: 'Tratamento lista vazia',
@@ -6896,7 +6896,7 @@ const SCALE_MISSIONS = {
                     if (!/return\s+(null|head)/.test(code)) return { ok: false, msg: 'Bradesco 3/3: retorne null ou head se lista vazia.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (BRADESCO 3/3):\n1. No inicio, verifique if (head == null).\n2. Retorne null imediatamente.\n\nCOLA:\nif (head == null) return null;'
+                helpText: 'COMO EXPANDIR (BRADESCO 3/3):\n1. No inicio, verifique if (head == null).\n2. Retorne null imediatamente.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class ReverseList {\n    static class Node {\n        int val;\n        Node next;\n        Node(int val) { this.val = val; }\n    }\n\n    static Node reverseList(Node head) {\n        if (head == null) return null;\n\n        Node prev = null, curr = head;\n        while (curr != null) {\n            Node next = curr.next;\n            curr.next = prev;\n            prev = curr;\n            curr = next;\n        }\n        return prev;\n    }\n\n    static void printList(Node head) {\n        while (head != null) {\n            System.out.print(head.val + \" \");\n            head = head.next;\n        }\n        System.out.println();\n    }\n\n    public static void main(String[] args) {\n        Node head = new Node(1);\n        head.next = new Node(2);\n        head.next.next = new Node(3);\n\n        System.out.print(\"Original: \");\n        printList(head);\n\n        head = reverseList(head);\n        System.out.print(\"Invertida: \");\n        printList(head);\n\n        Node vazia = reverseList(null);\n        System.out.println(\"Lista vazia: \" + vazia);\n    }\n}'
             },
         ],
     },
@@ -6914,7 +6914,7 @@ const SCALE_MISSIONS = {
                     if (!/compareTo\s*\(/.test(code)) return { ok: false, msg: 'Gemini 2/3: implemente o metodo compareTo.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (GEMINI 2/3):\n1. Crie classe Task implements Comparable<Task>.\n2. Implemente compareTo com Integer.compare.\n\nCOLA:\nstatic class Task implements Comparable<Task> {\n    int priority;\n    public int compareTo(Task o) {\n        return Integer.compare(this.priority, o.priority);\n    }\n}'
+                helpText: 'COMO EXPANDIR (GEMINI 2/3):\n1. Crie classe Task implements Comparable<Task>.\n2. Implemente compareTo com Integer.compare.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.PriorityQueue;\n\npublic class HeapPriority {\n    static class Task implements Comparable<Task> {\n        String nome;\n        int priority;\n\n        Task(String nome, int priority) {\n            this.nome = nome;\n            this.priority = priority;\n        }\n\n        public int compareTo(Task o) {\n            return Integer.compare(this.priority, o.priority);\n        }\n    }\n\n    public static void main(String[] args) {\n        PriorityQueue<Task> pq = new PriorityQueue<>();\n        pq.add(new Task(\"Deploy\", 3));\n        pq.add(new Task(\"Bug critico\", 1));\n        pq.add(new Task(\"Feature\", 2));\n\n        System.out.println(\"Primeira tarefa: \" + pq.peek().nome);\n    }\n}'
             },
             {
                 name: 'Processamento ordenado',
@@ -6924,7 +6924,7 @@ const SCALE_MISSIONS = {
                     if (!/\.poll\(\)/.test(code)) return { ok: false, msg: 'Gemini 3/3: use poll() para extrair elementos.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (GEMINI 3/3):\n1. Use while para esvaziar a fila.\n2. poll() retira o elemento de maior prioridade.\n\nCOLA:\nwhile (!pq.isEmpty()) {\n    Task t = pq.poll();\n    System.out.println(t.priority);\n}'
+                helpText: 'COMO EXPANDIR (GEMINI 3/3):\n1. Use while para esvaziar a fila.\n2. poll() retira o elemento de maior prioridade.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.PriorityQueue;\n\npublic class HeapPriority {\n    static class Task implements Comparable<Task> {\n        String nome;\n        int priority;\n\n        Task(String nome, int priority) {\n            this.nome = nome;\n            this.priority = priority;\n        }\n\n        public int compareTo(Task o) {\n            return Integer.compare(this.priority, o.priority);\n        }\n    }\n\n    public static void main(String[] args) {\n        PriorityQueue<Task> pq = new PriorityQueue<>();\n        pq.add(new Task(\"Deploy\", 3));\n        pq.add(new Task(\"Bug critico\", 1));\n        pq.add(new Task(\"Feature\", 2));\n\n        System.out.println(\"Processando por prioridade:\");\n        while (!pq.isEmpty()) {\n            Task t = pq.poll();\n            System.out.println(\"- \" + t.nome + \" (prioridade \" + t.priority + \")\");\n        }\n    }\n}'
             },
         ],
     },
@@ -6942,7 +6942,7 @@ const SCALE_MISSIONS = {
                     if (!/for\s*\(|while\s*\(/.test(code)) return { ok: false, msg: 'Bio Code 2/3: use loop iterativo (nao recursao pura).' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (BIO CODE 2/3):\n1. Extraia para um metodo.\n2. Use variaveis prev e curr.\n3. Loop de 3 ate n.\n\nCOLA:\nstatic int climbStairs(int n) {\n    if (n <= 2) return n;\n    int prev = 1, curr = 2;\n    for (int i = 3; i <= n; i++) {\n        int next = prev + curr;\n        prev = curr;\n        curr = next;\n    }\n    return curr;\n}'
+                helpText: 'COMO EXPANDIR (BIO CODE 2/3):\n1. Extraia para um metodo reutilizavel.\n2. Use variaveis prev e curr.\n3. Loop de 3 ate n.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class ClimbingStairs {\n    static int climbStairs(int n) {\n        if (n <= 2) return n;\n        int prev = 1, curr = 2;\n        for (int i = 3; i <= n; i++) {\n            int next = prev + curr;\n            prev = curr;\n            curr = next;\n        }\n        return curr;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(\"Formas de subir 5 degraus: \" + climbStairs(5));\n        System.out.println(\"Formas de subir 10 degraus: \" + climbStairs(10));\n    }\n}'
             },
             {
                 name: 'Otimizacao O(1) espaco',
@@ -6952,7 +6952,7 @@ const SCALE_MISSIONS = {
                     if (!/(prev|a|first).*(curr|b|second)|(curr|b|second).*(prev|a|first)/.test(code)) return { ok: false, msg: 'Bio Code 3/3: use duas variaveis para guardar os ultimos valores.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (BIO CODE 3/3):\n1. Nao precisa de dp[n] array.\n2. Apenas prev e curr sao suficientes.\n3. Space complexity O(1).\n\nCOLA:\nint prev = 1, curr = 2;\nfor (int i = 3; i <= n; i++) {\n    int next = prev + curr;\n    prev = curr;\n    curr = next;\n}'
+                helpText: 'COMO EXPANDIR (BIO CODE 3/3):\n1. Nao precisa de dp[n] array.\n2. Apenas prev e curr sao suficientes.\n3. Space complexity O(1).\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class ClimbingStairs {\n    static int climbStairs(int n) {\n        if (n <= 2) return n;\n        int prev = 1, curr = 2;\n        for (int i = 3; i <= n; i++) {\n            int next = prev + curr;\n            prev = curr;\n            curr = next;\n        }\n        return curr;\n    }\n\n    public static void main(String[] args) {\n        // Demonstrando que usamos O(1) espaco\n        // Apenas prev e curr, sem array!\n        for (int n = 1; n <= 10; n++) {\n            System.out.println(\"Degraus \" + n + \": \" + climbStairs(n) + \" formas\");\n        }\n    }\n}'
             },
         ],
     },
@@ -6969,7 +6969,7 @@ const SCALE_MISSIONS = {
                     if (!/static\s+TreeNode\s+\w+\s*\(\s*TreeNode/.test(code)) return { ok: false, msg: 'Cloud Valley 2/3: crie metodo static TreeNode invertTree(TreeNode).' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (CLOUD VALLEY 2/3):\n1. Extraia para um metodo recursivo.\n2. Troque left e right.\n3. Chame recursivamente.\n\nCOLA:\nstatic TreeNode invertTree(TreeNode root) {\n    if (root == null) return null;\n    TreeNode temp = root.left;\n    root.left = invertTree(root.right);\n    root.right = invertTree(temp);\n    return root;\n}'
+                helpText: 'COMO EXPANDIR (CLOUD VALLEY 2/3):\n1. Extraia para um metodo recursivo.\n2. Troque left e right.\n3. Chame recursivamente.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class TreeInvert {\n    static class TreeNode {\n        int val;\n        TreeNode left, right;\n        TreeNode(int val) { this.val = val; }\n    }\n\n    static TreeNode invertTree(TreeNode root) {\n        if (root == null) return null;\n        TreeNode temp = root.left;\n        root.left = invertTree(root.right);\n        root.right = invertTree(temp);\n        return root;\n    }\n\n    static void printInOrder(TreeNode root) {\n        if (root == null) return;\n        printInOrder(root.left);\n        System.out.print(root.val + \" \");\n        printInOrder(root.right);\n    }\n\n    public static void main(String[] args) {\n        TreeNode root = new TreeNode(4);\n        root.left = new TreeNode(2);\n        root.right = new TreeNode(7);\n        root.left.left = new TreeNode(1);\n        root.left.right = new TreeNode(3);\n\n        System.out.print(\"Original: \");\n        printInOrder(root);\n        System.out.println();\n\n        root = invertTree(root);\n        System.out.print(\"Invertida: \");\n        printInOrder(root);\n    }\n}'
             },
             {
                 name: 'Tratamento null',
@@ -6979,7 +6979,7 @@ const SCALE_MISSIONS = {
                     if (!/return\s+null/.test(code)) return { ok: false, msg: 'Cloud Valley 3/3: retorne null se root for null.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (CLOUD VALLEY 3/3):\n1. Caso base da recursao.\n2. Se root e null, retorne null.\n\nCOLA:\nif (root == null) return null;'
+                helpText: 'COMO EXPANDIR (CLOUD VALLEY 3/3):\n1. Caso base da recursao.\n2. Se root e null, retorne null.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class TreeInvert {\n    static class TreeNode {\n        int val;\n        TreeNode left, right;\n        TreeNode(int val) { this.val = val; }\n    }\n\n    static TreeNode invertTree(TreeNode root) {\n        if (root == null) return null;\n\n        TreeNode temp = root.left;\n        root.left = invertTree(root.right);\n        root.right = invertTree(temp);\n        return root;\n    }\n\n    static void printInOrder(TreeNode root) {\n        if (root == null) return;\n        printInOrder(root.left);\n        System.out.print(root.val + \" \");\n        printInOrder(root.right);\n    }\n\n    public static void main(String[] args) {\n        TreeNode root = new TreeNode(4);\n        root.left = new TreeNode(2);\n        root.right = new TreeNode(7);\n\n        System.out.print(\"Original: \");\n        printInOrder(root);\n        System.out.println();\n\n        root = invertTree(root);\n        System.out.print(\"Invertida: \");\n        printInOrder(root);\n        System.out.println();\n\n        TreeNode nula = invertTree(null);\n        System.out.println(\"Arvore nula: \" + nula);\n    }\n}'
             },
         ],
     },
