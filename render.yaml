@@ -11,8 +11,10 @@ services:
       - key: PYTHON_VERSION
         value: "3.12.0"
       - key: JWT_SECRET_KEY
-        generateValue: true
+        sync: false  # Configure manually in Render dashboard
       - key: DATABASE_URL
-        sync: false
+        sync: false  # Configure manually in Render dashboard
       - key: OPENAI_API_KEY
         sync: false  # Configure manually in Render dashboard
+      - key: ADMIN_EMAIL
+        sync: false  # Configure manually in Render dashboard (e.g., cezicolatecnologia@gmail.com)
