@@ -31,6 +31,289 @@ const API = {
     },
 };
 
+// ---- study chat (authenticated) ----
+const StudyChat = {
+    _open: false,
+    _busy: false,
+    _messages: [],
+    _sessionKey: null,
+    _bound: false,
+
+    _els() {
+        return {
+            overlay: document.getElementById('studyChatOverlay'),
+            context: document.getElementById('studyChatContext'),
+            messages: document.getElementById('studyChatMessages'),
+            input: document.getElementById('studyChatInput'),
+            send: document.getElementById('studyChatSendBtn'),
+        };
+    },
+
+    _ensureMounted() {
+        // Fallback for stale cached HTML: mount chat UI dynamically inside IDE.
+        const ideMain = document.querySelector('.ide-main');
+        if (ideMain && !document.getElementById('studyChatOverlay')) {
+            const aside = document.createElement('aside');
+            aside.id = 'studyChatOverlay';
+            aside.className = 'study-chat-overlay';
+            aside.innerHTML =
+                '<div class="study-chat-card">' +
+                '  <div class="study-chat-header">' +
+                '    <div><h3>INTELIGÊNCIA ARTIFICIAL</h3><p id="studyChatContext">Java + Estruturas de Dados</p></div>' +
+                '    <button class="study-chat-close" onclick="StudyChat.close()">&times;</button>' +
+                '  </div>' +
+                '  <div id="studyChatMessages" class="study-chat-messages"></div>' +
+                '  <div class="study-chat-composer">' +
+                '    <textarea id="studyChatInput" placeholder="Pergunte sobre livros, sintaxe Java, algoritmos e escalabilidade..."></textarea>' +
+                '    <div class="study-chat-actions"><button id="studyChatSendBtn" class="btn-primary" onclick="StudyChat.send()">ENVIAR</button></div>' +
+                '  </div>' +
+                '</div>';
+            ideMain.appendChild(aside);
+        }
+
+        const actions = document.querySelector('.ide-actions');
+        if (actions && !document.getElementById('ideChatBtn')) {
+            const btn = document.createElement('button');
+            btn.className = 'ide-btn ide-btn-chat';
+            btn.id = 'ideChatBtn';
+            btn.onclick = () => StudyChat.toggle();
+            btn.innerHTML = '<span class="ide-btn-icon">&#128172;</span> INTELIGÊNCIA ARTIFICIAL';
+            const skipBtn = document.getElementById('ideSkipBtn');
+            if (skipBtn && skipBtn.parentElement === actions) {
+                actions.insertBefore(btn, skipBtn);
+            } else {
+                actions.appendChild(btn);
+            }
+        }
+    },
+
+    _storageKey() {
+        return 'garage_study_chat_v2_' + (State.sessionId || 'anon');
+    },
+
+    _bind() {
+        if (this._bound) return;
+        const { input } = this._els();
+        if (input) {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    StudyChat.send();
+                }
+            });
+        }
+        this._bound = true;
+    },
+
+    _load() {
+        let parsed = [];
+        try {
+            const raw = localStorage.getItem(this._storageKey());
+            parsed = raw ? JSON.parse(raw) : [];
+        } catch (_e) {
+            parsed = [];
+        }
+        if (!Array.isArray(parsed)) parsed = [];
+        this._messages = parsed
+            .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+            .slice(-20);
+    },
+
+    _persist() {
+        try {
+            localStorage.setItem(this._storageKey(), JSON.stringify(this._messages.slice(-20)));
+        } catch (_e) {
+            // ignore storage failures
+        }
+    },
+
+    _ensureSessionState() {
+        const key = this._storageKey();
+        if (this._sessionKey !== key) {
+            this._sessionKey = key;
+            this._load();
+        }
+    },
+
+    _isIdeVisible() {
+        const ideOverlay = document.getElementById('ideOverlay');
+        return !!(ideOverlay && ideOverlay.classList.contains('visible'));
+    },
+
+    isOpen() {
+        return this._open;
+    },
+
+    _currentRegion() {
+        if (IDE && IDE._currentChallenge && IDE._currentChallenge.region) return IDE._currentChallenge.region;
+        if (State.lockedRegion) return State.lockedRegion;
+        if (State.currentChallenge && State.currentChallenge.region) return State.currentChallenge.region;
+        return 'Garage';
+    },
+
+    _currentStage() {
+        return State.player && State.player.stage ? State.player.stage : 'Intern';
+    },
+
+    _bookPayload() {
+        if (typeof BOOKS_DATA === 'undefined' || !Array.isArray(BOOKS_DATA)) return [];
+        const collected = new Set(State.collectedBooks || []);
+        return BOOKS_DATA.map(b => ({
+            id: b.id,
+            title: b.title,
+            author: b.author || '',
+            summary: b.summary || '',
+            lesson: b.lesson || '',
+            collected: collected.has(b.id),
+        }));
+    },
+
+    _recentPayload() {
+        return this._messages.slice(-8).map(m => ({
+            role: m.role,
+            content: m.content,
+        }));
+    },
+
+    _append(role, content, meta) {
+        this._messages.push({
+            role,
+            content: content || '',
+            meta: meta || '',
+            ts: Date.now(),
+        });
+        this._messages = this._messages.slice(-20);
+        this._persist();
+        this._render();
+    },
+
+    _setBusy(busy) {
+        this._busy = busy;
+        const { send, input } = this._els();
+        if (send) {
+            send.disabled = busy;
+            send.textContent = busy ? 'ENVIANDO...' : 'ENVIAR';
+        }
+        if (input) input.disabled = busy;
+    },
+
+    _render() {
+        const { messages } = this._els();
+        if (!messages) return;
+        messages.innerHTML = '';
+        this._messages.forEach((m) => {
+            const wrap = document.createElement('div');
+            wrap.className = 'study-msg ' + (m.role === 'user' ? 'study-msg-user' : 'study-msg-assistant');
+
+            const meta = document.createElement('span');
+            meta.className = 'study-msg-meta';
+            meta.textContent = m.role === 'user'
+                ? 'VOCE'
+                : (m.meta ? ('INTELIGÊNCIA ARTIFICIAL - ' + m.meta) : 'INTELIGÊNCIA ARTIFICIAL');
+
+            const body = document.createElement('div');
+            body.textContent = m.content;
+
+            wrap.appendChild(meta);
+            wrap.appendChild(body);
+            messages.appendChild(wrap);
+        });
+        messages.scrollTop = messages.scrollHeight;
+    },
+
+    _updateContextLabel() {
+        const { context } = this._els();
+        if (!context) return;
+        const stage = this._currentStage();
+        const region = this._currentRegion();
+        context.textContent = 'Stage: ' + stage + ' | Regiao: ' + region;
+    },
+
+    open(focusInput = true) {
+        if (!Auth.isLoggedIn()) return;
+        if (!this._isIdeVisible()) return;
+        this._ensureMounted();
+        this._bind();
+        this._ensureSessionState();
+
+        const { overlay, input } = this._els();
+        if (!overlay) return;
+        overlay.classList.add('visible');
+        this._open = true;
+        this._updateContextLabel();
+        const btn = document.getElementById('ideChatBtn');
+        if (btn) btn.classList.add('active');
+
+        if (this._messages.length === 0) {
+            this._append(
+                'assistant',
+                'Pronto para estudar. Pergunte sobre sintaxe Java, estruturas de dados, algoritmos, trade-offs e como escalar codigo com seguranca.',
+                'inicio'
+            );
+        } else {
+            this._render();
+        }
+        if (focusInput && input) input.focus();
+    },
+
+    close() {
+        const { overlay } = this._els();
+        if (overlay) overlay.classList.remove('visible');
+        this._open = false;
+        const btn = document.getElementById('ideChatBtn');
+        if (btn) btn.classList.remove('active');
+        // Return focus to IDE editor when chat is closed during live coding.
+        const ideOpen = document.getElementById('ideOverlay') && document.getElementById('ideOverlay').classList.contains('visible');
+        if (ideOpen) {
+            const ideInput = document.getElementById('ideCodeInput');
+            if (ideInput) ideInput.focus();
+        }
+    },
+
+    toggle() {
+        if (this._open) this.close();
+        else this.open(true);
+    },
+
+    async send() {
+        if (this._busy) return;
+        if (!State.sessionId) {
+            alert('Sessao nao iniciada.');
+            return;
+        }
+        const { input } = this._els();
+        if (!input) return;
+        const message = (input.value || '').trim();
+        if (!message) return;
+
+        const challengeId = IDE && IDE._currentChallenge ? IDE._currentChallenge.id : null;
+        const region = this._currentRegion();
+        const stage = this._currentStage();
+
+        this._append('user', message);
+        input.value = '';
+        this._setBusy(true);
+
+        try {
+            const res = await API.post('/api/study/chat', {
+                session_id: State.sessionId,
+                message,
+                challenge_id: challengeId,
+                region,
+                stage,
+                recent_messages: this._recentPayload(),
+                books: this._bookPayload(),
+            });
+            this._append('assistant', res.reply || 'Sem resposta.', res.model || '');
+        } catch (e) {
+            this._append('assistant', 'Falha ao consultar a Inteligência Artificial: ' + (e.message || 'erro desconhecido'), 'erro');
+        } finally {
+            this._setBusy(false);
+            if (input) input.focus();
+        }
+    },
+};
+
 // ---- sound engine (Web Audio, procedural) ----
 const SFX = {
     ctx: null,
@@ -41,6 +324,7 @@ const SFX = {
     masterVol: null,
     musicGain: null,
     musicVol: 0.018,
+    musicTargetVol: 0.35,
     sfxVol: 0.18,
     _audioElement: null,
 
@@ -48,7 +332,7 @@ const SFX = {
         if (!this._audioElement) {
             this._audioElement = new Audio('/static/music_game.mp3');
             this._audioElement.loop = true;
-            this._audioElement.volume = 0.10;
+            this._audioElement.volume = this.musicTargetVol;
         }
         return this._audioElement;
     },
@@ -817,7 +1101,7 @@ const SFX = {
             // MP3 via HTML5 Audio for explore/challenge phases
             const audio = this._getAudio();
             audio.currentTime = 0;
-            audio.volume = 0.35;
+            audio.volume = this.musicTargetVol;
             audio.play().catch(() => {
                 // Autoplay blocked -- will start on next user interaction
                 const resume = () => { audio.play(); document.removeEventListener('click', resume); document.removeEventListener('keydown', resume); };
@@ -850,8 +1134,8 @@ const SFX = {
         if (this._audioElement && !this._audioElement.paused) {
             // Fade out MP3 volume over 300ms
             const audio = this._audioElement;
-            const target = 0.10;
-            const step = target / 15;
+            const fadeFrom = Math.max(audio.volume, this.musicTargetVol);
+            const step = fadeFrom / 15;
             const fade = setInterval(() => {
                 if (audio.volume > step) { audio.volume = Math.max(0, audio.volume - step); }
                 else { audio.volume = 0; audio.pause(); clearInterval(fade); }
@@ -870,11 +1154,11 @@ const SFX = {
         if (!this._musicPaused) return;
         this._musicPaused = false;
         if (this._audioElement) {
-            // Fade in MP3 volume back to 0.35
+            // Fade in MP3 volume back to the in-game target.
             this._audioElement.volume = 0;
             this._audioElement.play().catch(() => {});
             const audio = this._audioElement;
-            const target = 0.10;
+            const target = this.musicTargetVol;
             const step = target / 15;
             const fade = setInterval(() => {
                 if (audio.volume < target - step) { audio.volume = Math.min(target, audio.volume + step); }
@@ -1522,6 +1806,15 @@ const World = {
                 return;
             }
 
+            // If study chat is open, block world controls and allow ESC to close.
+            if (StudyChat.isOpen()) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    StudyChat.close();
+                }
+                return;
+            }
+
             // If IDE overlay is open, let the textarea handle all input
             const ideOpen = document.getElementById('ideOverlay') && document.getElementById('ideOverlay').classList.contains('visible');
             if (ideOpen) return;
@@ -1559,6 +1852,7 @@ const World = {
         document.addEventListener('keyup', e => {
             const prepOpen = Learning.isOpen();
             if (prepOpen) return;
+            if (StudyChat.isOpen()) return;
             const ideOpen = document.getElementById('ideOverlay') && document.getElementById('ideOverlay').classList.contains('visible');
             if (ideOpen) return;
             // Release keys even if metrics open, to avoid stuck keys
@@ -3169,6 +3463,9 @@ const World = {
 // ---- UI ----
 const UI = {
     showScreen(id) {
+        if (typeof StudyChat !== 'undefined' && StudyChat.isOpen() && id !== 'screen-world') {
+            StudyChat.close();
+        }
         if (typeof Learning !== 'undefined' && Learning.isOpen() && id !== 'screen-world') {
             Learning.cancel();
         }
@@ -3581,10 +3878,10 @@ const UI = {
         document.getElementById('challengeOverlay').classList.add('visible');
     },
 
-    hideChallenge() {
+    hideChallenge(opts = {}) {
         State.isInChallenge = false;
         document.getElementById('challengeOverlay').classList.remove('visible');
-        SFX.resumeMusic();
+        if (opts.resumeMusic !== false) SFX.resumeMusic();
     },
 
     showFeedback(result) {
@@ -4606,7 +4903,8 @@ const Game = {
         }
 
         if (pending && pending.type === 'open_ide') {
-            UI.hideChallenge();
+            // Keep music paused while transitioning from theory to live coding.
+            UI.hideChallenge({ resumeMusic: false });
             const openIde = () => IDE.open(pending.npc);
             if (pending.promotion && pending.promotion.new_stage) {
                 // All promotions (including Distinguished/CEO) show overlay then open IDE
@@ -5843,18 +6141,18 @@ const IDE = {
     _attemptCoachMessage(challenge, attempts) {
         const title = (challenge && challenge.title) ? challenge.title : 'este desafio';
         if (attempts <= 1) {
-            return 'Coach: revise assinatura da classe/metodo em "' + title + '" antes de ajustar algoritmo.';
+            return 'Inteligência Artificial: revise assinatura da classe/metodo em "' + title + '" antes de ajustar algoritmo.';
         }
         if (attempts === 2) {
-            return 'Coach: faca dry-run com um exemplo pequeno e confirme cada variavel a cada passo.';
+            return 'Inteligência Artificial: faca dry-run com um exemplo pequeno e confirme cada variavel a cada passo.';
         }
         if (attempts === 3) {
-            return 'Coach: quebre o problema em 3 blocos -> entrada, processamento e saida.';
+            return 'Inteligência Artificial: quebre o problema em 3 blocos -> entrada, processamento e saida.';
         }
         if (attempts === 4) {
-            return 'Coach: valide caso de borda (vazio, unico elemento, limite superior).';
+            return 'Inteligência Artificial: valide caso de borda (vazio, unico elemento, limite superior).';
         }
-        return 'Coach: compare sua versao com o objetivo do enunciado e simplifique o fluxo principal.';
+        return 'Inteligência Artificial: compare sua versao com o objetivo do enunciado e simplifique o fluxo principal.';
     },
 
     /**
@@ -5932,6 +6230,7 @@ const IDE = {
 
         // Show overlay
         document.getElementById('ideOverlay').classList.add('visible');
+        StudyChat.open(false);
         document.getElementById('ideCodeInput').focus();
 
         // On mobile: handle virtual keyboard resizing
@@ -6121,6 +6420,7 @@ const IDE = {
     close() {
         document.getElementById('ideOverlay').classList.remove('visible');
         document.getElementById('ideHelpOverlay').style.display = 'none';
+        if (StudyChat.isOpen()) StudyChat.close();
         const wasSolved = this._solved;
         const regionBeingWorked = State.lockedRegion;
         this._currentChallenge = null;
@@ -6453,6 +6753,9 @@ const Auth = {
             const po = document.getElementById('pauseOverlay');
             if (po) po.style.display = 'none';
         }
+        if (typeof StudyChat !== 'undefined' && StudyChat.isOpen()) {
+            StudyChat.close();
+        }
         if (typeof Learning !== 'undefined' && Learning.isOpen()) {
             Learning.cancel();
         }
@@ -6491,6 +6794,9 @@ const Auth = {
     },
 
     handleExpired() {
+        if (typeof StudyChat !== 'undefined' && StudyChat.isOpen()) {
+            StudyChat.close();
+        }
         if (typeof Learning !== 'undefined' && Learning.isOpen()) {
             Learning.cancel();
         }

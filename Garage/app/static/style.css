@@ -2075,6 +2075,153 @@ body {
 }
 
 /* ==========================================================================
+   STUDY CHAT SIDEBAR (IDE RIGHT)
+   ========================================================================== */
+.study-chat-overlay {
+    width: 360px;
+    min-width: 320px;
+    max-width: 420px;
+    height: 100%;
+    border-left: 1px solid #1e293b;
+    background: #0f172a;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.study-chat-overlay.visible {
+    display: flex;
+}
+
+.study-chat-card {
+    width: 100%;
+    height: 100%;
+    background: #0f172a;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.study-chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #1e293b;
+    background: linear-gradient(180deg, #0b1224 0%, #0f172a 100%);
+}
+
+.study-chat-header h3 {
+    margin: 0;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    color: #e2e8f0;
+}
+
+.study-chat-header p {
+    margin: 4px 0 0;
+    color: #94a3b8;
+    font-size: 0.72rem;
+}
+
+.study-chat-close {
+    border: 1px solid #334155;
+    border-radius: 8px;
+    background: #0b1220;
+    color: #cbd5e1;
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.study-chat-close:hover {
+    border-color: #22d3ee;
+    color: #22d3ee;
+}
+
+.study-chat-messages {
+    flex: 1;
+    min-height: 120px;
+    overflow-y: auto;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #0b1220;
+}
+
+.study-msg {
+    border: 1px solid #1f2937;
+    border-radius: 10px;
+    padding: 10px 12px;
+    line-height: 1.45;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+}
+
+.study-msg-user {
+    align-self: flex-end;
+    background: #111827;
+    border-color: #334155;
+    color: #e2e8f0;
+    max-width: 90%;
+}
+
+.study-msg-assistant {
+    align-self: stretch;
+    background: #0f172a;
+    border-color: #1e293b;
+    color: #cbd5e1;
+}
+
+.study-msg-meta {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.67rem;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #67e8f9;
+}
+
+.study-chat-composer {
+    border-top: 1px solid #1e293b;
+    padding: 12px;
+    background: #0f172a;
+}
+
+.study-chat-composer textarea {
+    width: 100%;
+    min-height: 86px;
+    resize: vertical;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    background: #020617;
+    color: #e2e8f0;
+    padding: 10px 12px;
+    font-family: var(--font);
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
+.study-chat-composer textarea:focus {
+    outline: none;
+    border-color: #22d3ee;
+    box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.15);
+}
+
+.study-chat-actions {
+    margin-top: 8px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.study-chat-actions .btn-primary {
+    min-width: 130px;
+}
+
+/* ==========================================================================
    IDE CODING CHALLENGE OVERLAY
    ========================================================================== */
 .ide-overlay {
@@ -2170,6 +2317,7 @@ body {
     display: flex;
     flex: 1;
     overflow: hidden;
+    position: relative;
 }
 
 /* Sidebar */
@@ -2464,6 +2612,23 @@ body {
 .ide-btn-help:hover {
     background: #293548;
     border-color: #58a6ff;
+}
+
+.ide-btn-chat {
+    background: #0f172a;
+    border-color: #334155;
+    color: #22d3ee;
+}
+
+.ide-btn-chat:hover {
+    background: #12243a;
+    border-color: #22d3ee;
+}
+
+.ide-btn-chat.active {
+    background: #0e2a3b;
+    border-color: #22d3ee;
+    color: #67e8f9;
 }
 
 .ide-btn-skip {
@@ -2938,10 +3103,58 @@ body {
     .book-popup-lesson {
         font-size: 0.7rem;
     }
+
+    .study-chat-overlay {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        border-left: none;
+        border-top: 1px solid #1e293b;
+        z-index: 56;
+    }
+
+    .study-chat-card {
+        width: 100%;
+        height: 100%;
+    }
+
+    .study-chat-messages {
+        min-height: 0;
+    }
+
+    .study-chat-composer textarea {
+        min-height: 94px;
+        font-size: 16px;
+    }
+
+    .study-chat-actions .btn-primary {
+        width: 100%;
+    }
 }
 
 /* ---- responsive: IDE on phones ---- */
 @media (max-width: 700px) {
+    .study-chat-overlay {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        border-left: none;
+        border-top: 1px solid #1e293b;
+        z-index: 56;
+    }
+
+    .study-chat-card {
+        height: 100%;
+    }
+
     .ide-sidebar {
         display: none;
     }

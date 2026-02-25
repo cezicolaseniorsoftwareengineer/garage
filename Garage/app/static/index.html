@@ -9,7 +9,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=20260225-chat-sidebar-5">
 </head>
 
 <body>
@@ -481,6 +481,25 @@
                         </div>
                     </div>
                 </div>
+
+                <aside id="studyChatOverlay" class="study-chat-overlay">
+                    <div class="study-chat-card">
+                        <div class="study-chat-header">
+                            <div>
+                                <h3>INTELIGÊNCIA ARTIFICIAL</h3>
+                                <p id="studyChatContext">Java + Estruturas de Dados</p>
+                            </div>
+                            <button class="study-chat-close" onclick="StudyChat.close()">&times;</button>
+                        </div>
+                        <div id="studyChatMessages" class="study-chat-messages"></div>
+                        <div class="study-chat-composer">
+                            <textarea id="studyChatInput" placeholder="Pergunte sobre livros, sintaxe Java, algoritmos e escalabilidade..."></textarea>
+                            <div class="study-chat-actions">
+                                <button id="studyChatSendBtn" class="btn-primary" onclick="StudyChat.send()">ENVIAR</button>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
             </div>
 
             <!-- IDE Bottom Bar: Characters + Actions -->
@@ -498,6 +517,9 @@
                     </button>
                     <button class="ide-btn ide-btn-help" id="ideHelpBtn" onclick="IDE.askHelp()">
                         <span class="ide-btn-icon">&#128273;</span> VER SOLUÇÃO
+                    </button>
+                    <button class="ide-btn ide-btn-chat" id="ideChatBtn" onclick="StudyChat.toggle()">
+                        <span class="ide-btn-icon">&#128172;</span> INTELIGÊNCIA ARTIFICIAL
                     </button>
                     <button class="ide-btn ide-btn-skip" onclick="IDE.skip()" id="ideSkipBtn" style="display:none;">
                         <span class="ide-btn-icon">&#9654;&#9654;</span> PULAR
@@ -525,7 +547,7 @@
         </div>
     </div>
 
-    <script src="/static/game.js"></script>
+    <script src="/static/game.js?v=20260225-chat-sidebar-5"></script>
 </body>
 
 </html>
