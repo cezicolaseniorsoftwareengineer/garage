@@ -365,7 +365,7 @@ const StudyChat = {
         const { send, input } = this._els();
         if (send) {
             send.disabled = busy;
-            send.textContent = busy ? 'ENVIANDO...' : 'ENVIAR';
+            send.textContent = busy ? 'PENSANDO...' : 'ENVIAR';
         }
         if (input) input.disabled = busy;
     },
@@ -6341,12 +6341,21 @@ const SCALE_MISSIONS = {
                 name: 'Modularizacao',
                 objective: 'Expanda para um metodo static void printProfile(...) e chame esse metodo no main.',
                 validator(code) {
-                    if (!/static\s+void\s+printProfile\s*\(/.test(code)) {
-                        return { ok: false, msg: 'Apple 2/3: crie o metodo static void printProfile(...).' };
+                    // Flexible: accept any static method that takes parameters and is called
+                    const hasStaticMethod = /static\s+(void|String|int|boolean|double)\s+\w+\s*\([^)]*\)/.test(code);
+                    const hasMethodCall = /\w+\s*\([^)]*\)\s*;/.test(code);
+                    if (!hasStaticMethod) {
+                        return { ok: false, msg: 'Apple 2/3: crie um metodo static (void, String, etc) para modularizar.' };
                     }
-                    const occurrences = (code.match(/printProfile\s*\(/g) || []).length;
-                    if (occurrences < 2) {
-                        return { ok: false, msg: 'Apple 2/3: alem de declarar printProfile, faca a chamada dentro do main.' };
+                    // Check if method is called (not just declared)
+                    const methodMatch = code.match(/static\s+(?:void|String|int|boolean|double)\s+(\w+)\s*\(/);
+                    if (methodMatch) {
+                        const methodName = methodMatch[1];
+                        const callRegex = new RegExp(methodName + '\\s*\\(');
+                        const occurrences = (code.match(callRegex) || []).length;
+                        if (occurrences < 2) {
+                            return { ok: false, msg: 'Apple 2/3: alem de declarar o metodo, faca a chamada dentro do main.' };
+                        }
                     }
                     return { ok: true };
                 },
@@ -6356,14 +6365,21 @@ const SCALE_MISSIONS = {
                 name: 'Seguranca e padrao',
                 objective: 'Expanda para padrao seguro: use constantes final e validacao de idade antes de imprimir.',
                 validator(code) {
-                    if (!/final\s+int\s+\w+\s*=/.test(code)) {
-                        return { ok: false, msg: 'Apple 3/3: adicione pelo menos uma constante final para padrao seguro.' };
+                    // Flexible: accept final or static final constants
+                    const hasConstant = /(final|static\s+final)\s+(int|double|String|boolean)\s+[A-Z_]+\s*=/.test(code) ||
+                        /final\s+(int|double|String|boolean)\s+\w+\s*=/.test(code);
+                    if (!hasConstant) {
+                        return { ok: false, msg: 'Apple 3/3: adicione pelo menos uma constante (final) para padrao seguro.' };
                     }
-                    if (!/if\s*\(\s*\w+\s*<\s*0\s*\)/.test(code)) {
-                        return { ok: false, msg: 'Apple 3/3: valide idade negativa com if (idade < 0).' };
+                    // Flexible: accept various validation patterns
+                    const hasValidation = /if\s*\([^)]*(<|>|<=|>=|==|!=)[^)]*\)/.test(code);
+                    if (!hasValidation) {
+                        return { ok: false, msg: 'Apple 3/3: adicione validacao com if para verificar dados.' };
                     }
-                    if (!/(throw\s+new\s+IllegalArgumentException|return;)/.test(code)) {
-                        return { ok: false, msg: 'Apple 3/3: trate o caso invalido com throw ou return defensivo.' };
+                    // Flexible: accept throw, return, System.exit, or print error
+                    const hasErrorHandling = /(throw\s+new|return\s*;|System\.exit|System\.err\.println|System\.out\.println\s*\(\s*"[Ee]rro|System\.out\.println\s*\(\s*"[Ii]nvalid)/.test(code);
+                    if (!hasErrorHandling) {
+                        return { ok: false, msg: 'Apple 3/3: trate o caso invalido (throw, return, ou mensagem de erro).' };
                     }
                     return { ok: true };
                 },
@@ -6383,11 +6399,15 @@ const SCALE_MISSIONS = {
                 name: 'Parametrizacao',
                 objective: 'Expanda com variavel limite e use esse limite no for.',
                 validator(code) {
-                    if (!/int\s+limite\s*=/.test(code)) {
-                        return { ok: false, msg: 'Nubank 2/5: declare int limite = ... para parametrizar o range.' };
+                    // Flexible: accept limit, max, n, range, etc as variable names
+                    const hasLimitVar = /(int|final\s+int)\s+(limite|limit|max|n|range|end|total)\s*=/.test(code);
+                    if (!hasLimitVar) {
+                        return { ok: false, msg: 'Nubank 2/5: declare uma variavel de limite (ex: int limite = 15) para parametrizar.' };
                     }
-                    if (!/for\s*\([^;]*;[^;]*<=\s*limite\s*;/.test(code)) {
-                        return { ok: false, msg: 'Nubank 2/5: use a variavel limite na condicao do for.' };
+                    // Flexible: accept using variable in for condition
+                    const hasForWithVar = /for\s*\([^;]*;[^;]*(<=?|<)\s*(limite|limit|max|n|range|end|total)\s*;/.test(code);
+                    if (!hasForWithVar) {
+                        return { ok: false, msg: 'Nubank 2/5: use sua variavel de limite na condicao do for.' };
                     }
                     return { ok: true };
                 },
@@ -6397,13 +6417,19 @@ const SCALE_MISSIONS = {
                 name: 'Metodo de dominio',
                 objective: 'Expanda para static String classify(int n) e chame no loop.',
                 validator(code) {
-                    if (!/static\s+String\s+classify\s*\(\s*int\s+\w+\s*\)/.test(code)) {
-                        return { ok: false, msg: 'Nubank 3/5: extraia a regra para static String classify(int n).' };
+                    // Flexible: accept various method names and signatures
+                    const hasClassifyMethod = /static\s+String\s+(classify|getResult|check|evaluate|process|fizzBuzz|resolve)\s*\(\s*int\s+\w+\s*\)/.test(code);
+                    if (!hasClassifyMethod) {
+                        return { ok: false, msg: 'Nubank 3/5: extraia a regra para um metodo static String (ex: classify, getResult, check).' };
                     }
-                    const directPrint = /System\s*\.\s*out\s*\.\s*println\s*\(\s*classify\s*\(\s*\w+\s*\)\s*\)/.test(code);
-                    const viaEmit = /emit\s*\(\s*classify\s*\(\s*\w+\s*\)\s*\)/.test(code);
-                    if (!directPrint && !viaEmit) {
-                        return { ok: false, msg: 'Nubank 3/5: use classify(i) dentro do loop (println(classify(i)) ou emit(classify(i))).' };
+                    // Flexible: just check the method is called somewhere
+                    const methodMatch = code.match(/static\s+String\s+(\w+)\s*\(\s*int/);
+                    if (methodMatch) {
+                        const methodName = methodMatch[1];
+                        const callRegex = new RegExp(methodName + '\\s*\\(\\s*\\w+\\s*\\)');
+                        if (!callRegex.test(code)) {
+                            return { ok: false, msg: 'Nubank 3/5: chame seu metodo ' + methodName + '(i) dentro do loop.' };
+                        }
                     }
                     return { ok: true };
                 },
@@ -6413,11 +6439,20 @@ const SCALE_MISSIONS = {
                 name: 'Camada de saida',
                 objective: 'Expanda para static void emit(String out) e passe a imprimir via emit(...).',
                 validator(code) {
-                    if (!/static\s+void\s+emit\s*\(\s*String\s+\w+\s*\)/.test(code)) {
-                        return { ok: false, msg: 'Nubank 4/5: crie static void emit(String out) para centralizar output.' };
+                    // Flexible: accept various output method names
+                    const hasEmitMethod = /static\s+void\s+(emit|output|print|write|log|publish|display)\s*\(\s*String\s+\w+\s*\)/.test(code);
+                    if (!hasEmitMethod) {
+                        return { ok: false, msg: 'Nubank 4/5: crie um metodo static void (ex: emit, output, log) para centralizar output.' };
                     }
-                    if (!/emit\s*\(\s*classify\s*\(\s*\w+\s*\)\s*\)/.test(code) && !/emit\s*\(\s*\w+\s*\)/.test(code)) {
-                        return { ok: false, msg: 'Nubank 4/5: use emit(...) no loop para publicar a saida.' };
+                    // Flexible: check the emit method is called
+                    const methodMatch = code.match(/static\s+void\s+(emit|output|print|write|log|publish|display)\s*\(\s*String/);
+                    if (methodMatch) {
+                        const methodName = methodMatch[1];
+                        const callRegex = new RegExp(methodName + '\\s*\\(');
+                        const occurrences = (code.match(callRegex) || []).length;
+                        if (occurrences < 2) {
+                            return { ok: false, msg: 'Nubank 4/5: use ' + methodName + '(...) no loop para publicar a saida.' };
+                        }
                     }
                     return { ok: true };
                 },
@@ -6427,14 +6462,21 @@ const SCALE_MISSIONS = {
                 name: 'Observabilidade',
                 objective: 'Expanda com contadores e resumo final de execucao.',
                 validator(code) {
-                    if (!/int\s+countFizz\b/.test(code) || !/int\s+countBuzz\b/.test(code) || !/int\s+countFizzBuzz\b/.test(code)) {
-                        return { ok: false, msg: 'Nubank 5/5: declare countFizz, countBuzz e countFizzBuzz.' };
+                    // Flexible: accept various counter names
+                    const hasCounters = /(int\s+(count|total|num|qty)|int\s+\w*(Fizz|Buzz|Count|Total)\w*\s*=)/.test(code);
+                    if (!hasCounters) {
+                        return { ok: false, msg: 'Nubank 5/5: declare contadores (ex: countFizz, totalBuzz, numFizzBuzz).' };
                     }
-                    if (!/countFizz\s*\+\+/.test(code) || !/countBuzz\s*\+\+/.test(code) || !/countFizzBuzz\s*\+\+/.test(code)) {
-                        return { ok: false, msg: 'Nubank 5/5: incremente os contadores durante o loop.' };
+                    // Flexible: check for increment operators
+                    const hasIncrement = /(\+\+|\+=\s*1)/.test(code);
+                    if (!hasIncrement) {
+                        return { ok: false, msg: 'Nubank 5/5: incremente os contadores durante o loop (++ ou += 1).' };
                     }
-                    if (!/System\s*\.\s*out\s*\.\s*println\s*\(\s*"Resumo/.test(code)) {
-                        return { ok: false, msg: 'Nubank 5/5: imprima um resumo final com os contadores.' };
+                    // Flexible: accept various summary output formats
+                    const hasSummary = /System\s*\.\s*out\s*\.\s*print(ln)?\s*\([^)]*([Rr]esumo|[Ss]ummary|[Tt]otal|[Cc]ount|[Rr]esult)/.test(code) ||
+                        /System\s*\.\s*out\s*\.\s*printf/.test(code);
+                    if (!hasSummary) {
+                        return { ok: false, msg: 'Nubank 5/5: imprima um resumo/summary final com os contadores.' };
                     }
                     return { ok: true };
                 },
@@ -6521,8 +6563,29 @@ const IDE = {
         const ch = this._currentChallenge;
         if (!ch) return '---';
         if (this._isScalingActive()) {
-            const step = this._getScaleStep();
-            if (step && step.helpText) return step.helpText;
+            // Accumulate help text from all completed steps + current step
+            const steps = this._scalePlan.steps;
+            let accumulatedHelp = '';
+            for (let i = 0; i <= this._scalePasses && i < steps.length; i++) {
+                const step = steps[i];
+                if (step && step.helpText) {
+                    if (i < this._scalePasses) {
+                        // Completed step - show only the code
+                        const codeMatch = step.helpText.match(/COLA[^:]*:\s*\n\n([\s\S]+)/);
+                        if (codeMatch) {
+                            accumulatedHelp += '=== PARTE ' + (i + 1) + '/' + steps.length + ' (COMPLETA) ===\n';
+                            accumulatedHelp += 'Objetivo: ' + step.objective + '\n\n';
+                        }
+                    } else {
+                        // Current step - show full help
+                        accumulatedHelp += '\n=== PARTE ' + (i + 1) + '/' + steps.length + ' (ATUAL) ===\n';
+                        accumulatedHelp += step.helpText;
+                    }
+                }
+            }
+            // Add creative solutions note
+            accumulatedHelp += '\n\n--- NOTA ---\nA validacao aceita solucoes alternativas criativas!\nSe seu codigo compila e resolve o problema de forma diferente,\napenas garanta que contenha os elementos-chave solicitados.\nO importante e o aprendizado, nao o engessamento.';
+            return accumulatedHelp || ch.helpText || '---';
         }
         return ch.helpText || '---';
     },
