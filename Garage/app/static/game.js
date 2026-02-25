@@ -155,6 +155,55 @@ const WorldStatePersistence = {
     },
 };
 
+// ---- heartbeat for real-time online tracking ----
+const Heartbeat = {
+    _intervalId: null,
+    _intervalMs: 30000, // 30 seconds
+
+    /**
+     * Start sending heartbeat pings to mark player as online.
+     */
+    start() {
+        this.stop(); // Ensure no duplicate intervals
+        console.log('[Heartbeat] Starting online tracking...');
+
+        // Send immediate ping
+        this._sendPing();
+
+        // Start periodic pings
+        this._intervalId = setInterval(() => {
+            this._sendPing();
+        }, this._intervalMs);
+    },
+
+    /**
+     * Stop sending heartbeat pings.
+     */
+    stop() {
+        if (this._intervalId) {
+            clearInterval(this._intervalId);
+            this._intervalId = null;
+            console.log('[Heartbeat] Stopped online tracking.');
+        }
+    },
+
+    /**
+     * Send a heartbeat ping to the server.
+     */
+    async _sendPing() {
+        if (!State.sessionId) return;
+
+        try {
+            await API.post('/api/heartbeat', {
+                session_id: State.sessionId,
+            });
+            console.log('[Heartbeat] Ping sent successfully.');
+        } catch (e) {
+            console.warn('[Heartbeat] Failed to send ping:', e.message);
+        }
+    },
+};
+
 // ---- study chat (authenticated) ----
 const StudyChat = {
     _open: false,
@@ -5080,6 +5129,9 @@ const Game = {
             // Start periodic save for position persistence
             WorldStatePersistence.startPeriodicSave(30000);
 
+            // Start heartbeat for online tracking
+            Heartbeat.start();
+
             Learning.showStageBriefingIfNeeded(State.player.stage);
         } catch (e) { alert('Erro: ' + e.message); }
     },
@@ -5112,6 +5164,9 @@ const Game = {
 
             // Start periodic save for position persistence
             WorldStatePersistence.startPeriodicSave(30000);
+
+            // Start heartbeat for online tracking
+            Heartbeat.start();
 
             if (!silent) Learning.showStageBriefingIfNeeded(State.player.stage);
 
@@ -5280,6 +5335,7 @@ const Game = {
             // Stop periodic save before reset
             WorldStatePersistence.stopPeriodicSave();
             WorldStatePersistence.reset();
+            Heartbeat.stop();
 
             const data = await API.post('/api/reset', { session_id: State.sessionId });
             State.sessionId = data.session_id;
@@ -5300,6 +5356,9 @@ const Game = {
 
             // Restart periodic save
             WorldStatePersistence.startPeriodicSave(30000);
+
+            // Restart heartbeat for online tracking
+            Heartbeat.start();
 
             Learning.showStageBriefingIfNeeded(State.player.stage);
         } catch (e) { alert('Erro ao reiniciar: ' + e.message); }
@@ -7089,6 +7148,14 @@ const Auth = {
         }
         if (typeof Learning !== 'undefined' && Learning.isOpen()) {
             Learning.cancel();
+        }
+        // Stop heartbeat when logging out
+        if (typeof Heartbeat !== 'undefined') {
+            Heartbeat.stop();
+        }
+        // Stop world state persistence
+        if (typeof WorldStatePersistence !== 'undefined') {
+            WorldStatePersistence.stopPeriodicSave();
         }
         this._user = null;
         this._token = null;

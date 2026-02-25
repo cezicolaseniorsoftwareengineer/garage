@@ -115,6 +115,17 @@ class PgUserRepository:
             ).first()
             return row is not None
 
+    def get_all(self) -> list:
+        """Return all registered users."""
+        with self._sf() as session:
+            rows = session.query(UserModel).order_by(UserModel.created_at.desc()).all()
+            return [self._to_domain(r) for r in rows]
+
+    def count(self) -> int:
+        """Return total number of registered users."""
+        with self._sf() as session:
+            return session.query(UserModel).count()
+
     # ------------------------------------------------------------------
     # Mapping
     # ------------------------------------------------------------------

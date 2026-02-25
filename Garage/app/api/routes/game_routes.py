@@ -286,6 +286,28 @@ def api_save_world_state_beacon(req: SaveWorldStateRequest):
     return {"status": "ok", "saved": True}
 
 
+class HeartbeatRequest(BaseModel):
+    session_id: str
+
+
+@router.post("/heartbeat")
+def api_heartbeat(req: HeartbeatRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Heartbeat endpoint - updates session's updated_at timestamp to mark
+    the player as online/active. Called periodically by the frontend (every 30s).
+    This enables real-time "online now" tracking in the admin dashboard.
+    """
+    player = _player_repo.get(req.session_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Session not found")
+    _assert_owner(player, current_user)
+
+    # Just save to bump updated_at (SQLAlchemy onupdate=_utcnow)
+    _player_repo.save(player)
+
+    return {"status": "ok", "heartbeat": True}
+
+
 @router.post("/reset")
 def api_reset_game(req: ResetGameRequest, current_user: dict = Depends(get_current_user)):
     """
