@@ -19,6 +19,7 @@ from fastapi.responses import FileResponse
 from app.api.routes.game_routes import router as game_router, init_routes
 from app.api.routes.auth_routes import router as auth_router, init_auth_routes
 from app.api.routes.admin_routes import router as admin_router, init_admin_routes
+from app.api.routes.study_routes import router as study_router, init_study_routes
 
 DATA_DIR = os.path.join(BASE_DIR, "data")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
@@ -129,11 +130,13 @@ init_routes(player_repo, challenge_repo, leaderboard_repo,
             metrics_service=metrics_service, event_service=event_service)
 init_auth_routes(user_repo, event_service=event_service)
 init_admin_routes(user_repo, player_repo, leaderboard_repo, challenge_repo)
+init_study_routes(player_repo, challenge_repo)
 
 # Register API routes
 app.include_router(auth_router)
 app.include_router(game_router)
 app.include_router(admin_router)
+app.include_router(study_router)
 
 
 @app.get("/")
@@ -141,7 +144,11 @@ def serve_frontend():
     """Serve index.html."""
     index_path = os.path.join(STATIC_DIR, "index.html")
     if os.path.exists(index_path):
-        return FileResponse(index_path)
+        return FileResponse(index_path, headers={
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        })
     return {"message": "GARAGE API is running. No frontend found at /static/index.html."}
 
 
