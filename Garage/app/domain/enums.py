@@ -89,6 +89,7 @@ class MapRegion(str, Enum):
     GEMINI = "Gemini"
     NEXUS_LABS = "Nexus Labs"
     CLOUD_VALLEY = "Cloud Valley"
+    OPENAI = "OpenAI"
 
 
 class GameEnding(str, Enum):
