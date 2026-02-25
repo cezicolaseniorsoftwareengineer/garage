@@ -54,7 +54,7 @@ class MapConfig:
         "Santander": "Principal",
         "Bradesco": "Principal",
         "Gemini": "Principal",
-        "Nexus Labs": "Principal",
+        "Bio Code Technology": "Principal",
         "Cloud Valley": "Principal",
     }
 

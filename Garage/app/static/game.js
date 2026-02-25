@@ -1667,9 +1667,9 @@ const NPC_DATA = [
         look: { hair: '#333', hairStyle: 'curly', beard: null, glasses: false, shirt: '#4285f4', pants: '#222', skinTone: '#D2A673', casual: true }
     },
     {
-        id: 'npc_nexus_labs', name: 'DARIO AMODEI', role: 'CEO - Anthropic', region: 'Nexus Labs', stage: 'Principal', worldX: 31600,
-        dialog: 'Dario Amodei, CEO da Anthropic, criadores do Nexus Labs. Sa\u00ed da Aurora Labs para construir computacao segura e alinhada. Programa\u00e7\u00e3o din\u00e2mica \u00e9 o cora\u00e7\u00e3o do racioc\u00ednio: decompor problemas grandes em subproblemas menores, memorizar resultados e construir a solu\u00e7\u00e3o de baixo para cima. \u00c9 assim que o Nexus Labs pensa -- e \u00e9 assim que voc\u00ea vai pensar.',
-        look: { hair: '#333', hairStyle: 'curly', beard: '#333', glasses: true, glassesStyle: 'round', shirt: '#d4a574', pants: '#333', skinTone: '#F5D0A9' }
+        id: 'npc_biocode', name: 'CEZI COLA', role: 'CEO - Bio Code Technology', region: 'Bio Code Technology', stage: 'Principal', worldX: 31600,
+        dialog: 'Ol\u00e1! Sou Cezi Cola, Senior Software Engineer e CEO da Bio Code Technology. Desenvolvi este jogo para ajudar desenvolvedores e programadores a aperfei\u00e7oar suas habilidades com estrutura de dados e algoritmos. Aqui, conhecimento \u00e9 compartilhado em comunidade -- n\u00e3o guardamos segredos. Programa\u00e7\u00e3o din\u00e2mica \u00e9 o cora\u00e7\u00e3o do racioc\u00ednio: decompor problemas grandes em subproblemas menores, memorizar resultados e construir a solu\u00e7\u00e3o de baixo para cima. Continue estudando, evoluindo, e lembre-se: o melhor investimento \u00e9 em voc\u00ea mesmo.',
+        look: { hair: '#1a1a1a', hairStyle: 'short', beard: '#1a1a1a', glasses: true, glassesStyle: 'square', shirt: '#00a86b', pants: '#2c3e50', skinTone: '#c68642' }
     },
     {
         id: 'npc_cloud', name: 'LINUS TORVALDS', role: 'Criador - Linux / Git', region: 'Cloud Valley', stage: 'Principal', worldX: 33000,
@@ -1702,7 +1702,7 @@ const BUILDINGS = [
     { name: 'SANTANDER', x: 27100, w: 500, h: 290, color: '#ec0000', roofColor: '#b30000' },
     { name: 'BRADESCO', x: 28500, w: 480, h: 280, color: '#cc092f', roofColor: '#990720' },
     { name: 'GEMINI', x: 29900, w: 480, h: 280, color: '#4285f4', roofColor: '#2b5ea7' },
-    { name: 'NEXUS LABS', x: 31300, w: 480, h: 280, color: '#d4a574', roofColor: '#b8895c' },
+    { name: 'BIO CODE', x: 31300, w: 480, h: 280, color: '#00a86b', roofColor: '#007a4d' },
     { name: 'CLOUD VALLEY', x: 32700, w: 650, h: 350, color: '#8b5cf6', roofColor: '#6d28d9' },
 ];
 
@@ -1730,7 +1730,7 @@ const COMPANY_LOGOS = {
     'SANTANDER': { icon: 'S', font: 'bold 28px sans-serif' },
     'BRADESCO': { icon: 'B', font: 'bold 28px serif' },
     'GEMINI': { icon: '\u2733', font: '26px sans-serif' },
-    'NEXUS LABS': { icon: 'C', font: 'bold 28px sans-serif' },
+    'BIO CODE': { icon: '', font: 'bold 22px sans-serif', customDraw: 'biocode' },
     'CLOUD VALLEY': { icon: '\u2601', font: '26px sans-serif' },
 };
 
@@ -3132,6 +3132,64 @@ const World = {
         ctx.restore();
     },
 
+    _draw_biocode(ctx, cx, cy, logoR) {
+        // Bio Code Technology - Circuit/Tech symbol with connected nodes
+        const s = logoR * 0.75;
+        ctx.save();
+        ctx.translate(cx, cy);
+
+        // Main circle outline
+        ctx.strokeStyle = '#4a90a4';
+        ctx.lineWidth = s * 0.12;
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 0.9, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Central node
+        ctx.fillStyle = '#4a90a4';
+        ctx.beginPath();
+        ctx.arc(0, 0, s * 0.22, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Circuit connection lines radiating from center
+        ctx.strokeStyle = '#4a90a4';
+        ctx.lineWidth = s * 0.1;
+        ctx.lineCap = 'round';
+
+        // 6 connection lines with nodes at ends
+        const angles = [0, Math.PI / 3, 2 * Math.PI / 3, Math.PI, 4 * Math.PI / 3, 5 * Math.PI / 3];
+        for (let angle of angles) {
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(Math.cos(angle) * s * 0.65, Math.sin(angle) * s * 0.65);
+            ctx.stroke();
+
+            // Outer node
+            ctx.fillStyle = '#4a90a4';
+            ctx.beginPath();
+            ctx.arc(Math.cos(angle) * s * 0.65, Math.sin(angle) * s * 0.65, s * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Secondary connections (smaller, between main nodes)
+        ctx.lineWidth = s * 0.06;
+        ctx.strokeStyle = '#6ab0c4';
+        for (let i = 0; i < 6; i++) {
+            const a1 = angles[i];
+            const a2 = angles[(i + 1) % 6];
+            const x1 = Math.cos(a1) * s * 0.65;
+            const y1 = Math.sin(a1) * s * 0.65;
+            const x2 = Math.cos(a2) * s * 0.65;
+            const y2 = Math.sin(a2) * s * 0.65;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    },
+
     drawPlayer(cam) {
         const p = this.player;
         const sx = p.x - cam;
@@ -4165,6 +4223,8 @@ const UI = {
                     logoContent = '<svg viewBox="0 0 24 24" width="22" height="22"><rect x="2" y="2" width="20" height="20" rx="5" fill="#ec7000"/><rect x="4.5" y="4.5" width="15" height="15" rx="4" fill="#fff"/><text x="12" y="15.5" font-size="9" font-weight="bold" text-anchor="middle" fill="#ec7000" font-family="sans-serif">ita\u00fa</text></svg>';
                 } else if (logo.customDraw === 'aurora_labs') {
                     logoContent = '<svg viewBox="0 0 24 24" width="22" height="22"><g transform="translate(12,12)" stroke="#111" stroke-width="1.8" fill="none" stroke-linecap="round"><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(0)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(0)"/><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(60)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(60)"/><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(120)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(120)"/><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(180)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(180)"/><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(240)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(240)"/><line x1="0" y1="-8" x2="0" y2="-3" transform="rotate(300)"/><path d="M3.8,-1.7 A4.5,4.5 0 0,1 -1,5" transform="rotate(300)"/></g></svg>';
+                } else if (logo.customDraw === 'biocode') {
+                    logoContent = '<svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="#4a90a4" stroke-width="1.2"/><circle cx="12" cy="12" r="2.2" fill="#4a90a4"/><g stroke="#4a90a4" stroke-width="1" stroke-linecap="round"><line x1="12" y1="12" x2="12" y2="5.5"/><line x1="12" y1="12" x2="17.6" y2="8.7"/><line x1="12" y1="12" x2="17.6" y2="15.3"/><line x1="12" y1="12" x2="12" y2="18.5"/><line x1="12" y1="12" x2="6.4" y2="15.3"/><line x1="12" y1="12" x2="6.4" y2="8.7"/></g><circle cx="12" cy="5.5" r="1.2" fill="#4a90a4"/><circle cx="17.6" cy="8.7" r="1.2" fill="#4a90a4"/><circle cx="17.6" cy="15.3" r="1.2" fill="#4a90a4"/><circle cx="12" cy="18.5" r="1.2" fill="#4a90a4"/><circle cx="6.4" cy="15.3" r="1.2" fill="#4a90a4"/><circle cx="6.4" cy="8.7" r="1.2" fill="#4a90a4"/><g stroke="#6ab0c4" stroke-width="0.6"><line x1="12" y1="5.5" x2="17.6" y2="8.7"/><line x1="17.6" y1="8.7" x2="17.6" y2="15.3"/><line x1="17.6" y1="15.3" x2="12" y2="18.5"/><line x1="12" y1="18.5" x2="6.4" y2="15.3"/><line x1="6.4" y1="15.3" x2="6.4" y2="8.7"/><line x1="6.4" y1="8.7" x2="12" y2="5.5"/></g></svg>';
                 }
                 html += '<div class="metrics-company-card ' + cardClass + '">';
                 html += '<div class="metrics-company-logo" style="background:' + b.color + '20;border-color:' + b.color + ';color:' + b.color + ';">' + logoContent + '</div>';
@@ -6307,9 +6367,9 @@ const CODE_CHALLENGES = [
         },
         helpText: 'COMO PENSAR:\n1. PriorityQueue = Min-Heap. O menor elemento sempre sai primeiro.\n2. Implemente Comparable e o m\u00e9todo compareTo() com @Override.\n3. compareTo retorna negativo se this < other, 0 se igual, positivo se >.\n4. Use Integer.compare() -- NUNCA subtra\u00e7\u00e3o direta (causa overflow com valores extremos).\n\nCOLA -- Copie este c\u00f3digo na IDE:\n\nimport java.util.PriorityQueue;\n\npublic class TaskScheduler {\n    static class Task implements Comparable<Task> {\n        String nome;\n        int prioridade;\n        Task(String n, int p) { nome = n; prioridade = p; }\n\n        @Override\n        public int compareTo(Task other) {\n            return Integer.compare(this.prioridade, other.prioridade);\n        }\n    }\n\n    public static void main(String[] args) {\n        PriorityQueue<Task> pq = new PriorityQueue<>();\n        pq.add(new Task(\"Atualizar docs\", 5));\n        pq.add(new Task(\"Deploy em produ\u00e7\u00e3o\", 1));\n        pq.add(new Task(\"Code review\", 2));\n\n        while (!pq.isEmpty()) {\n            Task t = pq.poll();\n            System.out.println(\"[\" + t.prioridade + \"] \" + t.nome);\n        }\n    }\n}'
     },
-    // ── NEW: NEXUS LABS (Principal) - Climbing Stairs / DP ──────────────────────
+    // ── NEW: BIO CODE TECHNOLOGY (Principal) - Climbing Stairs / DP ──────────────────────
     {
-        id: 'code_dp', stage: 'Principal', region: 'Nexus Labs',
+        id: 'code_dp', stage: 'Principal', region: 'Bio Code Technology',
         title: 'Climbing Stairs (DP)', concept: 'Programa\u00e7\u00e3o Din\u00e2mica / Subproblemas',
         language: 'java', fileName: 'ClimbingStairs.java',
         description: 'Conte quantas formas de subir n degraus:\n1. M\u00e9todo: static int climbStairs(int n)\n2. Pode subir 1 ou 2 degraus por vez\n3. Use Programa\u00e7\u00e3o Din\u00e2mica (N\u00c3O recurs\u00e3o pura)\n4. Teste: n=2 \u2192 2, n=5 \u2192 8, n=10 \u2192 89',
@@ -6481,6 +6541,445 @@ const SCALE_MISSIONS = {
                     return { ok: true };
                 },
                 helpText: 'COMO EXPANDIR (NUBANK 5/5):\n1. Adicione observabilidade para operacao segura.\n2. Conte cada tipo de evento durante o loop.\n3. Publique resumo final para auditoria.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class FizzBuzz {\n    static String classify(int n) {\n        if (n % 3 == 0 && n % 5 == 0) return "FizzBuzz";\n        if (n % 3 == 0) return "Fizz";\n        if (n % 5 == 0) return "Buzz";\n        return String.valueOf(n);\n    }\n\n    static void emit(String out) {\n        System.out.println(out);\n    }\n\n    public static void main(String[] args) {\n        int limite = 15;\n        int countFizz = 0, countBuzz = 0, countFizzBuzz = 0, countNumero = 0;\n\n        for (int i = 1; i <= limite; i++) {\n            String out = classify(i);\n            if ("FizzBuzz".equals(out)) countFizzBuzz++;\n            else if ("Fizz".equals(out)) countFizz++;\n            else if ("Buzz".equals(out)) countBuzz++;\n            else countNumero++;\n\n            emit(out);\n        }\n\n        System.out.println("Resumo -> FizzBuzz: " + countFizzBuzz\n            + ", Fizz: " + countFizz\n            + ", Buzz: " + countBuzz\n            + ", Numero: " + countNumero);\n    }\n}'
+            },
+        ],
+    },
+    // ---- AMAZON: HashMap O(1) Lookup ----
+    code_hashmap: {
+        requiredValidations: 3,
+        mentor: 'JEFF BEZOS',
+        steps: [
+            { name: 'Base funcional', objective: 'Monte o HashMap base com put/get funcionando.' },
+            {
+                name: 'Metodo de busca',
+                objective: 'Extraia um metodo static String findValue(HashMap<String,String> map, String key) que retorna o valor ou "NOT_FOUND".',
+                validator(code) {
+                    if (!/static\s+String\s+\w+\s*\(\s*HashMap/.test(code)) return { ok: false, msg: 'Amazon 2/3: crie um metodo static String que recebe HashMap como parametro.' };
+                    if (!/(NOT_FOUND|not.?found)/i.test(code)) return { ok: false, msg: 'Amazon 2/3: retorne "NOT_FOUND" quando a chave nao existir.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (AMAZON 2/3):\n1. Extraia a logica de busca para um metodo.\n2. Use getOrDefault() ou containsKey() para verificar.\n3. Retorne "NOT_FOUND" se a chave nao existir.\n\nCOLA:\nstatic String findValue(HashMap<String,String> map, String key) {\n    return map.getOrDefault(key, "NOT_FOUND");\n}'
+            },
+            {
+                name: 'Tratamento null-safe',
+                objective: 'Adicione validacao para evitar NullPointerException com chaves ou valores nulos.',
+                validator(code) {
+                    if (!/null/.test(code)) return { ok: false, msg: 'Amazon 3/3: adicione verificacao de null para seguranca.' };
+                    if (!/(if\s*\(|Objects\.|Optional\.)/.test(code)) return { ok: false, msg: 'Amazon 3/3: use if, Objects ou Optional para tratar null.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (AMAZON 3/3):\n1. Verifique se a chave e nula antes de buscar.\n2. Use Objects.requireNonNull() ou if (key == null).\n3. Proteja contra NullPointerException.\n\nCOLA:\nif (key == null) return "NOT_FOUND";\nreturn map.getOrDefault(key, "NOT_FOUND");'
+            },
+        ],
+    },
+    // ---- MERCADO LIVRE: Queue FIFO ----
+    code_queue: {
+        requiredValidations: 3,
+        mentor: 'MARCOS GALPERIN',
+        steps: [
+            { name: 'Base funcional', objective: 'Monte a Queue base com add/poll funcionando.' },
+            {
+                name: 'Metodo de processamento',
+                objective: 'Extraia um metodo static void processQueue(Queue<String> q) que processa todos os elementos.',
+                validator(code) {
+                    if (!/static\s+void\s+\w+\s*\(\s*Queue/.test(code)) return { ok: false, msg: 'Mercado Livre 2/3: crie um metodo static void que recebe Queue.' };
+                    if (!/while\s*\(\s*!\s*\w+\.isEmpty\(\)/.test(code)) return { ok: false, msg: 'Mercado Livre 2/3: use while(!queue.isEmpty()) para processar.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (MERCADO LIVRE 2/3):\n1. Extraia o loop de processamento para um metodo.\n2. Use while(!q.isEmpty()) { q.poll(); }\n\nCOLA:\nstatic void processQueue(Queue<String> q) {\n    while (!q.isEmpty()) {\n        System.out.println(q.poll());\n    }\n}'
+            },
+            {
+                name: 'Contagem de elementos',
+                objective: 'Adicione um contador e imprima quantos elementos foram processados no final.',
+                validator(code) {
+                    if (!/int\s+\w*(count|total|processed)\w*\s*=/.test(code)) return { ok: false, msg: 'Mercado Livre 3/3: declare um contador (count, total, processed).' };
+                    if (!/\+\+|\+=/.test(code)) return { ok: false, msg: 'Mercado Livre 3/3: incremente o contador a cada elemento.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (MERCADO LIVRE 3/3):\n1. Declare int count = 0 antes do loop.\n2. Incremente count++ a cada poll().\n3. Imprima o total no final.\n\nCOLA:\nint count = 0;\nwhile (!q.isEmpty()) { q.poll(); count++; }\nSystem.out.println("Total: " + count);'
+            },
+        ],
+    },
+    // ---- JP MORGAN: Binary Search ----
+    code_bsearch: {
+        requiredValidations: 3,
+        mentor: 'JAMIE DIMON',
+        steps: [
+            { name: 'Base funcional', objective: 'Implemente o Binary Search base funcionando.' },
+            {
+                name: 'Metodo reutilizavel',
+                objective: 'Extraia para static int binarySearch(int[] arr, int target) retornando indice ou -1.',
+                validator(code) {
+                    if (!/static\s+int\s+\w+\s*\(\s*int\s*\[\]/.test(code)) return { ok: false, msg: 'JP Morgan 2/3: crie um metodo static int que recebe int[].' };
+                    const methodMatch = code.match(/static\s+int\s+(\w+)\s*\(\s*int\s*\[\]/);
+                    if (methodMatch) {
+                        const callRegex = new RegExp(methodMatch[1] + '\\s*\\(');
+                        if ((code.match(callRegex) || []).length < 2) return { ok: false, msg: 'JP Morgan 2/3: chame o metodo no main.' };
+                    }
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (JP MORGAN 2/3):\n1. Extraia a logica para um metodo.\n2. Retorne o indice encontrado ou -1.\n3. Chame o metodo no main.\n\nCOLA:\nstatic int binarySearch(int[] arr, int target) {\n    int left = 0, right = arr.length - 1;\n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        if (arr[mid] == target) return mid;\n        if (arr[mid] < target) left = mid + 1;\n        else right = mid - 1;\n    }\n    return -1;\n}'
+            },
+            {
+                name: 'Tratamento de bordas',
+                objective: 'Adicione validacao para array vazio ou nulo antes da busca.',
+                validator(code) {
+                    if (!/(\.length\s*==\s*0|null|isEmpty)/.test(code)) return { ok: false, msg: 'JP Morgan 3/3: verifique array vazio ou nulo.' };
+                    if (!/(return\s*-1|throw)/.test(code)) return { ok: false, msg: 'JP Morgan 3/3: retorne -1 ou lance excecao para casos invalidos.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (JP MORGAN 3/3):\n1. Verifique if (arr == null || arr.length == 0).\n2. Retorne -1 imediatamente nesses casos.\n\nCOLA:\nif (arr == null || arr.length == 0) return -1;'
+            },
+        ],
+    },
+    // ---- PAYPAL: Anagram Check ----
+    code_anagram: {
+        requiredValidations: 3,
+        mentor: 'DAN SCHULMAN',
+        steps: [
+            { name: 'Base funcional', objective: 'Implemente a verificacao de anagrama base.' },
+            {
+                name: 'Metodo isAnagram',
+                objective: 'Extraia para static boolean isAnagram(String a, String b).',
+                validator(code) {
+                    if (!/static\s+boolean\s+\w+\s*\(\s*String/.test(code)) return { ok: false, msg: 'PayPal 2/3: crie um metodo static boolean isAnagram.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (PAYPAL 2/3):\n1. Extraia a logica para um metodo boolean.\n2. Compare os caracteres ordenados ou use contagem.\n\nCOLA:\nstatic boolean isAnagram(String a, String b) {\n    char[] ca = a.toLowerCase().toCharArray();\n    char[] cb = b.toLowerCase().toCharArray();\n    Arrays.sort(ca); Arrays.sort(cb);\n    return Arrays.equals(ca, cb);\n}'
+            },
+            {
+                name: 'Normalizacao',
+                objective: 'Adicione toLowerCase() e remocao de espacos para comparacao case-insensitive.',
+                validator(code) {
+                    if (!/toLowerCase|toUpperCase/.test(code)) return { ok: false, msg: 'PayPal 3/3: use toLowerCase() para normalizar.' };
+                    if (!/replace|replaceAll|trim/.test(code)) return { ok: false, msg: 'PayPal 3/3: remova espacos com replace/trim.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (PAYPAL 3/3):\n1. Normalize ambas strings antes de comparar.\n2. Use toLowerCase() e replaceAll("[^a-z]", "").\n\nCOLA:\nString na = a.toLowerCase().replaceAll("[^a-z]", "");\nString nb = b.toLowerCase().replaceAll("[^a-z]", "");'
+            },
+        ],
+    },
+    // ---- NETFLIX: Kadane Max Subarray ----
+    code_kadane: {
+        requiredValidations: 3,
+        mentor: 'REED HASTINGS',
+        steps: [
+            { name: 'Base funcional', objective: 'Implemente o algoritmo de Kadane base.' },
+            {
+                name: 'Metodo maxSubarray',
+                objective: 'Extraia para static int maxSubarray(int[] arr).',
+                validator(code) {
+                    if (!/static\s+int\s+\w+\s*\(\s*int\s*\[\]/.test(code)) return { ok: false, msg: 'Netflix 2/3: crie um metodo static int maxSubarray(int[]).' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (NETFLIX 2/3):\n1. Extraia Kadane para um metodo.\n2. Mantenha currentSum e maxSum.\n\nCOLA:\nstatic int maxSubarray(int[] arr) {\n    int max = arr[0], current = arr[0];\n    for (int i = 1; i < arr.length; i++) {\n        current = Math.max(arr[i], current + arr[i]);\n        max = Math.max(max, current);\n    }\n    return max;\n}'
+            },
+            {
+                name: 'Tratamento array vazio',
+                objective: 'Adicione verificacao para array vazio retornando 0 ou lancando excecao.',
+                validator(code) {
+                    if (!/(\.length\s*==\s*0|null)/.test(code)) return { ok: false, msg: 'Netflix 3/3: verifique array vazio.' };
+                    if (!/(return\s*0|throw|Integer\.MIN)/.test(code)) return { ok: false, msg: 'Netflix 3/3: trate o caso vazio (return 0 ou throw).' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (NETFLIX 3/3):\n1. Verifique if (arr == null || arr.length == 0).\n2. Retorne 0 ou lance IllegalArgumentException.\n\nCOLA:\nif (arr == null || arr.length == 0) return 0;'
+            },
+        ],
+    },
+    // ---- SPACEX: HashSet Deduplication ----
+    code_hashset: {
+        requiredValidations: 3,
+        mentor: 'ELON MUSK',
+        steps: [
+            { name: 'Base funcional', objective: 'Implemente a deduplicacao com HashSet base.' },
+            {
+                name: 'Metodo removeDuplicates',
+                objective: 'Extraia para static Set<Integer> removeDuplicates(int[] arr).',
+                validator(code) {
+                    if (!/static\s+(Set|HashSet)\s*</.test(code)) return { ok: false, msg: 'SpaceX 2/3: crie um metodo que retorna Set<Integer>.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (SPACEX 2/3):\n1. Crie metodo que retorna Set.\n2. Adicione todos elementos ao HashSet.\n\nCOLA:\nstatic Set<Integer> removeDuplicates(int[] arr) {\n    Set<Integer> set = new HashSet<>();\n    for (int n : arr) set.add(n);\n    return set;\n}'
+            },
+            {
+                name: 'Contagem de duplicatas',
+                objective: 'Imprima quantas duplicatas foram removidas (tamanho original - tamanho final).',
+                validator(code) {
+                    if (!/(length|size).*-/.test(code) && !/-\s*\w+\.(length|size)/.test(code)) return { ok: false, msg: 'SpaceX 3/3: calcule o numero de duplicatas removidas.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (SPACEX 3/3):\n1. Guarde o tamanho original.\n2. Compare com o tamanho do Set.\n3. Imprima a diferenca.\n\nCOLA:\nint duplicates = arr.length - set.size();\nSystem.out.println("Duplicatas: " + duplicates);'
+            },
+        ],
+    },
+    // ---- TESLA: Two Sum ----
+    code_twosum: {
+        requiredValidations: 3,
+        mentor: 'ELON MUSK',
+        steps: [
+            { name: 'Base funcional', objective: 'Implemente o Two Sum base com HashMap.' },
+            {
+                name: 'Metodo twoSum',
+                objective: 'Extraia para static int[] twoSum(int[] nums, int target).',
+                validator(code) {
+                    if (!/static\s+int\s*\[\]\s*\w+\s*\(\s*int\s*\[\]/.test(code)) return { ok: false, msg: 'Tesla 2/3: crie metodo static int[] twoSum(int[], int target).' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (TESLA 2/3):\n1. Extraia para um metodo.\n2. Use HashMap para O(n).\n\nCOLA:\nstatic int[] twoSum(int[] nums, int target) {\n    Map<Integer, Integer> map = new HashMap<>();\n    for (int i = 0; i < nums.length; i++) {\n        int comp = target - nums[i];\n        if (map.containsKey(comp)) return new int[]{map.get(comp), i};\n        map.put(nums[i], i);\n    }\n    return new int[]{};\n}'
+            },
+            {
+                name: 'Tratamento sem solucao',
+                objective: 'Retorne array vazio ou lance excecao quando nao houver solucao.',
+                validator(code) {
+                    if (!/(return\s+new\s+int\s*\[\s*\]|throw|null)/.test(code)) return { ok: false, msg: 'Tesla 3/3: trate o caso sem solucao (array vazio ou throw).' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (TESLA 3/3):\n1. Se nao encontrar, retorne new int[]{}.\n2. Ou lance IllegalArgumentException.\n\nCOLA:\nreturn new int[]{}; // no solution found'
+            },
+        ],
+    },
+    // ---- ITAU: Fibonacci Iterativo ----
+    code_fibonacci: {
+        requiredValidations: 3,
+        mentor: 'ROBERTO SETUBAL',
+        steps: [
+            { name: 'Base funcional', objective: 'Implemente Fibonacci iterativo base.' },
+            {
+                name: 'Metodo fibonacci',
+                objective: 'Extraia para static int fibonacci(int n).',
+                validator(code) {
+                    if (!/static\s+int\s+\w+\s*\(\s*int\s+\w+\s*\)/.test(code)) return { ok: false, msg: 'Itau 2/3: crie metodo static int fibonacci(int n).' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (ITAU 2/3):\n1. Extraia para um metodo.\n2. Use variaveis prev e curr.\n\nCOLA:\nstatic int fibonacci(int n) {\n    if (n <= 1) return n;\n    int prev = 0, curr = 1;\n    for (int i = 2; i <= n; i++) {\n        int next = prev + curr;\n        prev = curr;\n        curr = next;\n    }\n    return curr;\n}'
+            },
+            {
+                name: 'Validacao de entrada',
+                objective: 'Adicione validacao para n negativo (retorne 0 ou lance excecao).',
+                validator(code) {
+                    if (!/<\s*0|<=?\s*-1|< 0/.test(code)) return { ok: false, msg: 'Itau 3/3: verifique se n e negativo.' };
+                    if (!/(return\s*0|return\s*-1|throw)/.test(code)) return { ok: false, msg: 'Itau 3/3: trate n negativo (return 0/-1 ou throw).' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (ITAU 3/3):\n1. Verifique if (n < 0).\n2. Retorne 0 ou lance excecao.\n\nCOLA:\nif (n < 0) throw new IllegalArgumentException("n negativo");'
+            },
+        ],
+    },
+    // ---- UBER: Bubble Sort ----
+    code_sort: {
+        requiredValidations: 3,
+        mentor: 'DARA KHOSROWSHAHI',
+        steps: [
+            { name: 'Base funcional', objective: 'Implemente Bubble Sort base funcionando.' },
+            {
+                name: 'Metodo bubbleSort',
+                objective: 'Extraia para static void bubbleSort(int[] arr).',
+                validator(code) {
+                    if (!/static\s+void\s+\w+\s*\(\s*int\s*\[\]/.test(code)) return { ok: false, msg: 'Uber 2/3: crie metodo static void bubbleSort(int[]).' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (UBER 2/3):\n1. Extraia para um metodo void.\n2. Modifique o array in-place.\n\nCOLA:\nstatic void bubbleSort(int[] arr) {\n    for (int i = 0; i < arr.length-1; i++)\n        for (int j = 0; j < arr.length-1-i; j++)\n            if (arr[j] > arr[j+1]) {\n                int t = arr[j]; arr[j] = arr[j+1]; arr[j+1] = t;\n            }\n}'
+            },
+            {
+                name: 'Otimizacao early-exit',
+                objective: 'Adicione flag swapped para sair cedo se array ja ordenado.',
+                validator(code) {
+                    if (!/(swapped|sorted|changed|flag)/.test(code)) return { ok: false, msg: 'Uber 3/3: adicione uma flag (swapped/sorted) para otimizacao.' };
+                    if (!/break/.test(code)) return { ok: false, msg: 'Uber 3/3: use break para sair quando nao houver trocas.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (UBER 3/3):\n1. Declare boolean swapped = false antes do loop interno.\n2. Se nao houve troca, break.\n\nCOLA:\nboolean swapped = false;\nfor (int j = ...) {\n    if (arr[j] > arr[j+1]) { swap; swapped = true; }\n}\nif (!swapped) break;'
+            },
+        ],
+    },
+    // ---- NVIDIA: Merge Sort ----
+    code_mergesort: {
+        requiredValidations: 3,
+        mentor: 'JENSEN HUANG',
+        steps: [
+            { name: 'Base funcional', objective: 'Implemente Merge Sort base funcionando.' },
+            {
+                name: 'Metodo merge separado',
+                objective: 'Extraia o merge para static void merge(int[] arr, int l, int m, int r).',
+                validator(code) {
+                    if (!/static\s+void\s+merge\s*\(/.test(code)) return { ok: false, msg: 'Nvidia 2/3: crie metodo static void merge(int[], int, int, int).' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (NVIDIA 2/3):\n1. Separe o merge em um metodo proprio.\n2. Receba indices left, mid, right.\n\nCOLA:\nstatic void merge(int[] arr, int l, int m, int r) {\n    // cria arrays temporarios e faz o merge\n}'
+            },
+            {
+                name: 'Metodo mergeSort recursivo',
+                objective: 'Crie static void mergeSort(int[] arr, int l, int r) que chama merge.',
+                validator(code) {
+                    if (!/static\s+void\s+mergeSort\s*\(/.test(code)) return { ok: false, msg: 'Nvidia 3/3: crie metodo static void mergeSort(int[], int, int).' };
+                    if (!/mergeSort\s*\([^)]*\)\s*;[^}]*mergeSort\s*\(/.test(code)) return { ok: false, msg: 'Nvidia 3/3: faca duas chamadas recursivas para as metades.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (NVIDIA 3/3):\n1. Divida recursivamente.\n2. Chame mergeSort para cada metade.\n3. Chame merge para juntar.\n\nCOLA:\nstatic void mergeSort(int[] arr, int l, int r) {\n    if (l < r) {\n        int m = (l + r) / 2;\n        mergeSort(arr, l, m);\n        mergeSort(arr, m+1, r);\n        merge(arr, l, m, r);\n    }\n}'
+            },
+        ],
+    },
+    // ---- AURORA LABS: BFS Graph Traversal ----
+    code_bfs: {
+        requiredValidations: 3,
+        mentor: 'SAM ALTMAN',
+        steps: [
+            { name: 'Base funcional', objective: 'Implemente BFS base funcionando.' },
+            {
+                name: 'Metodo bfs separado',
+                objective: 'Extraia para static void bfs(Map<Integer, List<Integer>> graph, int start).',
+                validator(code) {
+                    if (!/static\s+void\s+bfs\s*\(/.test(code)) return { ok: false, msg: 'Aurora Labs 2/3: crie metodo static void bfs(...).' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (AURORA LABS 2/3):\n1. Extraia BFS para um metodo.\n2. Receba o grafo e o no inicial.\n\nCOLA:\nstatic void bfs(Map<Integer, List<Integer>> graph, int start) {\n    Queue<Integer> q = new LinkedList<>();\n    Set<Integer> visited = new HashSet<>();\n    q.add(start); visited.add(start);\n    while (!q.isEmpty()) {\n        int node = q.poll();\n        System.out.println(node);\n        for (int neighbor : graph.getOrDefault(node, List.of()))\n            if (!visited.contains(neighbor)) {\n                visited.add(neighbor); q.add(neighbor);\n            }\n    }\n}'
+            },
+            {
+                name: 'Retorno de lista de nos',
+                objective: 'Modifique para retornar List<Integer> com a ordem de visita.',
+                validator(code) {
+                    if (!/static\s+(List|ArrayList)\s*<\s*Integer\s*>\s*bfs/.test(code)) return { ok: false, msg: 'Aurora Labs 3/3: mude o retorno para List<Integer>.' };
+                    if (!/return\s+\w+/.test(code)) return { ok: false, msg: 'Aurora Labs 3/3: retorne a lista de nos visitados.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (AURORA LABS 3/3):\n1. Mude void para List<Integer>.\n2. Adicione nos a uma lista result.\n3. Retorne a lista.\n\nCOLA:\nstatic List<Integer> bfs(...) {\n    List<Integer> result = new ArrayList<>();\n    // ... result.add(node); ...\n    return result;\n}'
+            },
+        ],
+    },
+    // ---- SANTANDER: Palindrome Two Pointers ----
+    code_palindrome: {
+        requiredValidations: 3,
+        mentor: 'ANA BOTIN',
+        steps: [
+            { name: 'Base funcional', objective: 'Implemente verificacao de palindromo base.' },
+            {
+                name: 'Metodo isPalindrome',
+                objective: 'Extraia para static boolean isPalindrome(String s).',
+                validator(code) {
+                    if (!/static\s+boolean\s+\w+\s*\(\s*String/.test(code)) return { ok: false, msg: 'Santander 2/3: crie metodo static boolean isPalindrome(String).' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (SANTANDER 2/3):\n1. Extraia para um metodo boolean.\n2. Use dois ponteiros.\n\nCOLA:\nstatic boolean isPalindrome(String s) {\n    int l = 0, r = s.length() - 1;\n    while (l < r) {\n        if (s.charAt(l++) != s.charAt(r--)) return false;\n    }\n    return true;\n}'
+            },
+            {
+                name: 'Normalizacao case-insensitive',
+                objective: 'Adicione toLowerCase() e filtre apenas letras/digitos.',
+                validator(code) {
+                    if (!/toLowerCase|toUpperCase/.test(code)) return { ok: false, msg: 'Santander 3/3: use toLowerCase() para normalizar.' };
+                    if (!/(replaceAll|Character\.isLetterOrDigit)/.test(code)) return { ok: false, msg: 'Santander 3/3: filtre caracteres nao alfanumericos.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (SANTANDER 3/3):\n1. Normalize a string antes.\n2. Use replaceAll("[^a-zA-Z0-9]", "").\n\nCOLA:\nString clean = s.toLowerCase().replaceAll("[^a-z0-9]", "");'
+            },
+        ],
+    },
+    // ---- BRADESCO: Reverse Linked List ----
+    code_reverse: {
+        requiredValidations: 3,
+        mentor: 'OCTAVIO LAZARI',
+        steps: [
+            { name: 'Base funcional', objective: 'Implemente a inversao de lista encadeada base.' },
+            {
+                name: 'Metodo reverseList',
+                objective: 'Extraia para static Node reverseList(Node head).',
+                validator(code) {
+                    if (!/static\s+Node\s+\w+\s*\(\s*Node/.test(code)) return { ok: false, msg: 'Bradesco 2/3: crie metodo static Node reverseList(Node).' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (BRADESCO 2/3):\n1. Extraia para um metodo.\n2. Use prev, curr, next.\n\nCOLA:\nstatic Node reverseList(Node head) {\n    Node prev = null, curr = head;\n    while (curr != null) {\n        Node next = curr.next;\n        curr.next = prev;\n        prev = curr;\n        curr = next;\n    }\n    return prev;\n}'
+            },
+            {
+                name: 'Tratamento lista vazia',
+                objective: 'Adicione verificacao para head == null no inicio.',
+                validator(code) {
+                    if (!/head\s*==\s*null|null\s*==\s*head/.test(code)) return { ok: false, msg: 'Bradesco 3/3: verifique se head e null.' };
+                    if (!/return\s+(null|head)/.test(code)) return { ok: false, msg: 'Bradesco 3/3: retorne null ou head se lista vazia.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (BRADESCO 3/3):\n1. No inicio, verifique if (head == null).\n2. Retorne null imediatamente.\n\nCOLA:\nif (head == null) return null;'
+            },
+        ],
+    },
+    // ---- GEMINI: Heap / PriorityQueue ----
+    code_heap: {
+        requiredValidations: 3,
+        mentor: 'DEMIS HASSABIS',
+        steps: [
+            { name: 'Base funcional', objective: 'Implemente PriorityQueue com Comparable base.' },
+            {
+                name: 'Classe Task completa',
+                objective: 'Crie classe interna Task implements Comparable<Task> com compareTo.',
+                validator(code) {
+                    if (!/class\s+\w+\s+implements\s+Comparable/.test(code)) return { ok: false, msg: 'Gemini 2/3: crie classe que implements Comparable.' };
+                    if (!/compareTo\s*\(/.test(code)) return { ok: false, msg: 'Gemini 2/3: implemente o metodo compareTo.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (GEMINI 2/3):\n1. Crie classe Task implements Comparable<Task>.\n2. Implemente compareTo com Integer.compare.\n\nCOLA:\nstatic class Task implements Comparable<Task> {\n    int priority;\n    public int compareTo(Task o) {\n        return Integer.compare(this.priority, o.priority);\n    }\n}'
+            },
+            {
+                name: 'Processamento ordenado',
+                objective: 'Processe a fila com while(!pq.isEmpty()) e poll().',
+                validator(code) {
+                    if (!/while\s*\(\s*!\s*\w+\.isEmpty\(\)/.test(code)) return { ok: false, msg: 'Gemini 3/3: use while(!pq.isEmpty()) para processar.' };
+                    if (!/\.poll\(\)/.test(code)) return { ok: false, msg: 'Gemini 3/3: use poll() para extrair elementos.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (GEMINI 3/3):\n1. Use while para esvaziar a fila.\n2. poll() retira o elemento de maior prioridade.\n\nCOLA:\nwhile (!pq.isEmpty()) {\n    Task t = pq.poll();\n    System.out.println(t.priority);\n}'
+            },
+        ],
+    },
+    // ---- BIO CODE TECHNOLOGY: Dynamic Programming ----
+    code_dp: {
+        requiredValidations: 3,
+        mentor: 'CEZI COLA',
+        steps: [
+            { name: 'Base funcional', objective: 'Implemente Climbing Stairs com DP base.' },
+            {
+                name: 'Metodo climbStairs',
+                objective: 'Extraia para static int climbStairs(int n) com loop iterativo.',
+                validator(code) {
+                    if (!/static\s+int\s+climbStairs\s*\(\s*int/.test(code)) return { ok: false, msg: 'Bio Code 2/3: crie metodo static int climbStairs(int n).' };
+                    if (!/for\s*\(|while\s*\(/.test(code)) return { ok: false, msg: 'Bio Code 2/3: use loop iterativo (nao recursao pura).' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (BIO CODE 2/3):\n1. Extraia para um metodo.\n2. Use variaveis prev e curr.\n3. Loop de 3 ate n.\n\nCOLA:\nstatic int climbStairs(int n) {\n    if (n <= 2) return n;\n    int prev = 1, curr = 2;\n    for (int i = 3; i <= n; i++) {\n        int next = prev + curr;\n        prev = curr;\n        curr = next;\n    }\n    return curr;\n}'
+            },
+            {
+                name: 'Otimizacao O(1) espaco',
+                objective: 'Use apenas duas variaveis (prev/curr) em vez de array completo.',
+                validator(code) {
+                    if (/new\s+int\s*\[\s*n/.test(code)) return { ok: false, msg: 'Bio Code 3/3: use apenas 2 variaveis, nao array de tamanho n.' };
+                    if (!/(prev|a|first).*(curr|b|second)|(curr|b|second).*(prev|a|first)/.test(code)) return { ok: false, msg: 'Bio Code 3/3: use duas variaveis para guardar os ultimos valores.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (BIO CODE 3/3):\n1. Nao precisa de dp[n] array.\n2. Apenas prev e curr sao suficientes.\n3. Space complexity O(1).\n\nCOLA:\nint prev = 1, curr = 2;\nfor (int i = 3; i <= n; i++) {\n    int next = prev + curr;\n    prev = curr;\n    curr = next;\n}'
+            },
+        ],
+    },
+    // ---- CLOUD VALLEY: Tree Inversion ----
+    code_tree: {
+        requiredValidations: 3,
+        mentor: 'LINUS TORVALDS',
+        steps: [
+            { name: 'Base funcional', objective: 'Implemente inversao de arvore binaria base.' },
+            {
+                name: 'Metodo invertTree',
+                objective: 'Extraia para static TreeNode invertTree(TreeNode root).',
+                validator(code) {
+                    if (!/static\s+TreeNode\s+\w+\s*\(\s*TreeNode/.test(code)) return { ok: false, msg: 'Cloud Valley 2/3: crie metodo static TreeNode invertTree(TreeNode).' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (CLOUD VALLEY 2/3):\n1. Extraia para um metodo recursivo.\n2. Troque left e right.\n3. Chame recursivamente.\n\nCOLA:\nstatic TreeNode invertTree(TreeNode root) {\n    if (root == null) return null;\n    TreeNode temp = root.left;\n    root.left = invertTree(root.right);\n    root.right = invertTree(temp);\n    return root;\n}'
+            },
+            {
+                name: 'Tratamento null',
+                objective: 'Adicione verificacao if (root == null) return null no inicio.',
+                validator(code) {
+                    if (!/root\s*==\s*null|null\s*==\s*root/.test(code)) return { ok: false, msg: 'Cloud Valley 3/3: verifique se root e null.' };
+                    if (!/return\s+null/.test(code)) return { ok: false, msg: 'Cloud Valley 3/3: retorne null se root for null.' };
+                    return { ok: true };
+                },
+                helpText: 'COMO EXPANDIR (CLOUD VALLEY 3/3):\n1. Caso base da recursao.\n2. Se root e null, retorne null.\n\nCOLA:\nif (root == null) return null;'
             },
         ],
     },

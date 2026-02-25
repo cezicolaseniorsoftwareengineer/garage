@@ -30,14 +30,14 @@ eval(analyzerSource.replace('const JavaAnalyzer', 'var JavaAnalyzer'));
 
 // ---- Extract CODE_CHALLENGES array ----
 const challengesStart = gameSource.indexOf('const CODE_CHALLENGES = [');
-// Find the closing "];" -- it's followed by STAGE_ORDER declaration
-const stageOrderMarker = 'const STAGE_ORDER = [';
-const stageOrderIdx = gameSource.indexOf(stageOrderMarker, challengesStart);
-// Search backwards from STAGE_ORDER for the "];\n" that closes CODE_CHALLENGES
-let challengesEnd = gameSource.lastIndexOf('];\n', stageOrderIdx);
+// Find the closing "];" -- it's followed by SCALE_MISSIONS declaration
+const scaleMissionsMarker = '// ---- challenge scale tracks';
+const scaleMissionsIdx = gameSource.indexOf(scaleMissionsMarker, challengesStart);
+// Search backwards from SCALE_MISSIONS for the "];\n" that closes CODE_CHALLENGES
+let challengesEnd = gameSource.lastIndexOf('];\n', scaleMissionsIdx);
 if (challengesStart < 0 || challengesEnd < 0 || challengesEnd <= challengesStart) {
     console.error('FATAL: Could not locate CODE_CHALLENGES array');
-    console.error('  start=' + challengesStart + ', end=' + challengesEnd + ', stageOrder=' + stageOrderIdx);
+    console.error('  start=' + challengesStart + ', end=' + challengesEnd + ', scaleMissions=' + scaleMissionsIdx);
     process.exit(1);
 }
 const challengesSource = gameSource.substring(challengesStart, challengesEnd + 2); // include '];'
