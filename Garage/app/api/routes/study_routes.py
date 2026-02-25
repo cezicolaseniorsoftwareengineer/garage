@@ -173,7 +173,6 @@ def _build_stream_body(system_prompt: str, user_prompt: str, model: str, max_tok
     return {
         "model": model,
         "stream": True,
-        "temperature": 0.2,
         "max_output_tokens": max_tokens,
         "input": [
             {"role": "system", "content": [{"type": "input_text", "text": system_prompt}]},
@@ -262,7 +261,6 @@ def _stream_openai_sse(system_prompt: str, user_prompt: str):
         attempted.append(model)
         body = {
             "model": model,
-            "temperature": 0.2,
             "max_output_tokens": max_output_tokens,
             "input": [
                 {
