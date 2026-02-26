@@ -592,6 +592,54 @@ def _stream_groq_sse(system_prompt: str, user_prompt: str):
 
 
 # ---------------------------------------------------------------------------
+# Fallback de streaming: Gemini → Groq → OpenAI em runtime
+# ---------------------------------------------------------------------------
+def _stream_with_fallback(system_prompt: str, user_prompt: str):
+    """
+    Tenta cada provedor em ordem. Se o primeiro evento SSE contiver {"err": ...}
+    (quota esgotada, auth, timeout), abandona e tenta o proximo proovedor.
+    Se nenhum funcionar, emite o ultimo erro ao frontend.
+    """
+    providers: list[tuple[str, object]] = []
+    if os.environ.get("GEMINI_API_KEY", "").strip():
+        providers.append(("Gemini", lambda: _stream_gemini_sse(system_prompt, user_prompt)))
+    if os.environ.get("GROQ_API_KEY", "").strip():
+        providers.append(("Groq", lambda: _stream_groq_sse(system_prompt, user_prompt)))
+    if os.environ.get("OPENAI_API_KEY", "").strip():
+        providers.append(("OpenAI", lambda: _stream_openai_sse(system_prompt, user_prompt)))
+
+    if not providers:
+        yield 'data: {"err": "Nenhuma API key de IA configurada no servidor."}\n\n'
+        return
+
+    last_err = "Erro desconhecido."
+    for name, factory in providers:
+        gen = factory()
+        try:
+            first = next(gen)
+        except StopIteration:
+            continue
+
+        # Verifica se o primeiro evento e um erro
+        try:
+            first_data = first.strip()
+            if first_data.startswith("data: "):
+                first_json = json.loads(first_data[6:])
+                if "err" in first_json:
+                    last_err = f"[{name}] {first_json['err']}"
+                    continue  # tenta o proximo provedor
+        except (json.JSONDecodeError, KeyError):
+            pass  # nao e JSON ou nao tem 'err' — pode ser um token, prossegue
+
+        # Primeiro evento e valido: emite e continua o stream normalmente
+        yield first
+        yield from gen
+        return
+
+    yield f'data: {{"err": {json.dumps(last_err)}}}\n\n'
+
+
+# ---------------------------------------------------------------------------
 # Response cache — evita chamadas de API repetidas (TTL 1 hora)
 # ---------------------------------------------------------------------------
 _RESPONSE_CACHE: dict[str, tuple[str, float]] = {}
@@ -881,13 +929,8 @@ def api_study_chat_stream(req: StudyChatRequest, current_user: dict = Depends(ge
         stage, region, challenge_title, challenge_desc, history_text, books_text, msg_clean
     )
 
-    # Seleciona provedor de streaming pela disponibilidade de chave
-    if os.environ.get("GEMINI_API_KEY", "").strip():
-        gen = _stream_gemini_sse(system_prompt, user_prompt)
-    elif os.environ.get("GROQ_API_KEY", "").strip():
-        gen = _stream_groq_sse(system_prompt, user_prompt)
-    else:
-        gen = _stream_openai_sse(system_prompt, user_prompt)
+    # Fallback em runtime: Gemini → Groq → OpenAI
+    gen = _stream_with_fallback(system_prompt, user_prompt)
     return StreamingResponse(
         gen,
         media_type="text/event-stream",
