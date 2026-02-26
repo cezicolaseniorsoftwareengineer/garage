@@ -5613,6 +5613,19 @@ const JavaAnalyzer = {
                     }
                 }
             }
+            // Multi-variable same-type declarations: int a = 0, b = 0, c = 0;
+            // The first pattern captures the first variable; extract remaining comma-separated ones here.
+            const multiVarDecl = line.match(/^\s*(?:final\s+)?(int|long|double|float|char|boolean|String|byte|short)\s+\w+\s*(?:=[^;,]*)?,/);
+            if (multiVarDecl) {
+                const mvType = multiVarDecl[1];
+                const extraRe = /,\s*([a-zA-Z_]\w*)\s*(?:=[^,;]*)?(?=[,;])/g;
+                let emv;
+                while ((emv = extraRe.exec(line)) !== null) {
+                    const mvName = emv[1];
+                    if (!decls.has(mvName)) decls.set(mvName, { type: mvType, line: i + 1 });
+                }
+            }
+
             // For loop declarations: for (int i = 0; ...)
             const forMatch = line.match(/for\s*\(\s*(int|long)\s+(\w+)\s*=/);
             if (forMatch) {
@@ -6569,7 +6582,7 @@ const SCALE_MISSIONS = {
                     }
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (NUBANK 5/5):\n1. Adicione observabilidade para operacao segura.\n2. Conte cada tipo de evento durante o loop.\n3. Publique resumo final para auditoria.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class FizzBuzz {\n    static String classify(int n) {\n        if (n % 3 == 0 && n % 5 == 0) return "FizzBuzz";\n        if (n % 3 == 0) return "Fizz";\n        if (n % 5 == 0) return "Buzz";\n        return String.valueOf(n);\n    }\n\n    static void emit(String out) {\n        System.out.println(out);\n    }\n\n    public static void main(String[] args) {\n        int limite = 15;\n        int countFizz = 0, countBuzz = 0, countFizzBuzz = 0, countNumero = 0;\n\n        for (int i = 1; i <= limite; i++) {\n            String out = classify(i);\n            if ("FizzBuzz".equals(out)) countFizzBuzz++;\n            else if ("Fizz".equals(out)) countFizz++;\n            else if ("Buzz".equals(out)) countBuzz++;\n            else countNumero++;\n\n            emit(out);\n        }\n\n        System.out.println("Resumo -> FizzBuzz: " + countFizzBuzz + ", Fizz: " + countFizz + ", Buzz: " + countBuzz + ", Numero: " + countNumero);\n    }\n}'
+                helpText: 'COMO EXPANDIR (NUBANK 5/5):\n1. Adicione observabilidade para operacao segura.\n2. Conte cada tipo de evento durante o loop.\n3. Publique resumo final para auditoria.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class FizzBuzz {\n    static String classify(int n) {\n        if (n % 3 == 0 && n % 5 == 0) return "FizzBuzz";\n        if (n % 3 == 0) return "Fizz";\n        if (n % 5 == 0) return "Buzz";\n        return String.valueOf(n);\n    }\n\n    static void emit(String out) {\n        System.out.println(out);\n    }\n\n    public static void main(String[] args) {\n        int limite = 15;\n        int countFizz = 0;\n        int countBuzz = 0;\n        int countFizzBuzz = 0;\n        int countNumero = 0;\n\n        for (int i = 1; i <= limite; i++) {\n            String out = classify(i);\n            if ("FizzBuzz".equals(out)) countFizzBuzz++;\n            else if ("Fizz".equals(out)) countFizz++;\n            else if ("Buzz".equals(out)) countBuzz++;\n            else countNumero++;\n\n            emit(out);\n        }\n\n        System.out.println("Resumo -> FizzBuzz: " + countFizzBuzz + ", Fizz: " + countFizz + ", Buzz: " + countBuzz + ", Numero: " + countNumero);\n    }\n}'
             },
         ],
     },
