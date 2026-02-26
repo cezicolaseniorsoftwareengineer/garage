@@ -6279,8 +6279,8 @@ const CODE_CHALLENGES = [
             if (!compile.ok) return compile;
             if (!/class\s+AnagramCheck/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: A classe deve se chamar AnagramCheck.' };
             if (!/static\s+boolean\s+isAnagram/.test(code)) return { ok: false, msg: 'Erro de compila\u00e7\u00e3o: M\u00e9todo: static boolean isAnagram(String s, String t)' };
-            if (!/length/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Verifique se as strings t\u00eam o mesmo tamanho primeiro.' };
-            if (!/for\s*\(/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use um loop para percorrer os caracteres.' };
+            if (!/length/.test(code) && !/sort/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Verifique o tamanho das strings (length) ou use Arrays.sort() para ordenar e comparar.' };
+            if (!/for\s*\(/.test(code) && !/sort/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use um loop para percorrer os caracteres ou Arrays.sort() para ordenar os char arrays.' };
             if (!/charAt/.test(code) && !/toCharArray/.test(code)) return { ok: false, msg: 'Erro sem\u00e2ntico: Use charAt() ou toCharArray() para acessar caracteres.' };
             if (!/int\s*\[\s*26\s*\]/.test(code) && !/int\s*\[\s*\]/.test(code) && !/HashMap/.test(code) && !/sort/.test(code))
                 return { ok: false, msg: 'Erro sem\u00e2ntico: Use uma estrutura de contagem: int[26] para frequencia de letras, ou HashMap, ou ordene as strings.' };
@@ -6671,16 +6671,16 @@ const SCALE_MISSIONS = {
             {
                 name: 'Base funcional',
                 objective: 'Implemente a verificacao de anagrama base.',
-                helpText: 'COMO EXPANDIR (PAYPAL 1/3):\n1. Converta as strings em arrays de char.\n2. Ordene os arrays com Arrays.sort().\n3. Compare com Arrays.equals().\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class AnagramCheck {\n    public static void main(String[] args) {\n        String a = "listen";\n        String b = "silent";\n\n        char[] ca = a.toCharArray();\n        char[] cb = b.toCharArray();\n        Arrays.sort(ca);\n        Arrays.sort(cb);\n\n        System.out.println(Arrays.equals(ca, cb));\n    }\n}'
+                helpText: 'COMO EXPANDIR (PAYPAL 1/3):\n1. Crie static boolean isAnagram(String a, String b).\n2. Converta para char arrays com toCharArray().\n3. Ordene com Arrays.sort() e compare com Arrays.equals().\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class AnagramCheck {\n    static boolean isAnagram(String a, String b) {\n        char[] ca = a.toCharArray();\n        char[] cb = b.toCharArray();\n        Arrays.sort(ca);\n        Arrays.sort(cb);\n        return Arrays.equals(ca, cb);\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isAnagram(\"listen\", \"silent\"));\n        System.out.println(isAnagram(\"hello\", \"world\"));\n    }\n}'
             },
             {
-                name: 'Metodo isAnagram',
-                objective: 'Extraia para static boolean isAnagram(String a, String b).',
+                name: 'Verificacao de comprimento',
+                objective: 'Adicione verificacao de length para early-exit antes de ordenar.',
                 validator(code) {
-                    if (!/static\s+boolean\s+\w+\s*\(\s*String/.test(code)) return { ok: false, msg: 'PayPal 2/3: crie um metodo static boolean isAnagram.' };
+                    if (!/\.length\(\)/.test(code) && !/length\s*!=/.test(code) && !/!=\s*\w+\.length/.test(code)) return { ok: false, msg: 'PayPal 2/3: adicione if (a.length() != b.length()) return false; antes de ordenar.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (PAYPAL 2/3):\n1. Extraia a logica para um metodo boolean.\n2. Compare os caracteres ordenados.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class AnagramCheck {\n    static boolean isAnagram(String a, String b) {\n        char[] ca = a.toCharArray();\n        char[] cb = b.toCharArray();\n        Arrays.sort(ca);\n        Arrays.sort(cb);\n        return Arrays.equals(ca, cb);\n    }\n\n    public static void main(String[] args) {\n        String s1 = \"listen\";\n        String s2 = \"silent\";\n\n        System.out.println(isAnagram(s1, s2));\n    }\n}'
+                helpText: 'COMO EXPANDIR (PAYPAL 2/3):\n1. Antes de ordenar, compare os tamanhos das strings.\n2. Se lengths diferentes, retorne false imediatamente (early-exit O(1)).\n3. Isso evita ordenar strings que definitivamente nao sao anagramas.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class AnagramCheck {\n    static boolean isAnagram(String a, String b) {\n        if (a.length() != b.length()) return false;\n        char[] ca = a.toCharArray();\n        char[] cb = b.toCharArray();\n        Arrays.sort(ca);\n        Arrays.sort(cb);\n        return Arrays.equals(ca, cb);\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isAnagram(\"listen\", \"silent\"));\n        System.out.println(isAnagram(\"hello\", \"world\"));\n    }\n}'
             },
             {
                 name: 'Normalizacao',
@@ -6702,16 +6702,17 @@ const SCALE_MISSIONS = {
             {
                 name: 'Base funcional',
                 objective: 'Implemente o algoritmo de Kadane base.',
-                helpText: 'COMO EXPANDIR (NETFLIX 1/3):\n1. Mantenha currentSum e maxSum.\n2. Para cada elemento: currentSum = max(nums[i], currentSum + nums[i]).\n3. Atualize maxSum a cada passo.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class KadaneMax {\n    public static void main(String[] args) {\n        int[] nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};\n        int max = nums[0], current = nums[0];\n\n        for (int i = 1; i < nums.length; i++) {\n            current = Math.max(nums[i], current + nums[i]);\n            max = Math.max(max, current);\n        }\n\n        System.out.println("Max subarray: " + max);\n    }\n}'
+                helpText: 'COMO EXPANDIR (NETFLIX 1/3):\n1. Mantenha currSum e maxSum.\n2. Para cada elemento: currSum = Math.max(nums[i], currSum + nums[i]).\n3. Atualize maxSum a cada iteracao.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class MaxSubarray {\n    static int maxSubArray(int[] nums) {\n        int maxSum = nums[0];\n        int currSum = nums[0];\n        for (int i = 1; i < nums.length; i++) {\n            currSum = Math.max(nums[i], currSum + nums[i]);\n            maxSum = Math.max(maxSum, currSum);\n        }\n        return maxSum;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};\n        System.out.println(maxSubArray(nums));\n    }\n}'
             },
             {
-                name: 'Metodo maxSubarray',
-                objective: 'Extraia para static int maxSubarray(int[] arr).',
+                name: 'Testes adicionais',
+                objective: 'Expanda o main com mais testes: array todo negativo e array de 1 elemento.',
                 validator(code) {
-                    if (!/static\s+int\s+\w+\s*\(\s*int\s*\[\]/.test(code)) return { ok: false, msg: 'Netflix 2/3: crie um metodo static int maxSubarray(int[]).' };
+                    const calls = (code.match(/maxSubArray\s*\(/g) || []).length;
+                    if (calls < 2) return { ok: false, msg: 'Netflix 2/3: adicione mais chamadas a maxSubArray() -- teste com array todo negativo e array de 1 elemento.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (NETFLIX 2/3):\n1. Extraia Kadane para um metodo reutilizavel.\n2. Mantenha currentSum e maxSum.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class KadaneMax {\n    static int maxSubarray(int[] arr) {\n        int max = arr[0], current = arr[0];\n        for (int i = 1; i < arr.length; i++) {\n            current = Math.max(arr[i], current + arr[i]);\n            max = Math.max(max, current);\n        }\n        return max;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};\n\n        int resultado = maxSubarray(nums);\n        System.out.println(\"Max subarray: \" + resultado);\n    }\n}'
+                helpText: 'COMO EXPANDIR (NETFLIX 2/3):\n1. Teste com arrays edge case: todos negativos, array de 1 elemento.\n2. Kadane deve retornar o maximo mesmo com todos negativos.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class MaxSubarray {\n    static int maxSubArray(int[] nums) {\n        int maxSum = nums[0];\n        int currSum = nums[0];\n        for (int i = 1; i < nums.length; i++) {\n            currSum = Math.max(nums[i], currSum + nums[i]);\n            maxSum = Math.max(maxSum, currSum);\n        }\n        return maxSum;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};\n        int[] negativos = {-3, -1, -2};\n        int[] unico = {5};\n        System.out.println(maxSubArray(nums));\n        System.out.println(maxSubArray(negativos));\n        System.out.println(maxSubArray(unico));\n    }\n}'
             },
             {
                 name: 'Tratamento array vazio',
@@ -6721,7 +6722,7 @@ const SCALE_MISSIONS = {
                     if (!/(return\s*0|throw|Integer\.MIN)/.test(code)) return { ok: false, msg: 'Netflix 3/3: trate o caso vazio (return 0 ou throw).' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (NETFLIX 3/3):\n1. Verifique if (arr == null || arr.length == 0).\n2. Retorne 0 ou lance excecao.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class KadaneMax {\n    static int maxSubarray(int[] arr) {\n        if (arr == null || arr.length == 0) return 0;\n\n        int max = arr[0], current = arr[0];\n        for (int i = 1; i < arr.length; i++) {\n            current = Math.max(arr[i], current + arr[i]);\n            max = Math.max(max, current);\n        }\n        return max;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};\n        int[] vazio = {};\n\n        System.out.println(\"Max subarray: \" + maxSubarray(nums));\n        System.out.println(\"Array vazio: \" + maxSubarray(vazio));\n        System.out.println(\"Array null: \" + maxSubarray(null));\n    }\n}'
+                helpText: 'COMO EXPANDIR (NETFLIX 3/3):\n1. Verifique if (nums == null || nums.length == 0).\n2. Retorne 0 ou lance excecao.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class MaxSubarray {\n    static int maxSubArray(int[] nums) {\n        if (nums == null || nums.length == 0) return 0;\n        int maxSum = nums[0];\n        int currSum = nums[0];\n        for (int i = 1; i < nums.length; i++) {\n            currSum = Math.max(nums[i], currSum + nums[i]);\n            maxSum = Math.max(maxSum, currSum);\n        }\n        return maxSum;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {-2, 1, -3, 4, -1, 2, 1, -5, 4};\n        int[] negativos = {-3, -1, -2};\n        int[] vazio = {};\n        System.out.println(maxSubArray(nums));\n        System.out.println(maxSubArray(negativos));\n        System.out.println(maxSubArray(vazio));\n        System.out.println(maxSubArray(null));\n    }\n}'
             },
         ],
     },
@@ -6733,16 +6734,16 @@ const SCALE_MISSIONS = {
             {
                 name: 'Base funcional',
                 objective: 'Implemente a deduplicacao com HashSet base.',
-                helpText: 'COMO EXPANDIR (SPACEX 1/3):\n1. Crie um HashSet<Integer>.\n2. Itere o array e adicione cada elemento ao Set.\n3. Set ignora duplicatas automaticamente.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashSet;\nimport java.util.Set;\n\npublic class HashSetDedup {\n    public static void main(String[] args) {\n        int[] nums = {1, 2, 2, 3, 3, 3, 4, 5, 5};\n        Set<Integer> set = new HashSet<>();\n\n        for (int n : nums) {\n            set.add(n);\n        }\n\n        System.out.println("Unicos: " + set);\n    }\n}'
+                helpText: 'COMO EXPANDIR (SPACEX 1/3):\n1. Use HashSet para detectar duplicatas em O(1).\n2. Para cada elemento: se ja esta no set, ha duplicata; senao, adicione.\n3. O método retorna boolean -- verdadeiro se houver qualquer duplicata.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashSet;\n\npublic class ContainsDuplicate {\n    static boolean containsDuplicate(int[] nums) {\n        HashSet<Integer> set = new HashSet<>();\n        for (int num : nums) {\n            if (set.contains(num)) return true;\n            set.add(num);\n        }\n        return false;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(containsDuplicate(new int[]{1, 2, 3, 1}));\n        System.out.println(containsDuplicate(new int[]{1, 2, 3, 4}));\n    }\n}'
             },
             {
-                name: 'Metodo removeDuplicates',
-                objective: 'Extraia para static Set<Integer> removeDuplicates(int[] arr).',
+                name: 'Metodo deduplicate',
+                objective: 'Adicione static Set<Integer> deduplicate(int[] arr) na mesma classe ContainsDuplicate.',
                 validator(code) {
-                    if (!/static\s+(Set|HashSet)\s*</.test(code)) return { ok: false, msg: 'SpaceX 2/3: crie um metodo que retorna Set<Integer>.' };
+                    if (!/static\s+(Set|HashSet)\s*</.test(code)) return { ok: false, msg: 'SpaceX 2/3: adicione um metodo que retorna Set<Integer> para coletar os valores unicos.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (SPACEX 2/3):\n1. Crie metodo que retorna Set.\n2. Adicione todos elementos ao HashSet.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashSet;\nimport java.util.Set;\n\npublic class HashSetDedup {\n    static Set<Integer> removeDuplicates(int[] arr) {\n        Set<Integer> set = new HashSet<>();\n        for (int n : arr) {\n            set.add(n);\n        }\n        return set;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {1, 2, 2, 3, 3, 3, 4, 5, 5};\n\n        Set<Integer> unicos = removeDuplicates(nums);\n        System.out.println(\"Unicos: \" + unicos);\n    }\n}'
+                helpText: 'COMO EXPANDIR (SPACEX 2/3):\n1. Adicione um segundo metodo static Set<Integer> deduplicate(int[] arr) na mesma classe.\n2. Retorne um HashSet com todos os elementos (sem duplicatas).\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashSet;\nimport java.util.Set;\n\npublic class ContainsDuplicate {\n    static boolean containsDuplicate(int[] nums) {\n        HashSet<Integer> set = new HashSet<>();\n        for (int num : nums) {\n            if (set.contains(num)) return true;\n            set.add(num);\n        }\n        return false;\n    }\n\n    static Set<Integer> deduplicate(int[] nums) {\n        Set<Integer> set = new HashSet<>();\n        for (int n : nums) {\n            set.add(n);\n        }\n        return set;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {1, 2, 3, 1};\n        System.out.println(containsDuplicate(nums));\n        System.out.println(deduplicate(new int[]{1, 2, 2, 3, 3, 3, 4, 5, 5}));\n    }\n}'
             },
             {
                 name: 'Contagem de duplicatas',
@@ -6751,7 +6752,7 @@ const SCALE_MISSIONS = {
                     if (!/(length|size).*-/.test(code) && !/-\s*\w+\.(length|size)/.test(code)) return { ok: false, msg: 'SpaceX 3/3: calcule o numero de duplicatas removidas.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (SPACEX 3/3):\n1. Guarde o tamanho original.\n2. Compare com o tamanho do Set.\n3. Imprima a diferenca.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashSet;\nimport java.util.Set;\n\npublic class HashSetDedup {\n    static Set<Integer> removeDuplicates(int[] arr) {\n        Set<Integer> set = new HashSet<>();\n        for (int n : arr) {\n            set.add(n);\n        }\n        return set;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {1, 2, 2, 3, 3, 3, 4, 5, 5};\n\n        Set<Integer> unicos = removeDuplicates(nums);\n        int duplicatas = nums.length - unicos.size();\n\n        System.out.println(\"Unicos: \" + unicos);\n        System.out.println(\"Duplicatas removidas: \" + duplicatas);\n    }\n}'
+                helpText: 'COMO EXPANDIR (SPACEX 3/3):\n1. Use deduplicate() para obter os valores unicos.\n2. Calcule duplicatas = arr.length - unicos.size().\n3. Imprima o relatorio completo.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashSet;\nimport java.util.Set;\n\npublic class ContainsDuplicate {\n    static boolean containsDuplicate(int[] nums) {\n        HashSet<Integer> set = new HashSet<>();\n        for (int num : nums) {\n            if (set.contains(num)) return true;\n            set.add(num);\n        }\n        return false;\n    }\n\n    static Set<Integer> deduplicate(int[] nums) {\n        Set<Integer> set = new HashSet<>();\n        for (int n : nums) {\n            set.add(n);\n        }\n        return set;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {1, 2, 2, 3, 3, 3, 4, 5, 5};\n        System.out.println(containsDuplicate(nums));\n        Set<Integer> unicos = deduplicate(nums);\n        int duplicatas = nums.length - unicos.size();\n        System.out.println(\"Unicos: \" + unicos);\n        System.out.println(\"Duplicatas removidas: \" + duplicatas);\n    }\n}'
             },
         ],
     },
