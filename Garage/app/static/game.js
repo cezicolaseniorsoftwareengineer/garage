@@ -232,7 +232,7 @@ const StudyChat = {
             aside.innerHTML =
                 '<div class="study-chat-card">' +
                 '  <div class="study-chat-header">' +
-                '    <div><h3>INTELIGÊNCIA ARTIFICIAL</h3><p id="studyChatContext">Java + Estruturas de Dados</p></div>' +
+                '    <div><h3>Garage A.I</h3><p id="studyChatContext">Java + Estruturas de Dados</p></div>' +
                 '    <button class="study-chat-close" onclick="StudyChat.close()">&times;</button>' +
                 '  </div>' +
                 '  <div id="studyChatMessages" class="study-chat-messages"></div>' +
@@ -250,7 +250,7 @@ const StudyChat = {
             btn.className = 'ide-btn ide-btn-chat';
             btn.id = 'ideChatBtn';
             btn.onclick = () => StudyChat.toggle();
-            btn.innerHTML = '<span class="ide-btn-icon">&#128172;</span> INTELIGÊNCIA ARTIFICIAL';
+            btn.innerHTML = '<span class="ide-btn-icon">&#128172;</span> Garage A.I';
             const skipBtn = document.getElementById('ideSkipBtn');
             if (skipBtn && skipBtn.parentElement === actions) {
                 actions.insertBefore(btn, skipBtn);
@@ -440,7 +440,7 @@ const StudyChat = {
             meta.className = 'study-msg-meta';
             meta.textContent = m.role === 'user'
                 ? 'VOCE'
-                : (m.meta ? ('INTELIGÊNCIA ARTIFICIAL - ' + m.meta) : 'INTELIGÊNCIA ARTIFICIAL');
+                : 'Garage A.I';
 
             const body = document.createElement('div');
             body.className = 'study-msg-body';
@@ -597,7 +597,7 @@ const StudyChat = {
                 if (refreshed) {
                     resp = await _doFetch();
                 } else {
-                    throw new Error('Sessão expirada. Faça login novamente para usar a Inteligência Artificial.');
+                    throw new Error('Sessão expirada. Faça login novamente para usar o Garage A.I.');
                 }
             }
 
@@ -645,7 +645,7 @@ const StudyChat = {
             const msg = (e.message || '');
             fullText = msg.includes('429') || msg.toLowerCase().includes('limite')
                 ? 'Limite de mensagens por minuto atingido. Aguarde um momento e tente novamente.'
-                : 'Falha ao consultar a Inteligência Artificial: ' + (msg || 'erro desconhecido');
+                : 'Falha ao consultar o Garage A.I: ' + (msg || 'erro desconhecido');
             finalModel = 'erro';
         } finally {
             // Reveal the full response — update the assistant placeholder
@@ -7205,18 +7205,18 @@ const IDE = {
     _attemptCoachMessage(challenge, attempts) {
         const title = (challenge && challenge.title) ? challenge.title : 'este desafio';
         if (attempts <= 1) {
-            return 'Inteligência Artificial: revise assinatura da classe/metodo em "' + title + '" antes de ajustar algoritmo.';
+            return 'Garage A.I: revise assinatura da classe/metodo em "' + title + '" antes de ajustar algoritmo.';
         }
         if (attempts === 2) {
-            return 'Inteligência Artificial: faca dry-run com um exemplo pequeno e confirme cada variavel a cada passo.';
+            return 'Garage A.I: faca dry-run com um exemplo pequeno e confirme cada variavel a cada passo.';
         }
         if (attempts === 3) {
-            return 'Inteligência Artificial: quebre o problema em 3 blocos -> entrada, processamento e saida.';
+            return 'Garage A.I: quebre o problema em 3 blocos -> entrada, processamento e saida.';
         }
         if (attempts === 4) {
-            return 'Inteligência Artificial: valide caso de borda (vazio, unico elemento, limite superior).';
+            return 'Garage A.I: valide caso de borda (vazio, unico elemento, limite superior).';
         }
-        return 'Inteligência Artificial: compare sua versao com o objetivo do enunciado e simplifique o fluxo principal.';
+        return 'Garage A.I: compare sua versao com o objetivo do enunciado e simplifique o fluxo principal.';
     },
 
     /**
