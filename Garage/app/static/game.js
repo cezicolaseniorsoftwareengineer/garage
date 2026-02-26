@@ -365,7 +365,7 @@ const StudyChat = {
         const { send, input } = this._els();
         if (send) {
             send.disabled = busy;
-            send.textContent = busy ? 'PENSANDO...' : 'ENVIAR';
+            send.textContent = 'ENVIAR';
         }
         if (input) input.disabled = busy;
     },
