@@ -498,6 +498,98 @@ def _stream_gemini_sse(system_prompt: str, user_prompt: str):
         yield 'data: {"err": "Gemini timeout. Tente novamente."}\n\n'
 
 
+def _call_groq(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
+    """Non-streaming call to Groq Chat Completions API. Returns (text, request_id, model)."""
+    api_key = os.environ.get("GROQ_API_KEY", "").strip()
+    model = os.environ.get("GROQ_MODEL", "llama-3.1-8b-instant").strip()
+    endpoint = "https://api.groq.com/openai/v1/chat/completions"
+    payload = json.dumps({
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user",   "content": user_prompt},
+        ],
+        "max_tokens": 1500,
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        endpoint,
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        text = data["choices"][0]["message"]["content"].strip()
+        request_id = data.get("id", "groq")
+        used_model = data.get("model", model)
+        return text, request_id, used_model
+    except urllib.error.HTTPError as exc:
+        try:
+            detail = json.loads(exc.read().decode("utf-8")).get("error", {}).get("message", f"HTTP {exc.code}")
+        except Exception:
+            detail = f"HTTP {exc.code}"
+        raise HTTPException(status_code=502, detail=f"Groq error: {detail}")
+    except (urllib.error.URLError, TimeoutError, socket.timeout) as exc:
+        raise HTTPException(status_code=504, detail=f"Groq timeout: {exc}")
+
+
+def _stream_groq_sse(system_prompt: str, user_prompt: str):
+    """Streaming SSE generator for Groq Chat Completions API."""
+    api_key = os.environ.get("GROQ_API_KEY", "").strip()
+    if not api_key:
+        yield 'data: {"err": "Study chat unavailable: missing GROQ_API_KEY."}\n\n'
+        return
+    model = os.environ.get("GROQ_MODEL", "llama-3.1-8b-instant").strip()
+    endpoint = "https://api.groq.com/openai/v1/chat/completions"
+    payload = json.dumps({
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user",   "content": user_prompt},
+        ],
+        "max_tokens": 1500,
+        "stream": True,
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        endpoint,
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            for raw_line in resp:
+                line = raw_line.decode("utf-8").strip()
+                if not line.startswith("data:"):
+                    continue
+                payload_str = line[5:].strip()
+                if payload_str == "[DONE]":
+                    yield 'data: {"done": true}\n\n'
+                    return
+                try:
+                    chunk = json.loads(payload_str)
+                    token = chunk["choices"][0].get("delta", {}).get("content", "")
+                    if token:
+                        yield f'data: {json.dumps({"token": token})}\n\n'
+                except (KeyError, json.JSONDecodeError):
+                    continue
+    except urllib.error.HTTPError as exc:
+        try:
+            msg = json.loads(exc.read().decode("utf-8")).get("error", {}).get("message", f"HTTP {exc.code}")
+        except Exception:
+            msg = f"HTTP {exc.code}"
+        yield f'data: {{"err": {json.dumps(msg)}}}\n\n'
+    except (urllib.error.URLError, TimeoutError, socket.timeout):
+        yield 'data: {"err": "Groq timeout. Tente novamente."}\n\n'
+
+
 @router.post("/chat")
 def api_study_chat(req: StudyChatRequest, current_user: dict = Depends(get_current_user)):
     """Generate an authenticated study answer grounded in game context."""
@@ -590,10 +682,11 @@ def api_study_chat(req: StudyChatRequest, current_user: dict = Depends(get_curre
         f"Pergunta do jogador:\n{req.message.strip()}"
     )
 
-    # Use Gemini (free tier) when key is configured, fall back to OpenAI.
-    gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
-    if gemini_key:
+    # Provider priority: Gemini (free) → Groq (free) → OpenAI (paid)
+    if os.environ.get("GEMINI_API_KEY", "").strip():
         answer, response_id, model = _call_gemini(system_prompt, user_prompt)
+    elif os.environ.get("GROQ_API_KEY", "").strip():
+        answer, response_id, model = _call_groq(system_prompt, user_prompt)
     else:
         answer, response_id, model = _call_openai_responses(system_prompt, user_prompt)
     return {
@@ -667,10 +760,11 @@ def api_study_chat_stream(req: StudyChatRequest, current_user: dict = Depends(ge
         f"Pergunta: {req.message.strip()}"
     )
 
-    # Use Gemini SSE (free tier) when key is configured, fall back to OpenAI SSE.
-    gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
-    if gemini_key:
+    # Provider priority: Gemini (free) → Groq (free) → OpenAI (paid)
+    if os.environ.get("GEMINI_API_KEY", "").strip():
         gen = _stream_gemini_sse(system_prompt, user_prompt)
+    elif os.environ.get("GROQ_API_KEY", "").strip():
+        gen = _stream_groq_sse(system_prompt, user_prompt)
     else:
         gen = _stream_openai_sse(system_prompt, user_prompt)
     return StreamingResponse(
