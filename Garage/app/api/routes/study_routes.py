@@ -404,11 +404,15 @@ def _call_openai_responses(system_prompt: str, user_prompt: str) -> tuple[str, s
     )
 
 
+# Limite de tokens de saida compartilhado por todos os provedores (default: 4096)
+_AI_MAX_TOKENS = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
+
+
 def _call_gemini(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
     """Non-streaming call to Google Gemini. Returns (text, response_id, model)."""
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
-    max_tokens = int(os.environ.get("OPENAI_MAX_OUTPUT_TOKENS", "420") or "420")
+    max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
     timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
     endpoint = (
         f"https://generativelanguage.googleapis.com/v1beta/models/{model}"
@@ -453,7 +457,7 @@ def _stream_gemini_sse(system_prompt: str, user_prompt: str):
         yield 'data: {"err": "Study chat unavailable: missing GEMINI_API_KEY."}\n\n'
         return
     model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
-    max_tokens = int(os.environ.get("OPENAI_MAX_OUTPUT_TOKENS", "420") or "420")
+    max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
     timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
     endpoint = (
         f"https://generativelanguage.googleapis.com/v1beta/models/{model}"
@@ -504,13 +508,14 @@ def _call_groq(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
     api_key = os.environ.get("GROQ_API_KEY", "").strip()
     model = os.environ.get("GROQ_MODEL", "llama-3.1-8b-instant").strip()
     endpoint = "https://api.groq.com/openai/v1/chat/completions"
+    max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
     payload = json.dumps({
         "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user",   "content": user_prompt},
         ],
-        "max_tokens": 1500,
+        "max_tokens": max_tokens,
     }).encode("utf-8")
     req = urllib.request.Request(
         endpoint,
@@ -522,7 +527,7 @@ def _call_groq(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with urllib.request.urlopen(req, timeout=60) as resp:
             data = json.loads(resp.read().decode("utf-8"))
         text = data["choices"][0]["message"]["content"].strip()
         request_id = data.get("id", "groq")
@@ -546,13 +551,14 @@ def _stream_groq_sse(system_prompt: str, user_prompt: str):
         return
     model = os.environ.get("GROQ_MODEL", "llama-3.1-8b-instant").strip()
     endpoint = "https://api.groq.com/openai/v1/chat/completions"
+    max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
     payload = json.dumps({
         "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user",   "content": user_prompt},
         ],
-        "max_tokens": 1500,
+        "max_tokens": max_tokens,
         "stream": True,
     }).encode("utf-8")
     req = urllib.request.Request(

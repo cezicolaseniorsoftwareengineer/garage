@@ -24,5 +24,7 @@ services:
         sync: false  # Configure manually in Render dashboard (fallback AI provider, free tier)
       - key: GROQ_MODEL
         value: "llama-3.3-70b-versatile"  # Free: 14400 req/day, 30 RPM — alternatives: llama-3.1-8b-instant (faster)
+      - key: AI_MAX_TOKENS
+        value: "4096"  # Max output tokens for all AI providers (increase for longer code responses)
       - key: ADMIN_EMAIL
         sync: false  # Configure manually in Render dashboard (e.g., cezicolatecnologia@gmail.com)
