@@ -16,5 +16,9 @@ services:
         sync: false  # Configure manually in Render dashboard
       - key: OPENAI_API_KEY
         sync: false  # Configure manually in Render dashboard
+      - key: GEMINI_API_KEY
+        sync: false  # Configure manually in Render dashboard (primary AI provider, free tier)
+      - key: GEMINI_MODEL
+        value: "gemini-2.0-flash"  # Free: 1500 req/day, 15 RPM
       - key: ADMIN_EMAIL
         sync: false  # Configure manually in Render dashboard (e.g., cezicolatecnologia@gmail.com)

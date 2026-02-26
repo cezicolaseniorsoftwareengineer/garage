@@ -327,8 +327,8 @@ def _stream_openai_sse(system_prompt: str, user_prompt: str):
     yield 'data: {"err": "Nenhum modelo disponivel no momento. Tente novamente."}\n\n'
 
 
-
-
+def _call_openai_responses(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
+    """Non-streaming call to OpenAI Responses API. Returns (text, response_id, model)."""
     api_key = os.environ.get("OPENAI_API_KEY", "").strip()
     if not api_key:
         raise HTTPException(
@@ -352,15 +352,11 @@ def _stream_openai_sse(system_prompt: str, user_prompt: str):
             "input": [
                 {
                     "role": "system",
-                    "content": [
-                        {"type": "input_text", "text": system_prompt},
-                    ],
+                    "content": [{"type": "input_text", "text": system_prompt}],
                 },
                 {
                     "role": "user",
-                    "content": [
-                        {"type": "input_text", "text": user_prompt},
-                    ],
+                    "content": [{"type": "input_text", "text": user_prompt}],
                 },
             ],
         }
@@ -379,7 +375,6 @@ def _stream_openai_sse(system_prompt: str, user_prompt: str):
             except HTTPException as exc:
                 detail = str(exc.detail)
                 last_detail = detail
-
                 unsupported_param = _unsupported_parameter_name(detail)
                 if (
                     exc.status_code == 502
@@ -390,15 +385,12 @@ def _stream_openai_sse(system_prompt: str, user_prompt: str):
                     removed_params.add(unsupported_param)
                     body.pop(unsupported_param, None)
                     continue
-
                 if exc.status_code == 504:
                     model_timeout_count += 1
                     if model_timeout_count < request_retries:
                         time.sleep(0.35)
                         continue
-                    # Try next model after exhausting retries for this one.
                     break
-
                 if exc.status_code == 502 and _is_model_unavailable_error(detail):
                     break
                 raise
@@ -409,6 +401,101 @@ def _stream_openai_sse(system_prompt: str, user_prompt: str):
         status_code=status,
         detail=f"Study provider error: no available model from [{models_str}]. Last error: {last_detail}",
     )
+
+
+def _call_gemini(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
+    """Non-streaming call to Google Gemini. Returns (text, response_id, model)."""
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
+    max_tokens = int(os.environ.get("OPENAI_MAX_OUTPUT_TOKENS", "420") or "420")
+    timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
+    endpoint = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/{model}"
+        f":generateContent?key={api_key}"
+    )
+    body = {
+        "system_instruction": {"parts": [{"text": system_prompt}]},
+        "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
+        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.7},
+    }
+    request = urllib.request.Request(
+        endpoint,
+        data=json.dumps(body).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        detail = f"HTTP {exc.code}"
+        try:
+            msg = json.loads(exc.read().decode("utf-8")).get("error", {}).get("message", "")
+            if msg:
+                detail = msg
+        except Exception:
+            pass
+        raise HTTPException(status_code=502, detail=f"Gemini error: {detail}")
+    except (urllib.error.URLError, TimeoutError, socket.timeout):
+        raise HTTPException(status_code=504, detail="Gemini timeout.")
+    try:
+        text = payload["candidates"][0]["content"]["parts"][0]["text"].strip()
+    except (KeyError, IndexError, TypeError):
+        raise HTTPException(status_code=502, detail="Gemini retornou resposta vazia ou inesperada.")
+    return text, "", model
+
+
+def _stream_gemini_sse(system_prompt: str, user_prompt: str):
+    """Generator: yields SSE lines using Google Gemini streaming API."""
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if not api_key:
+        yield 'data: {"err": "Study chat unavailable: missing GEMINI_API_KEY."}\n\n'
+        return
+    model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
+    max_tokens = int(os.environ.get("OPENAI_MAX_OUTPUT_TOKENS", "420") or "420")
+    timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
+    endpoint = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/{model}"
+        f":streamGenerateContent?key={api_key}&alt=sse"
+    )
+    body = {
+        "system_instruction": {"parts": [{"text": system_prompt}]},
+        "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
+        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.7},
+    }
+    request = urllib.request.Request(
+        endpoint,
+        data=json.dumps(body).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        got_delta = False
+        with urllib.request.urlopen(request, timeout=timeout) as resp:
+            for raw in resp:
+                line = raw.decode("utf-8").rstrip("\r\n")
+                if not line or not line.startswith("data: "):
+                    continue
+                try:
+                    chunk = json.loads(line[6:])
+                    delta = chunk["candidates"][0]["content"]["parts"][0]["text"]
+                    if delta:
+                        got_delta = True
+                        yield f'data: {json.dumps({"d": delta})}\n\n'
+                except (KeyError, IndexError, TypeError, json.JSONDecodeError):
+                    continue
+        if got_delta:
+            yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
+        else:
+            yield 'data: {"err": "Gemini nao retornou resposta."}\n\n'
+    except urllib.error.HTTPError as exc:
+        try:
+            msg = json.loads(exc.read().decode("utf-8")).get("error", {}).get("message", f"HTTP {exc.code}")
+        except Exception:
+            msg = f"HTTP {exc.code}"
+        yield f'data: {{"err": {json.dumps(msg)}}}\n\n'
+    except (urllib.error.URLError, TimeoutError, socket.timeout):
+        yield 'data: {"err": "Gemini timeout. Tente novamente."}\n\n'
 
 
 @router.post("/chat")
@@ -503,7 +590,12 @@ def api_study_chat(req: StudyChatRequest, current_user: dict = Depends(get_curre
         f"Pergunta do jogador:\n{req.message.strip()}"
     )
 
-    answer, response_id, model = _call_openai_responses(system_prompt, user_prompt)
+    # Use Gemini (free tier) when key is configured, fall back to OpenAI.
+    gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if gemini_key:
+        answer, response_id, model = _call_gemini(system_prompt, user_prompt)
+    else:
+        answer, response_id, model = _call_openai_responses(system_prompt, user_prompt)
     return {
         "reply": answer,
         "model": model,
@@ -575,7 +667,12 @@ def api_study_chat_stream(req: StudyChatRequest, current_user: dict = Depends(ge
         f"Pergunta: {req.message.strip()}"
     )
 
-    gen = _stream_openai_sse(system_prompt, user_prompt)
+    # Use Gemini SSE (free tier) when key is configured, fall back to OpenAI SSE.
+    gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if gemini_key:
+        gen = _stream_gemini_sse(system_prompt, user_prompt)
+    else:
+        gen = _stream_openai_sse(system_prompt, user_prompt)
     return StreamingResponse(
         gen,
         media_type="text/event-stream",
