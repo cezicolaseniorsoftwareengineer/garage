@@ -231,7 +231,8 @@
                 </div>
             </div>
             <div class="hud-sep">|</div>
-            <div class="hud-block hud-block-btn" id="btnPauseHud" onclick="Game.pause()" style="pointer-events:auto;cursor:pointer;">
+            <div class="hud-block hud-block-btn" id="btnPauseHud" onclick="Game.pause()"
+                style="pointer-events:auto;cursor:pointer;">
                 <span class="hud-icon" style="color:#facc15;">&#9646;&#9646;</span>
                 <div>
                     <div class="hud-label">PAUSA</div>
@@ -261,7 +262,8 @@
                 <button class="ctrl-btn" id="btnRight" aria-label="Mover direita">&#9654;</button>
             </div>
             <div class="mobile-right">
-                <button class="ctrl-btn ctrl-pause" id="btnMobilePause" aria-label="Pausar" onclick="Game.pause()">&#9646;&#9646;</button>
+                <button class="ctrl-btn ctrl-pause" id="btnMobilePause" aria-label="Pausar"
+                    onclick="Game.pause()">&#9646;&#9646;</button>
                 <button class="ctrl-btn ctrl-jump" id="btnJump" aria-label="Pular">PULAR</button>
                 <button class="ctrl-btn ctrl-action action" id="btnAction" aria-label="Ação">APRENDER</button>
             </div>
@@ -486,16 +488,18 @@
                     <div class="study-chat-card">
                         <div class="study-chat-header">
                             <div>
-                                <h3>INTELIGÊNCIA ARTIFICIAL</h3>
+                                <h3>Garage A.I</h3>
                                 <p id="studyChatContext">Java + Estruturas de Dados</p>
                             </div>
                             <button class="study-chat-close" onclick="StudyChat.close()">&times;</button>
                         </div>
                         <div id="studyChatMessages" class="study-chat-messages"></div>
                         <div class="study-chat-composer">
-                            <textarea id="studyChatInput" placeholder="Pergunte sobre livros, sintaxe Java, algoritmos e escalabilidade..."></textarea>
+                            <textarea id="studyChatInput"
+                                placeholder="Pergunte sobre livros, sintaxe Java, algoritmos e escalabilidade..."></textarea>
                             <div class="study-chat-actions">
-                                <button id="studyChatSendBtn" class="btn-primary" onclick="StudyChat.send()">ENVIAR</button>
+                                <button id="studyChatSendBtn" class="btn-primary"
+                                    onclick="StudyChat.send()">ENVIAR</button>
                             </div>
                         </div>
                     </div>
@@ -519,7 +523,7 @@
                         <span class="ide-btn-icon">&#128273;</span> VER SOLUÇÃO
                     </button>
                     <button class="ide-btn ide-btn-chat" id="ideChatBtn" onclick="StudyChat.toggle()">
-                        <span class="ide-btn-icon">&#128172;</span> INTELIGÊNCIA ARTIFICIAL
+                        <span class="ide-btn-icon">&#128172;</span> Garage A.I
                     </button>
                     <button class="ide-btn ide-btn-skip" onclick="IDE.skip()" id="ideSkipBtn" style="display:none;">
                         <span class="ide-btn-icon">&#9654;&#9654;</span> PULAR
