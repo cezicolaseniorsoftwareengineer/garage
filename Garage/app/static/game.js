@@ -6613,7 +6613,7 @@ const SCALE_MISSIONS = {
                     if (!/static\s+int\s+\w+\s*\(\s*int\s*\[\]/.test(code)) return { ok: false, msg: 'JP Morgan 2/3: crie um metodo static int que recebe int[].' };
                     const methodMatch = code.match(/static\s+int\s+(\w+)\s*\(\s*int\s*\[\]/);
                     if (methodMatch) {
-                        const callRegex = new RegExp(methodMatch[1] + '\\s*\\(');
+                        const callRegex = new RegExp(methodMatch[1] + '\\s*\\(', 'g');
                         if ((code.match(callRegex) || []).length < 2) return { ok: false, msg: 'JP Morgan 2/3: chame o metodo no main.' };
                     }
                     return { ok: true };
