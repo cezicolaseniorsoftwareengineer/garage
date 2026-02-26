@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from app.api.routes.study_routes import (
     _cache_key, _cache_get, _cache_set, _RESPONSE_CACHE,
     _build_prompts, _stream_with_fallback, _call_with_fallback,
-    _STAGE_GUIDANCE,
+    _STAGE_GUIDANCE, _STAGE_CURRICULUM,
 )
 
 PASS = "[PASS]"
@@ -52,6 +52,15 @@ else:
     print(f"{FAIL} Chaves deveriam ser diferentes"); errors.append("cache-isolamento")
 
 # ── 6. _build_prompts para todos os 6 stages ──────────────────────────────
+# Cada stage tem formato de resposta diferente
+_FORMAT_MARKERS = {
+    "Intern":    "TRACE MANUAL",
+    "Junior":    "TRACE MANUAL",
+    "Mid":       "INVARIANTE",
+    "Senior":    "INVARIANTE",
+    "Staff":     "CONTEXTO",
+    "Principal": "CONTEXTO",
+}
 for stage in _STAGE_GUIDANCE.keys():
     sys_p, usr_p = _build_prompts(
         stage, "Garage", "Desafio Teste", "Implemente um HashMap.",
@@ -64,11 +73,12 @@ for stage in _STAGE_GUIDANCE.keys():
         print(f"{FAIL} [{stage}] system_prompt sem stage"); errors.append(f"build-{stage}-stage"); ok = False
     if "ArrayList" not in usr_p:
         print(f"{FAIL} [{stage}] user_prompt sem mensagem"); errors.append(f"build-{stage}-msg"); ok = False
-    if "INTUICAO" not in usr_p:
-        print(f"{FAIL} [{stage}] user_prompt sem formato obrigatorio"); errors.append(f"build-{stage}-fmt"); ok = False
+    marker = _FORMAT_MARKERS[stage]
+    if marker not in usr_p:
+        print(f"{FAIL} [{stage}] user_prompt sem marcador '{marker}'"); errors.append(f"build-{stage}-fmt"); ok = False
     if ok:
-        diretriz = _STAGE_GUIDANCE[stage][:30]
-        print(f"{PASS} _build_prompts [{stage}] OK — diretriz: '{diretriz}...'")
+        diretriz = _STAGE_CURRICULUM[stage]["foco"][:35]
+        print(f"{PASS} _build_prompts [{stage}] OK — foco: '{diretriz}...'")
 
 # ── 7. _stream_with_fallback sem nenhuma API key ───────────────────────────
 events = list(_stream_with_fallback("system", "user"))

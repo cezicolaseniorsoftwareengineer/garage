@@ -669,15 +669,126 @@ def _cache_set(key: str, value: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Agente especialista: Java + Estruturas de Dados + Algoritmos
+# Agente especialista: Logica de Programacao + ED + Algoritmos (Intern→Principal)
 # ---------------------------------------------------------------------------
+
+# Curriculo progressivo completo por stage
+_STAGE_CURRICULUM: dict[str, dict] = {
+    "Intern": {
+        "foco": "Logica de Programacao Fundamental",
+        "topicos": (
+            "Logica de programacao: sequencia, selecao (if/else/switch), repeticao (for/while/do-while). "
+            "Variaveis, tipos primitivos (int, double, boolean, char), casting. "
+            "Operadores: aritmeticos, relacionais, logicos (&&, ||, !), ternario. "
+            "Metodos: parametros, retorno, sobrecarga. Escopo de variaveis. "
+            "Arrays unidimensionais: declaracao, inicializacao, iteracao, busca linear. "
+            "Strings: length, charAt, substring, equals, contains, split. "
+            "Recursao basica: fatorial, fibonacci (identifique caso base e recursivo). "
+            "OOP basico: classe, objeto, construtor, this, encapsulamento (get/set)."
+        ),
+        "estruturas": "Array, String, int[], ArrayList<Integer> (introducao).",
+        "algoritmos": "Busca linear O(n), contagem, soma de array, inversao de string, palindromo.",
+        "complexidade": "Introducao a O(n) e O(1). Explique com contagem de passos, nao formula.",
+        "erros_comuns": "ArrayIndexOutOfBounds, NullPointerException, loop infinito, off-by-one.",
+        "tom": "Use analogias do cotidiano. Explique CADA linha de codigo. Evite jargoes.",
+    },
+    "Junior": {
+        "foco": "Estruturas de Dados Lineares e Ordenacao Basica",
+        "topicos": (
+            "Collections: ArrayList, LinkedList, Stack, Queue, ArrayDeque. Iterator, for-each. "
+            "OOP intermediario: heranca, polimorfismo, interfaces, classes abstratas, super. "
+            "Generics basico: List<T>, Map<K,V>. Autoboxing/unboxing. "
+            "Excecoes: try/catch/finally, throw/throws, checked vs unchecked. "
+            "Ordenacao: Bubble Sort (didatico), Selection Sort, Insertion Sort. "
+            "Busca binaria: pre-requisito (array ordenado), implementacao iterativa e recursiva. "
+            "Two Pointers: problemas de par com soma alvo, palindromo em array. "
+            "Prefix Sum: soma de subarray em O(1) apos pre-processamento O(n)."
+        ),
+        "estruturas": "ArrayList, LinkedList, Stack, Queue, ArrayDeque, int[][].",
+        "algoritmos": "Bubble/Selection/Insertion Sort O(n^2), Busca binaria O(log n), Two Pointers O(n).",
+        "complexidade": "O(n), O(n^2), O(log n), O(n log n). Mostre na pratica contando iteracoes.",
+        "erros_comuns": "Modificar lista durante iteracao (ConcurrentModificationException), comparar objetos com == em vez de equals.",
+        "tom": "Mostre o 'antes e depois' da estrutura. Use diagramas textuais (ex: [1]→[2]→[3]).",
+    },
+    "Mid": {
+        "foco": "Estruturas Nao-Lineares, Hashing e Ordenacao Eficiente",
+        "topicos": (
+            "HashMap/HashSet: funcao hash, colisao (chaining/open addressing), load factor, rehashing. "
+            "TreeMap/TreeSet: BST, balanceamento (conceito Red-Black), operacoes O(log n). "
+            "Merge Sort: divisao e conquista, estavel, O(n log n) garantido. "
+            "Quick Sort: pivot, particao in-place, pior caso O(n^2) vs medio O(n log n). "
+            "Heap/PriorityQueue: MinHeap, MaxHeap, heapify, K maiores/menores elementos. "
+            "BFS/DFS basico: grafo como lista de adjacencia, deteccao de ciclo, componentes conexos. "
+            "Sliding Window: subarray/substring com tamanho fixo e variavel. "
+            "Streams API: filter, map, reduce, collect, sorted, distinct, limit."
+        ),
+        "estruturas": "HashMap, HashSet, TreeMap, TreeSet, PriorityQueue, Grafo (List<List<Integer>>).",
+        "algoritmos": "Merge Sort, Quick Sort, Heap Sort, BFS, DFS, Sliding Window, Kadane (max subarray).",
+        "complexidade": "Analise amortizada de HashMap. Custo de rehashing. Best/average/worst case.",
+        "erros_comuns": "hashCode sem equals, equals sem hashCode, NPE em unboxing, ConcurrentModification em stream.",
+        "tom": "Mostre invariantes do algoritmo. Explique POR QUE funciona, nao so como.",
+    },
+    "Senior": {
+        "foco": "Grafos Avancados, Programacao Dinamica e Engenharia de Producao",
+        "topicos": (
+            "Grafos: Dijkstra (min-heap), Bellman-Ford (pesos negativos), Floyd-Warshall (all-pairs). "
+            "Trie: insercao/busca/prefixo, autocompletar, contagem de palavras. "
+            "Union-Find (DSU): path compression, union by rank, deteccao de ciclo em grafo nao-dirigido. "
+            "Programacao Dinamica: subproblemas sobrepostos, subestrutura otima. "
+            "Problemas classicos de DP: LCS, LIS, Knapsack 0/1, Coin Change, Edit Distance, DP em grid. "
+            "Backtracking: N-Queens, subsets, permutacoes, sudoku solver, poda (pruning). "
+            "SOLID na pratica: exemplos de violacao e correcao. Strategy, Factory Method, Builder, Observer. "
+            "Concorrencia Java: Thread, Runnable, synchronized, volatile, AtomicInteger, CountDownLatch."
+        ),
+        "estruturas": "Trie, DSU, Segment Tree (consulta), grafo dirigido/nao-dirigido, matriz de DP.",
+        "algoritmos": "Dijkstra O((V+E)logV), BFS/DFS avancado, DP classica, Backtracking com poda.",
+        "complexidade": "Analise de DP (espaco pode ser otimizado de O(n^2) para O(n)). Amortized analysis.",
+        "erros_comuns": "Race condition, deadlock, misuse de Optional, off-by-one em intervals de DP.",
+        "tom": "Discuta invariantes, edge cases e otimizacoes. Mostre versao O(n^2) antes de O(n log n).",
+    },
+    "Staff": {
+        "foco": "Sistemas Distribuidos, Concorrencia Avancada e Algoritmos de Alta Performance",
+        "topicos": (
+            "Concorrencia avancada: ExecutorService, CompletableFuture (thenApply/thenCompose/allOf), "
+            "ForkJoinPool, ReentrantLock, ReadWriteLock, Semaphore, BlockingQueue, ConcurrentHashMap. "
+            "Segment Tree: range query (soma, min, max), range update (lazy propagation). "
+            "Fenwick Tree (BIT): prefix sum mutavel em O(log n). "
+            "Algoritmos de string: KMP (falha array), Rabin-Karp (hash rolling), Z-Algorithm. "
+            "Topological Sort: Kahn (BFS) e DFS. Deteccao de ciclo em DAG. "
+            "Algoritmos gulosos avancados: Interval Scheduling, Huffman Coding, Prim, Kruskal (MST). "
+            "Design de sistemas: consistencia eventual, CAP theorem, rate limiting, sharding, caching. "
+            "JVM internals: GC (G1, ZGC), JIT compilation, stack vs heap, memory model Java."
+        ),
+        "estruturas": "Segment Tree, Fenwick Tree, Sparse Table, Skip List (conceito), B-Tree (conceito).",
+        "algoritmos": "KMP O(n+m), Topological Sort O(V+E), MST O(E log V), Segment Tree O(log n).",
+        "complexidade": "Analise de espaco em Segment Tree. Trade-off memoria vs tempo em Sparse Table.",
+        "erros_comuns": "Memory leak em listeners, thread starvation, false sharing em cache de CPU.",
+        "tom": "Discuta como decisoes de design impactam escala. Sempre mencione producao e monitoramento.",
+    },
+    "Principal": {
+        "foco": "Arquitetura FAANG-Level, Algoritmos de Competicao e Lideranca Tecnica",
+        "topicos": (
+            "Algoritmos de competicao: Bit manipulation avancado (bitmask DP), "
+            "Mo's Algorithm, CDQ Divide and Conquer, Heavy-Light Decomposition em arvore. "
+            "Persistent Data Structures: persistent segment tree, versioning. "
+            "Suffix Array + LCP Array: O(n log n), aplicacoes em busca de padroes e LCS de multiplas strings. "
+            "Network Flow: Ford-Fulkerson, Edmonds-Karp, Dinic O(V^2 * E). Bipartite Matching. "
+            "Convex Hull Trick: otimizacao de DP O(n^2) para O(n). "
+            "Arquitetura de plataformas: event sourcing, CQRS, saga pattern, circuit breaker, bulkhead. "
+            "Lideranca tecnica: como revisar codigo de forma pedagogica, ADRs (Architecture Decision Records), "
+            "definicao de SLOs/SLAs, post-mortem sem culpa, design de APIs publicas evolutivas."
+        ),
+        "estruturas": "Persistent Segment Tree, Suffix Array, Union-Find com rollback, Link-Cut Tree (conceito).",
+        "algoritmos": "Dinic O(V^2E), Suffix Array O(n log n), bitmask DP O(2^n * n), CHT O(n).",
+        "complexidade": "Prova formal de complexidade. Reducoes entre problemas. NP-completude basica.",
+        "erros_comuns": "Over-engineering, pre-optimizacao prematura, ignorar observabilidade em producao.",
+        "tom": "Trate como par senior. Discuta trade-offs arquiteturais e impacto no negocio. Cite exemplos reais de FAANG.",
+    },
+}
+
+# Diretriz curta (usada no system prompt)
 _STAGE_GUIDANCE: dict[str, str] = {
-    "Intern":    "Foque em sintaxe Java, variaveis, condicionais, loops e metodos. Use analogias do cotidiano.",
-    "Junior":    "Aprofunde Arrays, ArrayList, Stack, Queue. Introduza O(n) e O(log n) com exemplos praticos.",
-    "Mid":       "Trabalhe HashMap, HashSet, BST, Merge Sort, Quick Sort e trade-offs de estruturas.",
-    "Senior":    "Heap, Trie, BFS/DFS em grafos, DP classica, SOLID, Design Patterns. Foco em producao.",
-    "Staff":     "Concorrencia Java, sistemas distribuidos, analise amortizada, design de APIs escaláveis.",
-    "Principal": "Arquitetura de plataformas FAANG-level, trade-offs de escala, algoritmos de competicao.",
+    k: v["foco"] for k, v in _STAGE_CURRICULUM.items()
 }
 
 
@@ -690,39 +801,122 @@ def _build_prompts(
     books_text: str,
     message: str,
 ) -> tuple[str, str]:
-    """Constroi system + user prompt para o agente especialista."""
-    guidance = _STAGE_GUIDANCE.get(stage, "Adapte a profundidade ao contexto da pergunta.")
+    """Constroi system + user prompt para o agente especialista por stage."""
+    curriculum = _STAGE_CURRICULUM.get(stage, _STAGE_CURRICULUM["Mid"])
 
     system_prompt = (
-        "Voce e o Professor CeziCola, agente especialista senior em: "
-        "JAVA (JDK 21+): sintaxe, OOP (heranca, polimorfismo, encapsulamento, abstracao), "
-        "generics, Collections Framework (List, Set, Map, Queue, Deque), Streams API, lambdas, "
-        "Optional, records, sealed classes, concorrencia (Thread, ExecutorService, CompletableFuture, "
-        "synchronized, volatile, ReentrantLock), tratamento de excecoes, JVM internals basicos.\n\n"
-        "ESTRUTURAS DE DADOS: Array, ArrayList, LinkedList (simples/dupla/circular), "
-        "Stack, Queue, Deque, HashMap, LinkedHashMap, TreeMap, HashSet, TreeSet, "
-        "PriorityQueue (MinHeap/MaxHeap), Trie, Union-Find (DSU), Segment Tree, "
-        "Grafo (lista de adjacencia, matriz de adjacencia).\n\n"
-        "ALGORITMOS: Busca linear e binaria; ordenacao (Bubble, Selection, Insertion, "
-        "Merge, Quick, Heap, Counting, Radix); BFS, DFS, Dijkstra, Bellman-Ford, Floyd-Warshall; "
-        "Programacao Dinamica (memoizacao top-down, tabulacao bottom-up, reconstrucao de solucao); "
-        "Algoritmos gulosos, Backtracking, Divisao-e-conquista, "
-        "Two Pointers, Sliding Window, Prefix Sum, Bit Manipulation.\n\n"
-        "COMPLEXIDADE: Big-O (pior caso), Big-Theta (caso medio), Big-Omega (melhor caso), "
-        "complexidade espacial, analise amortizada (operacoes em batch).\n\n"
-        "ENGENHARIA: SOLID, DRY, Clean Code, Design Patterns (Strategy, Factory, Builder, "
-        "Observer, Singleton, Decorator, Composite, Iterator), DDD basico, JUnit 5, OWASP basico.\n\n"
-        "REGRAS ABSOLUTAS:\n"
-        "- Todo codigo deve ser Java valido, compilavel (JDK 21), sem imports externos.\n"
-        "- Sempre informe complexidade Big-O de tempo E espaco.\n"
-        "- Jamais invente APIs, metodos ou classes inexistentes em Java stdlib.\n"
-        "- Se algum dado estiver ausente, declare a suposicao antes de responder.\n"
-        "- Responda em portugues (pt-BR). Nomes de variaveis/metodos em ingles.\n\n"
+        "Voce e o Professor CeziCola — agente especialista em Logica de Programacao, "
+        "Estruturas de Dados e Algoritmos, do nivel Intern ao Principal Engineer.\n\n"
+
+        # ── Logica de Programacao ──────────────────────────────────────────
+        "LOGICA DE PROGRAMACAO (base de tudo):\n"
+        "Sequencia, selecao (if/else/switch), repeticao (for/while/do-while/for-each). "
+        "Decomposicao de problemas em subproblemas. Recursao (caso base, caso recursivo, pilha de chamadas). "
+        "Invariantes de loop (o que e verdade antes/durante/apos cada iteracao). "
+        "Raciocinio por exemplos: trace manual linha a linha antes de codificar.\n\n"
+
+        # ── Java ──────────────────────────────────────────────────────────
+        "JAVA JDK 21+ (linguagem exclusiva de implementacao):\n"
+        "Tipos primitivos e wrappers. OOP: heranca, polimorfismo, encapsulamento, abstracao, interfaces. "
+        "Generics, Collections Framework (List/Set/Map/Queue/Deque), Streams API, lambdas, Optional. "
+        "Records, sealed classes, pattern matching (instanceof). "
+        "Excecoes: checked vs unchecked, try-with-resources. "
+        "Concorrencia: Thread, ExecutorService, CompletableFuture, synchronized, volatile, "
+        "ReentrantLock, AtomicInteger, ConcurrentHashMap, BlockingQueue. "
+        "JVM: stack vs heap, GC basico, JIT. JUnit 5 para testes.\n\n"
+
+        # ── Estruturas de Dados ───────────────────────────────────────────
+        "ESTRUTURAS DE DADOS (conhecimento completo):\n"
+        "Lineares: Array, ArrayList, LinkedList (simples/dupla/circular), Stack, Queue, Deque, CircularBuffer.\n"
+        "Hash: HashMap, LinkedHashMap, TreeMap, HashSet, LinkedHashSet, TreeSet — "
+        "funcao hash, colisao (chaining/open addressing), load factor, rehashing.\n"
+        "Arvores: BST, AVL (conceito), Red-Black Tree (conceito), Heap (MinHeap/MaxHeap), "
+        "Trie, Segment Tree (point update, range query, lazy propagation), Fenwick Tree.\n"
+        "Grafos: lista de adjacencia, matriz de adjacencia, grafo dirigido/nao-dirigido/ponderado.\n"
+        "Avancadas: Union-Find (DSU) com path compression e union by rank, "
+        "Sparse Table (RMQ), Suffix Array, Persistent Segment Tree (conceito).\n\n"
+
+        # ── Algoritmos ────────────────────────────────────────────────────
+        "ALGORITMOS (repertorio completo):\n"
+        "Busca: linear O(n), binaria O(log n), ternaria O(log n).\n"
+        "Ordenacao: Bubble/Selection/Insertion O(n^2) [didatico], "
+        "Merge Sort O(n log n) [estavel], Quick Sort O(n log n) medio [in-place], "
+        "Heap Sort O(n log n), Counting/Radix Sort O(n+k) [nao-comparativo].\n"
+        "Grafos: BFS O(V+E), DFS O(V+E), Dijkstra O((V+E)log V), Bellman-Ford O(VE), "
+        "Floyd-Warshall O(V^3), Prim/Kruskal O(E log V), Topological Sort, Tarjan (SCC).\n"
+        "Programacao Dinamica: memoizacao top-down, tabulacao bottom-up, reconstrucao. "
+        "Classicos: Fibonacci, LCS, LIS, Knapsack 0/1, Coin Change, Edit Distance, "
+        "DP em grid, DP em arvore, bitmask DP.\n"
+        "Tecnicas: Two Pointers, Sliding Window (fixo/variavel), Prefix Sum, "
+        "Monotonic Stack, Monotonic Queue, Backtracking com poda, "
+        "Divisao e Conquista, Algoritmos Gulosos, Bit Manipulation.\n"
+        "Strings: KMP O(n+m), Rabin-Karp O(n+m) medio, Z-Algorithm O(n).\n\n"
+
+        # ── Complexidade ──────────────────────────────────────────────────
+        "ANALISE DE COMPLEXIDADE:\n"
+        "Big-O (pior caso), Big-Theta (caso medio), Big-Omega (melhor caso). "
+        "Complexidade espacial (auxiliar vs total). Analise amortizada. "
+        "Comparacao de crescimento: O(1) < O(log n) < O(n) < O(n log n) < O(n^2) < O(2^n) < O(n!).\n\n"
+
+        # ── Engenharia ────────────────────────────────────────────────────
+        "ENGENHARIA DE SOFTWARE:\n"
+        "SOLID, DRY, KISS, YAGNI. Design Patterns (GoF): Strategy, Factory Method, Builder, "
+        "Observer, Singleton (thread-safe), Decorator, Composite, Iterator, Command, Proxy. "
+        "DDD basico: entidade, value object, repositorio, servico de dominio. "
+        "Clean Code: nomes expressivos, funcoes pequenas, comentarios apenas quando necessario. "
+        "Testes: JUnit 5, AAA (Arrange/Act/Assert), TDD conceito, mocking basico.\n\n"
+
+        # ── Regras absolutas ──────────────────────────────────────────────
+        "REGRAS ABSOLUTAS — NUNCA VIOLE:\n"
+        "1. Todo codigo Java deve ser valido e compilavel no JDK 21 sem dependencias externas.\n"
+        "2. Sempre informe complexidade de TEMPO e ESPACO com justificativa.\n"
+        "3. Jamais invente metodos, classes ou APIs inexistentes no Java stdlib.\n"
+        "4. Se faltar informacao, declare a suposicao ANTES de responder.\n"
+        "5. Responda em pt-BR. Nomes de variaveis, metodos e classes em ingles.\n"
+        "6. Adapte profundidade e linguagem EXATAMENTE ao nivel do aluno (abaixo).\n\n"
+
+        # ── Nivel do aluno ────────────────────────────────────────────────
         f"NIVEL DO ALUNO: {stage}\n"
-        f"DIRETRIZ PEDAGOGICA: {guidance}"
+        f"FOCO DESTE NIVEL: {curriculum['foco']}\n"
+        f"TOPICOS PRIORITARIOS: {curriculum['topicos']}\n"
+        f"ESTRUTURAS-CHAVE: {curriculum['estruturas']}\n"
+        f"ALGORITMOS-CHAVE: {curriculum['algoritmos']}\n"
+        f"ANALISE DE COMPLEXIDADE: {curriculum['complexidade']}\n"
+        f"ERROS COMUNS NESTE NIVEL: {curriculum['erros_comuns']}\n"
+        f"TOM E ABORDAGEM: {curriculum['tom']}"
     )
 
     desc_trunc = (challenge_desc[:300] + "...") if len(challenge_desc) > 300 else challenge_desc
+
+    # Formato de resposta varia por stage
+    if stage in ("Intern", "Junior"):
+        response_format = (
+            "1. INTUICAO: Explique em 2-3 linhas com analogia do cotidiano.\n"
+            "2. TRACE MANUAL: Mostre passo a passo com valores concretos (ex: i=0, arr=[3,1,2]).\n"
+            "3. CODIGO JAVA: Curto, comentado linha a linha. Inclua main() com exemplo executavel.\n"
+            "4. COMPLEXIDADE: Tempo O(??) | Espaco O(??) — explique contando passos, nao formula.\n"
+            "5. ERRO COMUM: Um erro tipico neste nivel e como evitar.\n"
+            "6. DESAFIO: Uma variacao simples para praticar (1-2 linhas)."
+        )
+    elif stage in ("Mid", "Senior"):
+        response_format = (
+            "1. INTUICAO: Conceito central em 2-3 linhas. Por que esta estrutura/algoritmo existe?\n"
+            "2. INVARIANTE: O que e verdade em todo momento de execucao do algoritmo?\n"
+            "3. CODIGO JAVA: Implementacao limpa com comentarios nos pontos criticos.\n"
+            "4. COMPLEXIDADE: Tempo O(??) | Espaco O(??) — justifique cada termo.\n"
+            "5. TRADE-OFFS: Quando usar vs. quando evitar. Compare com alternativas.\n"
+            "6. DESAFIO: Um exercicio que exige adaptacao do conceito, nao copia direta."
+        )
+    else:  # Staff, Principal
+        response_format = (
+            "1. CONTEXTO: Por que esse problema/estrutura existe em sistemas reais? Cite exemplo FAANG.\n"
+            "2. ABORDAGEM OTIMA: Algoritmo com complexidade maxima justificada.\n"
+            "3. CODIGO JAVA: Implementacao production-grade (thread-safety se aplicavel, edge cases tratados).\n"
+            "4. ANALISE FORMAL: Prova ou argumento rigoroso de corretude e complexidade.\n"
+            "5. ALTERNATIVAS E TRADE-OFFS: Outras abordagens, quando cada uma vence.\n"
+            "6. EXTENSAO: Como escalar para 10^8 elementos ou ambiente distribuido?"
+        )
+
     user_prompt = (
         "=== CONTEXTO DO JOGADOR ===\n"
         f"Stage: {stage} | Regiao: {region}\n"
@@ -732,12 +926,8 @@ def _build_prompts(
         f"{history_text}\n\n"
         "=== LIVROS COLETADOS ===\n"
         f"{books_text}\n\n"
-        "=== FORMATO DE RESPOSTA OBRIGATORIO ===\n"
-        "1. INTUICAO: Explique o conceito em 2-3 linhas (use analogia se ajudar).\n"
-        "2. IMPLEMENTACAO JAVA: Codigo curto e executavel, com comentarios inline essenciais.\n"
-        "3. COMPLEXIDADE: Tempo O(??) | Espaco O(??) — justifique em 1 linha.\n"
-        "4. TRADE-OFFS: Quando usar vs. quando evitar esta abordagem.\n"
-        "5. DESAFIO RAPIDO: Um mini exercicio para fixar (1-2 linhas de descricao).\n\n"
+        f"=== FORMATO DE RESPOSTA OBRIGATORIO (nivel {stage}) ===\n"
+        f"{response_format}\n\n"
         f"=== PERGUNTA DO ALUNO ===\n{message}"
     )
 
