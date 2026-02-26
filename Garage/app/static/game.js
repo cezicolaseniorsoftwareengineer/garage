@@ -5530,6 +5530,8 @@ const JavaAnalyzer = {
     /**
      * Check semicolons on statement lines.
      * Skips lines with { } class/method/if/for/while/else headers.
+     * Strips inline // comments before end-of-line checks to avoid false positives
+     * on valid lines like: return mid; // found   or   low = mid + 1; // go right
      */
     checkSemicolons(code) {
         const lines = code.split('\n');
@@ -5537,21 +5539,38 @@ const JavaAnalyzer = {
             const line = lines[i].trim();
             if (!line || line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) continue;
             if (line.startsWith('@')) continue; // annotations (@Override, @SuppressWarnings, etc.)
-            if (line === '{' || line === '}' || line === '};' || line === '},' || line.endsWith('{') || line.endsWith('}')) continue;
-            if (/^(public|private|protected|static|class|interface|enum|if|else|for|while|do|switch|case|default|try|catch|finally|import|package)\b/.test(line) && line.endsWith('{')) continue;
+            // Strip inline // comment (respects string literals) for end-of-line checks
+            let lineCode = line;
+            {
+                let inStr = false, strChar = null, ci = -1;
+                for (let j = 0; j < line.length - 1; j++) {
+                    const c = line[j];
+                    if (inStr) {
+                        if (c === '\\') { j++; continue; }
+                        if (c === strChar) inStr = false;
+                    } else {
+                        if (c === '"' || c === "'") { inStr = true; strChar = c; }
+                        else if (c === '/' && line[j + 1] === '/') { ci = j; break; }
+                    }
+                }
+                if (ci >= 0) lineCode = line.slice(0, ci).trimEnd();
+            }
+            if (!lineCode) continue;
+            if (lineCode === '{' || lineCode === '}' || lineCode === '};' || lineCode === '},' || lineCode.endsWith('{') || lineCode.endsWith('}')) continue;
+            if (/^(public|private|protected|static|class|interface|enum|if|else|for|while|do|switch|case|default|try|catch|finally|import|package)\b/.test(lineCode) && lineCode.endsWith('{')) continue;
             // Control flow headers without { on same line: if (...), for (...), while (...), catch (...)
-            if (/^(if|for|while|catch)\s*\(/.test(line) && line.endsWith(')')) continue;
-            if (/^(else|do|try|finally)\s*$/.test(line)) continue;
-            if (/^\}\s*(else|catch|finally)/.test(line)) continue;
-            if (/^\}/.test(line)) continue;
-            if (/^(import|package)\s/.test(line) && !line.endsWith(';'))
+            if (/^(if|for|while|catch)\s*\(/.test(lineCode) && lineCode.endsWith(')')) continue;
+            if (/^(else|do|try|finally)\s*$/.test(lineCode)) continue;
+            if (/^\}\s*(else|catch|finally)/.test(lineCode)) continue;
+            if (/^\}/.test(lineCode)) continue;
+            if (/^(import|package)\s/.test(lineCode) && !lineCode.endsWith(';'))
                 return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': falta ";" no final da declaracao.' };
             // Statement lines (assignments, method calls, return, declarations)
-            if (/^(int|long|double|float|char|boolean|String|var|return|System|HashMap|HashSet|Stack|Queue|LinkedList|ListNode|TreeNode|PriorityQueue|ArrayList|Map|List|Set)\b/.test(line) ||
-                /^\w+\s*[\.\[\(=<]/.test(line) ||
-                /^\w+\s*<(?:[^<>]*(?:<[^<>]*>)?)*>\s+\w+\s*=/.test(line) ||
-                /^\w+\s+\w+\s*=/.test(line)) {
-                if (!line.endsWith(';') && !line.endsWith('{') && !line.endsWith('}') && !line.endsWith(',') && !line.endsWith('(') && !/\)\s*\{/.test(line))
+            if (/^(int|long|double|float|char|boolean|String|var|return|System|HashMap|HashSet|Stack|Queue|LinkedList|ListNode|TreeNode|PriorityQueue|ArrayList|Map|List|Set)\b/.test(lineCode) ||
+                /^\w+\s*[\.\[\(=<]/.test(lineCode) ||
+                /^\w+\s*<(?:[^<>]*(?:<[^<>]*>)?)*>\s+\w+\s*=/.test(lineCode) ||
+                /^\w+\s+\w+\s*=/.test(lineCode)) {
+                if (!lineCode.endsWith(';') && !lineCode.endsWith('{') && !lineCode.endsWith('}') && !lineCode.endsWith(',') && !lineCode.endsWith('(') && !/\)\s*\{/.test(lineCode))
                     return { ok: false, line: i + 1, msg: 'Erro de compilação: Linha ' + (i + 1) + ': falta ";" no final da declaracao.' };
             }
         }
@@ -6616,7 +6635,7 @@ const SCALE_MISSIONS = {
             {
                 name: 'Base funcional',
                 objective: 'Implemente o Binary Search base funcionando.',
-                helpText: 'COMO EXPANDIR (JP MORGAN 1/3):\n1. Array deve estar ordenado.\n2. Use left, right e mid para dividir o espaco de busca.\n3. Retorne o indice ou -1.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class BinarySearch {\n    public static void main(String[] args) {\n        int[] arr = {1, 3, 5, 7, 9, 11, 13};\n        int target = 7;\n        int left = 0, right = arr.length - 1;\n        int result = -1;\n\n        while (left <= right) {\n            int mid = left + (right - left) / 2;\n            if (arr[mid] == target) { result = mid; break; }\n            if (arr[mid] < target) left = mid + 1;\n            else right = mid - 1;\n        }\n\n        System.out.println("Indice: " + result);\n    }\n}'
+                helpText: 'COMO EXPANDIR (JP MORGAN 1/3):\n1. Array deve estar ORDENADO para Binary Search funcionar.\n2. Use low e high como ponteiros das extremidades do intervalo.\n3. Calcule mid = low + (high - low) / 2 para evitar overflow.\n4. Reduza o intervalo pela metade a cada iteracao.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class BinarySearch {\n    static int binarySearch(int[] arr, int target) {\n        int low = 0, high = arr.length - 1;\n        while (low <= high) {\n            int mid = low + (high - low) / 2;\n            if (arr[mid] == target) return mid;\n            else if (arr[mid] < target) low = mid + 1;\n            else high = mid - 1;\n        }\n        return -1;\n    }\n\n    public static void main(String[] args) {\n        int[] arr = {2, 5, 8, 12, 16, 23, 38, 56, 72, 91};\n        System.out.println(binarySearch(arr, 23));\n        System.out.println(binarySearch(arr, 99));\n    }\n}'
             },
             {
                 name: 'Metodo reutilizavel',
@@ -6630,7 +6649,7 @@ const SCALE_MISSIONS = {
                     }
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (JP MORGAN 2/3):\n1. Extraia a logica para um metodo reutilizavel.\n2. Retorne o indice encontrado ou -1.\n3. Chame o metodo no main.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class BinarySearch {\n    static int binarySearch(int[] arr, int target) {\n        int left = 0, right = arr.length - 1;\n        while (left <= right) {\n            int mid = left + (right - left) / 2;\n            if (arr[mid] == target) return mid;\n            if (arr[mid] < target) left = mid + 1;\n            else right = mid - 1;\n        }\n        return -1;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {1, 3, 5, 7, 9, 11, 13};\n        int target = 7;\n\n        int result = binarySearch(nums, target);\n        System.out.println(\"Indice: \" + result);\n    }\n}'
+                helpText: 'COMO EXPANDIR (JP MORGAN 2/3):\n1. O metodo ja esta extraido -- agora demonstre que e REUTILIZAVEL.\n2. Chame binarySearch() com pelo menos 2 alvos diferentes.\n3. Mostre buscas que encontram e buscas que nao encontram (-1).\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class BinarySearch {\n    static int binarySearch(int[] arr, int target) {\n        int low = 0, high = arr.length - 1;\n        while (low <= high) {\n            int mid = low + (high - low) / 2;\n            if (arr[mid] == target) return mid;\n            else if (arr[mid] < target) low = mid + 1;\n            else high = mid - 1;\n        }\n        return -1;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {2, 5, 8, 12, 16, 23, 38, 56, 72, 91};\n        System.out.println(\"Indice de 23: \" + binarySearch(nums, 23));\n        System.out.println(\"Indice de 99: \" + binarySearch(nums, 99));\n        System.out.println(\"Indice de 2: \" + binarySearch(nums, 2));\n        System.out.println(\"Indice de 91: \" + binarySearch(nums, 91));\n    }\n}'
             },
             {
                 name: 'Tratamento de bordas',
@@ -6640,7 +6659,7 @@ const SCALE_MISSIONS = {
                     if (!/(return\s*-1|throw)/.test(code)) return { ok: false, msg: 'JP Morgan 3/3: retorne -1 ou lance excecao para casos invalidos.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (JP MORGAN 3/3):\n1. Verifique if (arr == null || arr.length == 0).\n2. Retorne -1 imediatamente nesses casos.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class BinarySearch {\n    static int binarySearch(int[] arr, int target) {\n        if (arr == null || arr.length == 0) return -1;\n\n        int left = 0, right = arr.length - 1;\n        while (left <= right) {\n            int mid = left + (right - left) / 2;\n            if (arr[mid] == target) return mid;\n            if (arr[mid] < target) left = mid + 1;\n            else right = mid - 1;\n        }\n        return -1;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {1, 3, 5, 7, 9, 11, 13};\n        int[] vazio = {};\n\n        System.out.println(\"Indice de 7: \" + binarySearch(nums, 7));\n        System.out.println(\"Array vazio: \" + binarySearch(vazio, 5));\n        System.out.println(\"Array null: \" + binarySearch(null, 5));\n    }\n}'
+                helpText: 'COMO EXPANDIR (JP MORGAN 3/3):\n1. Adicione guarda no inicio do metodo: if (arr == null || arr.length == 0) return -1;\n2. Isso protege contra NullPointerException e ArrayIndexOutOfBoundsException.\n3. Teste com array vazio {} e com null para confirmar.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class BinarySearch {\n    static int binarySearch(int[] arr, int target) {\n        if (arr == null || arr.length == 0) return -1;\n        int low = 0, high = arr.length - 1;\n        while (low <= high) {\n            int mid = low + (high - low) / 2;\n            if (arr[mid] == target) return mid;\n            else if (arr[mid] < target) low = mid + 1;\n            else high = mid - 1;\n        }\n        return -1;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {2, 5, 8, 12, 16, 23, 38, 56, 72, 91};\n        int[] vazio = {};\n        System.out.println(\"Indice de 23: \" + binarySearch(nums, 23));\n        System.out.println(\"Indice de 99: \" + binarySearch(nums, 99));\n        System.out.println(\"Array vazio: \" + binarySearch(vazio, 5));\n        System.out.println(\"Array null: \" + binarySearch(null, 5));\n    }\n}'
             },
         ],
     },
