@@ -16,12 +16,8 @@ services:
         sync: false  # Configure manually in Render dashboard
       - key: OPENAI_API_KEY
         sync: false  # Configure manually in Render dashboard
-      - key: GEMINI_API_KEY
-        sync: false  # Configure manually in Render dashboard (primary AI provider, free tier)
-      - key: GEMINI_MODEL
-        value: "gemini-2.0-flash"  # Free: 1500 req/day, 15 RPM
       - key: GROQ_API_KEY
-        sync: false  # Configure manually in Render dashboard (fallback AI provider, free tier)
+        sync: false  # Configure manually in Render dashboard (primary AI provider, free tier)
       - key: GROQ_MODEL
         value: "llama-3.3-70b-versatile"  # Free: 14400 req/day, 30 RPM — alternatives: llama-3.1-8b-instant (faster)
       - key: AI_MAX_TOKENS

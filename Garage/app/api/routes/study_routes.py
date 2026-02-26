@@ -607,8 +607,6 @@ def _stream_with_fallback(system_prompt: str, user_prompt: str):
     Se nenhum funcionar, emite o ultimo erro ao frontend.
     """
     providers: list[tuple[str, object]] = []
-    if os.environ.get("GEMINI_API_KEY", "").strip():
-        providers.append(("Gemini", lambda: _stream_gemini_sse(system_prompt, user_prompt)))
     if os.environ.get("GROQ_API_KEY", "").strip():
         providers.append(("Groq", lambda: _stream_groq_sse(system_prompt, user_prompt)))
     if os.environ.get("OPENAI_API_KEY", "").strip():
@@ -949,17 +947,6 @@ def _call_with_fallback(system_prompt: str, user_prompt: str) -> tuple[str, str,
 
     # 401/403 = key invalida/revogada; 429 = quota; 5xx = erro do servidor
     _RETRIABLE = (401, 403, 429, 500, 502, 503, 504)
-
-    if os.environ.get("GEMINI_API_KEY", "").strip():
-        try:
-            return _call_gemini(system_prompt, user_prompt)
-        except HTTPException as exc:
-            if exc.status_code in _RETRIABLE:
-                errors.append(f"Gemini HTTP {exc.status_code}")
-            else:
-                raise
-        except Exception as exc:  # noqa: BLE001
-            errors.append(f"Gemini erro: {exc}")
 
     if os.environ.get("GROQ_API_KEY", "").strip():
         try:

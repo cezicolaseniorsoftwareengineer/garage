@@ -2,7 +2,7 @@
 import os, sys, json
 
 # Remove all AI keys to test fallback behavior
-for k in ("GEMINI_API_KEY", "GROQ_API_KEY", "OPENAI_API_KEY"):
+for k in ("GROQ_API_KEY", "OPENAI_API_KEY"):
     os.environ.pop(k, None)
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
@@ -102,26 +102,26 @@ def _fake_ok_gen(sys_p, usr_p):
     yield 'data: {"token": "ola"}\n\n'
     yield 'data: {"done": true}\n\n'
 
-# Simula: primeiro provider falha, segundo funciona
-os.environ["GEMINI_API_KEY"] = "fake_gemini"
-os.environ["GROQ_API_KEY"] = "fake_groq"
+# Simula: primeiro provider (Groq) falha, segundo (OpenAI) funciona
+os.environ["GROQ_API_KEY"]   = "fake_groq"
+os.environ["OPENAI_API_KEY"] = "fake_openai"
 
 from app.api.routes import study_routes as sr
-_orig_gemini = sr._stream_gemini_sse
 _orig_groq   = sr._stream_groq_sse
-sr._stream_gemini_sse = _fake_error_gen
-sr._stream_groq_sse   = _fake_ok_gen
+_orig_openai = sr._stream_openai_sse
+sr._stream_groq_sse   = _fake_error_gen
+sr._stream_openai_sse = _fake_ok_gen
 
 events2 = list(sr._stream_with_fallback("sys", "usr"))
-sr._stream_gemini_sse = _orig_gemini
 sr._stream_groq_sse   = _orig_groq
-os.environ.pop("GEMINI_API_KEY", None)
+sr._stream_openai_sse = _orig_openai
 os.environ.pop("GROQ_API_KEY", None)
+os.environ.pop("OPENAI_API_KEY", None)
 
 ok_events = [e for e in events2 if '"token"' in e or '"done"' in e]
 err_events = [e for e in events2 if '"err"' in e]
 if ok_events and not err_events:
-    print(f"{PASS} Fallback Gemini(erro)->Groq(ok): recebeu tokens do Groq corretamente")
+    print(f"{PASS} Fallback Groq(erro)->OpenAI(ok): recebeu tokens do OpenAI corretamente")
 else:
     print(f"{FAIL} Fallback nao funcionou. events: {events2}"); errors.append("fallback-runtime")
 
@@ -129,29 +129,23 @@ else:
 from fastapi import HTTPException as _HTTPException
 from app.api.routes import study_routes as sr2
 
-_orig_gemini_call = sr2._call_gemini
-_orig_groq_call   = sr2._call_groq
+_orig_groq_call = sr2._call_groq
 
-def _fake_gemini_403(*_): raise _HTTPException(status_code=502, detail="Gemini error: HTTP 403")
-def _fake_groq_403(*_):   raise _HTTPException(status_code=502, detail="Groq error: HTTP 403")
+def _fake_groq_403(*_): raise _HTTPException(status_code=502, detail="Groq error: HTTP 403")
 
-os.environ["GEMINI_API_KEY"] = "fake_gemini"
-os.environ["GROQ_API_KEY"]   = "fake_groq"
-sr2._call_gemini = _fake_gemini_403
-sr2._call_groq   = _fake_groq_403
+os.environ["GROQ_API_KEY"] = "fake_groq"
+sr2._call_groq = _fake_groq_403
 
 try:
     sr2._call_with_fallback("sys", "usr")
     print(f"{FAIL} Deveria ter levantado HTTPException 503"); errors.append("fallback-403")
 except _HTTPException as exc:
     if exc.status_code == 503 and "HTTP 502" in exc.detail:
-        print(f"{PASS} _call_with_fallback: 403/502 em ambos resulta em 503 gracioso")
+        print(f"{PASS} _call_with_fallback: 403/502 em Groq resulta em 503 gracioso")
     else:
         print(f"{FAIL} status={exc.status_code} detail={exc.detail}"); errors.append("fallback-403-code")
 finally:
-    sr2._call_gemini = _orig_gemini_call
-    sr2._call_groq   = _orig_groq_call
-    os.environ.pop("GEMINI_API_KEY", None)
+    sr2._call_groq = _orig_groq_call
     os.environ.pop("GROQ_API_KEY", None)
 
 # ── Resultado final ────────────────────────────────────────────────────────
