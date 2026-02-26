@@ -939,7 +939,7 @@ def _build_prompts(
 
 
 # ---------------------------------------------------------------------------
-# Fallback em runtime: Gemini → Groq → OpenAI (tenta o proximo se 4xx/5xx)
+# Fallback em runtime: Groq → OpenAI (tenta o proximo se 4xx/5xx)
 # ---------------------------------------------------------------------------
 def _call_with_fallback(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
     """Tenta provedores em ordem de prioridade com fallback automatico em runtime."""
