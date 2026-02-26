@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import collections
+import hashlib
 import json
 import os
 import re
@@ -590,6 +591,149 @@ def _stream_groq_sse(system_prompt: str, user_prompt: str):
         yield 'data: {"err": "Groq timeout. Tente novamente."}\n\n'
 
 
+# ---------------------------------------------------------------------------
+# Response cache — evita chamadas de API repetidas (TTL 1 hora)
+# ---------------------------------------------------------------------------
+_RESPONSE_CACHE: dict[str, tuple[str, float]] = {}
+_CACHE_TTL = 3600  # segundos
+_CACHE_MAX = 500   # max entradas antes de eviction
+
+
+def _cache_key(challenge_id: str | None, message: str) -> str:
+    raw = f"{challenge_id or ''}::{message.lower().strip()}"
+    return hashlib.md5(raw.encode()).hexdigest()  # nosec — não é uso criptográfico
+
+
+def _cache_get(key: str) -> str | None:
+    entry = _RESPONSE_CACHE.get(key)
+    if entry and time.monotonic() - entry[1] < _CACHE_TTL:
+        return entry[0]
+    _RESPONSE_CACHE.pop(key, None)
+    return None
+
+
+def _cache_set(key: str, value: str) -> None:
+    if len(_RESPONSE_CACHE) >= _CACHE_MAX:
+        oldest = sorted(_RESPONSE_CACHE.items(), key=lambda x: x[1][1])[:100]
+        for k, _ in oldest:
+            del _RESPONSE_CACHE[k]
+    _RESPONSE_CACHE[key] = (value, time.monotonic())
+
+
+# ---------------------------------------------------------------------------
+# Agente especialista: Java + Estruturas de Dados + Algoritmos
+# ---------------------------------------------------------------------------
+_STAGE_GUIDANCE: dict[str, str] = {
+    "Intern":    "Foque em sintaxe Java, variaveis, condicionais, loops e metodos. Use analogias do cotidiano.",
+    "Junior":    "Aprofunde Arrays, ArrayList, Stack, Queue. Introduza O(n) e O(log n) com exemplos praticos.",
+    "Mid":       "Trabalhe HashMap, HashSet, BST, Merge Sort, Quick Sort e trade-offs de estruturas.",
+    "Senior":    "Heap, Trie, BFS/DFS em grafos, DP classica, SOLID, Design Patterns. Foco em producao.",
+    "Staff":     "Concorrencia Java, sistemas distribuidos, analise amortizada, design de APIs escaláveis.",
+    "Principal": "Arquitetura de plataformas FAANG-level, trade-offs de escala, algoritmos de competicao.",
+}
+
+
+def _build_prompts(
+    stage: str,
+    region: str,
+    challenge_title: str,
+    challenge_desc: str,
+    history_text: str,
+    books_text: str,
+    message: str,
+) -> tuple[str, str]:
+    """Constroi system + user prompt para o agente especialista."""
+    guidance = _STAGE_GUIDANCE.get(stage, "Adapte a profundidade ao contexto da pergunta.")
+
+    system_prompt = (
+        "Voce e o Professor CeziCola, agente especialista senior em: "
+        "JAVA (JDK 21+): sintaxe, OOP (heranca, polimorfismo, encapsulamento, abstracao), "
+        "generics, Collections Framework (List, Set, Map, Queue, Deque), Streams API, lambdas, "
+        "Optional, records, sealed classes, concorrencia (Thread, ExecutorService, CompletableFuture, "
+        "synchronized, volatile, ReentrantLock), tratamento de excecoes, JVM internals basicos.\n\n"
+        "ESTRUTURAS DE DADOS: Array, ArrayList, LinkedList (simples/dupla/circular), "
+        "Stack, Queue, Deque, HashMap, LinkedHashMap, TreeMap, HashSet, TreeSet, "
+        "PriorityQueue (MinHeap/MaxHeap), Trie, Union-Find (DSU), Segment Tree, "
+        "Grafo (lista de adjacencia, matriz de adjacencia).\n\n"
+        "ALGORITMOS: Busca linear e binaria; ordenacao (Bubble, Selection, Insertion, "
+        "Merge, Quick, Heap, Counting, Radix); BFS, DFS, Dijkstra, Bellman-Ford, Floyd-Warshall; "
+        "Programacao Dinamica (memoizacao top-down, tabulacao bottom-up, reconstrucao de solucao); "
+        "Algoritmos gulosos, Backtracking, Divisao-e-conquista, "
+        "Two Pointers, Sliding Window, Prefix Sum, Bit Manipulation.\n\n"
+        "COMPLEXIDADE: Big-O (pior caso), Big-Theta (caso medio), Big-Omega (melhor caso), "
+        "complexidade espacial, analise amortizada (operacoes em batch).\n\n"
+        "ENGENHARIA: SOLID, DRY, Clean Code, Design Patterns (Strategy, Factory, Builder, "
+        "Observer, Singleton, Decorator, Composite, Iterator), DDD basico, JUnit 5, OWASP basico.\n\n"
+        "REGRAS ABSOLUTAS:\n"
+        "- Todo codigo deve ser Java valido, compilavel (JDK 21), sem imports externos.\n"
+        "- Sempre informe complexidade Big-O de tempo E espaco.\n"
+        "- Jamais invente APIs, metodos ou classes inexistentes em Java stdlib.\n"
+        "- Se algum dado estiver ausente, declare a suposicao antes de responder.\n"
+        "- Responda em portugues (pt-BR). Nomes de variaveis/metodos em ingles.\n\n"
+        f"NIVEL DO ALUNO: {stage}\n"
+        f"DIRETRIZ PEDAGOGICA: {guidance}"
+    )
+
+    desc_trunc = (challenge_desc[:300] + "...") if len(challenge_desc) > 300 else challenge_desc
+    user_prompt = (
+        "=== CONTEXTO DO JOGADOR ===\n"
+        f"Stage: {stage} | Regiao: {region}\n"
+        f"Desafio: {challenge_title or 'N/A'}\n"
+        f"Enunciado: {desc_trunc or 'N/A'}\n\n"
+        "=== HISTORICO RECENTE ===\n"
+        f"{history_text}\n\n"
+        "=== LIVROS COLETADOS ===\n"
+        f"{books_text}\n\n"
+        "=== FORMATO DE RESPOSTA OBRIGATORIO ===\n"
+        "1. INTUICAO: Explique o conceito em 2-3 linhas (use analogia se ajudar).\n"
+        "2. IMPLEMENTACAO JAVA: Codigo curto e executavel, com comentarios inline essenciais.\n"
+        "3. COMPLEXIDADE: Tempo O(??) | Espaco O(??) — justifique em 1 linha.\n"
+        "4. TRADE-OFFS: Quando usar vs. quando evitar esta abordagem.\n"
+        "5. DESAFIO RAPIDO: Um mini exercicio para fixar (1-2 linhas de descricao).\n\n"
+        f"=== PERGUNTA DO ALUNO ===\n{message}"
+    )
+
+    return system_prompt, user_prompt
+
+
+# ---------------------------------------------------------------------------
+# Fallback em runtime: Gemini → Groq → OpenAI (tenta o proximo se 4xx/5xx)
+# ---------------------------------------------------------------------------
+def _call_with_fallback(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
+    """Tenta provedores em ordem de prioridade com fallback automatico em runtime."""
+    errors: list[str] = []
+
+    if os.environ.get("GEMINI_API_KEY", "").strip():
+        try:
+            return _call_gemini(system_prompt, user_prompt)
+        except HTTPException as exc:
+            if exc.status_code in (429, 500, 502, 503, 504):
+                errors.append(f"Gemini HTTP {exc.status_code}")
+            else:
+                raise
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"Gemini erro: {exc}")
+
+    if os.environ.get("GROQ_API_KEY", "").strip():
+        try:
+            return _call_groq(system_prompt, user_prompt)
+        except HTTPException as exc:
+            if exc.status_code in (429, 500, 502, 503, 504):
+                errors.append(f"Groq HTTP {exc.status_code}")
+            else:
+                raise
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"Groq erro: {exc}")
+
+    if os.environ.get("OPENAI_API_KEY", "").strip():
+        return _call_openai_responses(system_prompt, user_prompt)
+
+    raise HTTPException(
+        status_code=503,
+        detail=f"Todos os provedores de IA indisponiveis: {', '.join(errors) or 'nenhuma API key configurada'}.",
+    )
+
+
 @router.post("/chat")
 def api_study_chat(req: StudyChatRequest, current_user: dict = Depends(get_current_user)):
     """Generate an authenticated study answer grounded in game context."""
@@ -652,43 +796,28 @@ def api_study_chat(req: StudyChatRequest, current_user: dict = Depends(get_curre
     else:
         books_text = "- Catalogo de livros nao informado no request."
 
-    system_prompt = (
-        "Voce e a Inteligencia Artificial de Engenharia do jogo GARAGE. "
-        "Objetivo: ensinar Java e Estruturas de Dados com nivel profissional, progressivo e pratico. "
-        "Tambem pode responder perguntas gerais de tecnologia quando o jogador pedir. "
-        "Seja rigoroso, didatico e direto. "
-        "Sempre explique como um engenheiro pensa em producao: invariantes, complexidade, trade-offs, validacao e seguranca. "
-        "Nao invente APIs inexistentes. "
-        "Se faltar contexto, declare a suposicao."
+    # Input validation
+    msg_clean = req.message.strip()[:1000]
+    if not msg_clean:
+        raise HTTPException(status_code=422, detail="Mensagem nao pode ser vazia.")
+
+    # Cache lookup (ignora mensagens muito curtas)
+    c_key = _cache_key(req.challenge_id, msg_clean)
+    if len(msg_clean) > 20:
+        cached = _cache_get(c_key)
+        if cached:
+            return {"reply": cached, "model": "cache", "response_id": "cached", "stage": stage, "region": region}
+
+    system_prompt, user_prompt = _build_prompts(
+        stage, region, challenge_title, challenge_desc, history_text, books_text, msg_clean
     )
 
-    user_prompt = (
-        "Contexto do jogador:\n"
-        f"- Stage: {stage}\n"
-        f"- Regiao: {region}\n"
-        f"- Sessao: {req.session_id}\n"
-        f"- Livros recebidos: {len(books)} (coletados: {collected_count})\n"
-        f"- Desafio atual: {challenge_title or 'N/A'}\n"
-        f"- Enunciado atual: {challenge_desc or 'N/A'}\n\n"
-        "Historico recente:\n"
-        f"{history_text}\n\n"
-        "Catalogo de livros no jogo:\n"
-        f"{books_text}\n\n"
-        "Instrucao de resposta:"
-        "1) Explique a intuicao de forma direta e concisa.\n"
-        "2) Mostre a abordagem Java com sintaxe correta e estrutura de dados adequada.\n"
-        "3) Inclua complexidade Big-O e principal trade-off.\n"
-        "4) Entregue um codigo Java executavel (curto) e um mini exercicio.\n\n"
-        f"Pergunta do jogador:\n{req.message.strip()}"
-    )
+    # Fallback em runtime: Gemini → Groq → OpenAI
+    answer, response_id, model = _call_with_fallback(system_prompt, user_prompt)
 
-    # Provider priority: Gemini (free) → Groq (free) → OpenAI (paid)
-    if os.environ.get("GEMINI_API_KEY", "").strip():
-        answer, response_id, model = _call_gemini(system_prompt, user_prompt)
-    elif os.environ.get("GROQ_API_KEY", "").strip():
-        answer, response_id, model = _call_groq(system_prompt, user_prompt)
-    else:
-        answer, response_id, model = _call_openai_responses(system_prompt, user_prompt)
+    if len(msg_clean) > 20:
+        _cache_set(c_key, answer)
+
     return {
         "reply": answer,
         "model": model,
@@ -744,23 +873,15 @@ def api_study_chat_stream(req: StudyChatRequest, current_user: dict = Depends(ge
         book_lines.append(f"[{status}] {b.title}: {insight}")
     books_text = "\n".join(book_lines) or "(sem livros)"
 
-    system_prompt = (
-        "Voce e a Inteligencia Artificial de Engenharia do jogo GARAGE. "
-        "Ensine Java e Estruturas de Dados de forma profissional, progressiva e pratica. "
-        "Seja direto, rigoroso e engenheiro. Nao invente APIs."
+    msg_clean = req.message.strip()[:1000]
+    if not msg_clean:
+        raise HTTPException(status_code=422, detail="Mensagem nao pode ser vazia.")
+
+    system_prompt, user_prompt = _build_prompts(
+        stage, region, challenge_title, challenge_desc, history_text, books_text, msg_clean
     )
 
-    user_prompt = (
-        f"Stage: {stage} | Regiao: {region} | Desafio: {challenge_title or 'N/A'}\n"
-        f"Enunciado: {challenge_desc[:200] if challenge_desc else 'N/A'}\n\n"
-        f"Historico:\n{history_text}\n\n"
-        f"Livros coletados:\n{books_text}\n\n"
-        "Instrucao: Responda de forma concisa. "
-        "1) Intuicao clara. 2) Codigo Java executavel. 3) Big-O. 4) Mini exercicio.\n\n"
-        f"Pergunta: {req.message.strip()}"
-    )
-
-    # Provider priority: Gemini (free) → Groq (free) → OpenAI (paid)
+    # Seleciona provedor de streaming pela disponibilidade de chave
     if os.environ.get("GEMINI_API_KEY", "").strip():
         gen = _stream_gemini_sse(system_prompt, user_prompt)
     elif os.environ.get("GROQ_API_KEY", "").strip():
