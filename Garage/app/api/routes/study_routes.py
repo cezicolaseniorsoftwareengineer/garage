@@ -196,7 +196,7 @@ def _stream_openai_sse(system_prompt: str, user_prompt: str):
 
     base_url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1").strip().rstrip("/")
     endpoint = base_url + "/responses"
-    max_tokens = int(os.environ.get("OPENAI_MAX_OUTPUT_TOKENS", "420") or "420")
+    max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
     timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
 
     for model in _candidate_models():
@@ -339,7 +339,7 @@ def _call_openai_responses(system_prompt: str, user_prompt: str) -> tuple[str, s
 
     base_url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1").strip().rstrip("/")
     endpoint = base_url + "/responses"
-    max_output_tokens = int(os.environ.get("OPENAI_MAX_OUTPUT_TOKENS", "420") or "420")
+    max_output_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
     request_retries = int(os.environ.get("OPENAI_REQUEST_RETRIES", "2") or "2")
     request_retries = max(1, min(request_retries, 4))
     attempted: list[str] = []
