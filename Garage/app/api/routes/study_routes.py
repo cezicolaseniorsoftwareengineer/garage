@@ -12,6 +12,8 @@ import urllib.error
 import urllib.request
 from typing import Optional
 
+import httpx
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -182,13 +184,8 @@ def _build_stream_body(system_prompt: str, user_prompt: str, model: str, max_tok
     }
 
 
-def _stream_openai_sse(system_prompt: str, user_prompt: str):
-    """Generator: yields SSE lines to the client token-by-token.
-
-    Falls back gracefully to emitting the full answer as a single event when
-    the model returns a plain JSON response instead of an SSE stream (e.g.
-    when the 'stream' parameter is silently ignored or unsupported).
-    """
+async def _stream_openai_sse(system_prompt: str, user_prompt: str):
+    """Async generator: yields SSE lines token-by-token using OpenAI Responses API."""
     api_key = os.environ.get("OPENAI_API_KEY", "").strip()
     if not api_key:
         yield 'data: {"err": "Study chat unavailable: missing API key."}\n\n'
@@ -197,133 +194,92 @@ def _stream_openai_sse(system_prompt: str, user_prompt: str):
     base_url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1").strip().rstrip("/")
     endpoint = base_url + "/responses"
     max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
-    timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
+    timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
+    hdrs = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
-    for model in _candidate_models():
-        # Try WITHOUT stream first for maximum compatibility; if successful but
-        # the model also supports SSE the non-stream path is just as correct.
-        body_nostream = {
-            "model": model,
-            "max_output_tokens": max_tokens,
-            "input": [
-                {"role": "system", "content": [{"type": "input_text", "text": system_prompt}]},
-                {"role": "user",   "content": [{"type": "input_text", "text": user_prompt}]},
-            ],
-        }
-        body_stream = dict(body_nostream, stream=True)
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        for model in _candidate_models():
+            body_nostream = {
+                "model": model,
+                "max_output_tokens": max_tokens,
+                "input": [
+                    {"role": "system", "content": [{"type": "input_text", "text": system_prompt}]},
+                    {"role": "user",   "content": [{"type": "input_text", "text": user_prompt}]},
+                ],
+            }
+            body_stream = dict(body_nostream, stream=True)
 
-        # --- Attempt 1: streaming SSE ---
-        request = urllib.request.Request(
-            endpoint,
-            data=json.dumps(body_stream).encode("utf-8"),
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-            method="POST",
-        )
-        try:
-            raw_bytes = b""
+            # --- Tentativa 1: SSE streaming ---
             got_delta = False
-            with urllib.request.urlopen(request, timeout=timeout) as resp:
-                for raw in resp:
-                    raw_bytes += raw
-                    line = raw.decode("utf-8").rstrip("\r\n")
-                    if not line:
-                        continue
-                    if line == "data: [DONE]":
-                        if got_delta:
-                            yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
-                        break
-                    if not line.startswith("data: "):
-                        continue
-                    try:
-                        chunk = json.loads(line[6:])
-                    except Exception:
-                        continue
-                    ev = chunk.get("type", "")
-                    if ev in ("response.output_text.delta", "content_block_delta"):
-                        delta = chunk.get("delta", "")
-                        if isinstance(delta, dict):
-                            delta = delta.get("text", "")
-                        if delta:
-                            got_delta = True
-                            yield f'data: {json.dumps({"d": delta})}\n\n'
-                    elif ev in ("response.done", "response.completed", "message_stop"):
-                        if got_delta:
-                            yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
-                        break
+            try_nostream = False
+            try:
+                async with client.stream("POST", endpoint, json=body_stream, headers=hdrs) as resp:
+                    if resp.status_code >= 400:
+                        err_bytes = await resp.aread()
+                        try:
+                            msg = json.loads(err_bytes).get("error", {}).get("message", f"HTTP {resp.status_code}")
+                        except Exception:
+                            msg = f"HTTP {resp.status_code}"
+                        if _is_model_unavailable_error(msg):
+                            continue
+                        if _unsupported_parameter_name(msg) == "stream":
+                            try_nostream = True
+                        else:
+                            yield f'data: {{"err": {json.dumps(msg)}}}\n\n'
+                            return
+                    else:
+                        async for line in resp.aiter_lines():
+                            line = line.strip()
+                            if not line:
+                                continue
+                            if line == "data: [DONE]":
+                                if got_delta:
+                                    yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
+                                break
+                            if not line.startswith("data: "):
+                                continue
+                            try:
+                                chunk = json.loads(line[6:])
+                            except Exception:
+                                continue
+                            ev = chunk.get("type", "")
+                            if ev in ("response.output_text.delta", "content_block_delta"):
+                                delta = chunk.get("delta", "")
+                                if isinstance(delta, dict):
+                                    delta = delta.get("text", "")
+                                if delta:
+                                    got_delta = True
+                                    yield f'data: {json.dumps({"d": delta})}\n\n'
+                            elif ev in ("response.done", "response.completed", "message_stop"):
+                                if got_delta:
+                                    yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
+                                break
+            except (httpx.TimeoutException, httpx.RequestError):
+                continue
 
             if got_delta:
-                return  # streaming worked fine
+                return  # streaming funcionou
 
-            # --- Fallback: response was non-SSE JSON (stream ignored/unsupported) ---
+            # --- Tentativa 2: non-stream fallback ---
             try:
-                payload = json.loads(raw_bytes.decode("utf-8"))
-                text = _extract_output_text(payload)
-                if text:
-                    yield f'data: {json.dumps({"d": text})}\n\n'
-                    yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
+                resp2 = await client.post(endpoint, json=body_nostream, headers=hdrs)
+                if resp2.status_code >= 400:
+                    try:
+                        msg = resp2.json().get("error", {}).get("message", f"HTTP {resp2.status_code}")
+                    except Exception:
+                        msg = f"HTTP {resp2.status_code}"
+                    if _is_model_unavailable_error(msg):
+                        continue
+                    yield f'data: {{"err": {json.dumps(msg)}}}\n\n'
                     return
-            except Exception:
-                pass
-
-            # --- Attempt 2: explicit non-stream call ---
-            request2 = urllib.request.Request(
-                endpoint,
-                data=json.dumps(body_nostream).encode("utf-8"),
-                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                method="POST",
-            )
-            try:
-                with urllib.request.urlopen(request2, timeout=timeout) as resp2:
-                    payload2 = json.loads(resp2.read().decode("utf-8"))
+                payload2 = resp2.json()
                 text2 = _extract_output_text(payload2)
                 if text2:
                     yield f'data: {json.dumps({"d": text2})}\n\n'
                     yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
                     return
-            except urllib.error.HTTPError as exc2:
-                try:
-                    err_body = json.loads(exc2.read().decode("utf-8"))
-                    msg = err_body.get("error", {}).get("message", "")
-                except Exception:
-                    msg = f"HTTP {exc2.code}"
-                if _is_model_unavailable_error(msg):
-                    continue
-                yield f'data: {{"err": {json.dumps(msg)}}}\n\n'
-                return
-            except (urllib.error.URLError, TimeoutError, socket.timeout):
+            except (httpx.TimeoutException, httpx.RequestError):
                 continue
-
-        except urllib.error.HTTPError as exc:
-            try:
-                err_body = json.loads(exc.read().decode("utf-8"))
-                msg = err_body.get("error", {}).get("message", "")
-            except Exception:
-                msg = f"HTTP {exc.code}"
-            if _is_model_unavailable_error(msg):
-                continue
-            # If 'stream' param itself is unsupported, retry without it
-            if _unsupported_parameter_name(msg) == "stream":
-                request3 = urllib.request.Request(
-                    endpoint,
-                    data=json.dumps(body_nostream).encode("utf-8"),
-                    headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                    method="POST",
-                )
-                try:
-                    with urllib.request.urlopen(request3, timeout=timeout) as resp3:
-                        payload3 = json.loads(resp3.read().decode("utf-8"))
-                    text3 = _extract_output_text(payload3)
-                    if text3:
-                        yield f'data: {json.dumps({"d": text3})}\n\n'
-                        yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
-                        return
-                except Exception:
-                    continue
-                continue
-            yield f'data: {{"err": {json.dumps(msg)}}}\n\n'
-            return
-        except (urllib.error.URLError, TimeoutError, socket.timeout):
-            continue
 
     yield 'data: {"err": "Nenhum modelo disponivel no momento. Tente novamente."}\n\n'
 
@@ -450,15 +406,15 @@ def _call_gemini(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
     return text, "", model
 
 
-def _stream_gemini_sse(system_prompt: str, user_prompt: str):
-    """Generator: yields SSE lines using Google Gemini streaming API."""
+async def _stream_gemini_sse(system_prompt: str, user_prompt: str):
+    """Async generator: yields SSE lines using Google Gemini streaming API."""
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     if not api_key:
         yield 'data: {"err": "Study chat unavailable: missing GEMINI_API_KEY."}\n\n'
         return
     model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
     max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
-    timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
+    timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
     endpoint = (
         f"https://generativelanguage.googleapis.com/v1beta/models/{model}"
         f":streamGenerateContent?key={api_key}&alt=sse"
@@ -468,45 +424,44 @@ def _stream_gemini_sse(system_prompt: str, user_prompt: str):
         "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
         "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.7},
     }
-    request = urllib.request.Request(
-        endpoint,
-        data=json.dumps(body).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
     try:
         got_delta = False
-        with urllib.request.urlopen(request, timeout=timeout) as resp:
-            for raw in resp:
-                line = raw.decode("utf-8").rstrip("\r\n")
-                if not line or not line.startswith("data: "):
-                    continue
-                try:
-                    chunk = json.loads(line[6:])
-                    delta = chunk["candidates"][0]["content"]["parts"][0]["text"]
-                    if delta:
-                        got_delta = True
-                        yield f'data: {json.dumps({"d": delta})}\n\n'
-                except (KeyError, IndexError, TypeError, json.JSONDecodeError):
-                    continue
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            async with client.stream("POST", endpoint, json=body, headers={"Content-Type": "application/json"}) as resp:
+                if resp.status_code >= 400:
+                    err_bytes = await resp.aread()
+                    try:
+                        msg = json.loads(err_bytes).get("error", {}).get("message", f"HTTP {resp.status_code}")
+                    except Exception:
+                        msg = f"HTTP {resp.status_code}"
+                    yield f'data: {{"err": {json.dumps(msg)}}}\n\n'
+                    return
+                async for line in resp.aiter_lines():
+                    line = line.strip()
+                    if not line or not line.startswith("data: "):
+                        continue
+                    try:
+                        chunk = json.loads(line[6:])
+                        delta = chunk["candidates"][0]["content"]["parts"][0]["text"]
+                        if delta:
+                            got_delta = True
+                            yield f'data: {json.dumps({"d": delta})}\n\n'
+                    except (KeyError, IndexError, TypeError, json.JSONDecodeError):
+                        continue
         if got_delta:
             yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
         else:
             yield 'data: {"err": "Gemini nao retornou resposta."}\n\n'
-    except urllib.error.HTTPError as exc:
-        try:
-            msg = json.loads(exc.read().decode("utf-8")).get("error", {}).get("message", f"HTTP {exc.code}")
-        except Exception:
-            msg = f"HTTP {exc.code}"
-        yield f'data: {{"err": {json.dumps(msg)}}}\n\n'
-    except (urllib.error.URLError, TimeoutError, socket.timeout):
+    except httpx.TimeoutException:
         yield 'data: {"err": "Gemini timeout. Tente novamente."}\n\n'
+    except httpx.RequestError as exc:
+        yield f'data: {{"err": {json.dumps(str(exc))}}}\n\n'
 
 
 def _call_groq(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
     """Non-streaming call to Groq Chat Completions API. Returns (text, request_id, model)."""
     api_key = os.environ.get("GROQ_API_KEY", "").strip()
-    model = os.environ.get("GROQ_MODEL", "llama-3.1-8b-instant").strip()
+    model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
     endpoint = "https://api.groq.com/openai/v1/chat/completions"
     max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
     payload = json.dumps({
@@ -523,6 +478,8 @@ def _call_groq(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "groq-python/0.18.0",
         },
         method="POST",
     )
@@ -543,16 +500,22 @@ def _call_groq(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
         raise HTTPException(status_code=504, detail=f"Groq timeout: {exc}")
 
 
-def _stream_groq_sse(system_prompt: str, user_prompt: str):
-    """Streaming SSE generator for Groq Chat Completions API."""
+async def _stream_groq_sse(system_prompt: str, user_prompt: str):
+    """Async streaming SSE generator for Groq Chat Completions API."""
     api_key = os.environ.get("GROQ_API_KEY", "").strip()
     if not api_key:
         yield 'data: {"err": "Study chat unavailable: missing GROQ_API_KEY."}\n\n'
         return
-    model = os.environ.get("GROQ_MODEL", "llama-3.1-8b-instant").strip()
+    model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
     endpoint = "https://api.groq.com/openai/v1/chat/completions"
     max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
-    payload = json.dumps({
+    hdrs = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "Accept": "text/event-stream",
+        "User-Agent": "groq-python/0.18.0",
+    }
+    body = {
         "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
@@ -560,57 +523,55 @@ def _stream_groq_sse(system_prompt: str, user_prompt: str):
         ],
         "max_tokens": max_tokens,
         "stream": True,
-    }).encode("utf-8")
-    req = urllib.request.Request(
-        endpoint,
-        data=payload,
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
+    }
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            for raw_line in resp:
-                line = raw_line.decode("utf-8").strip()
-                if not line.startswith("data:"):
-                    continue
-                payload_str = line[5:].strip()
-                if payload_str == "[DONE]":
-                    yield 'data: {"done": true}\n\n'
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            async with client.stream("POST", endpoint, json=body, headers=hdrs) as resp:
+                if resp.status_code >= 400:
+                    err_bytes = await resp.aread()
+                    try:
+                        msg = json.loads(err_bytes).get("error", {}).get("message", f"HTTP {resp.status_code}")
+                    except Exception:
+                        msg = f"HTTP {resp.status_code}"
+                    yield f'data: {{"err": {json.dumps(msg)}}}\n\n'
                     return
-                try:
-                    chunk = json.loads(payload_str)
-                    token = chunk["choices"][0].get("delta", {}).get("content", "")
-                    if token:
-                        yield f'data: {json.dumps({"token": token})}\n\n'
-                except (KeyError, json.JSONDecodeError):
-                    continue
-    except urllib.error.HTTPError as exc:
-        try:
-            msg = json.loads(exc.read().decode("utf-8")).get("error", {}).get("message", f"HTTP {exc.code}")
-        except Exception:
-            msg = f"HTTP {exc.code}"
-        yield f'data: {{"err": {json.dumps(msg)}}}\n\n'
-    except (urllib.error.URLError, TimeoutError, socket.timeout):
+                async for line in resp.aiter_lines():
+                    line = line.strip()
+                    if not line.startswith("data:"):
+                        continue
+                    payload_str = line[5:].strip()
+                    if payload_str == "[DONE]":
+                        yield 'data: {"done": true}\n\n'
+                        return
+                    try:
+                        chunk = json.loads(payload_str)
+                        token = chunk["choices"][0].get("delta", {}).get("content", "")
+                        if token:
+                            yield f'data: {json.dumps({"d": token})}\n\n'
+                    except (KeyError, json.JSONDecodeError):
+                        continue
+    except httpx.TimeoutException:
         yield 'data: {"err": "Groq timeout. Tente novamente."}\n\n'
+    except httpx.RequestError as exc:
+        yield f'data: {{"err": {json.dumps(str(exc))}}}\n\n'
 
 
 # ---------------------------------------------------------------------------
 # Fallback de streaming: Gemini → Groq → OpenAI em runtime
 # ---------------------------------------------------------------------------
-def _stream_with_fallback(system_prompt: str, user_prompt: str):
+async def _stream_with_fallback(system_prompt: str, user_prompt: str):
     """
-    Tenta cada provedor em ordem. Se o primeiro evento SSE contiver {"err": ...}
-    (quota esgotada, auth, timeout), abandona e tenta o proximo proovedor.
-    Se nenhum funcionar, emite o ultimo erro ao frontend.
+    Tenta cada provedor em ordem: OpenAI primeiro (pago), depois Groq (gratuito)
+    como fallback de quota. Se o primeiro evento SSE contiver {"err": ...}
+    (quota esgotada, auth, timeout), abandona e tenta o proximo provedor.
     """
     providers: list[tuple[str, object]] = []
-    if os.environ.get("GROQ_API_KEY", "").strip():
-        providers.append(("Groq", lambda: _stream_groq_sse(system_prompt, user_prompt)))
     if os.environ.get("OPENAI_API_KEY", "").strip():
         providers.append(("OpenAI", lambda: _stream_openai_sse(system_prompt, user_prompt)))
+    if os.environ.get("GROQ_API_KEY", "").strip():
+        providers.append(("Groq", lambda: _stream_groq_sse(system_prompt, user_prompt)))
+    if os.environ.get("GEMINI_API_KEY", "").strip():
+        providers.append(("Gemini", lambda: _stream_gemini_sse(system_prompt, user_prompt)))
 
     if not providers:
         yield 'data: {"err": "Nenhuma API key de IA configurada no servidor."}\n\n'
@@ -620,8 +581,8 @@ def _stream_with_fallback(system_prompt: str, user_prompt: str):
     for name, factory in providers:
         gen = factory()
         try:
-            first = next(gen)
-        except StopIteration:
+            first = await gen.__anext__()
+        except StopAsyncIteration:
             continue
 
         # Verifica se o primeiro evento e um erro
@@ -631,13 +592,15 @@ def _stream_with_fallback(system_prompt: str, user_prompt: str):
                 first_json = json.loads(first_data[6:])
                 if "err" in first_json:
                     last_err = f"[{name}] {first_json['err']}"
+                    await gen.aclose()
                     continue  # tenta o proximo provedor
         except (json.JSONDecodeError, KeyError):
             pass  # nao e JSON ou nao tem 'err' — pode ser um token, prossegue
 
         # Primeiro evento e valido: emite e continua o stream normalmente
         yield first
-        yield from gen
+        async for chunk in gen:
+            yield chunk
         return
 
     yield f'data: {{"err": {json.dumps(last_err)}}}\n\n'
@@ -948,11 +911,22 @@ def _build_prompts(
 # Fallback em runtime: Groq → OpenAI (tenta o proximo se 4xx/5xx)
 # ---------------------------------------------------------------------------
 def _call_with_fallback(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
-    """Tenta provedores em ordem de prioridade com fallback automatico em runtime."""
+    """Tenta provedores em ordem: OpenAI (primario) → Groq (fallback de quota) → Gemini."""
     errors: list[str] = []
 
-    # 401/403 = key invalida/revogada; 429 = quota; 5xx = erro do servidor
+    # 401/403 = key invalida/revogada; 429 = quota esgotada; 5xx = erro do servidor
     _RETRIABLE = (401, 403, 429, 500, 502, 503, 504)
+
+    if os.environ.get("OPENAI_API_KEY", "").strip():
+        try:
+            return _call_openai_responses(system_prompt, user_prompt)
+        except HTTPException as exc:
+            if exc.status_code in _RETRIABLE:
+                errors.append(f"OpenAI HTTP {exc.status_code}")
+            else:
+                raise
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"OpenAI erro: {exc}")
 
     if os.environ.get("GROQ_API_KEY", "").strip():
         try:
@@ -965,8 +939,16 @@ def _call_with_fallback(system_prompt: str, user_prompt: str) -> tuple[str, str,
         except Exception as exc:  # noqa: BLE001
             errors.append(f"Groq erro: {exc}")
 
-    if os.environ.get("OPENAI_API_KEY", "").strip():
-        return _call_openai_responses(system_prompt, user_prompt)
+    if os.environ.get("GEMINI_API_KEY", "").strip():
+        try:
+            return _call_gemini(system_prompt, user_prompt)
+        except HTTPException as exc:
+            if exc.status_code in _RETRIABLE:
+                errors.append(f"Gemini HTTP {exc.status_code}")
+            else:
+                raise
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"Gemini erro: {exc}")
 
     raise HTTPException(
         status_code=503,
@@ -1068,7 +1050,7 @@ def api_study_chat(req: StudyChatRequest, current_user: dict = Depends(get_curre
 
 
 @router.post("/chat/stream")
-def api_study_chat_stream(req: StudyChatRequest, current_user: dict = Depends(get_current_user)):
+async def api_study_chat_stream(req: StudyChatRequest, current_user: dict = Depends(get_current_user)):
     """Streaming SSE version of study chat — sends tokens as they arrive."""
     player = _player_repo.get(req.session_id)
     if not player:
@@ -1121,10 +1103,13 @@ def api_study_chat_stream(req: StudyChatRequest, current_user: dict = Depends(ge
         stage, region, challenge_title, challenge_desc, history_text, books_text, msg_clean
     )
 
-    # Fallback em runtime: Gemini → Groq → OpenAI
-    gen = _stream_with_fallback(system_prompt, user_prompt)
+    # Fallback em runtime: OpenAI → Groq → Gemini (async)
+    async def _event_gen():
+        async for chunk in _stream_with_fallback(system_prompt, user_prompt):
+            yield chunk
+
     return StreamingResponse(
-        gen,
+        _event_gen(),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

@@ -16,10 +16,14 @@ services:
         sync: false  # Configure manually in Render dashboard
       - key: OPENAI_API_KEY
         sync: false  # Configure manually in Render dashboard
+      - key: OPENAI_MODEL
+        value: "gpt-4.1-mini"  # Default model (gpt-5 also works if your key has access)
+      - key: OPENAI_FALLBACK_MODELS
+        value: "gpt-4.1-mini,gpt-4.1,gpt-4o"  # Fallback chain if primary model is unavailable
       - key: GROQ_API_KEY
-        sync: false  # Configure manually in Render dashboard (primary AI provider, free tier)
+        sync: false  # Configure manually in Render dashboard (fallback quando OpenAI atingir quota)
       - key: GROQ_MODEL
-        value: "llama-3.3-70b-versatile"  # Free: 14400 req/day, 30 RPM — alternatives: llama-3.1-8b-instant (faster)
+        value: "llama-3.3-70b-versatile"  # Groq free: 14400 req/day — fallback de quota do OpenAI
       - key: AI_MAX_TOKENS
         value: "4096"  # Max output tokens for all AI providers (increase for longer code responses)
       - key: ADMIN_EMAIL

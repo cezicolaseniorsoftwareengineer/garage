@@ -576,15 +576,27 @@ const StudyChat = {
         let finalModel = '';
         let streamFailed = false;
 
+        const _doFetch = async () => fetch('/api/study/chat/stream', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(Auth.getToken() ? { 'Authorization': 'Bearer ' + Auth.getToken() } : {}),
+            },
+            body,
+        });
+
         try {
-            const resp = await fetch('/api/study/chat/stream', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(Auth.getToken() ? { 'Authorization': 'Bearer ' + Auth.getToken() } : {}),
-                },
-                body,
-            });
+            let resp = await _doFetch();
+
+            // Auto-refresh JWT if expired and retry once
+            if (resp.status === 401) {
+                const refreshed = await Auth.tryRefresh();
+                if (refreshed) {
+                    resp = await _doFetch();
+                } else {
+                    throw new Error('Sessão expirada. Faça login novamente para usar a Inteligência Artificial.');
+                }
+            }
 
             if (!resp.ok) {
                 let errMsg = `Erro ${resp.status}`;
