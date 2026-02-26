@@ -6411,7 +6411,7 @@ const SCALE_MISSIONS = {
                     const methodMatch = code.match(/static\s+(?:void|String|int|boolean|double)\s+(\w+)\s*\(/);
                     if (methodMatch) {
                         const methodName = methodMatch[1];
-                        const callRegex = new RegExp(methodName + '\\s*\\(');
+                        const callRegex = new RegExp(methodName + '\\s*\\(', 'g');
                         const occurrences = (code.match(callRegex) || []).length;
                         if (occurrences < 2) {
                             return { ok: false, msg: 'Apple 2/3: alem de declarar o metodo, faca a chamada dentro do main.' };
@@ -6508,7 +6508,7 @@ const SCALE_MISSIONS = {
                     const methodMatch = code.match(/static\s+void\s+(emit|output|print|write|log|publish|display)\s*\(\s*String/);
                     if (methodMatch) {
                         const methodName = methodMatch[1];
-                        const callRegex = new RegExp(methodName + '\\s*\\(');
+                        const callRegex = new RegExp(methodName + '\\s*\\(', 'g');
                         const occurrences = (code.match(callRegex) || []).length;
                         if (occurrences < 2) {
                             return { ok: false, msg: 'Nubank 4/5: use ' + methodName + '(...) no loop para publicar a saida.' };
