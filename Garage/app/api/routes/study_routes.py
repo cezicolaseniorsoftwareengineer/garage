@@ -751,11 +751,14 @@ def _call_with_fallback(system_prompt: str, user_prompt: str) -> tuple[str, str,
     """Tenta provedores em ordem de prioridade com fallback automatico em runtime."""
     errors: list[str] = []
 
+    # 401/403 = key invalida/revogada; 429 = quota; 5xx = erro do servidor
+    _RETRIABLE = (401, 403, 429, 500, 502, 503, 504)
+
     if os.environ.get("GEMINI_API_KEY", "").strip():
         try:
             return _call_gemini(system_prompt, user_prompt)
         except HTTPException as exc:
-            if exc.status_code in (429, 500, 502, 503, 504):
+            if exc.status_code in _RETRIABLE:
                 errors.append(f"Gemini HTTP {exc.status_code}")
             else:
                 raise
@@ -766,7 +769,7 @@ def _call_with_fallback(system_prompt: str, user_prompt: str) -> tuple[str, str,
         try:
             return _call_groq(system_prompt, user_prompt)
         except HTTPException as exc:
-            if exc.status_code in (429, 500, 502, 503, 504):
+            if exc.status_code in _RETRIABLE:
                 errors.append(f"Groq HTTP {exc.status_code}")
             else:
                 raise

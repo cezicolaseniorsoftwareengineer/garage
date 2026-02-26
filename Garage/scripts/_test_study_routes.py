@@ -115,10 +115,40 @@ if ok_events and not err_events:
 else:
     print(f"{FAIL} Fallback nao funcionou. events: {events2}"); errors.append("fallback-runtime")
 
+# ── 9. _call_with_fallback: 403 (key revogada) faz fallback ───────────────
+from fastapi import HTTPException as _HTTPException
+from app.api.routes import study_routes as sr2
+
+_orig_gemini_call = sr2._call_gemini
+_orig_groq_call   = sr2._call_groq
+
+def _fake_gemini_403(*_): raise _HTTPException(status_code=502, detail="Gemini error: HTTP 403")
+def _fake_groq_403(*_):   raise _HTTPException(status_code=502, detail="Groq error: HTTP 403")
+
+os.environ["GEMINI_API_KEY"] = "fake_gemini"
+os.environ["GROQ_API_KEY"]   = "fake_groq"
+sr2._call_gemini = _fake_gemini_403
+sr2._call_groq   = _fake_groq_403
+
+try:
+    sr2._call_with_fallback("sys", "usr")
+    print(f"{FAIL} Deveria ter levantado HTTPException 503"); errors.append("fallback-403")
+except _HTTPException as exc:
+    if exc.status_code == 503 and "HTTP 502" in exc.detail:
+        print(f"{PASS} _call_with_fallback: 403/502 em ambos resulta em 503 gracioso")
+    else:
+        print(f"{FAIL} status={exc.status_code} detail={exc.detail}"); errors.append("fallback-403-code")
+finally:
+    sr2._call_gemini = _orig_gemini_call
+    sr2._call_groq   = _orig_groq_call
+    os.environ.pop("GEMINI_API_KEY", None)
+    os.environ.pop("GROQ_API_KEY", None)
+
 # ── Resultado final ────────────────────────────────────────────────────────
 print()
+total = 8 + len(_STAGE_GUIDANCE)  # 8 tests + 6 stages
 if errors:
     print(f"=== {len(errors)} TESTE(S) FALHARAM: {errors} ===")
     sys.exit(1)
 else:
-    print(f"=== TODOS OS {7 + len(_STAGE_GUIDANCE)} TESTES PASSARAM ===")
+    print(f"=== TODOS OS {total} TESTES PASSARAM ===")
