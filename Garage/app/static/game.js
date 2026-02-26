@@ -444,7 +444,9 @@ const StudyChat = {
 
             const body = document.createElement('div');
             body.className = 'study-msg-body';
-            if (m.role === 'assistant') {
+            if (m.role === 'assistant' && m.content === '__PENSANDO__') {
+                body.innerHTML = '<span class="study-pensando">&#9679;&#9679;&#9679; Pensando...</span>';
+            } else if (m.role === 'assistant') {
                 body.innerHTML = this._renderMarkdown(m.content);
             } else {
                 body.textContent = m.content;
@@ -572,8 +574,8 @@ const StudyChat = {
             books: this._bookPayload(),
         });
 
-        // Insert placeholder bubble with typing cursor immediately
-        this._messages.push({ role: 'assistant', content: '▌', meta: '', ts: Date.now() });
+        // Insert PENSANDO... placeholder — nothing is shown until response is complete
+        this._messages.push({ role: 'assistant', content: '__PENSANDO__', meta: '', ts: Date.now() });
         this._messages = this._messages.slice(-20);
         this._render();
 
@@ -609,7 +611,7 @@ const StudyChat = {
                 if (done) break;
                 buf += decoder.decode(value, { stream: true });
                 const lines = buf.split('\n');
-                buf = lines.pop(); // keep incomplete line in buffer
+                buf = lines.pop();
 
                 for (const line of lines) {
                     if (!line.startsWith('data: ')) continue;
@@ -621,14 +623,9 @@ const StudyChat = {
                     if (parsed.err) {
                         throw new Error(parsed.err);
                     }
+                    // Accumulate silently — DO NOT update bubble until done
                     if (parsed.d !== undefined) {
                         fullText += parsed.d;
-                        // Update last message in-place (avoid full re-render on each token)
-                        const last = this._messages[this._messages.length - 1];
-                        if (last && last.role === 'assistant') {
-                            last.content = fullText + '▌';
-                            this._renderLast();
-                        }
                     }
                     if (parsed.done) {
                         finalModel = parsed.model || '';
@@ -643,10 +640,10 @@ const StudyChat = {
                 : 'Falha ao consultar a Inteligência Artificial: ' + (msg || 'erro desconhecido');
             finalModel = 'erro';
         } finally {
-            // Finalize last message: remove cursor, persist
+            // Only NOW reveal the full response — never show incomplete content
             const last = this._messages[this._messages.length - 1];
             if (last && last.role === 'assistant') {
-                last.content = fullText || (streamFailed ? fullText : 'Sem resposta.');
+                last.content = (fullText && fullText.trim()) ? fullText.trim() : (streamFailed ? fullText : 'Sem resposta.');
                 last.meta = finalModel;
                 this._persist();
                 this._render();

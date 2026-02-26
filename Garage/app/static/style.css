@@ -2317,17 +2317,35 @@ body {
     }
 }
 
-.study-msg-body p.study-p:last-child>*:last-child,
-.study-msg-body>p.study-p:last-child {
-    /* cursor blink on last element during stream */
+/* ── Pensando... (waiting for complete response) ── */
+@keyframes pensandoPulse {
+    0% {
+        opacity: 1;
+        letter-spacing: 2px;
+    }
+
+    50% {
+        opacity: 0.4;
+        letter-spacing: 6px;
+    }
+
+    100% {
+        opacity: 1;
+        letter-spacing: 2px;
+    }
 }
 
-.study-msg-assistant .study-msg-body p:last-of-type::after,
-.study-msg-assistant .study-msg-body code:last-of-type::after {
-    content: '';
+.study-pensando {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #58a6ff;
+    font-size: 0.82rem;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    animation: pensandoPulse 1.4s ease-in-out infinite;
+    padding: 4px 0;
 }
-
-/* Cursor visible only while content ends with ▌ — handled by JS via renderMarkdown text */
 
 
 /* ==========================================================================

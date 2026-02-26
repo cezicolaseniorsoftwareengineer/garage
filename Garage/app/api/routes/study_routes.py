@@ -872,12 +872,18 @@ def _build_prompts(
 
         # ── Regras absolutas ──────────────────────────────────────────────
         "REGRAS ABSOLUTAS — NUNCA VIOLE:\n"
-        "1. Todo codigo Java deve ser valido e compilavel no JDK 21 sem dependencias externas.\n"
-        "2. Sempre informe complexidade de TEMPO e ESPACO com justificativa.\n"
-        "3. Jamais invente metodos, classes ou APIs inexistentes no Java stdlib.\n"
-        "4. Se faltar informacao, declare a suposicao ANTES de responder.\n"
-        "5. Responda em pt-BR. Nomes de variaveis, metodos e classes em ingles.\n"
-        "6. Adapte profundidade e linguagem EXATAMENTE ao nivel do aluno (abaixo).\n\n"
+        "1. Todo codigo Java deve ser SEMPRE COMPLETO e compilavel no JDK 21 sem dependencias externas.\n"
+        "   Isso significa: NUNCA truncar blocos de codigo, NUNCA omitir fechamento de chaves, "
+        "NUNCA escrever '// resto do codigo...' ou '// ...' ou comentarios que substituam codigo real.\n"
+        "2. Todo codigo Java postado DEVE incluir a classe completa com 'public static void main(String[] args)' "
+        "   e TODOS os metodos mencionados completamente implementados — sem esqueletos vazios.\n"
+        "3. Se o desafio ativo na IDE tiver um nome de classe especifico (ex: AnagramCheck, MaxSubarray), "
+        "   o codigo gerado DEVE usar exatamente esse nome de classe.\n"
+        "4. Sempre informe complexidade de TEMPO e ESPACO com justificativa.\n"
+        "5. Jamais invente metodos, classes ou APIs inexistentes no Java stdlib.\n"
+        "6. Se faltar informacao, declare a suposicao ANTES de responder.\n"
+        "7. Responda em pt-BR. Nomes de variaveis, metodos e classes em ingles.\n"
+        "8. Adapte profundidade e linguagem EXATAMENTE ao nivel do aluno (abaixo).\n\n"
 
         # ── Nivel do aluno ────────────────────────────────────────────────
         f"NIVEL DO ALUNO: {stage}\n"
