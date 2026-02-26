@@ -572,6 +572,9 @@ const StudyChat = {
             books: this._bookPayload(),
         });
 
+        // Placeholder assistant (added AFTER body is built to avoid polluting recent_messages)
+        this._append('assistant', '\u25cf\u25cf\u25cf', '');
+
         let fullText = '';
         let finalModel = '';
         let streamFailed = false;
@@ -645,14 +648,19 @@ const StudyChat = {
                 : 'Falha ao consultar a Inteligência Artificial: ' + (msg || 'erro desconhecido');
             finalModel = 'erro';
         } finally {
-            // Only NOW reveal the full response — never show incomplete content
+            // Reveal the full response — update the assistant placeholder
+            const responseText = (fullText && fullText.trim()) ? fullText.trim() : (streamFailed ? fullText : 'Sem resposta.');
             const last = this._messages[this._messages.length - 1];
             if (last && last.role === 'assistant') {
-                last.content = (fullText && fullText.trim()) ? fullText.trim() : (streamFailed ? fullText : 'Sem resposta.');
+                last.content = responseText;
                 last.meta = finalModel;
-                this._persist();
-                this._render();
+            } else {
+                // Fallback: placeholder missing, push fresh message
+                this._messages.push({ role: 'assistant', content: responseText, meta: finalModel, ts: Date.now() });
+                this._messages = this._messages.slice(-20);
             }
+            this._persist();
+            this._render();
             this._setBusy(false);
             if (input) input.focus();
         }
