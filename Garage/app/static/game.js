@@ -365,7 +365,7 @@ const StudyChat = {
         const { send, input } = this._els();
         if (send) {
             send.disabled = busy;
-            send.textContent = 'ENVIAR';
+            send.textContent = busy ? 'PENSANDO...' : 'ENVIAR';
         }
         if (input) input.disabled = busy;
     },
@@ -444,9 +444,7 @@ const StudyChat = {
 
             const body = document.createElement('div');
             body.className = 'study-msg-body';
-            if (m.role === 'assistant' && m.content === '__PENSANDO__') {
-                body.innerHTML = '<span class="study-pensando">&#9679;&#9679;&#9679; Pensando...</span>';
-            } else if (m.role === 'assistant') {
+            if (m.role === 'assistant') {
                 body.innerHTML = this._renderMarkdown(m.content);
             } else {
                 body.textContent = m.content;
@@ -573,11 +571,6 @@ const StudyChat = {
             recent_messages: this._recentPayload(),
             books: this._bookPayload(),
         });
-
-        // Insert PENSANDO... placeholder — nothing is shown until response is complete
-        this._messages.push({ role: 'assistant', content: '__PENSANDO__', meta: '', ts: Date.now() });
-        this._messages = this._messages.slice(-20);
-        this._render();
 
         let fullText = '';
         let finalModel = '';
