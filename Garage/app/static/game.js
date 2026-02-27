@@ -603,11 +603,17 @@ const StudyChat = {
 
             if (!resp.ok) {
                 let errMsg = `Erro ${resp.status}`;
-                try { const j = await resp.json(); errMsg = j.detail || errMsg; } catch (_e) { }
-                if (resp.status === 429 || errMsg.toLowerCase().includes('limite')) {
+                try {
+                    const j = await resp.json();
+                    const d = j.detail;
+                    // FastAPI 422: detail is an array of validation errors; stringify for safety
+                    errMsg = (typeof d === 'string' ? d : (d ? JSON.stringify(d) : errMsg));
+                } catch (_e) { }
+                const errStr = String(errMsg).toLowerCase();
+                if (resp.status === 429 || errStr.includes('limite') || errStr.includes('rate')) {
                     errMsg = 'Limite de mensagens por minuto atingido. Aguarde um momento.';
                 }
-                throw new Error(errMsg);
+                throw new Error(typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg));
             }
 
             const reader = resp.body.getReader();
