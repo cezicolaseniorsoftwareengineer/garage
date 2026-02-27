@@ -7526,6 +7526,10 @@ const IDE = {
         State.isInChallenge = false;
         SFX.resumeMusic();
 
+        // Always clear any pending NPC interaction to avoid spurious re-entry dialogs
+        // after the completion/parabens dialog is closed.
+        State._pendingNpcRegion = null;
+
         // Check if all challenges in locked region are complete
         if (regionBeingWorked && wasSolved) {
             const regionTheory = State.challenges.filter(c => c.region === regionBeingWorked);
@@ -7550,6 +7554,16 @@ const IDE = {
                         'Parabéns! Você completou TODOS os desafios em ' + regionBeingWorked + '. Você está livre para explorar e coletar livros.');
                     setTimeout(() => { State.companyComplete = false; }, 3000);
                 }
+            } else {
+                // IDE solved but theory cache is inconsistent -- free the player physically
+                // to prevent the containment guard from trapping them inside the building.
+                // The region is NOT marked complete; player can re-enter to finish theory.
+                State.lockedRegion = null;
+                State.lockedNpc = null;
+                State.doorAnimBuilding = null;
+                WorldStatePersistence.save(false);
+                World.showDialog('SISTEMA', regionBeingWorked,
+                    'Código aprovado! Ainda faltam questões teóricas em ' + regionBeingWorked + '. Converse com o fundador para retomar.');
             }
         }
     },
