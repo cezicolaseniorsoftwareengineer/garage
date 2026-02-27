@@ -2014,5 +2014,89 @@
         "explanation": "Ambas resolvem os mesmos problemas. São duas implementações da mesma ideia: reutilizar resultados de subproblemas."
       }
     ]
+  },
+  {
+    "id": "principal_16_biocode_platform_architecture",
+    "title": "A Plataforma do Infinito",
+    "description": "Cezi Cola, CEO da Bio Code Technology, apresenta o desafio final: qual padrão arquitetural permite que uma plataforma de software seja infinitamente extensível sem quebrar contratos existentes?",
+    "context_code": "// ∞ Bio Code Technology — 2026\n// Você chegou. O círculo se fecha.\n// A plataforma que você vai construir é a própria plataforma que te formou.\n// Open/Closed Principle em escala de sistema.\n// Plugin architecture: core nunca muda, comportamentos são adicionados.",
+    "category": "architecture",
+    "required_stage": "Principal",
+    "region": "Bio Code Technology",
+    "mentor": "Cezi Cola",
+    "points_on_correct": 400,
+    "options": [
+      {
+        "text": "Monólito bem estruturado que é refatorado a cada nova feature",
+        "is_correct": false,
+        "explanation": "Refatorar a cada nova feature viola o Open/Closed Principle. Cada mudança no core é um risco a todo o sistema existente."
+      },
+      {
+        "text": "Plugin architecture com núcleo imutável, contratos via interfaces e extensões injetadas — o sistema cresce sem que o core seja tocado",
+        "is_correct": true,
+        "explanation": "Este é o princípio que governa o 404 Garage: o engine de jogo é o core, os desafios são plugins, os NPCs são extensões. Open for extension, closed for modification. Principal Engineers projetam sistemas que outros podem estender sem precisar deles."
+      },
+      {
+        "text": "Microsserviços independentes sem interface compartilhada — cada equipe decide sua arquitetura",
+        "is_correct": false,
+        "explanation": "Sem contratos compartilhados (interfaces), a independência vira caos. A integração sem interface é a raiz do Big Ball of Mud distribuído."
+      }
+    ]
+  },
+  {
+    "id": "principal_17_biocode_infinite_systems",
+    "title": "∞ Sistemas que Não Morrem",
+    "description": "O símbolo da Bio Code Technology é o infinito ∞. O que torna um sistema de software verdadeiramente resiliente — capaz de operar indefinidamente sem intervenção humana?",
+    "context_code": "// O símbolo ∞ não é decoração. É uma promessa de engenharia.\n// Self-healing: detecta falha e se recupera automaticamente\n// Circuit Breaker → Retry → Fallback → Bulkhead\n// O sistema nunca retorna erro para o usuário — sempre tem um plano B.",
+    "category": "distributed_systems",
+    "required_stage": "Principal",
+    "region": "Bio Code Technology",
+    "mentor": "Cezi Cola",
+    "points_on_correct": 400,
+    "options": [
+      {
+        "text": "Hardware mais potente e redundância de servidores — se um cai, outro assume",
+        "is_correct": false,
+        "explanation": "Hardware redundante resolve falhas de infraestrutura, mas não falhas de software, lógica ou sobrecarga gradual. Werner Vogels disse: everything fails, all the time — incluindo o hardware reserva."
+      },
+      {
+        "text": "Circuit Breaker evita cascata de falhas, Retry com backoff absorve instabilidades, Bulkhead isola componentes, Fallback garante resposta degradada mas funcional — camadas de software que formam resiliência real",
+        "is_correct": true,
+        "explanation": "O ∞ da Bio Code Technology representa exatamente isso: não que o sistema nunca falha, mas que ele sempre se recupera. Circuit Breaker + Retry + Bulkhead + Fallback formam o padrão resiliente de nível Principal. Cada camada absorve uma classe diferente de falha."
+      },
+      {
+        "text": "Testes exaustivos que eliminam todos os bugs antes do deploy",
+        "is_correct": false,
+        "explanation": "Testes eliminam bugs conhecidos. Sistemas distribuídos falham por razões imprevisíveis: redes instáveis, timeouts, memory pressure, race conditions em produção. Resiliência em runtime é insubstituível."
+      }
+    ]
+  },
+  {
+    "id": "principal_18_biocode_the_circle",
+    "title": "O Círculo Se Fecha",
+    "description": "Você chegou. De estagiário no Xerox PARC em 1973 a Principal Engineer na Bio Code Technology em 2026. Cezi Cola faz a pergunta final: o que diferencia um Principal Engineer de todos os outros?",
+    "context_code": "// 1973 — Xerox PARC:            \"Tudo é um objeto\"\n// 1976 — Apple Garage:          \"Faça mais com menos\"\n// 1994 — Amazon:                \"Escala ou morre\"\n// 2004 — Facebook:              \"Move fast, build things\"\n// 2015 — AWS:                   \"Everything fails, all the time\"\n// 2026 — Bio Code Technology:   \"Você é o sistema agora\"\n//\n// O código que você escreveu no Ato I ainda está em produção.\n// Você é responsável por ele. ∞",
+    "category": "architecture",
+    "required_stage": "Principal",
+    "region": "Bio Code Technology",
+    "mentor": "Cezi Cola",
+    "points_on_correct": 500,
+    "options": [
+      {
+        "text": "Dominar todas as tecnologias — saber usar qualquer framework, linguagem ou ferramenta",
+        "is_correct": false,
+        "explanation": "Tecnologias mudam. Um Principal Engineer que depende de tecnologias específicas fica obsoleto. O que você acumulou nesta jornada não foi uma lista de frameworks — foi a capacidade de raciocinar sobre sistemas."
+      },
+      {
+        "text": "Escrever o código mais performático e otimizado da empresa",
+        "is_correct": false,
+        "explanation": "Performance importa, mas não é o papel do Principal. Micro-otimizações podem ser feitas por qualquer engenheiro. Principal Engineers trabalham em alavancagem: uma decisão que multiplica a produtividade de 50 pessoas."
+      },
+      {
+        "text": "Amplificar o impacto de toda a engenharia ao redor: tomar decisões de longo prazo, definir os padrões que outros seguirão, ver a organização como o sistema — e se responsabilizar pelo código que existirá em produção daqui a 10 anos",
+        "is_correct": true,
+        "explanation": "Você não chegou aqui para escrever mais código. Você chegou para garantir que o código certo seja escrito, pelas pessoas certas, pelos motivos certos. O Principal Engineer não tem um problema — tem uma missão. Bem-vindo à Bio Code Technology. ∞"
+      }
+    ]
   }
 ]

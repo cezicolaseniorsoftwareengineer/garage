@@ -89,6 +89,13 @@ class MapConfig:
             "stage": "Staff",
             "description": "Extreme engineering under constraints.",
         },
+        "The Infinite Architect": {
+            "region": "Bio Code Technology",
+            "stage": "Principal",
+            "description": "\u221e The circle closes. Build systems that outlive you.",
+            "ceo": "Cezi Cola",
+            "symbol": "\u221e",
+        },
     }
 
     MENTOR_ARCHETYPES = {
@@ -111,5 +118,12 @@ class MapConfig:
         "The Logician": {
             "teaching": "Formal Thinking",
             "stage": "Staff",
+        },
+        "Cezi Cola": {
+            "teaching": "Principal Engineering & Platform Thinking",
+            "stage": "Principal",
+            "title": "Senior Software Engineer & CEO",
+            "company": "Bio Code Technology",
+            "symbol": "\u221e",
         },
     }
