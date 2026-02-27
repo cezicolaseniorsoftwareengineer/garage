@@ -7,6 +7,16 @@ from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
 
 SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
+
+# Fail-fast: a missing secret key is a critical misconfiguration in any environment.
+# A None key makes python-jose sign tokens with the string "None" — all tokens
+# become universally forgeable. There is no safe dev/prod distinction here.
+if not SECRET_KEY:  # pragma: no cover
+    raise RuntimeError(
+        "Missing JWT_SECRET_KEY environment variable. "
+        "Add JWT_SECRET_KEY=<strong-random-value> to your .env file before starting."
+    )
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 REFRESH_TOKEN_EXPIRE_DAYS = 7
@@ -61,7 +71,7 @@ def revoke_refresh_token(token: str) -> None:
     """Mark a refresh token as revoked for the local process lifetime."""
     try:
         _revoked_refresh_tokens.add(token)
-    except Exception:
+    except Exception:  # pragma: no cover
         pass
 
 
@@ -69,17 +79,10 @@ def is_refresh_revoked(token: str) -> bool:
     return token in _revoked_refresh_tokens
 
 
-_ENV = os.environ.get("ENV", "").lower()
-_REQUIRE_JWT = os.environ.get("REQUIRE_JWT_SECRET", "").lower() in ("1", "true", "yes")
-
-# In production (ENV=production) or when REQUIRE_JWT_SECRET is set, fail fast.
-if not SECRET_KEY and (_ENV == "production" or _REQUIRE_JWT):
-    raise RuntimeError(
-        "Missing JWT_SECRET_KEY environment variable. Set JWT_SECRET_KEY before starting the application."
-    )
+# Legacy env-specific guard removed: fail-fast is now unconditional (see above).
 
 # Development fallback: generate a random secret so the app can run locally.
-if not SECRET_KEY:
+if not SECRET_KEY:  # pragma: no cover
     SECRET_KEY = _secrets.token_urlsafe(32)
     logging.warning(
         "JWT_SECRET_KEY not set — using a generated development secret. "

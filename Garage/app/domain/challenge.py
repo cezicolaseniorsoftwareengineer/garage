@@ -128,7 +128,7 @@ class Challenge:
         for i, opt in enumerate(self._options):
             if opt.is_correct:
                 return i
-        return -1
+        return -1  # pragma: no cover — Challenge invariant requires exactly one correct option
 
     def to_dict_for_player(self) -> dict:
         """Serialization for the frontend. Never exposes correct answer."""

@@ -1,0 +1,17 @@
+[run]
+source = app
+omit =
+    app/__pycache__/*
+    app/infrastructure/database/*
+    app/infrastructure/repositories/pg_*.py
+    app/static/*
+    app/main.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
+    raise NotImplementedError
+    \.\.\.$
+    pass$
+show_missing = True

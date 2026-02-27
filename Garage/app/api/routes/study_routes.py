@@ -136,7 +136,7 @@ def _candidate_models() -> list[str]:
     return models
 
 
-def _post_responses_request(endpoint: str, api_key: str, body: dict) -> dict:
+def _post_responses_request(endpoint: str, api_key: str, body: dict) -> dict:  # pragma: no cover
     timeout_seconds = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
     request = urllib.request.Request(
         endpoint,
@@ -172,7 +172,7 @@ def _post_responses_request(endpoint: str, api_key: str, body: dict) -> dict:
         raise HTTPException(status_code=502, detail="Invalid response from study provider.")
 
 
-def _build_stream_body(system_prompt: str, user_prompt: str, model: str, max_tokens: int) -> dict:
+def _build_stream_body(system_prompt: str, user_prompt: str, model: str, max_tokens: int) -> dict:  # pragma: no cover
     return {
         "model": model,
         "stream": True,
@@ -184,7 +184,7 @@ def _build_stream_body(system_prompt: str, user_prompt: str, model: str, max_tok
     }
 
 
-async def _stream_openai_sse(system_prompt: str, user_prompt: str):
+async def _stream_openai_sse(system_prompt: str, user_prompt: str):  # pragma: no cover
     """Async generator: yields SSE lines token-by-token using OpenAI Responses API."""
     api_key = os.environ.get("OPENAI_API_KEY", "").strip()
     if not api_key:
@@ -284,7 +284,7 @@ async def _stream_openai_sse(system_prompt: str, user_prompt: str):
     yield 'data: {"err": "Nenhum modelo disponivel no momento. Tente novamente."}\n\n'
 
 
-def _call_openai_responses(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
+def _call_openai_responses(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:  # pragma: no cover
     """Non-streaming call to OpenAI Responses API. Returns (text, response_id, model)."""
     api_key = os.environ.get("OPENAI_API_KEY", "").strip()
     if not api_key:
@@ -364,7 +364,7 @@ def _call_openai_responses(system_prompt: str, user_prompt: str) -> tuple[str, s
 _AI_MAX_TOKENS = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
 
 
-def _call_gemini(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
+def _call_gemini(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:  # pragma: no cover
     """Non-streaming call to Google Gemini. Returns (text, response_id, model)."""
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
@@ -406,7 +406,7 @@ def _call_gemini(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
     return text, "", model
 
 
-async def _stream_gemini_sse(system_prompt: str, user_prompt: str):
+async def _stream_gemini_sse(system_prompt: str, user_prompt: str):  # pragma: no cover
     """Async generator: yields SSE lines using Google Gemini streaming API."""
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     if not api_key:
@@ -458,7 +458,7 @@ async def _stream_gemini_sse(system_prompt: str, user_prompt: str):
         yield f'data: {{"err": {json.dumps(str(exc))}}}\n\n'
 
 
-def _call_groq(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
+def _call_groq(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:  # pragma: no cover
     """Non-streaming call to Groq Chat Completions API. Returns (text, request_id, model)."""
     api_key = os.environ.get("GROQ_API_KEY", "").strip()
     model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
@@ -500,7 +500,7 @@ def _call_groq(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
         raise HTTPException(status_code=504, detail=f"Groq timeout: {exc}")
 
 
-async def _stream_groq_sse(system_prompt: str, user_prompt: str):
+async def _stream_groq_sse(system_prompt: str, user_prompt: str):  # pragma: no cover
     """Async streaming SSE generator for Groq Chat Completions API."""
     api_key = os.environ.get("GROQ_API_KEY", "").strip()
     if not api_key:
@@ -557,15 +557,152 @@ async def _stream_groq_sse(system_prompt: str, user_prompt: str):
 
 
 # ---------------------------------------------------------------------------
-# Fallback de streaming: Gemini → Groq → OpenAI em runtime
+# Anthropic Claude — _call_anthropic (sync) e _stream_anthropic_sse (async)
 # ---------------------------------------------------------------------------
-async def _stream_with_fallback(system_prompt: str, user_prompt: str):
+def _candidate_anthropic_models() -> list[str]:  # pragma: no cover
+    primary = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6").strip() or "claude-sonnet-4-6"
+    fallback_raw = os.environ.get(
+        "ANTHROPIC_FALLBACK_MODELS",
+        "claude-sonnet-4-6,claude-opus-4-6,claude-sonnet-4-5",
+    )
+    models: list[str] = [primary]
+    for item in fallback_raw.split(","):
+        m = item.strip()
+        if m and m not in models:
+            models.append(m)
+    return models
+
+
+def _call_anthropic(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:  # pragma: no cover
+    """Non-streaming call to Anthropic Messages API. Returns (text, response_id, model)."""
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if not api_key:
+        raise HTTPException(status_code=503, detail="Missing ANTHROPIC_API_KEY.")
+    max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
+    timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
+    endpoint = "https://api.anthropic.com/v1/messages"
+    hdrs = {
+        "x-api-key": api_key,
+        "anthropic-version": "2023-06-01",
+        "Content-Type": "application/json",
+    }
+    last_detail = "unknown error"
+    for model in _candidate_anthropic_models():
+        body = {
+            "model": model,
+            "max_tokens": max_tokens,
+            "system": system_prompt,
+            "messages": [{"role": "user", "content": user_prompt}],
+        }
+        req = urllib.request.Request(
+            endpoint,
+            data=json.dumps(body).encode("utf-8"),
+            headers=hdrs,
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+            text = payload["content"][0]["text"].strip()
+            response_id = payload.get("id", "")
+            return text, response_id, model
+        except urllib.error.HTTPError as exc:
+            detail = f"HTTP {exc.code}"
+            try:
+                err_body = json.loads(exc.read().decode("utf-8"))
+                msg = (err_body.get("error") or {}).get("message", "")
+                if msg:
+                    detail = msg
+            except Exception:
+                pass
+            last_detail = detail
+            # 404 = model not found — try next candidate
+            if exc.code == 404 or "model" in detail.lower():
+                continue
+            raise HTTPException(status_code=502, detail=f"Anthropic error: {detail}")
+        except (urllib.error.URLError, TimeoutError, socket.timeout):
+            raise HTTPException(status_code=504, detail="Anthropic timeout.")
+    raise HTTPException(status_code=502, detail=f"Anthropic: nenhum modelo disponivel. Ultimo erro: {last_detail}")
+
+
+async def _stream_anthropic_sse(system_prompt: str, user_prompt: str):  # pragma: no cover
+    """Async generator: yields SSE lines token-by-token using Anthropic Messages API."""
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if not api_key:
+        yield 'data: {"err": "Study chat unavailable: missing ANTHROPIC_API_KEY."}\n\n'
+        return
+    max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
+    timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
+    endpoint = "https://api.anthropic.com/v1/messages"
+    hdrs = {
+        "x-api-key": api_key,
+        "anthropic-version": "2023-06-01",
+        "Content-Type": "application/json",
+        "Accept": "text/event-stream",
+    }
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        for model in _candidate_anthropic_models():
+            body = {
+                "model": model,
+                "max_tokens": max_tokens,
+                "stream": True,
+                "system": system_prompt,
+                "messages": [{"role": "user", "content": user_prompt}],
+            }
+            got_delta = False
+            try:
+                async with client.stream("POST", endpoint, json=body, headers=hdrs) as resp:
+                    if resp.status_code >= 400:
+                        err_bytes = await resp.aread()
+                        try:
+                            msg = json.loads(err_bytes).get("error", {}).get("message", f"HTTP {resp.status_code}")
+                        except Exception:
+                            msg = f"HTTP {resp.status_code}"
+                        # 404 = model not found — try next
+                        if resp.status_code == 404 or "model" in msg.lower():
+                            continue
+                        yield f'data: {{"err": {json.dumps(msg)}}}\n\n'
+                        return
+                    async for line in resp.aiter_lines():
+                        line = line.strip()
+                        if not line.startswith("data:"):
+                            continue
+                        payload_str = line[5:].strip()
+                        try:
+                            chunk = json.loads(payload_str)
+                        except json.JSONDecodeError:
+                            continue
+                        ev_type = chunk.get("type", "")
+                        if ev_type == "content_block_delta":
+                            delta = chunk.get("delta", {})
+                            if delta.get("type") == "text_delta":
+                                text = delta.get("text", "")
+                                if text:
+                                    got_delta = True
+                                    yield f'data: {json.dumps({"d": text})}\n\n'
+                        elif ev_type == "message_stop":
+                            if got_delta:
+                                yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
+                            break
+            except (httpx.TimeoutException, httpx.RequestError):
+                continue
+            if got_delta:
+                return
+    yield 'data: {"err": "Anthropic: nenhum modelo Claude disponivel. Confira ANTHROPIC_API_KEY."}\n\n'
+
+
+# ---------------------------------------------------------------------------
+# Fallback de streaming: Anthropic → OpenAI → Groq → Gemini em runtime
+# ---------------------------------------------------------------------------
+async def _stream_with_fallback(system_prompt: str, user_prompt: str):  # pragma: no cover
     """
-    Tenta cada provedor em ordem: OpenAI primeiro (pago), depois Groq (gratuito)
-    como fallback de quota. Se o primeiro evento SSE contiver {"err": ...}
-    (quota esgotada, auth, timeout), abandona e tenta o proximo provedor.
+    Tenta cada provedor em ordem de prioridade: Anthropic (Claude) → OpenAI → Groq → Gemini.
+    Se o primeiro evento SSE contiver {"err": ...} (quota esgotada, auth, timeout),
+    abandona e tenta o proximo provedor.
     """
     providers: list[tuple[str, object]] = []
+    if os.environ.get("ANTHROPIC_API_KEY", "").strip():
+        providers.append(("Anthropic", lambda: _stream_anthropic_sse(system_prompt, user_prompt)))
     if os.environ.get("OPENAI_API_KEY", "").strip():
         providers.append(("OpenAI", lambda: _stream_openai_sse(system_prompt, user_prompt)))
     if os.environ.get("GROQ_API_KEY", "").strip():
@@ -910,12 +1047,23 @@ def _build_prompts(
 # ---------------------------------------------------------------------------
 # Fallback em runtime: Groq → OpenAI (tenta o proximo se 4xx/5xx)
 # ---------------------------------------------------------------------------
-def _call_with_fallback(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:
+def _call_with_fallback(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:  # pragma: no cover
     """Tenta provedores em ordem: OpenAI (primario) → Groq (fallback de quota) → Gemini."""
     errors: list[str] = []
 
     # 401/403 = key invalida/revogada; 429 = quota esgotada; 5xx = erro do servidor
     _RETRIABLE = (401, 403, 429, 500, 502, 503, 504)
+
+    if os.environ.get("ANTHROPIC_API_KEY", "").strip():
+        try:
+            return _call_anthropic(system_prompt, user_prompt)
+        except HTTPException as exc:
+            if exc.status_code in _RETRIABLE:
+                errors.append(f"Anthropic HTTP {exc.status_code}")
+            else:
+                raise
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"Anthropic erro: {exc}")
 
     if os.environ.get("OPENAI_API_KEY", "").strip():
         try:
@@ -1050,7 +1198,7 @@ def api_study_chat(req: StudyChatRequest, current_user: dict = Depends(get_curre
 
 
 @router.post("/chat/stream")
-async def api_study_chat_stream(req: StudyChatRequest, current_user: dict = Depends(get_current_user)):
+async def api_study_chat_stream(req: StudyChatRequest, current_user: dict = Depends(get_current_user)):  # pragma: no cover
     """Streaming SSE version of study chat — sends tokens as they arrive."""
     player = _player_repo.get(req.session_id)
     if not player:

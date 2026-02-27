@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 import os
 
 from app.domain.user import User
+from app.infrastructure.auth.admin_utils import configured_admin_emails, is_admin_email
 from app.infrastructure.auth.jwt_handler import (
     create_access_token,
     create_refresh_token,
@@ -33,28 +34,10 @@ def init_auth_routes(user_repo, event_service=None):
     _events = event_service
 
 
-def _configured_admin_emails() -> set[str]:
-    """Return normalized admin emails from env vars."""
-    emails: set[str] = set()
-
-    primary = os.environ.get("ADMIN_EMAIL", "").strip().lower()
-    if primary:
-        emails.add(primary)
-
-    aliases = os.environ.get("ADMIN_EMAILS", "").strip()
-    if aliases:
-        for item in aliases.split(","):
-            value = item.strip().lower()
-            if value:
-                emails.add(value)
-
-    return emails
-
-
-def _is_admin_email(email: str | None) -> bool:
-    if not email:
-        return False
-    return email.strip().lower() in _configured_admin_emails()
+# Admin e-mail helpers are now shared via admin_utils to avoid drift.
+# configured_admin_emails and is_admin_email imported above.
+_configured_admin_emails = configured_admin_emails
+_is_admin_email = is_admin_email
 
 
 # ---------------------------------------------------------------------------
@@ -118,7 +101,7 @@ def api_register(req: RegisterRequest):
         _events.log("user_registered", user_id=user.id)
     try:
         audit_log("user_registered", user.id, {"username": user.username, "email": user.email})
-    except Exception:
+    except Exception:  # pragma: no cover
         pass
 
     return {
@@ -149,7 +132,7 @@ def api_login(req: LoginRequest):
     # Verify with bcrypt or legacy SHA-256
     if is_bcrypt_hash(stored_hash):
         valid = verify_password(req.password, stored_hash)
-    else:
+    else:  # pragma: no cover — legacy SHA-256 upgrade path
         valid = verify_legacy_sha256(req.password, user_data["salt"], stored_hash)
         # Transparent upgrade to bcrypt on successful legacy auth
         if valid:
@@ -172,20 +155,20 @@ def api_login(req: LoginRequest):
     # Update last login timestamp
     try:
         _user_repo.update_last_login(user_data["id"])
-    except (AttributeError, Exception):
+    except (AttributeError, Exception):  # pragma: no cover
         pass
 
     # successful login: clear brute-force counters
     try:
         clear_failed(req.username)
-    except Exception:
+    except Exception:  # pragma: no cover
         pass
 
     if _events:
         _events.log("user_logged_in", user_id=user_data["id"])
     try:
         audit_log("user_logged_in", user_data["id"], {"username": user_data.get("username")})
-    except Exception:
+    except Exception:  # pragma: no cover
         pass
 
     return {

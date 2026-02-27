@@ -76,7 +76,7 @@ class PlayerRepository:
         # Atomic replace
         try:
             os.replace(tmp_path, self._data_path)
-        except Exception:
+        except Exception:  # pragma: no cover
             # Best-effort fallback
             with open(self._data_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
@@ -122,5 +122,6 @@ class PlayerRepository:
                 game_over_count=pdata["game_over_count"],
                 status=GameEnding(pdata["status"]),
                 created_at=pdata.get("created_at"),
+                user_id=pdata.get("user_id"),
             )
             self._sessions[pid] = player

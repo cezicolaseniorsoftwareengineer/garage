@@ -8038,17 +8038,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 window.addEventListener('beforeunload', () => {
     if (State.sessionId) {
         // Use sendBeacon for reliable delivery during page unload
-        const data = {
-            session_id: State.sessionId,
-            collected_books: [...State.collectedBooks],
-            completed_regions: [...State.completedRegions],
-            current_region: State.lockedRegion,
-            player_world_x: World.player ? Math.round(World.player.x) : 100,
-        };
-        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
         const token = Auth.getToken();
-        // Use fetch with keepalive for authenticated request during unload
+        // sendBeacon cannot set headers, so we include the JWT in the body.
+        // The endpoint /save-world-state-beacon requires access_token in the payload.
         if (token) {
+            const data = {
+                session_id: State.sessionId,
+                collected_books: [...State.collectedBooks],
+                completed_regions: [...State.completedRegions],
+                current_region: State.lockedRegion,
+                player_world_x: World.player ? Math.round(World.player.x) : 100,
+                access_token: token,
+            };
+            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
             navigator.sendBeacon('/api/save-world-state-beacon', blob);
         }
     }

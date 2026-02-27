@@ -6,6 +6,10 @@ from typing import List
 from app.domain.enums import CareerStage, BackendLanguage, GameEnding
 from app.domain.character import Character
 
+# Sentinel: distinguishes "argument not supplied" from explicit None.
+# Used in update_world_state so callers can pass current_region=None to clear it.
+_UNSET: object = object()
+
 
 class Attempt:
     """Record of a single challenge attempt. Immutable."""
@@ -233,10 +237,13 @@ class Player:
         """
         self._game_over_count += 1
         self._current_errors = 0
-        # Remove completed challenges from current stage only -- player retries this stage
+        # Remove completed challenges for the current stage only.
+        # Use "<stage>_" prefix (with underscore) to prevent partial matches
+        # between stages with similar prefixes (e.g. "mid" vs "mid_level").
+        _stage_prefix = self._stage.value.lower() + "_"
         self._completed_challenges = [
             c for c in self._completed_challenges
-            if not c.startswith(self._stage.value.lower())
+            if not c.startswith(_stage_prefix)
         ]
         self._status = GameEnding.GAME_OVER
         return {
@@ -263,9 +270,10 @@ class Player:
         Check if player qualifies for promotion.
         Requires CHALLENGES_TO_PROMOTE completed in current stage.
         """
+        _stage_prefix = self._stage.value.lower() + "_"
         stage_challenges = [
             c for c in self._completed_challenges
-            if c.startswith(self._stage.value.lower())
+            if c.startswith(_stage_prefix)
         ]
         STAGE_PT = {
             "Intern": "Estagiario",
@@ -313,16 +321,22 @@ class Player:
         self,
         collected_books: list | None = None,
         completed_regions: list | None = None,
-        current_region: str | None = None,
+        current_region: object = _UNSET,   # _UNSET = module sentinel; None = clear
         player_world_x: int | None = None,
     ) -> None:
-        """Batch update world state for efficiency."""
+        """
+        Batch update world state for efficiency.
+
+        ``current_region`` uses a sentinel default so callers can explicitly
+        pass ``None`` to clear the region (player left a building) without
+        ambiguity with "not provided".
+        """
         if collected_books is not None:
             self._collected_books = list(collected_books)
         if completed_regions is not None:
             self._completed_regions = list(completed_regions)
-        if current_region is not None:
-            self._current_region = current_region
+        if current_region is not _UNSET:        # explicit value — even None
+            self._current_region = current_region  # type: ignore[assignment]
         if player_world_x is not None:
             self._player_world_x = player_world_x
 

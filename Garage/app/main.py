@@ -97,7 +97,20 @@ if DATABASE_URL:
         if _challenge_count == 0:
             raise RuntimeError("challenges table is empty after seed")
     except Exception as _pg_exc:
-        print(f"[GARAGE][WARN] PostgreSQL challenge repo failed ({type(_pg_exc).__name__}: {_pg_exc}). Falling back to JSON.")
+        import logging as _logging
+        _logging.getLogger("garage.startup").error(
+            "PostgreSQL challenge repo failed: %s: %s", type(_pg_exc).__name__, _pg_exc
+        )
+        print(f"[GARAGE][ERROR] PostgreSQL challenge repo failed ({type(_pg_exc).__name__}: {_pg_exc}).")
+        # Only fall back to JSON in development. In production this is a hard error
+        # because serving stale/incorrect challenges silently is unacceptable.
+        _is_prod = os.environ.get("ENV", "").lower() == "production"
+        if _is_prod:
+            raise RuntimeError(
+                f"[GARAGE] Fatal: cannot load challenges from PostgreSQL in production. "
+                f"Fix the database before restarting. Error: {_pg_exc}"
+            ) from _pg_exc
+        print("[GARAGE][WARN] Falling back to JSON challenges (development only).")
         from app.infrastructure.repositories.challenge_repository import ChallengeRepository as _JsonChallengeRepo
         challenge_repo = _JsonChallengeRepo(
             data_path=os.path.join(DATA_DIR, "challenges.json")

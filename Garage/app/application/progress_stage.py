@@ -26,7 +26,7 @@ def get_progress(player: Player) -> dict:
         "completed_challenges": len(player.completed_challenges),
         "total_attempts": len(player.attempts),
         "current_errors": player.current_errors,
-        "max_errors": Player.MAX_ERRORS_PER_CHALLENGE,
+        "max_errors": Player.MAX_ERRORS_PER_STAGE,
         "game_over_count": player.game_over_count,
         "status": player.status.value,
     }
