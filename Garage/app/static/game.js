@@ -232,13 +232,17 @@ const StudyChat = {
             aside.innerHTML =
                 '<div class="study-chat-card">' +
                 '  <div class="study-chat-header">' +
-                '    <div><h3>Garage A.I</h3><p id="studyChatContext">Java + Estruturas de Dados</p></div>' +
+                '    <div>' +
+                '      <h3>Garage A.I</h3>' +
+                '      <p id="studyChatContext">Java + Estruturas de Dados</p>' +
+                '      <div class="garage-ai-dots" id="garageAiDots"><span></span><span></span><span></span></div>' +
+                '    </div>' +
                 '    <button class="study-chat-close" onclick="StudyChat.close()">&times;</button>' +
                 '  </div>' +
                 '  <div id="studyChatMessages" class="study-chat-messages"></div>' +
                 '  <div class="study-chat-composer">' +
                 '    <textarea id="studyChatInput" placeholder="Pergunte sobre livros, sintaxe Java, algoritmos e escalabilidade..."></textarea>' +
-                '    <div class="study-chat-actions"><button id="studyChatSendBtn" class="btn-primary" onclick="StudyChat.send()">ENVIAR</button></div>' +
+                '    <div class="study-chat-actions"><button id="studyChatSendBtn" class="btn-primary" onclick="StudyChat._handleSendClick()">ENVIAR</button></div>' +
                 '  </div>' +
                 '</div>';
             ideMain.appendChild(aside);
@@ -367,11 +371,47 @@ const StudyChat = {
     _setBusy(busy) {
         this._busy = busy;
         const { send, input } = this._els();
+
+        // Animated dots in header
+        const dots = document.getElementById('garageAiDots');
+        if (dots) dots.classList.toggle('active', busy);
+
         if (send) {
-            send.disabled = busy;
-            send.textContent = busy ? 'PENSANDO...' : 'ENVIAR';
+            // Button is always clickable — busy state triggers cancel, not disable
+            send.disabled = false;
+            if (busy) {
+                send.innerHTML =
+                    '<span class="garage-send-inner">' +
+                    '<span class="garage-send-ring"></span>' +
+                    '<span class="garage-stop-icon"></span>' +
+                    '<span class="garage-stop-label">PARAR</span>' +
+                    '</span>';
+                send.title = 'Clique para cancelar';
+                send.style.background = '#7c3aed';
+            } else {
+                send.innerHTML = 'ENVIAR';
+                send.title = '';
+                send.style.background = '';
+            }
         }
         if (input) input.disabled = busy;
+    },
+
+    /** Toggle between send and cancel depending on busy state. */
+    _handleSendClick() {
+        if (this._busy) {
+            this.cancel();
+        } else {
+            this.send();
+        }
+    },
+
+    /** Abort the current in-flight request immediately. */
+    cancel() {
+        if (this._abortCtrl) {
+            this._abortCtrl.abort();
+            this._abortCtrl = null;
+        }
     },
 
     _renderMarkdown(text) {
@@ -582,6 +622,11 @@ const StudyChat = {
         let fullText = '';
         let finalModel = '';
         let streamFailed = false;
+        let wasCancelled = false;
+
+        // AbortController allows the user to cancel mid-stream
+        this._abortCtrl = new AbortController();
+        const signal = this._abortCtrl.signal;
 
         const _doFetch = async () => fetch('/api/study/chat/stream', {
             method: 'POST',
@@ -590,6 +635,7 @@ const StudyChat = {
                 ...(Auth.getToken() ? { 'Authorization': 'Bearer ' + Auth.getToken() } : {}),
             },
             body,
+            signal,
         });
 
         try {
@@ -606,7 +652,7 @@ const StudyChat = {
             }
 
             if (!resp.ok) {
-                let errMsg = `Erro ${resp.status}`;
+                let errMsg = 'Erro ' + resp.status;
                 try {
                     const j = await resp.json();
                     const d = j.detail;
@@ -651,13 +697,33 @@ const StudyChat = {
                 }
             }
         } catch (e) {
-            streamFailed = true;
-            const msg = (e.message || '');
-            fullText = msg.includes('429') || msg.toLowerCase().includes('limite')
-                ? 'Limite de mensagens por minuto atingido. Aguarde um momento e tente novamente.'
-                : 'Falha ao consultar o Garage A.I: ' + (msg || 'erro desconhecido');
-            finalModel = 'erro';
+            if (e && e.name === 'AbortError') {
+                // User cancelled the request — clean up placeholder silently
+                wasCancelled = true;
+            } else {
+                streamFailed = true;
+                const msg = (e && e.message) ? e.message : '';
+                fullText = msg.includes('429') || msg.toLowerCase().includes('limite')
+                    ? 'Limite de mensagens por minuto atingido. Aguarde um momento e tente novamente.'
+                    : 'Falha ao consultar o Garage A.I: ' + (msg || 'erro desconhecido');
+                finalModel = 'erro';
+            }
         } finally {
+            this._abortCtrl = null;
+
+            if (wasCancelled) {
+                // Remove the dots placeholder the user never wanted to keep
+                const last = this._messages[this._messages.length - 1];
+                if (last && last.role === 'assistant' && last.content === '\u25cf\u25cf\u25cf') {
+                    this._messages.pop();
+                    this._persist();
+                }
+                this._render();
+                this._setBusy(false);
+                if (input) input.focus();
+                return;
+            }
+
             // Reveal the full response — update the assistant placeholder
             // IMPORTANT: responseText must NEVER be empty string — Pydantic min_length=1 in recent_messages
             const fallbackText = streamFailed ? 'Sem resposta do servidor.' : 'Sem resposta.';

@@ -490,6 +490,9 @@
                             <div>
                                 <h3>Garage A.I</h3>
                                 <p id="studyChatContext">Java + Estruturas de Dados</p>
+                                <div class="garage-ai-dots" id="garageAiDots">
+                                    <span></span><span></span><span></span>
+                                </div>
                             </div>
                             <button class="study-chat-close" onclick="StudyChat.close()">&times;</button>
                         </div>
@@ -499,7 +502,7 @@
                                 placeholder="Pergunte sobre livros, sintaxe Java, algoritmos e escalabilidade..."></textarea>
                             <div class="study-chat-actions">
                                 <button id="studyChatSendBtn" class="btn-primary"
-                                    onclick="StudyChat.send()">ENVIAR</button>
+                                    onclick="StudyChat._handleSendClick()">ENVIAR</button>
                             </div>
                         </div>
                     </div>
