@@ -342,10 +342,14 @@ const StudyChat = {
     },
 
     _recentPayload() {
-        return this._messages.slice(-8).map(m => ({
-            role: m.role,
-            content: m.content,
-        }));
+        // Filter out error messages (meta='erro') and empty content — both would
+        // fail Pydantic min_length=1 validation and cause a 422 on the next request
+        return this._messages.slice(-8)
+            .filter(m => m.content && m.content.trim() && m.meta !== 'erro')
+            .map(m => ({
+                role: m.role,
+                content: m.content,
+            }));
     },
 
     _append(role, content, meta) {
@@ -655,7 +659,9 @@ const StudyChat = {
             finalModel = 'erro';
         } finally {
             // Reveal the full response — update the assistant placeholder
-            const responseText = (fullText && fullText.trim()) ? fullText.trim() : (streamFailed ? fullText : 'Sem resposta.');
+            // IMPORTANT: responseText must NEVER be empty string — Pydantic min_length=1 in recent_messages
+            const fallbackText = streamFailed ? 'Sem resposta do servidor.' : 'Sem resposta.';
+            const responseText = (fullText && fullText.trim()) ? fullText.trim() : fallbackText;
             const last = this._messages[this._messages.length - 1];
             if (last && last.role === 'assistant') {
                 last.content = responseText;
