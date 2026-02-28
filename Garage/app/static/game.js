@@ -372,26 +372,7 @@ const StudyChat = {
 
     _setBusy(busy) {
         this._busy = busy;
-        const { send, input, messages } = this._els();
-
-        // Typing bubble — aparece nos mensagens enquanto aguarda resposta
-        const existing = document.getElementById('aiTypingBubble');
-        if (busy) {
-            if (!existing && messages) {
-                const bubble = document.createElement('div');
-                bubble.id = 'aiTypingBubble';
-                bubble.className = 'ai-typing-bubble';
-                bubble.innerHTML =
-                    '<span class="ai-typing-bubble-meta">Garage A.I</span>' +
-                    '<div class="ai-typing-dots">' +
-                    '<span></span><span></span><span></span>' +
-                    '</div>';
-                messages.appendChild(bubble);
-                messages.scrollTop = messages.scrollHeight;
-            }
-        } else {
-            if (existing) existing.remove();
-        }
+        const { send, input } = this._els();
 
         if (send) {
             // Button is always clickable — busy state triggers cancel, not disable
@@ -505,7 +486,17 @@ const StudyChat = {
 
             const body = document.createElement('div');
             body.className = 'study-msg-body';
-            if (m.role === 'assistant') {
+            // Se for o placeholder de carregamento (busy), renderiza dots animados no card
+            const isLoadingPlaceholder =
+                m.role === 'assistant' &&
+                this._busy &&
+                m.content === '\u25cf\u25cf\u25cf';
+            if (isLoadingPlaceholder) {
+                body.innerHTML =
+                    '<div class="ai-typing-dots">' +
+                    '<span></span><span></span><span></span>' +
+                    '</div>';
+            } else if (m.role === 'assistant') {
                 body.innerHTML = this._renderMarkdown(m.content);
             } else {
                 body.textContent = m.content;
