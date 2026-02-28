@@ -114,6 +114,20 @@ class PgPlayerRepository:
             session.commit()
             return result.rowcount > 0
 
+    def delete_session(self, session_id: str) -> bool:
+        """Permanently delete a game session and all its attempts (raw SQL for cascade)."""
+        with self._sf() as session:
+            session.execute(
+                text("DELETE FROM attempts WHERE session_id = :sid"),
+                {"sid": session_id},
+            )
+            del_result = session.execute(
+                text("DELETE FROM game_sessions WHERE id = :sid"),
+                {"sid": session_id},
+            )
+            session.commit()
+            return del_result.rowcount > 0
+
     def get(self, player_id: str) -> Optional[Player]:
         """Load a full Player aggregate by session id."""
         with self._sf() as session:

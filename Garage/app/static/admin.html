@@ -550,6 +550,7 @@
             <div class="header-right">
                 <span class="admin-user" id="adminUserLabel"></span>
                 <span class="last-updated" id="lastUpdatedLabel"></span>
+                <button class="refresh-btn" style="border-color:#ef4444;color:#ef4444;" onclick="purgeOrphanedSessions()" title="Deletar sessoes sem usuario registrado">LIMPAR ORFAS</button>
                 <button class="refresh-btn" onclick="loadAll()">ATUALIZAR</button>
                 <button class="logout-btn" onclick="doLogout()">SAIR</button>
             </div>
@@ -1107,6 +1108,26 @@
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + tab));
+        }
+
+        // -- Delete orphaned sessions (no linked user) --
+        async function purgeOrphanedSessions() {
+            if (!confirm('Deletar TODAS as sessoes sem usuario registrado?\nEssas sao sessoes de teste ou anonimas que nao aparecem no ranking.')) return;
+            try {
+                const res = await fetch('/api/admin/sessions/orphaned', {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    loadAll();
+                } else {
+                    alert('Erro: ' + (data.detail || 'Falha ao limpar sessoes.'));
+                }
+            } catch (e) {
+                alert('Erro de conexao: ' + e.message);
+            }
         }
 
         // -- Delete user --

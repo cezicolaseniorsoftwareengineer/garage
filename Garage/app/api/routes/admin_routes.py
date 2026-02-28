@@ -273,6 +273,9 @@ def api_admin_ranking(current_user: dict = Depends(get_current_user)):
     entries = []
     for s in all_sessions:
         user = user_map.get(s.get("user_id"))
+        # Skip orphaned sessions (no linked registered user)
+        if user is None:
+            continue
         is_completed = s.get("status") == "completed" or s.get("stage") == "Distinguished"
 
         # Duration from first to last attempt
@@ -403,6 +406,47 @@ def api_admin_user_detail(
             ),
         },
     }
+
+
+# ---------------------------------------------------------------------------
+# Delete orphaned sessions (sessions with no linked user)
+# ---------------------------------------------------------------------------
+
+@router.delete("/sessions/orphaned")
+def api_admin_delete_orphaned_sessions(current_user: dict = Depends(get_current_user)):
+    """Delete all game sessions that have no linked registered user."""
+    _assert_admin(current_user)
+
+    all_sessions = _player_repo.get_all_dict() if hasattr(_player_repo, "get_all_dict") else []
+    users = _user_repo.get_all() if hasattr(_user_repo, "get_all") else []
+    valid_user_ids = {str(u.id) for u in users}
+
+    orphaned_ids = [
+        s["id"] for s in all_sessions
+        if str(s.get("user_id", "")) not in valid_user_ids
+    ]
+
+    if not orphaned_ids:
+        return {"deleted": 0, "message": "Nenhuma sessao orfã encontrada."}
+
+    if not hasattr(_player_repo, "delete_session"):
+        raise HTTPException(status_code=501, detail="Delete de sessao não suportado neste modo.")
+
+    deleted = 0
+    for sid in orphaned_ids:
+        try:
+            if _player_repo.delete_session(sid):
+                deleted += 1
+        except Exception:
+            pass
+
+    try:
+        from app.infrastructure.audit import log_event as audit_log
+        audit_log("admin_delete_orphaned_sessions", current_user["sub"], {"count": deleted, "ids": orphaned_ids})
+    except Exception:
+        pass
+
+    return {"deleted": deleted, "message": f"{deleted} sessao(oes) orfã(s) removida(s)."}
 
 
 # ---------------------------------------------------------------------------
