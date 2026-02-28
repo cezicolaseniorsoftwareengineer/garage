@@ -13,8 +13,11 @@ load_dotenv(os.path.join(PROJECT_DIR, ".env"))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request as StarletteRequest
 
 from app.api.routes.game_routes import router as game_router, init_routes
 from app.api.routes.auth_routes import router as auth_router, init_auth_routes
@@ -31,6 +34,46 @@ app = FastAPI(
     description="Backend-first engineering education game.",
     version="3.0.0",
 )
+
+# ---------------------------------------------------------------------------
+# GZip compression — reduces JS/CSS/HTML/JSON by ~70%
+# ---------------------------------------------------------------------------
+app.add_middleware(GZipMiddleware, minimum_size=1024)
+
+# ---------------------------------------------------------------------------
+# Cache-Control middleware for static assets
+# Saves bandwidth: browser caches assets instead of re-downloading every visit.
+# ---------------------------------------------------------------------------
+_LONG_CACHE   = "public, max-age=2592000, immutable"   # 30 days  — MP3, PNG, images
+_SHORT_CACHE  = "public, max-age=86400"                # 1 day    — JS, CSS
+_NO_CACHE     = "no-store, no-cache, must-revalidate"  # HTML, API responses
+
+_CACHE_BY_EXT = {
+    ".mp3": _LONG_CACHE,  ".ogg": _LONG_CACHE, ".wav": _LONG_CACHE,
+    ".png": _LONG_CACHE,  ".jpg": _LONG_CACHE,  ".jpeg": _LONG_CACHE,
+    ".gif": _LONG_CACHE,  ".webp": _LONG_CACHE, ".ico":  _LONG_CACHE,
+    ".svg": _LONG_CACHE,  ".woff": _LONG_CACHE, ".woff2": _LONG_CACHE,
+    ".ttf": _LONG_CACHE,
+    ".js":  _SHORT_CACHE, ".css": _SHORT_CACHE,
+}
+
+
+class StaticCacheMiddleware(BaseHTTPMiddleware):
+    """Inject Cache-Control headers on /static/* responses."""
+
+    async def dispatch(self, request: StarletteRequest, call_next):
+        response = await call_next(request)
+        path = request.url.path
+        if path.startswith("/static/"):
+            ext = os.path.splitext(path)[1].lower()
+            header = _CACHE_BY_EXT.get(ext, _NO_CACHE)
+            response.headers["Cache-Control"] = header
+            # Allow CDN / Cloudflare to cache the same rules
+            response.headers["Vary"] = "Accept-Encoding"
+        return response
+
+
+app.add_middleware(StaticCacheMiddleware)
 
 # CORS (required for browser frontend)
 # CORS configuration: read allowed origins from env (comma-separated).

@@ -779,6 +779,7 @@ const SFX = {
     _getAudio() {
         if (!this._audioElement) {
             this._audioElement = new Audio('/static/music_game.mp3');
+            this._audioElement.preload = 'none'; // bandwidth: only load when user triggers play
             this._audioElement.loop = true;
             this._audioElement.volume = this.musicTargetVol;
         }
