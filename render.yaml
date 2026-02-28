@@ -24,7 +24,9 @@ services:
         sync: false  # Configure manually in Render dashboard (fallback quando OpenAI atingir quota)
       - key: GROQ_MODEL
         value: "llama-3.3-70b-versatile"  # Groq free: 14400 req/day — fallback de quota do OpenAI
-      - key: AI_MAX_TOKENS
-        value: "4096"  # Max output tokens for all AI providers (increase for longer code responses)
+      - key: AI_CHAT_MAX_TOKENS
+        value: "600"  # Max tokens for study chat responses (fast, concise answers)
+      - key: ADMIN_USERNAME
+        sync: false  # Configure manually in Render dashboard (e.g., cezar)
       - key: ADMIN_EMAIL
         sync: false  # Configure manually in Render dashboard (e.g., cezicolatecnologia@gmail.com)
