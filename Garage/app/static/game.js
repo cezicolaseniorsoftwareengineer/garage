@@ -6971,7 +6971,6 @@ const SCALE_MISSIONS = {
             {
                 name: 'Base funcional',
                 objective: 'Implemente Bubble Sort base funcionando.',
-                helpText: 'COMO EXPANDIR (UBER 1/3):\n1. Loop externo: n - 1 passagens.\n2. Loop interno: compare arr[j] com arr[j+1].\n3. Se fora de ordem, troque usando variavel temp.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class BubbleSort {\n    public static void main(String[] args) {\n        int[] arr = {64, 34, 25, 12, 22, 11, 90};\n        int n = arr.length;\n\n        for (int i = 0; i < n - 1; i++) {\n            for (int j = 0; j < n - i - 1; j++) {\n                if (arr[j] > arr[j + 1]) {\n                    int temp = arr[j];\n                    arr[j] = arr[j + 1];\n                    arr[j + 1] = temp;\n                }\n            }\n        }\n\n        System.out.println("Ordenado: " + Arrays.toString(arr));\n    }\n}'
             },
             {
                 name: 'Método bubbleSort',
@@ -7002,7 +7001,6 @@ const SCALE_MISSIONS = {
             {
                 name: 'Base funcional',
                 objective: 'Implemente Merge Sort base funcionando.',
-                helpText: 'COMO EXPANDIR (NVIDIA 1/3):\n1. Divida o array ao meio com copyOfRange.\n2. Mescle dois subarrays comparando elemento a elemento.\n3. Copie sobras do array que nao esgotou.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class MergeSort {\n    public static void main(String[] args) {\n        int[] arr = {12, 11, 13, 5, 6, 7};\n        int mid = arr.length / 2;\n\n        int[] L = Arrays.copyOfRange(arr, 0, mid);\n        int[] R = Arrays.copyOfRange(arr, mid, arr.length);\n\n        int i = 0, j = 0, k = 0;\n        while (i < L.length && j < R.length) {\n            if (L[i] <= R[j]) arr[k++] = L[i++];\n            else arr[k++] = R[j++];\n        }\n        while (i < L.length) arr[k++] = L[i++];\n        while (j < R.length) arr[k++] = R[j++];\n\n        System.out.println("Merged: " + Arrays.toString(arr));\n    }\n}'
             },
             {
                 name: 'Método merge separado',
@@ -7033,7 +7031,6 @@ const SCALE_MISSIONS = {
             {
                 name: 'Base funcional',
                 objective: 'Implemente BFS base funcionando.',
-                helpText: 'COMO EXPANDIR (AURORA LABS 1/3):\n1. Use Queue para a fila e Set para visitados.\n2. Adicione o no inicial na fila e no set.\n3. Enquanto a fila nao esvaziar: retire, processe e enfileire vizinhos.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.*;\n\npublic class BFSGraph {\n    public static void main(String[] args) {\n        Map<Integer, List<Integer>> graph = new HashMap<>();\n        graph.put(1, Arrays.asList(2, 3));\n        graph.put(2, Arrays.asList(4, 5));\n        graph.put(3, Arrays.asList(6));\n\n        Queue<Integer> queue = new LinkedList<>();\n        Set<Integer> visited = new HashSet<>();\n        queue.add(1);\n        visited.add(1);\n\n        while (!queue.isEmpty()) {\n            int node = queue.poll();\n            System.out.println(node);\n\n            for (int neighbor : graph.getOrDefault(node, List.of())) {\n                if (!visited.contains(neighbor)) {\n                    visited.add(neighbor);\n                    queue.add(neighbor);\n                }\n            }\n        }\n    }\n}'
             },
             {
                 name: 'Método bfs separado',
@@ -7064,7 +7061,6 @@ const SCALE_MISSIONS = {
             {
                 name: 'Base funcional',
                 objective: 'Implemente verificação de palíndromo base.',
-                helpText: 'COMO EXPANDIR (SANTANDER 1/3):\n1. Use dois ponteiros: left no inicio, right no fim.\n2. Compare s.charAt(left) com s.charAt(right).\n3. Se diferentes, nao e palindromo.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class Palindrome {\n    public static void main(String[] args) {\n        String s = "radar";\n        int left = 0, right = s.length() - 1;\n        boolean resultado = true;\n\n        while (left < right) {\n            if (s.charAt(left) != s.charAt(right)) {\n                resultado = false;\n                break;\n            }\n            left++;\n            right--;\n        }\n\n        System.out.println("radar: " + resultado);\n        System.out.println("hello: " + false);\n    }\n}'
             },
             {
                 name: 'Método isPalindrome',
@@ -7095,7 +7091,6 @@ const SCALE_MISSIONS = {
             {
                 name: 'Base funcional',
                 objective: 'Implemente a inversao de lista encadeada base.',
-                helpText: 'COMO EXPANDIR (BRADESCO 1/3):\n1. Use tres ponteiros: prev, curr e next.\n2. A cada passo: salve next, inverta curr.next = prev, avance.\n3. Ao final, prev e a nova cabeca.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class ReverseList {\n    static class Node {\n        int val;\n        Node next;\n        Node(int val) { this.val = val; }\n    }\n\n    public static void main(String[] args) {\n        Node head = new Node(1);\n        head.next = new Node(2);\n        head.next.next = new Node(3);\n\n        Node prev = null, curr = head;\n        while (curr != null) {\n            Node next = curr.next;\n            curr.next = prev;\n            prev = curr;\n            curr = next;\n        }\n        head = prev;\n\n        while (head != null) {\n            System.out.print(head.val + " ");\n            head = head.next;\n        }\n    }\n}'
             },
             {
                 name: 'Metodo reverseList',
@@ -7126,7 +7121,6 @@ const SCALE_MISSIONS = {
             {
                 name: 'Base funcional',
                 objective: 'Implemente PriorityQueue com Comparable base.',
-                helpText: 'COMO EXPANDIR (GEMINI 1/3):\n1. Crie uma PriorityQueue<Integer>.\n2. Adicione elementos fora de ordem.\n3. poll() sempre retorna o menor (min-heap padrao).\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.PriorityQueue;\n\npublic class HeapPriority {\n    public static void main(String[] args) {\n        PriorityQueue<Integer> pq = new PriorityQueue<>();\n        pq.add(3);\n        pq.add(1);\n        pq.add(2);\n\n        System.out.println("Primeira prioridade: " + pq.peek());\n\n        while (!pq.isEmpty()) {\n            System.out.println(pq.poll());\n        }\n    }\n}'
             },
             {
                 name: 'Classe Task completa',
@@ -7158,7 +7152,6 @@ const SCALE_MISSIONS = {
             {
                 name: 'Base funcional',
                 objective: 'Implemente Climbing Stairs com DP base.',
-                helpText: 'COMO EXPANDIR (BIO CODE 1/3):\n1. Para chegar ao degrau n, voce veio do n-1 ou n-2.\n2. Use prev e curr para guardar os dois ultimos valores.\n3. Loop de 3 ate n calculando o proximo.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class ClimbingStairs {\n    public static void main(String[] args) {\n        int n = 5;\n        int prev = 1, curr = 2;\n\n        for (int i = 3; i <= n; i++) {\n            int next = prev + curr;\n            prev = curr;\n            curr = next;\n        }\n\n        System.out.println("Formas de subir " + n + " degraus: " + curr);\n    }\n}'
             },
             {
                 name: 'Metodo climbStairs',
@@ -7190,7 +7183,6 @@ const SCALE_MISSIONS = {
             {
                 name: 'Base funcional',
                 objective: 'Implemente inversao de arvore binaria base.',
-                helpText: 'COMO EXPANDIR (CLOUD VALLEY 1/3):\n1. Crie a arvore com TreeNode.\n2. Para inverter um nivel: use temp, troque left e right.\n3. Imprima os valores para verificar.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class TreeInvert {\n    static class TreeNode {\n        int val;\n        TreeNode left, right;\n        TreeNode(int val) { this.val = val; }\n    }\n\n    public static void main(String[] args) {\n        TreeNode root = new TreeNode(4);\n        root.left = new TreeNode(2);\n        root.right = new TreeNode(7);\n\n        TreeNode temp = root.left;\n        root.left = root.right;\n        root.right = temp;\n\n        System.out.println("Esquerda: " + root.left.val);\n        System.out.println("Direita: " + root.right.val);\n    }\n}'
             },
             {
                 name: 'Metodo invertTree',
