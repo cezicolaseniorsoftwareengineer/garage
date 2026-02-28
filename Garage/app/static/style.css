@@ -2451,6 +2451,8 @@ body {
     color: #22d3ee;
     opacity: 0.75;
     pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 /* ---- Copy button ---- */
@@ -2470,6 +2472,9 @@ body {
     transition: background 0.15s, border-color 0.15s, color 0.15s;
     line-height: 1.6;
     white-space: nowrap;
+    /* Critical: button text must NOT be selected when user selects code */
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .study-code-copy:hover {
