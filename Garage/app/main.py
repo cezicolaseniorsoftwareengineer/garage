@@ -133,10 +133,13 @@ if DATABASE_URL:
     metrics_service = MetricsService(_sf)
     event_service = EventService(_sf)
 
-    # Seed challenges from JSON into DB (idempotent)
-    seeded = seed_challenges(_sf, os.path.join(DATA_DIR, "challenges.json"))
-    if seeded:
-        print(f"[GARAGE] Seeded {seeded} challenges into PostgreSQL.")
+    # Seed challenges from JSON into DB (idempotent — non-fatal if DB is down)
+    try:
+        seeded = seed_challenges(_sf, os.path.join(DATA_DIR, "challenges.json"))
+        if seeded:
+            print(f"[GARAGE] Seeded {seeded} challenges into PostgreSQL.")
+    except Exception as _seed_exc:
+        print(f"[GARAGE][WARN] Seed skipped (DB unavailable): {type(_seed_exc).__name__}: {_seed_exc}")
 
     # -- Validate challenges are accessible and enum-compatible via PostgreSQL ---
     try:
@@ -151,15 +154,10 @@ if DATABASE_URL:
             "PostgreSQL challenge repo failed: %s: %s", type(_pg_exc).__name__, _pg_exc
         )
         print(f"[GARAGE][ERROR] PostgreSQL challenge repo failed ({type(_pg_exc).__name__}: {_pg_exc}).")
-        # Only fall back to JSON in development. In production this is a hard error
-        # because serving stale/incorrect challenges silently is unacceptable.
-        _is_prod = os.environ.get("ENV", "").lower() == "production"
-        if _is_prod:
-            raise RuntimeError(
-                f"[GARAGE] Fatal: cannot load challenges from PostgreSQL in production. "
-                f"Fix the database before restarting. Error: {_pg_exc}"
-            ) from _pg_exc
-        print("[GARAGE][WARN] Falling back to JSON challenges (development only).")
+        # Fall back to JSON challenges when DB is unavailable (production or dev).
+        # This keeps the app serving players even during DB quota/outage events.
+        # On recovery, the circuit-breaker reopens and future requests use the DB.
+        print("[GARAGE][WARN] Falling back to JSON challenges (DB unavailable).")
         from app.infrastructure.repositories.challenge_repository import ChallengeRepository as _JsonChallengeRepo
         challenge_repo = _JsonChallengeRepo(
             data_path=os.path.join(DATA_DIR, "challenges.json")
