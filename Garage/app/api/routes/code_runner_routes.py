@@ -22,6 +22,7 @@ Internationalisation note
 All user-visible messages are in Portuguese (pt-BR); all identifiers and
 internal comments are in English, per project convention.
 """
+import glob
 import os
 import re
 import shutil
@@ -42,13 +43,65 @@ router = APIRouter(prefix="/api", tags=["code-runner"])
 # ---------------------------------------------------------------------------
 # Configuration (override via env vars)
 # ---------------------------------------------------------------------------
-JAVA_HOME = os.environ.get("JAVA_HOME", "").strip()
-_JAVAC = os.path.join(JAVA_HOME, "bin", "javac") if JAVA_HOME else "javac"
-_JAVA  = os.path.join(JAVA_HOME, "bin", "java")  if JAVA_HOME else "java"
-
 COMPILE_TIMEOUT: float = float(os.environ.get("JAVA_COMPILE_TIMEOUT", "15"))
 RUN_TIMEOUT:     float = float(os.environ.get("JAVA_RUN_TIMEOUT", "10"))
 MAX_OUTPUT_BYTES: int  = int(os.environ.get("JAVA_MAX_OUTPUT_BYTES", str(100 * 1024)))  # 100 KB
+
+
+def _find_java_binary(name: str) -> str:
+    """Locate a Java binary (javac / java) with the following priority:
+
+    1. JAVA_HOME env var (explicit user override)
+    2. shutil.which — respects the current PATH (covers nixpacks PATH)
+    3. Nix store glob — /nix/store/*jdk*/bin/<name>  (Render nix-env installs)
+    4. Common system paths: /usr/lib/jvm, /usr/local
+
+    Returns the resolved path or the bare binary name as a last-resort fallback.
+    """
+    # 1. Explicit JAVA_HOME
+    java_home = os.environ.get("JAVA_HOME", "").strip()
+    if java_home:
+        candidate = os.path.join(java_home, "bin", name)
+        if os.path.isfile(candidate):
+            return candidate
+
+    # 2. PATH lookup (fastest path on correctly-configured systems)
+    found = shutil.which(name)
+    if found:
+        return found
+
+    # 3. Nix store — nixpkgs puts JDKs under /nix/store/*jdk*
+    nix_patterns = [
+        f"/nix/store/*jdk*/bin/{name}",
+        f"/nix/store/*openjdk*/bin/{name}",
+        f"/nix/store/*temurin*/bin/{name}",
+    ]
+    for pattern in nix_patterns:
+        candidates = sorted(glob.glob(pattern), reverse=True)  # newest first
+        if candidates:
+            return candidates[0]
+
+    # 4. Conventional system locations
+    system_dirs = [
+        "/usr/lib/jvm/java-21-openjdk-amd64/bin",
+        "/usr/lib/jvm/java-17-openjdk-amd64/bin",
+        "/usr/lib/jvm/java-21/bin",
+        "/usr/lib/jvm/java-17/bin",
+        "/usr/local/bin",
+        "/usr/bin",
+    ]
+    for d in system_dirs:
+        candidate = os.path.join(d, name)
+        if os.path.isfile(candidate):
+            return candidate
+
+    # Fall back to bare name — will raise FileNotFoundError if not in PATH
+    return name
+
+
+# Resolved once at module load time (fast path for all subsequent requests)
+_JAVAC: str = _find_java_binary("javac")
+_JAVA:  str = _find_java_binary("java")
 
 # ---------------------------------------------------------------------------
 # Request / Response schemas
@@ -173,8 +226,9 @@ def run_java(req: RunJavaRequest) -> RunJavaResponse:
                 stdout="",
                 stderr="",
                 compile_error=(
-                    "Java 17 (javac) não encontrado no servidor. "
-                    "Verifique a variável JAVA_HOME ou a instalação do JDK 17."
+                    f"javac não encontrado no servidor (tentou: {_JAVAC}). "
+                    "nixpacks.toml deve declarar nixPkgs=[\"jdk\"]. "
+                    "Verifique os build logs no Render dashboard."
                 ),
                 exit_code=1,
                 elapsed_ms=elapsed,
@@ -270,3 +324,44 @@ def run_java(req: RunJavaRequest) -> RunJavaResponse:
         elapsed_ms=elapsed,
         javac_version=javac_ver,
     )
+
+
+# ---------------------------------------------------------------------------
+# Diagnostic endpoint — GET /api/java-status
+# ---------------------------------------------------------------------------
+
+@router.get("/java-status")
+def java_status() -> dict:
+    """Return Java installation diagnostics for the Render.com environment.
+
+    Useful for verifying that nixpacks correctly installed the JDK.
+    Access at: https://<your-app>.onrender.com/api/java-status
+    """
+    import platform
+
+    def _run_version(binary: str) -> str:
+        try:
+            r = subprocess.run(
+                [binary, "-version"],
+                capture_output=True, text=True, timeout=5,
+            )
+            return (r.stdout + r.stderr).strip()
+        except FileNotFoundError:
+            return f"NOT FOUND (tried: {binary})"
+        except Exception as exc:
+            return f"ERROR: {exc}"
+
+    # Check nix store for any JDK
+    nix_jdks = sorted(glob.glob("/nix/store/*jdk*/bin/javac"), reverse=True)[:5]
+
+    return {
+        "javac_path": _JAVAC,
+        "java_path": _JAVA,
+        "javac_version": _run_version(_JAVAC),
+        "java_version": _run_version(_JAVA),
+        "JAVA_HOME": os.environ.get("JAVA_HOME", "(not set)"),
+        "PATH": os.environ.get("PATH", "(not set)"),
+        "platform": platform.platform(),
+        "nix_store_jdks_found": nix_jdks,
+    }
+
