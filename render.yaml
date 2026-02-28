@@ -5,7 +5,12 @@ services:
     region: oregon
     plan: free
     rootDir: Garage
-    buildCommand: pip install -r requirements.txt && (javac -version 2>&1 && echo '=== Java OK: javac found in PATH ===' || echo '=== WARNING: javac NOT found - check nixpacks.toml ===')
+    buildCommand: >-
+      apt-get update -qq &&
+      apt-get install -y -q default-jdk-headless &&
+      echo "=== JAVA INSTALLED ===" &&
+      javac -version &&
+      pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
@@ -32,6 +37,10 @@ services:
       - key: JAVA_RUN_TIMEOUT
         value: "10"  # seconds — java process wall-clock limit
         # Note: JAVA_HOME is NOT set — nixpacks installs openjdk17 and puts javac/java in PATH automatically
+      - key: JAVA_HOME
+        value: "/usr/lib/jvm/java-21-openjdk-amd64"
+        # default-jdk-headless on Ubuntu 22.04 installs Java 21 to this path
+        # If the path differs, check /api/java-status after deploy
       - key: ADMIN_USERNAME
         sync: false  # Configure manually in Render dashboard (e.g., cezar)
       - key: ADMIN_EMAIL
