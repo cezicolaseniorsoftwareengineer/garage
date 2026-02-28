@@ -7566,20 +7566,30 @@ const IDE = {
                 }
 
                 if (!compileOk) {
-                    // Real javac error — show exactly what the compiler says
-                    const errLines = compileErr.split('\n').map(l =>
-                        `<span class="ide-term-error">${this._escapeHtml(l)}</span>`
-                    ).join('\n');
-                    term.innerHTML += errLines;
-                    term.innerHTML += '\n<span class="ide-term-error">1 error</span>';
-                    termStatus.textContent = 'Erro na Compilacao';
-                    termStatus.className = 'ide-terminal-status error';
-                    SFX.wrong();
-                    term.innerHTML += '\n<span class="ide-term-info">' + this._attemptCoachMessage(ch, this._attempts) + '</span>';
-                    if (this._attempts >= 3) document.getElementById('ideSkipBtn').style.display = 'flex';
-                    term.scrollTop = term.scrollHeight;
-                    if (runBtn) { runBtn.disabled = false; runBtn.style.opacity = ''; }
-                    return;
+                    // Detect infrastructure error (Java not installed on server yet)
+                    // → degrade gracefully to structural validator instead of blocking player
+                    const isInfraError = compileErr.includes('não encontrado no servidor') ||
+                                        compileErr.includes('JAVA_HOME') ||
+                                        compileErr.includes('Java runtime') ||
+                                        compileErr.includes('FileNotFoundError');
+                    if (isInfraError) {
+                        javaFailed = true;
+                    } else {
+                        // Real javac error — show exactly what the compiler says
+                        const errLines = compileErr.split('\n').map(l =>
+                            `<span class="ide-term-error">${this._escapeHtml(l)}</span>`
+                        ).join('\n');
+                        term.innerHTML += errLines;
+                        term.innerHTML += '\n<span class="ide-term-error">1 error</span>';
+                        termStatus.textContent = 'Erro na Compilacao';
+                        termStatus.className = 'ide-terminal-status error';
+                        SFX.wrong();
+                        term.innerHTML += '\n<span class="ide-term-info">' + this._attemptCoachMessage(ch, this._attempts) + '</span>';
+                        if (this._attempts >= 3) document.getElementById('ideSkipBtn').style.display = 'flex';
+                        term.scrollTop = term.scrollHeight;
+                        if (runBtn) { runBtn.disabled = false; runBtn.style.opacity = ''; }
+                        return;
+                    }
                 }
 
                 // Compilation succeeded — show real execution output
