@@ -193,7 +193,7 @@ async def _stream_openai_sse(system_prompt: str, user_prompt: str):  # pragma: n
 
     base_url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1").strip().rstrip("/")
     endpoint = base_url + "/responses"
-    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "1200") or "1200")
     timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     hdrs = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
@@ -295,7 +295,7 @@ def _call_openai_responses(system_prompt: str, user_prompt: str) -> tuple[str, s
 
     base_url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1").strip().rstrip("/")
     endpoint = base_url + "/responses"
-    max_output_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
+    max_output_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "1200") or "1200")
     request_retries = int(os.environ.get("OPENAI_REQUEST_RETRIES", "2") or "2")
     request_retries = max(1, min(request_retries, 4))
     attempted: list[str] = []
@@ -362,14 +362,14 @@ def _call_openai_responses(system_prompt: str, user_prompt: str) -> tuple[str, s
 
 # Limite de tokens para o chat de estudo -- respostas curtas e rapidas
 # Separado de AI_MAX_TOKENS (que vale para todo o sistema)
-_AI_CHAT_MAX_TOKENS = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
+_AI_CHAT_MAX_TOKENS = int(os.environ.get("AI_CHAT_MAX_TOKENS", "1200") or "1200")
 
 
 def _call_gemini(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:  # pragma: no cover
     """Non-streaming call to Google Gemini. Returns (text, response_id, model)."""
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
-    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "1200") or "1200")
     timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     endpoint = (
         f"https://generativelanguage.googleapis.com/v1beta/models/{model}"
@@ -414,7 +414,7 @@ async def _stream_gemini_sse(system_prompt: str, user_prompt: str):  # pragma: n
         yield 'data: {"err": "Study chat unavailable: missing GEMINI_API_KEY."}\n\n'
         return
     model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
-    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "1200") or "1200")
     timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     endpoint = (
         f"https://generativelanguage.googleapis.com/v1beta/models/{model}"
@@ -464,7 +464,7 @@ def _call_groq(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:  #
     api_key = os.environ.get("GROQ_API_KEY", "").strip()
     model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
     endpoint = "https://api.groq.com/openai/v1/chat/completions"
-    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "1200") or "1200")
     payload = json.dumps({
         "model": model,
         "messages": [
@@ -509,7 +509,7 @@ async def _stream_groq_sse(system_prompt: str, user_prompt: str):  # pragma: no 
         return
     model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
     endpoint = "https://api.groq.com/openai/v1/chat/completions"
-    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "1200") or "1200")
     hdrs = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
@@ -579,7 +579,7 @@ def _call_anthropic(system_prompt: str, user_prompt: str) -> tuple[str, str, str
     api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if not api_key:
         raise HTTPException(status_code=503, detail="Missing ANTHROPIC_API_KEY.")
-    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "1200") or "1200")
     timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     endpoint = "https://api.anthropic.com/v1/messages"
     hdrs = {
@@ -632,7 +632,7 @@ async def _stream_anthropic_sse(system_prompt: str, user_prompt: str):  # pragma
     if not api_key:
         yield 'data: {"err": "Study chat unavailable: missing ANTHROPIC_API_KEY."}\n\n'
         return
-    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "1200") or "1200")
     timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     endpoint = "https://api.anthropic.com/v1/messages"
     hdrs = {

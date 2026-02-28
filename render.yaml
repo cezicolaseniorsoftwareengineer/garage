@@ -26,7 +26,7 @@ services:
       - key: GROQ_MODEL
         value: "llama-3.3-70b-versatile"  # Groq free: 14400 req/day — fallback de quota do OpenAI
       - key: AI_CHAT_MAX_TOKENS
-        value: "350"  # Max tokens for study chat responses
+        value: "1200"  # Max tokens for study chat responses (full code answers)
       - key: JAVA_COMPILE_TIMEOUT
         value: "15"  # seconds — javac wall-clock limit
       - key: JAVA_RUN_TIMEOUT

@@ -307,8 +307,17 @@
         }
 
         @keyframes pulse-green {
-            0%, 100% { opacity: 1; box-shadow: 0 0 4px #22c55e; }
-            50%       { opacity: 0.4; box-shadow: 0 0 10px #22c55e; }
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 4px #22c55e;
+            }
+
+            50% {
+                opacity: 0.4;
+                box-shadow: 0 0 10px #22c55e;
+            }
         }
 
         .last-updated {
@@ -330,9 +339,20 @@
             font-weight: 600;
         }
 
-        .seconds-fresh  { background: #14532d; color: #4ade80; }
-        .seconds-recent { background: #1e3a5f; color: #93c5fd; }
-        .seconds-old    { background: #1c1917; color: #a8a29e; }
+        .seconds-fresh {
+            background: #14532d;
+            color: #4ade80;
+        }
+
+        .seconds-recent {
+            background: #1e3a5f;
+            color: #93c5fd;
+        }
+
+        .seconds-old {
+            background: #1c1917;
+            color: #a8a29e;
+        }
 
         @media (max-width: 768px) {
             .admin-container {
@@ -361,6 +381,7 @@
                 padding: 6px 8px;
             }
         }
+
         .btn-delete-user {
             background: none;
             border: 1px solid #ef4444;
@@ -372,29 +393,35 @@
             line-height: 1;
             transition: background 0.15s, color 0.15s;
         }
+
         .btn-delete-user:hover {
             background: #ef4444;
             color: #fff;
         }
+
         .tr-clickable {
             cursor: pointer;
         }
+
         .tr-clickable:hover {
             background: rgba(251, 191, 36, 0.08) !important;
         }
+
         /* User detail modal */
         .modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.75);
+            background: rgba(0, 0, 0, 0.75);
             z-index: 9999;
             align-items: center;
             justify-content: center;
         }
+
         .modal-overlay.open {
             display: flex;
         }
+
         .modal-box {
             background: #0f172a;
             border: 1px solid #334155;
@@ -406,9 +433,11 @@
             overflow-y: auto;
             position: relative;
         }
+
         .modal-close {
             position: absolute;
-            top: 14px; right: 18px;
+            top: 14px;
+            right: 18px;
             background: none;
             border: none;
             color: #94a3b8;
@@ -416,7 +445,11 @@
             cursor: pointer;
             line-height: 1;
         }
-        .modal-close:hover { color: #f87171; }
+
+        .modal-close:hover {
+            color: #f87171;
+        }
+
         .modal-title {
             font-size: 1.1rem;
             font-weight: 900;
@@ -424,9 +457,11 @@
             letter-spacing: 3px;
             margin-bottom: 20px;
         }
+
         .modal-section {
             margin-bottom: 22px;
         }
+
         .modal-section-title {
             font-size: 0.65rem;
             color: #64748b;
@@ -437,28 +472,33 @@
             border-bottom: 1px solid #1e293b;
             padding-bottom: 5px;
         }
+
         .info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 10px;
         }
+
         .info-item {
             background: #1e293b;
             border-radius: 8px;
             padding: 10px 14px;
         }
+
         .info-item .info-label {
             font-size: 0.6rem;
             color: #64748b;
             letter-spacing: 1px;
             margin-bottom: 3px;
         }
+
         .info-item .info-value {
             font-size: 0.85rem;
             color: #e2e8f0;
             font-weight: 600;
             word-break: break-all;
         }
+
         .session-card {
             background: #1a2336;
             border: 1px solid #1e293b;
@@ -466,44 +506,52 @@
             padding: 14px 18px;
             margin-bottom: 10px;
         }
+
         .session-card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
         }
+
         .session-card-title {
             font-size: 0.8rem;
             font-weight: 700;
             color: #fbbf24;
         }
+
         .session-mini-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
             gap: 6px;
             margin-bottom: 8px;
         }
+
         .session-mini-item {
             background: #0f172a;
             border-radius: 6px;
             padding: 6px 10px;
         }
+
         .session-mini-item .sm-label {
             font-size: 0.55rem;
             color: #64748b;
             letter-spacing: 1px;
         }
+
         .session-mini-item .sm-value {
             font-size: 0.78rem;
             color: #cbd5e1;
             font-weight: 600;
         }
+
         .tag-list {
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
             margin-top: 5px;
         }
+
         .tag {
             background: #1e3a5f;
             color: #93c5fd;
@@ -512,25 +560,79 @@
             font-size: 0.6rem;
             font-weight: 600;
         }
+
         .tag-book {
             background: #14532d;
             color: #86efac;
         }
+
         .tag-region {
             background: #44204a;
             color: #e879f9;
+        }
+
+        /* ---- Non-blocking toast notification ---- */
+        #admin-toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .admin-toast-msg {
+            padding: 11px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #fff;
+            background: #1f2937;
+            border-left: 4px solid #58a6ff;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .45);
+            opacity: 0;
+            transform: translateY(12px);
+            animation: toastIn .22s ease forwards;
+            max-width: 360px;
+            word-break: break-word;
+        }
+
+        .admin-toast-msg.warn {
+            border-left-color: #ffbd2e;
+        }
+
+        .admin-toast-msg.error {
+            border-left-color: #ff5f56;
+        }
+
+        .admin-toast-msg.ok {
+            border-left-color: #27c93f;
+        }
+
+        @keyframes toastIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
 
 <body>
 
+    <!-- Non-blocking toast container -->
+    <div id="admin-toast"></div>
+
     <!-- USER DETAIL MODAL -->
     <div id="userDetailModal" class="modal-overlay" onclick="if(event.target===this)closeUserModal()">
         <div class="modal-box">
             <button class="modal-close" onclick="closeUserModal()">&#x2715;</button>
             <div class="modal-title" id="modalTitle">DADOS DO USUARIO</div>
-            <div id="modalContent"><div class="loading">Carregando...</div></div>
+            <div id="modalContent">
+                <div class="loading">Carregando...</div>
+            </div>
         </div>
     </div>
 
@@ -550,7 +652,9 @@
             <div class="header-right">
                 <span class="admin-user" id="adminUserLabel"></span>
                 <span class="last-updated" id="lastUpdatedLabel"></span>
-                <button class="refresh-btn" style="border-color:#ef4444;color:#ef4444;" onclick="purgeOrphanedSessions()" title="Deletar sessoes sem usuario registrado">LIMPAR ORFAS</button>
+                <button class="refresh-btn" style="border-color:#ef4444;color:#ef4444;"
+                    onclick="purgeOrphanedSessions()" title="Deletar sessoes sem usuario registrado">LIMPAR
+                    ORFAS</button>
                 <button class="refresh-btn" onclick="loadAll()">ATUALIZAR</button>
                 <button class="logout-btn" onclick="doLogout()">SAIR</button>
             </div>
@@ -591,7 +695,8 @@
 
             <!-- Tabs -->
             <div class="tabs">
-                <button class="tab-btn active" data-tab="online" onclick="switchTab('online')"><span class="pulse-dot"></span>ONLINE</button>
+                <button class="tab-btn active" data-tab="online" onclick="switchTab('online')"><span
+                        class="pulse-dot"></span>ONLINE</button>
                 <button class="tab-btn" data-tab="ranking" onclick="switchTab('ranking')">RANKING</button>
                 <button class="tab-btn" data-tab="users" onclick="switchTab('users')">USUARIOS</button>
                 <button class="tab-btn" data-tab="sessions" onclick="switchTab('sessions')">SESSOES</button>
@@ -600,7 +705,9 @@
             <!-- Online tab -->
             <div id="tab-online" class="tab-content active">
                 <div class="loading" id="onlineLoading">Verificando usuarios online...</div>
-                <div id="onlineEmpty" style="display:none; text-align:center; padding:40px; color:#475569; font-size:0.85rem;">Nenhum usuario ativo nos ultimos 5 minutos.</div>
+                <div id="onlineEmpty"
+                    style="display:none; text-align:center; padding:40px; color:#475569; font-size:0.85rem;">Nenhum
+                    usuario ativo nos ultimos 5 minutos.</div>
                 <table id="onlineTable" style="display:none;">
                     <thead>
                         <tr>
@@ -726,6 +833,22 @@
             document.getElementById('dashboardScreen').style.display = 'none';
         }
 
+        // ---- Toast (non-blocking replacement for alert) ----
+        function showToast(msg, type = 'info', durationMs = 4500) {
+            const container = document.getElementById('admin-toast');
+            if (!container) return;
+            const el = document.createElement('div');
+            el.className = 'admin-toast-msg' + (type !== 'info' ? ' ' + type : '');
+            el.textContent = msg;
+            container.appendChild(el);
+            setTimeout(() => {
+                el.style.transition = 'opacity .3s, transform .3s';
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(12px)';
+                setTimeout(() => el.remove(), 320);
+            }, durationMs);
+        }
+
         async function apiFetch(url) {
             let res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + accessToken } });
             if (res.status === 401 && refreshToken) {
@@ -778,8 +901,11 @@
                 document.getElementById('lastUpdatedLabel').textContent =
                     'atualizado ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             } catch (e) {
-                alert(e.message);
-                if (e.message.includes('Acesso negado')) doLogout();
+                // Silent on network/502 errors during auto-refresh — show non-blocking toast
+                const msg = e && e.message ? e.message : 'Erro de conexao';
+                const is502 = msg.includes('502') || msg.includes('503') || msg.includes('504');
+                if (!is502) showToast('\u26a0 ' + msg, 'warn');
+                if (e.message && e.message.includes('Acesso negado')) doLogout();
             }
         }
 
@@ -814,9 +940,9 @@
         };
 
         const LANG_COLOR = {
-            'Java':   '#f89820', 'Python': '#3572A5', 'C':    '#555555',
-            'C++':    '#f34b7d', 'C#':    '#178600', '.NET': '#512bd4',
-            'Ruby':   '#701516', 'Rust':  '#dea584', 'Go':   '#00add8',
+            'Java': '#f89820', 'Python': '#3572A5', 'C': '#555555',
+            'C++': '#f34b7d', 'C#': '#178600', '.NET': '#512bd4',
+            'Ruby': '#701516', 'Rust': '#dea584', 'Go': '#00add8',
         };
         function langBadge(lang) {
             if (!lang || lang === '---') return '---';
@@ -876,9 +1002,9 @@
                 const sec = s.seconds_ago;
                 let secClass = 'seconds-old';
                 let secLabel = sec != null ? sec + 's atras' : '---';
-                if (sec != null && sec < 60)  { secClass = 'seconds-fresh';  secLabel = sec + 's atras'; }
-                else if (sec != null && sec < 180) { secClass = 'seconds-recent'; secLabel = Math.floor(sec/60) + 'min atras'; }
-                else if (sec != null)           { secLabel = Math.floor(sec/60) + 'min atras'; }
+                if (sec != null && sec < 60) { secClass = 'seconds-fresh'; secLabel = sec + 's atras'; }
+                else if (sec != null && sec < 180) { secClass = 'seconds-recent'; secLabel = Math.floor(sec / 60) + 'min atras'; }
+                else if (sec != null) { secLabel = Math.floor(sec / 60) + 'min atras'; }
 
                 // Error badge: max 2 per stage. 0 = green, 1 = red PERIGO (next wrong = game over)
                 const errs = s.current_errors != null ? s.current_errors : 0;
@@ -981,17 +1107,17 @@
             const u = d.user || {};
             const stats = d.stats || {};
             const sessions = d.sessions || [];
-            const STAGE_PT_LOCAL = { Intern:'Estagiario',Junior:'Junior',Mid:'Pleno',Senior:'Senior',Staff:'Staff',Principal:'Principal',Distinguished:'CEO' };
+            const STAGE_PT_LOCAL = { Intern: 'Estagiario', Junior: 'Junior', Mid: 'Pleno', Senior: 'Senior', Staff: 'Staff', Principal: 'Principal', Distinguished: 'CEO' };
 
             // === PERFIL ===
             let html = '<div class="modal-section">';
             html += '<div class="modal-section-title">Perfil do Usuario</div>';
             html += '<div class="info-grid">';
             const profileFields = [
-                ['ID', u.id],['Nome completo', u.full_name],['Username', u.username],
-                ['Email', u.email],['Profissao', u.profession],['Idioma', u.language],
-                ['Email verificado', u.email_verified ? 'Sim ✓' : 'Nao'],['Cadastro', formatDate(u.created_at)],
-                ['Ultimo acesso', formatDate(u.last_login_at)],['Role', u.role || '---'],
+                ['ID', u.id], ['Nome completo', u.full_name], ['Username', u.username],
+                ['Email', u.email], ['Profissao', u.profession], ['Idioma', u.language],
+                ['Email verificado', u.email_verified ? 'Sim ✓' : 'Nao'], ['Cadastro', formatDate(u.created_at)],
+                ['Ultimo acesso', formatDate(u.last_login_at)], ['Role', u.role || '---'],
             ];
             profileFields.forEach(([lbl, val]) => {
                 html += '<div class="info-item"><div class="info-label">' + lbl + '</div><div class="info-value">' + esc(String(val ?? '---')) + '</div></div>';
@@ -1003,9 +1129,9 @@
             html += '<div class="modal-section-title">Estatisticas Consolidadas</div>';
             html += '<div class="info-grid">';
             const statFields = [
-                ['Total de sessoes', stats.total_sessions],['Jogos completos', stats.completed_runs],
-                ['Melhor score', stats.best_score],['Score acumulado', stats.total_score],
-                ['Total tentativas', stats.total_attempts],['Desafios completos', stats.total_completed_challenges],
+                ['Total de sessoes', stats.total_sessions], ['Jogos completos', stats.completed_runs],
+                ['Melhor score', stats.best_score], ['Score acumulado', stats.total_score],
+                ['Total tentativas', stats.total_attempts], ['Desafios completos', stats.total_completed_challenges],
                 ['Total game overs', stats.total_game_overs],
             ];
             statFields.forEach(([lbl, val]) => {
@@ -1026,7 +1152,7 @@
 
                     html += '<div class="session-card">';
                     html += '<div class="session-card-header">';
-                    html += '<span class="session-card-title">#' + (i+1) + ' — ' + esc(s.name || '---') + '</span>';
+                    html += '<span class="session-card-title">#' + (i + 1) + ' — ' + esc(s.name || '---') + '</span>';
                     html += '<span style="font-size:0.7rem;font-weight:700;color:' + statusColor + '">' + statusText + '</span>';
                     html += '</div>';
 
@@ -1125,13 +1251,13 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    if (!silent) alert(data.message);
-                    if (data.deleted > 0) loadAll(); // atualiza so se havia orfas
+                    if (!silent) showToast(data.message, 'ok');
+                    if (data.deleted > 0) loadAll();
                 } else {
-                    if (!silent) alert('Erro: ' + (data.detail || 'Falha ao limpar sessoes.'));
+                    if (!silent) showToast('Erro: ' + (data.detail || 'Falha ao limpar sessoes.'), 'error');
                 }
             } catch (e) {
-                if (!silent) alert('Erro de conexao: ' + e.message);
+                if (!silent) showToast('Erro de conexao: ' + e.message, 'error');
             }
         }
 
@@ -1160,12 +1286,12 @@
                 } else {
                     btn.disabled = false;
                     btn.textContent = '\u{1F5D1}';
-                    alert('Erro: ' + (data.detail || 'Falha ao deletar usuario.'));
+                    showToast('Erro: ' + (data.detail || 'Falha ao deletar usuario.'), 'error');
                 }
             } catch (e) {
                 btn.disabled = false;
                 btn.textContent = '\u{1F5D1}';
-                alert('Erro de conexao: ' + e.message);
+                showToast('Erro de conexao: ' + e.message, 'error');
             }
         }
 
