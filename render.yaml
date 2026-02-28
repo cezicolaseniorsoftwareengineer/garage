@@ -5,7 +5,9 @@ services:
     region: oregon
     plan: free
     rootDir: Garage
-    buildCommand: pip install -r requirements.txt
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      (java -version 2>/dev/null || apt-get install -y -q default-jdk-headless 2>/dev/null || true)
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:

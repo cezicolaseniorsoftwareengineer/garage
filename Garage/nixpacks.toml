@@ -1,6 +1,8 @@
 # Nixpacks configuration for Render.com
-# Installs Java 17 (JDK) alongside Python so javac/java are available in PATH.
+# Installs Java 17 JDK alongside Python so javac/java are available in PATH.
 # render.yaml startCommand overrides the [start] section below.
 
 [phases.setup]
-nixPkgs = ["openjdk17"]
+# jdk17_headless: full JDK 17 headless — includes javac (compiler) + java (runtime)
+# openjdk17 alias also listed as fallback for older nixpkgs channels
+nixPkgs = ["jdk17_headless"]
