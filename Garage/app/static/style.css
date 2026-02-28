@@ -2155,6 +2155,25 @@ body {
     font-size: 0.72rem;
 }
 
+/* Dots animados no cabeçalho enquanto a IA processa */
+.chat-header-dots {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 5px;
+}
+
+.chat-header-dots span {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #22d3ee;
+    animation: garageDotWave 1s ease-in-out infinite;
+}
+
+.chat-header-dots span:nth-child(2) { animation-delay: 0.2s; }
+.chat-header-dots span:nth-child(3) { animation-delay: 0.4s; }
+
 .study-chat-close {
     border: 1px solid #334155;
     border-radius: 8px;

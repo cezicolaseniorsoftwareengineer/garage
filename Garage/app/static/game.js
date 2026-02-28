@@ -374,6 +374,23 @@ const StudyChat = {
         this._busy = busy;
         const { send, input } = this._els();
 
+        // Dots animados no cabeçalho fixo — aparecem/somem com o busy
+        const existingDots = document.getElementById('chatHeaderDots');
+        if (busy) {
+            if (!existingDots) {
+                const h3 = document.querySelector('#studyChatOverlay .study-chat-header h3');
+                if (h3) {
+                    const dots = document.createElement('span');
+                    dots.id = 'chatHeaderDots';
+                    dots.className = 'chat-header-dots';
+                    dots.innerHTML = '<span></span><span></span><span></span>';
+                    h3.parentNode.insertBefore(dots, h3.nextSibling);
+                }
+            }
+        } else {
+            if (existingDots) existingDots.remove();
+        }
+
         if (send) {
             // Button is always clickable — busy state triggers cancel, not disable
             send.disabled = false;
@@ -478,6 +495,16 @@ const StudyChat = {
             const wrap = document.createElement('div');
             wrap.className = 'study-msg ' + (m.role === 'user' ? 'study-msg-user' : 'study-msg-assistant');
 
+            // Placeholder de carregamento: não renderiza nenhum card na área de mensagens
+            const isLoadingPlaceholder =
+                m.role === 'assistant' &&
+                this._busy &&
+                m.content === '\u25cf\u25cf\u25cf';
+            if (isLoadingPlaceholder) return; // sem card — dots ficam só no cabeçalho
+
+            const wrap = document.createElement('div');
+            wrap.className = 'study-msg ' + (m.role === 'user' ? 'study-msg-user' : 'study-msg-assistant');
+
             const meta = document.createElement('span');
             meta.className = 'study-msg-meta';
             meta.textContent = m.role === 'user'
@@ -486,17 +513,7 @@ const StudyChat = {
 
             const body = document.createElement('div');
             body.className = 'study-msg-body';
-            // Se for o placeholder de carregamento (busy), renderiza dots animados no card
-            const isLoadingPlaceholder =
-                m.role === 'assistant' &&
-                this._busy &&
-                m.content === '\u25cf\u25cf\u25cf';
-            if (isLoadingPlaceholder) {
-                body.innerHTML =
-                    '<div class="ai-typing-dots">' +
-                    '<span></span><span></span><span></span>' +
-                    '</div>';
-            } else if (m.role === 'assistant') {
+            if (m.role === 'assistant') {
                 body.innerHTML = this._renderMarkdown(m.content);
             } else {
                 body.textContent = m.content;
