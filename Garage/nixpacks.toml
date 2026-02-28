@@ -1,0 +1,6 @@
+# Nixpacks configuration for Render.com
+# Installs Java 17 (JDK) alongside Python so javac/java are available in PATH.
+# render.yaml startCommand overrides the [start] section below.
+
+[phases.setup]
+nixPkgs = ["openjdk17"]

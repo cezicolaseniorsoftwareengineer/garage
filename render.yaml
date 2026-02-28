@@ -5,8 +5,9 @@ services:
     region: oregon
     plan: free
     rootDir: Garage
-    buildCommand: apt-get update -qq && apt-get install -y --no-install-recommends openjdk-17-jdk-headless && pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.0"
@@ -26,12 +27,11 @@ services:
         value: "llama-3.3-70b-versatile"  # Groq free: 14400 req/day — fallback de quota do OpenAI
       - key: AI_CHAT_MAX_TOKENS
         value: "350"  # Max tokens for study chat responses
-      - key: JAVA_HOME
-        value: "/usr/lib/jvm/java-17-openjdk-amd64"  # Java 17 path on Render (Ubuntu)
       - key: JAVA_COMPILE_TIMEOUT
         value: "15"  # seconds — javac wall-clock limit
       - key: JAVA_RUN_TIMEOUT
         value: "10"  # seconds — java process wall-clock limit
+        # Note: JAVA_HOME is NOT set — nixpacks installs openjdk17 and puts javac/java in PATH automatically
       - key: ADMIN_USERNAME
         sync: false  # Configure manually in Render dashboard (e.g., cezar)
       - key: ADMIN_EMAIL
