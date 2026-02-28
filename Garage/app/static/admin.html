@@ -748,9 +748,10 @@
         function renderRanking(data) {
             document.getElementById('rankingLoading').style.display = 'none';
             const table = document.getElementById('rankingTable');
-            table.style.display = '';
             const body = document.getElementById('rankingBody');
             body.innerHTML = '';
+            if (!data || !Array.isArray(data)) { table.style.display = 'none'; return; }
+            table.style.display = '';
             data.forEach(e => {
                 const tr = document.createElement('tr');
                 const statusText = e.completed ? 'completed' : 'in_progress';
@@ -772,9 +773,10 @@
         function renderUsers(data) {
             document.getElementById('usersLoading').style.display = 'none';
             const table = document.getElementById('usersTable');
-            table.style.display = '';
             const body = document.getElementById('usersBody');
             body.innerHTML = '';
+            if (!data || !Array.isArray(data)) { table.style.display = 'none'; return; }
+            table.style.display = '';
             data.forEach(u => {
                 const tr = document.createElement('tr');
                 tr.innerHTML =
@@ -787,7 +789,7 @@
                     '<td>' + (STAGE_PT[u.best_stage] || u.best_stage) + '</td>' +
                     '<td>' + u.best_score + '</td>' +
                     '<td>' + formatDate(u.created_at) + '</td>' +
-                    '<td><button class="btn-delete-user" onclick="deleteUser(\'' + esc(u.id) + '\', \'' + esc(u.username) + '\')">&#128465;</button></td>';
+                    '<td><button class="btn-delete-user" onclick="deleteUser(event, \'' + esc(u.id) + '\', \'' + esc(u.username) + '\')" title="Deletar usuario">&#128465;</button></td>';
                 body.appendChild(tr);
             });
         }
@@ -795,9 +797,10 @@
         function renderSessions(data) {
             document.getElementById('sessionsLoading').style.display = 'none';
             const table = document.getElementById('sessionsTable');
-            table.style.display = '';
             const body = document.getElementById('sessionsBody');
             body.innerHTML = '';
+            if (!data || !Array.isArray(data)) { table.style.display = 'none'; return; }
+            table.style.display = '';
             data.forEach(s => {
                 const tr = document.createElement('tr');
                 tr.innerHTML =
@@ -829,8 +832,11 @@
         }
 
         // -- Delete user --
-        async function deleteUser(userId, username) {
+        async function deleteUser(evt, userId, username) {
             if (!confirm('Tem certeza que deseja DELETAR o usuario "' + username + '" permanentemente?\nEsta acao nao pode ser desfeita.')) return;
+            const btn = evt.currentTarget;
+            btn.disabled = true;
+            btn.textContent = '...';
             try {
                 const res = await fetch('/api/admin/users/' + encodeURIComponent(userId), {
                     method: 'DELETE',
@@ -838,12 +844,23 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    alert('Usuario "' + username + '" deletado com sucesso.');
-                    loadDashboard();
+                    // Remove a linha imediatamente do DOM
+                    const row = btn.closest('tr');
+                    if (row) {
+                        row.style.transition = 'opacity 0.2s';
+                        row.style.opacity = '0';
+                        setTimeout(() => row.remove(), 200);
+                    }
+                    // Sincroniza contadores em background
+                    loadAll();
                 } else {
+                    btn.disabled = false;
+                    btn.textContent = '\u{1F5D1}';
                     alert('Erro: ' + (data.detail || 'Falha ao deletar usuario.'));
                 }
             } catch (e) {
+                btn.disabled = false;
+                btn.textContent = '\u{1F5D1}';
                 alert('Erro de conexao: ' + e.message);
             }
         }

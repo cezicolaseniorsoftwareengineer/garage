@@ -73,6 +73,31 @@ class EmailVerificationModel(Base):
 
 
 # ---------------------------------------------------------------------------
+# Pending Registrations (pre-verification staging area)
+# Users are stored here ONLY until they confirm their e-mail OTP.
+# On successful verification the row is moved to the *users* table.
+# This prevents unverified accounts from appearing in admin panels or
+# leaderboards and eliminates the OWASP A07 (auth) risk of ghost accounts.
+# ---------------------------------------------------------------------------
+
+class PendingRegistrationModel(Base):
+    __tablename__ = "pending_registrations"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=_new_uuid)
+    full_name = Column(String(100), nullable=False)
+    username = Column(String(30), unique=True, nullable=False, index=True)
+    email = Column(String(120), unique=True, nullable=False, index=True)
+    whatsapp = Column(String(20), nullable=False)
+    profession = Column(String(30), nullable=False)
+    password_hash = Column(String(255), nullable=False)
+    salt = Column(String(64), nullable=False, default="bcrypt")
+    # SHA-256 of the 6-digit OTP (plaintext never stored)
+    token_hash = Column(String(64), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=_utcnow)
+
+
+# ---------------------------------------------------------------------------
 # Characters (cosmetic only)
 # ---------------------------------------------------------------------------
 

@@ -117,6 +117,11 @@ def api_admin_online(current_user: dict = Depends(get_current_user)):
     result = []
     for s in active:
         user = user_map.get(s.get("user_id"))
+
+        # Skip orphaned sessions: user_id set but user no longer exists (was deleted)
+        if s.get("user_id") and user is None:
+            continue
+
         now = datetime.now(timezone.utc)
         last_active = None
         seconds_ago = None

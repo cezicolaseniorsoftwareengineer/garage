@@ -132,13 +132,33 @@ class PgUserRepository:
     def delete_user(self, user_id: str) -> bool:
         """Permanently delete a user and all related data (cascade).
 
-        Deletes rows in dependent tables first to avoid FK violations,
-        then removes the user record. Returns True if a row was deleted.
+        Cascade order (FK dependencies):
+          1. attempts         → FK game_sessions.id
+          2. leaderboard_entries → FK users.id
+          3. game_sessions    → FK users.id
+          4. email_verifications → FK users.id
+          5. user_metrics     → FK users.id
+          6. game_events      → user_id (nullable, no hard FK)
+          7. users            → the user row itself
         """
         from sqlalchemy import text
         with self._sf() as session:
-            # Cascade: delete from all FK-dependent tables
+            # Step 1: delete attempts belonging to this user's sessions
+            try:
+                session.execute(
+                    text(
+                        "DELETE FROM attempts WHERE session_id IN "
+                        "(SELECT id FROM game_sessions WHERE user_id = :uid)"
+                    ),
+                    {"uid": user_id},
+                )
+            except Exception:
+                session.rollback()
+
+            # Steps 2-6: delete remaining FK-dependent rows keyed by user_id
             for table in (
+                "leaderboard_entries",
+                "game_sessions",
                 "email_verifications",
                 "user_metrics",
                 "game_events",
@@ -150,6 +170,8 @@ class PgUserRepository:
                     )
                 except Exception:
                     session.rollback()
+
+            # Step 7: delete the user row
             row = session.query(UserModel).filter(UserModel.id == user_id).first()
             if not row:
                 return False
