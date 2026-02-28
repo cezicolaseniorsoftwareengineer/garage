@@ -1015,7 +1015,7 @@
     "category": "architecture",
     "required_stage": "Principal",
     "region": "Santander",
-    "mentor": null,
+    "mentor": "ANA BOTIN",
     "points_on_correct": 200,
     "options": [
       {
@@ -1043,7 +1043,7 @@
     "category": "architecture",
     "required_stage": "Principal",
     "region": "Santander",
-    "mentor": null,
+    "mentor": "ANA BOTIN",
     "points_on_correct": 200,
     "options": [
       {
@@ -1071,7 +1071,7 @@
     "category": "distributed_systems",
     "required_stage": "Principal",
     "region": "Santander",
-    "mentor": null,
+    "mentor": "ANA BOTIN",
     "points_on_correct": 200,
     "options": [
       {
@@ -1099,7 +1099,7 @@
     "category": "architecture",
     "required_stage": "Principal",
     "region": "Bradesco",
-    "mentor": null,
+    "mentor": "MARCELO NORONHA",
     "points_on_correct": 200,
     "options": [
       {
@@ -1127,7 +1127,7 @@
     "category": "architecture",
     "required_stage": "Principal",
     "region": "Bradesco",
-    "mentor": null,
+    "mentor": "MARCELO NORONHA",
     "points_on_correct": 200,
     "options": [
       {
@@ -1155,7 +1155,7 @@
     "category": "architecture",
     "required_stage": "Principal",
     "region": "Bradesco",
-    "mentor": null,
+    "mentor": "MARCELO NORONHA",
     "points_on_correct": 200,
     "options": [
       {
@@ -1183,7 +1183,7 @@
     "category": "distributed_systems",
     "required_stage": "Principal",
     "region": "Cloud Valley",
-    "mentor": null,
+    "mentor": "LINUS TORVALDS",
     "points_on_correct": 200,
     "options": [
       {
@@ -1207,11 +1207,11 @@
     "id": "principal_08_cloud_legacy",
     "title": "A Refatoração do Legado",
     "description": "Você herda um monolito de 10 anos sem nenhum teste, processando R$250 milhões em transações diárias. Qual é o primeiro passo correto?",
-    "context_code": null,
+    "context_code": "// Legacy MonolithController.java — 10 anos, R$250M/dia, ZERO testes\npublic class MonolithController {\n  public String processTransaction(Map<String, Object> data) {\n    // ~2.000 linhas de logica acoplada, sem contratos, sem testes\n    // ERRADO: reescrever tudo do zero (anos perdidos, risco total)\n    // CORRETO: escrever Characterization Tests PRIMEIRO nos caminhos\n    //          criticos, depois refatorar incrementalmente com seguranca\n    return cobolLegacy.process(data); // nao touche sem cobertura!\n  }\n}",
     "category": "architecture",
     "required_stage": "Principal",
     "region": "Cloud Valley",
-    "mentor": null,
+    "mentor": "LINUS TORVALDS",
     "points_on_correct": 200,
     "options": [
       {
@@ -1235,11 +1235,11 @@
     "id": "principal_09_cloud_oath",
     "title": "O Juramento do Engenheiro",
     "description": "Você chegou ao fim. O que define um Distinguished Engineer?",
-    "context_code": null,
+    "context_code": "// Distinguished Engineer vs Senior Developer\n//\n// Senior:        \"Como implemento esta feature?\"\n// Distinguished: \"Devemos implementar esta feature?\"\n//                \"Qual o trade-off? Qual o custo de manutencao em 5 anos?\"\n//\n// \"Any fool can write code a computer can understand.\n//  Good programmers write code humans can understand.\"\n//    -- Martin Fowler\n//\n// O Distinguished Engineer protege o sistema de si mesmo.",
     "category": "domain_modeling",
     "required_stage": "Principal",
     "region": "Cloud Valley",
-    "mentor": null,
+    "mentor": "LINUS TORVALDS",
     "points_on_correct": 300,
     "options": [
       {
@@ -1603,7 +1603,7 @@
     "category": "logic",
     "required_stage": "Staff",
     "region": "SpaceX",
-    "mentor": null,
+    "mentor": "ELON MUSK",
     "points_on_correct": 250,
     "options": [
       {
@@ -1631,7 +1631,7 @@
     "category": "logic",
     "required_stage": "Staff",
     "region": "SpaceX",
-    "mentor": null,
+    "mentor": "ELON MUSK",
     "points_on_correct": 250,
     "options": [
       {
@@ -1659,7 +1659,7 @@
     "category": "architecture",
     "required_stage": "Staff",
     "region": "SpaceX",
-    "mentor": null,
+    "mentor": "ELON MUSK",
     "points_on_correct": 250,
     "options": [
       {
@@ -1687,7 +1687,7 @@
     "category": "logic",
     "required_stage": "Staff",
     "region": "Nvidia",
-    "mentor": null,
+    "mentor": "JENSEN HUANG",
     "points_on_correct": 250,
     "options": [
       {
@@ -1715,7 +1715,7 @@
     "category": "logic",
     "required_stage": "Staff",
     "region": "Nvidia",
-    "mentor": null,
+    "mentor": "JENSEN HUANG",
     "points_on_correct": 250,
     "options": [
       {
@@ -1743,7 +1743,7 @@
     "category": "logic",
     "required_stage": "Staff",
     "region": "Nvidia",
-    "mentor": null,
+    "mentor": "JENSEN HUANG",
     "points_on_correct": 250,
     "options": [
       {
@@ -1771,7 +1771,7 @@
     "category": "logic",
     "required_stage": "Staff",
     "region": "Aurora Labs",
-    "mentor": null,
+    "mentor": "SAM ALTMAN",
     "points_on_correct": 250,
     "options": [
       {
@@ -1799,7 +1799,7 @@
     "category": "logic",
     "required_stage": "Staff",
     "region": "Aurora Labs",
-    "mentor": null,
+    "mentor": "SAM ALTMAN",
     "points_on_correct": 250,
     "options": [
       {
@@ -1827,7 +1827,7 @@
     "category": "architecture",
     "required_stage": "Staff",
     "region": "Aurora Labs",
-    "mentor": null,
+    "mentor": "SAM ALTMAN",
     "points_on_correct": 250,
     "options": [
       {
@@ -1855,7 +1855,7 @@
     "category": "logic",
     "required_stage": "Principal",
     "region": "Gemini",
-    "mentor": null,
+    "mentor": "DEMIS HASSABIS",
     "points_on_correct": 300,
     "options": [
       {
@@ -1883,7 +1883,7 @@
     "category": "logic",
     "required_stage": "Principal",
     "region": "Gemini",
-    "mentor": null,
+    "mentor": "DEMIS HASSABIS",
     "points_on_correct": 300,
     "options": [
       {
@@ -1911,7 +1911,7 @@
     "category": "domain_modeling",
     "required_stage": "Principal",
     "region": "Gemini",
-    "mentor": null,
+    "mentor": "DEMIS HASSABIS",
     "points_on_correct": 300,
     "options": [
       {
@@ -1939,7 +1939,7 @@
     "category": "logic",
     "required_stage": "Principal",
     "region": "Nexus Labs",
-    "mentor": null,
+    "mentor": "THE ARCHITECT",
     "points_on_correct": 300,
     "options": [
       {
@@ -1967,7 +1967,7 @@
     "category": "logic",
     "required_stage": "Principal",
     "region": "Nexus Labs",
-    "mentor": null,
+    "mentor": "THE ARCHITECT",
     "points_on_correct": 300,
     "options": [
       {
@@ -1995,7 +1995,7 @@
     "category": "logic",
     "required_stage": "Principal",
     "region": "Nexus Labs",
-    "mentor": null,
+    "mentor": "THE ARCHITECT",
     "points_on_correct": 300,
     "options": [
       {
@@ -2023,7 +2023,7 @@
     "category": "architecture",
     "required_stage": "Principal",
     "region": "Bio Code Technology",
-    "mentor": "Cezi Cola",
+    "mentor": "CEZI COLA",
     "points_on_correct": 400,
     "options": [
       {
@@ -2051,7 +2051,7 @@
     "category": "distributed_systems",
     "required_stage": "Principal",
     "region": "Bio Code Technology",
-    "mentor": "Cezi Cola",
+    "mentor": "CEZI COLA",
     "points_on_correct": 400,
     "options": [
       {
@@ -2079,7 +2079,7 @@
     "category": "architecture",
     "required_stage": "Principal",
     "region": "Bio Code Technology",
-    "mentor": "Cezi Cola",
+    "mentor": "CEZI COLA",
     "points_on_correct": 500,
     "options": [
       {
