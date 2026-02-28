@@ -703,10 +703,23 @@ async def _stream_with_fallback(system_prompt: str, user_prompt: str):  # pragma
     providers: list[tuple[str, object]] = []
     if os.environ.get("ANTHROPIC_API_KEY", "").strip():
         providers.append(("Anthropic", lambda: _stream_anthropic_sse(system_prompt, user_prompt)))
-    if os.environ.get("OPENAI_API_KEY", "").strip():
-        providers.append(("OpenAI", lambda: _stream_openai_sse(system_prompt, user_prompt)))
-    if os.environ.get("GROQ_API_KEY", "").strip():
-        providers.append(("Groq", lambda: _stream_groq_sse(system_prompt, user_prompt)))
+
+    # AI_GROQ_PRIORITY=true coloca Groq antes do OpenAI para respostas mais rápidas (~300-800ms)
+    groq_priority = os.environ.get("AI_GROQ_PRIORITY", "false").strip().lower() in ("1", "true", "yes")
+    openai_entry = ("OpenAI", lambda: _stream_openai_sse(system_prompt, user_prompt))
+    groq_entry = ("Groq", lambda: _stream_groq_sse(system_prompt, user_prompt))
+
+    if groq_priority:
+        if os.environ.get("GROQ_API_KEY", "").strip():
+            providers.append(groq_entry)
+        if os.environ.get("OPENAI_API_KEY", "").strip():
+            providers.append(openai_entry)
+    else:
+        if os.environ.get("OPENAI_API_KEY", "").strip():
+            providers.append(openai_entry)
+        if os.environ.get("GROQ_API_KEY", "").strip():
+            providers.append(groq_entry)
+
     if os.environ.get("GEMINI_API_KEY", "").strip():
         providers.append(("Gemini", lambda: _stream_gemini_sse(system_prompt, user_prompt)))
 
@@ -909,8 +922,12 @@ def _build_prompts(
     curriculum = _STAGE_CURRICULUM.get(stage, _STAGE_CURRICULUM["Mid"])
 
     system_prompt = (
-        "Voce e o Professor CeziCola — agente especialista em Logica de Programacao, "
-        "Estruturas de Dados e Algoritmos, do nivel Intern ao Principal Engineer.\n\n"
+        "Você é Cezi Cola — Senior Software Engineer e CEO da Bio Code Technology, "
+        "criador do jogo 404 Garage. Você é o mesmo Cezi Cola que aparece no jogo como NPC Principal. "
+        "Sua identidade é humana e técnica: engenheiro experiente, direto, apaixonado por ensinar. "
+        "Jamais se apresente como robô, professor artificial ou IA genérica. "
+        "Você é Cezi Cola — ponto. Especialista em Lógica de Programação, "
+        "Estruturas de Dados e Algoritmos, do nível Intern ao Principal Engineer.\n\n"
 
         # ── Logica de Programacao ──────────────────────────────────────────
         "LOGICA DE PROGRAMACAO (base de tudo):\n"

@@ -211,6 +211,7 @@ const StudyChat = {
     _messages: [],
     _sessionKey: null,
     _bound: false,
+    _typingTimer: null,
 
     _els() {
         return {
@@ -235,7 +236,6 @@ const StudyChat = {
                 '    <div>' +
                 '      <h3>Garage A.I</h3>' +
                 '      <p id="studyChatContext">Java + Estruturas de Dados</p>' +
-                '      <div class="garage-ai-dots" id="garageAiDots"><span></span><span></span><span></span></div>' +
                 '    </div>' +
                 '    <button class="study-chat-close" onclick="StudyChat.close()">&times;</button>' +
                 '  </div>' +
@@ -278,9 +278,11 @@ const StudyChat = {
                     StudyChat.send();
                 }
             });
+
         }
         this._bound = true;
     },
+
 
     _load() {
         let parsed = [];
@@ -370,11 +372,26 @@ const StudyChat = {
 
     _setBusy(busy) {
         this._busy = busy;
-        const { send, input } = this._els();
+        const { send, input, messages } = this._els();
 
-        // Animated dots in header
-        const dots = document.getElementById('garageAiDots');
-        if (dots) dots.classList.toggle('active', busy);
+        // Typing bubble — aparece nos mensagens enquanto aguarda resposta
+        const existing = document.getElementById('aiTypingBubble');
+        if (busy) {
+            if (!existing && messages) {
+                const bubble = document.createElement('div');
+                bubble.id = 'aiTypingBubble';
+                bubble.className = 'ai-typing-bubble';
+                bubble.innerHTML =
+                    '<span class="ai-typing-bubble-meta">Garage A.I</span>' +
+                    '<div class="ai-typing-dots">' +
+                    '<span></span><span></span><span></span>' +
+                    '</div>';
+                messages.appendChild(bubble);
+                messages.scrollTop = messages.scrollHeight;
+            }
+        } else {
+            if (existing) existing.remove();
+        }
 
         if (send) {
             // Button is always clickable — busy state triggers cancel, not disable
@@ -483,7 +500,7 @@ const StudyChat = {
             const meta = document.createElement('span');
             meta.className = 'study-msg-meta';
             meta.textContent = m.role === 'user'
-                ? 'VOCE'
+                ? 'VOCÊ'
                 : 'Garage A.I';
 
             const body = document.createElement('div');
@@ -506,7 +523,7 @@ const StudyChat = {
         if (!context) return;
         const stage = this._currentStage();
         const region = this._currentRegion();
-        context.textContent = 'Stage: ' + stage + ' | Regiao: ' + region;
+        context.textContent = 'Stage: ' + stage + ' | Região: ' + region;
     },
 
     _renderLast() {
@@ -547,7 +564,7 @@ const StudyChat = {
         if (this._messages.length === 0) {
             this._append(
                 'assistant',
-                'Pronto para estudar. Pergunte sobre sintaxe Java, estruturas de dados, algoritmos, trade-offs e como escalar codigo com seguranca.',
+                'Olá! Sou **Cezi Cola**, Senior Software Engineer e CEO da Bio Code Technology — o mesmo que você encontra no jogo.\n\nCriei o Garage — Uma aventura no Vale do Silício para transformar desenvolvedores em engenheiros que as maiores Big Techs do mundo disputam. Estou aqui para te ensinar Java, algoritmos, estruturas de dados, arquitetura de sistemas e tudo que um Principal Engineer domina.\n\nPergunte à vontade. Vamos começar?',
                 'inicio'
             );
         } else {
@@ -1997,112 +2014,112 @@ const LEARNING_STAGE_PROFILE = {
     Junior: {
         thinking: [
             'Escolher estrutura de dados antes de codar.',
-            'Quebrar o problema em funcoes/metodos pequenos.',
+            'Quebrar o problema em funções/métodos pequenos.',
             'Comparar alternativa simples vs alternativa eficiente.',
         ],
         concerns: [
-            'Legibilidade e padrao de codigo do time.',
+            'Legibilidade e padrão de código do time.',
             'Complexidade O(n) vs O(n^2).',
-            'Cobrir casos de borda basicos.',
+            'Cobrir casos de borda básicos.',
         ],
         javaFocus: [
-            'Classes e metodos com responsabilidade unica.',
-            'Colecoes basicas: Array, List, Map, Set.',
-            'Boas assinaturas de metodo e nomes consistentes.',
+            'Classes e métodos com responsabilidade única.',
+            'Coleções básicas: Array, List, Map, Set.',
+            'Boas assinaturas de método e nomes consistentes.',
         ],
     },
     Mid: {
         thinking: [
             'Modelar entrada, processamento e saida explicitamente.',
-            'Argumentar trade-off de memoria x tempo.',
-            'Explicar por que a solucao escala para n maior.',
+            'Argumentar trade-off de memória x tempo.',
+            'Explicar por que a solução escala para n maior.',
         ],
         concerns: [
             'Corretude em casos extremos.',
             'Design OO com baixo acoplamento.',
-            'Padroes de iteracao e recursao sem bugs ocultos.',
+            'Padrões de iteração e recursão sem bugs ocultos.',
         ],
         javaFocus: [
-            'Interfaces, composicao e polimorfismo pratico.',
+            'Interfaces, composição e polimorfismo prático.',
             'Collections e iteradores com uso correto.',
-            'Tratamento de null e contratos de metodo.',
+            'Tratamento de null e contratos de método.',
         ],
     },
     Senior: {
         thinking: [
             'Projetar para observabilidade e confiabilidade.',
             'Antecipar falha, concorrencia e regressao.',
-            'Documentar decisao tecnica com criterio.',
+            'Documentar decisão técnica com critério.',
         ],
         concerns: [
             'Disponibilidade e performance sob carga.',
-            'Seguranca e consistencia de dados.',
-            'Testabilidade e manutencao futura.',
+            'Segurança e consistência de dados.',
+            'Testabilidade e manutenção futura.',
         ],
         javaFocus: [
-            'APIs coesas e contratos imutaveis quando possivel.',
+            'APIs coesas e contratos imutáveis quando possível.',
             'Uso consciente de concorrencia e colecoes.',
-            'Complexidade e custo operacional da solucao.',
+            'Complexidade e custo operacional da solução.',
         ],
     },
     Staff: {
         thinking: [
-            'Ajustar arquitetura para varios times simultaneos.',
-            'Definir guardrails tecnicos reutilizaveis.',
-            'Transformar padrao local em pratica organizacional.',
+            'Ajustar arquitetura para vários times simultâneos.',
+            'Definir guardrails técnicos reutilizáveis.',
+            'Transformar padrão local em prática organizacional.',
         ],
         concerns: [
-            'Padronizacao sem travar autonomia do time.',
-            'Escalabilidade de codigo e de processo.',
-            'Risco tecnico transversal entre servicos.',
+            'Padronização sem travar autonomia do time.',
+            'Escalabilidade de código e de processo.',
+            'Risco técnico transversal entre serviços.',
         ],
         javaFocus: [
-            'Abstracoes estaveis para varios modulos.',
-            'Interfaces e contratos orientados a evolucao.',
-            'Decisoes de estrutura de dados guiadas por dominio.',
+            'Abstrações estáveis para vários módulos.',
+            'Interfaces e contratos orientados a evolução.',
+            'Decisões de estrutura de dados guiadas por domínio.',
         ],
     },
     Principal: {
         thinking: [
             'Resolver o problema sistemico, nao so o bug local.',
-            'Construir direcao tecnica para trimestres/anos.',
-            'Conectar engenharia, produto e risco regulatorio.',
+            'Construir direção técnica para trimestres/anos.',
+            'Conectar engenharia, produto e risco regulatório.',
         ],
         concerns: [
             'Trade-off entre velocidade, qualidade e governanca.',
-            'Escala global, compliance e resiliencia.',
-            'Capacidade da arquitetura de sobreviver a mudancas.',
+            'Escala global, compliance e resiliência.',
+            'Capacidade da arquitetura de sobreviver a mudanças.',
         ],
         javaFocus: [
-            'Boundary claro entre dominio e infraestrutura.',
-            'Padroes de design para evolucao longa.',
+            'Boundary claro entre domínio e infraestrutura.',
+            'Padrões de design para evolução longa.',
             'Modelagem de dados orientada a invariantes.',
         ],
     },
     Distinguished: {
         thinking: [
             'Definir visao tecnica da organizacao.',
-            'Elevar padrao de engenharia em toda empresa.',
+            'Elevar padrão de engenharia em toda empresa.',
             'Garantir continuidade de conhecimento.',
         ],
         concerns: [
-            'Sustentabilidade tecnica de longo prazo.',
-            'Excelencia de engenharia em escala.',
-            'Formacao de liderancas tecnicas.',
+            'Sustentabilidade técnica de longo prazo.',
+            'Excelência de engenharia em escala.',
+            'Formação de lideranças técnicas.',
         ],
         javaFocus: [
-            'Arquitetura de referencia para toda plataforma.',
-            'Decisoes tecnicas com impacto de negocio.',
+            'Arquitetura de referência para toda plataforma.',
+            'Decisões técnicas com impacto de negócio.',
             'Qualidade sistemica fim a fim.',
         ],
     },
 };
 
 const LEARNING_CATEGORY_GUIDE = {
-    logic: 'Raciocinio passo a passo, condicoes e loops com ordem correta.',
-    architecture: 'Trade-off tecnico, desacoplamento e impacto em escala.',
-    domain_modeling: 'Classe, metodo e dados representando regras do negocio.',
-    distributed_systems: 'Latencia, falha parcial, consistencia e resiliencia.',
+    logic: 'Raciocínio passo a passo, condições e loops com ordem correta.',
+    architecture: 'Trade-off técnico, desacoplamento e impacto em escala.',
+    domain_modeling: 'Classe, método e dados representando regras do negócio.',
+    distributed_systems: 'Latência, falha parcial, consistência e resiliência.',
 };
 
 // ---- world engine (canvas side-scroller) ----
@@ -2568,24 +2585,22 @@ const World = {
         }
 
         // Book collision -- collect on touch (like Mario coins)
-        // BLOCKED if player is locked inside a company
-        if (!State.lockedRegion) {
-            const pcx = p.x + p.w / 2;
-            const playerHeight = -p.y; // height above ground (p.y is negative when jumping)
-            BOOKS_DATA.forEach(book => {
-                if (State.collectedBooks.includes(book.id)) return;
-                const dx = Math.abs(pcx - book.worldX);
-                const dy = Math.abs(playerHeight + p.h * 0.4 - book.floatY);
-                if (dx < 40 && dy < 40) {
-                    State.collectedBooks.push(book.id);
-                    SFX.bookCollect();
-                    this.showBookPopup(book);
-                    this.updateBookHUD();
-                    // Persist book collection immediately
-                    WorldStatePersistence.save(true);
-                }
-            });
-        }
+        // (blocked during active challenges via the isInChallenge early-return above)
+        const pcx = p.x + p.w / 2;
+        const playerHeight = -p.y; // height above ground (p.y is negative when jumping)
+        BOOKS_DATA.forEach(book => {
+            if (State.collectedBooks.includes(book.id)) return;
+            const dx = Math.abs(pcx - book.worldX);
+            const dy = Math.abs(playerHeight + p.h * 0.4 - book.floatY);
+            if (dx < 40 && dy < 40) {
+                State.collectedBooks.push(book.id);
+                SFX.bookCollect();
+                this.showBookPopup(book);
+                this.updateBookHUD();
+                // Persist book collection immediately
+                WorldStatePersistence.save(true);
+            }
+        });
 
         // Lock player movement to company area when locked
         if (State.lockedRegion && State.doorAnimBuilding) {
@@ -5041,7 +5056,7 @@ const Learning = {
 
     _regionTopics(region) {
         const regionChallenges = (State.challenges || []).filter(c => c.region === region);
-        if (regionChallenges.length === 0) return ['Foco: leitura do problema e construcao de solucao incremental.'];
+        if (regionChallenges.length === 0) return ['Foco: leitura do problema e construção de solução incremental.'];
         const categories = [...new Set(regionChallenges.map(c => c.category))];
         return categories
             .map(cat => LEARNING_CATEGORY_GUIDE[cat])
@@ -5068,13 +5083,13 @@ const Learning = {
         if (concept.includes('queue') || concept.includes('fifo')) {
             return [
                 'Defina ordem de entrada e ordem de consumo.',
-                'Use while com condicao de parada explicita.',
+                'Use while com condição de parada explícita.',
                 'Garanta que a fila termina vazia no cenario final.',
             ];
         }
         if (concept.includes('binary') || concept.includes('log n')) {
             return [
-                'Confirme pre-condicao: estrutura ordenada.',
+                'Confirme pré-condição: estrutura ordenada.',
                 'Atualize low/high sem perder o caso de igualdade.',
                 'Pare quando low > high e retorne fallback correto.',
             ];
@@ -5090,13 +5105,13 @@ const Learning = {
             return [
                 'Declare estrutura de vizinhos e set de visitados.',
                 'Inicialize fila com no inicial antes do loop.',
-                'Marque visitado no momento certo para evitar repeticao.',
+                'Marque visitado no momento certo para evitar repetição.',
             ];
         }
         if (concept.includes('dinamica') || concept.includes('kadane') || concept.includes('subproblemas')) {
             return [
                 'Defina o estado minimo que precisa ser carregado.',
-                'Escreva a recorrencia em frase antes do codigo.',
+                'Escreva a recorrência em frase antes do código.',
                 'Itere com base cases claros e atualizacao deterministica.',
             ];
         }
@@ -5126,12 +5141,12 @@ const Learning = {
             chip: 'MENTALIDADE DE CARREIRA',
             stageLabel: LEARNING_STAGE_PT[normalizedStage] || normalizedStage,
             title: 'Como pensa um engenheiro ' + (LEARNING_STAGE_PT[normalizedStage] || normalizedStage),
-            subtitle: 'Antes de codar, alinhe o modo de raciocinio esperado neste nivel.',
+            subtitle: 'Antes de codar, alinhe o modo de raciocínio esperado neste nível.',
             secAHead: 'Forma de pensar',
             secAItems: profile.thinking || [],
-            secBHead: 'Principais preocupacoes',
+            secBHead: 'Principais preocupações',
             secBItems: profile.concerns || [],
-            secCHead: 'Base Java deste nivel',
+            secCHead: 'Base Java deste nível',
             secCItems: profile.javaFocus || [],
             warmup: 'Warm-up: explique em voz alta o plano antes de tocar no teclado. Engenheiro forte pensa primeiro, digita depois.',
         }, () => {
@@ -5160,17 +5175,17 @@ const Learning = {
         const topics = this._regionTopics(region);
 
         this._showPanel({
-            chip: 'PREPARACAO DE EMPRESA',
+            chip: 'PREPARAÇÃO DE EMPRESA',
             stageLabel: (npc && npc.name) ? npc.name : (LEARNING_STAGE_PT[stage] || stage),
-            title: 'Briefing tecnico: ' + region,
-            subtitle: 'Voce vai resolver teoria + codigo. Prepare a mente antes de entrar na execucao.',
+            title: 'Briefing técnico: ' + region,
+            subtitle: 'Você vai resolver teoria + código. Prepare a mente antes de entrar na execução.',
             secAHead: 'Mapa mental para esta fase',
             secAItems: profile.thinking || [],
             secBHead: 'Sintaxe Java para revisar antes',
             secBItems: profile.javaFocus || [],
-            secCHead: 'Topicos desta empresa',
+            secCHead: 'Tópicos desta empresa',
             secCItems: topics,
-            warmup: 'Warm-up: defina em uma frase qual estrutura de dados voce pretende usar e por que ela reduz custo.',
+            warmup: 'Warm-up: defina em uma frase qual estrutura de dados você pretende usar e por que ela reduz custo.',
         }, () => {
             this._pushUnique(State.learning.companyPrepSeen, region);
             this._save();
@@ -5198,21 +5213,21 @@ const Learning = {
         const plan = this._buildLiveCodingPlan(challenge);
 
         this._showPanel({
-            chip: 'PRE-LIVE CODING',
-            stageLabel: challenge.title || 'Desafio de codigo',
-            title: 'Roteiro de execucao antes da IDE',
-            subtitle: 'Meta: entrar no live coding com estrategia, nao no improviso.',
+            chip: 'PRÉ-LIVE CODING',
+            stageLabel: challenge.title || 'Desafio de código',
+            title: 'Roteiro de execução antes da IDE',
+            subtitle: 'Meta: entrar no live coding com estratégia, não no improviso.',
             secAHead: 'Checklist de sintaxe Java',
             secAItems: [
-                'Classe publica com nome exato: ' + expectedClass + '.',
-                'main/metodo com assinatura valida e chaves balanceadas.',
-                '; no fim de declaracoes e uso coerente de tipos.',
+                'Classe pública com nome exato: ' + expectedClass + '.',
+                'main/método com assinatura válida e chaves balanceadas.',
+                '; no fim de declarações e uso coerente de tipos.',
             ],
             secBHead: 'Plano de algoritmo',
             secBItems: plan,
-            secCHead: 'Visao de engenharia do nivel',
+            secCHead: 'Visão de engenharia do nível',
             secCItems: profile.concerns || [],
-            warmup: 'Warm-up: faca um dry-run manual com um exemplo e escreva a saida esperada antes de clicar EXECUTAR.',
+            warmup: 'Warm-up: faça um dry-run manual com um exemplo e escreva a saída esperada antes de clicar EXECUTAR.',
         }, () => {
             this._pushUnique(State.learning.livePrepSeen, region);
             this._save();
@@ -5367,7 +5382,7 @@ const Game = {
                     return;
                 }
             }
-            World.showDialog('SISTEMA', regionId, 'Todos os desafios desta regiao foram completados.');
+            World.showDialog('SISTEMA', regionId, 'Todos os desafios desta região foram completados.');
             return;
         }
         try {
@@ -6075,7 +6090,7 @@ const CODE_CHALLENGES = [
                     return { ok: false, msg: 'Erro semântico: Dentro do for-each, imprima a variavel "' + loopVar + '". Ex: System.out.println(' + loopVar + ');' };
             } else {
                 // Standard for: verify .length references correct array
-                if (!/\.length/.test(code)) return { ok: false, msg: 'Erro semântico: Use ' + arrName + '.length como condicao do for.' };
+                if (!/\.length/.test(code)) return { ok: false, msg: 'Erro semântico: Use ' + arrName + '.length como condição do for.' };
                 const lengthRef = code.match(/(\w+)\.length(?!\s*\()/);
                 if (lengthRef && lengthRef[1] !== arrName && lengthRef[1] !== 'args')
                     return { ok: false, msg: 'Erro de compilação: "' + lengthRef[1] + '.length" -- variável "' + lengthRef[1] + '" não existe. O array se chama "' + arrName + '". Use: ' + arrName + '.length' };
@@ -6518,8 +6533,8 @@ const SCALE_MISSIONS = {
                 objective: 'Monte a versao base com tipos primitivos e 4 prints.',
             },
             {
-                name: 'Modularizacao',
-                objective: 'Expanda para um metodo static void printProfile(...) e chame esse metodo no main.',
+                name: 'Modularização',
+                objective: 'Expanda para um método static void printProfile(...) e chame esse método no main.',
                 validator(code) {
                     // Flexible: accept any static method that takes parameters and is called
                     const hasStaticMethod = /static\s+(void|String|int|boolean|double)\s+\w+\s*\([^)]*\)/.test(code);
@@ -6542,8 +6557,8 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (APPLE 2/3):\n1. Saia do codigo monolitico no main.\n2. Extraia um metodo para encapsular a impressao.\n3. Chame esse metodo com os dados tipados.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class Variables {\n    static void printProfile(int idade, double salario, String nome, boolean ativo) {\n        System.out.println(idade);\n        System.out.println(salario);\n        System.out.println(nome);\n        System.out.println(ativo);\n    }\n\n    public static void main(String[] args) {\n        int idade = 20;\n        double salario = 3500.50;\n        String nome = "Dev";\n        boolean ativo = true;\n\n        printProfile(idade, salario, nome, ativo);\n    }\n}'
             },
             {
-                name: 'Seguranca e padrao',
-                objective: 'Expanda para padrao seguro: use constantes final e validacao de idade antes de imprimir.',
+                name: 'Segurança e padrão',
+                objective: 'Expanda para padrão seguro: use constantes final e validação de idade antes de imprimir.',
                 validator(code) {
                     // Flexible: accept final or static final constants
                     const hasConstant = /(final|static\s+final)\s+(int|double|String|boolean)\s+[A-Z_]+\s*=/.test(code) ||
@@ -6576,25 +6591,25 @@ const SCALE_MISSIONS = {
                 objective: 'Monte o FizzBuzz base funcionando para 1..15.',
             },
             {
-                name: 'Parametrizacao',
-                objective: 'Expanda com variavel limite e use esse limite no for.',
+                name: 'Parametrização',
+                objective: 'Expanda com variável limite e use esse limite no for.',
                 validator(code) {
                     // Flexible: accept limit, max, n, range, etc as variable names
                     const hasLimitVar = /(int|final\s+int)\s+(limite|limit|max|n|range|end|total)\s*=/.test(code);
                     if (!hasLimitVar) {
-                        return { ok: false, msg: 'Nubank 2/5: declare uma variavel de limite (ex: int limite = 15) para parametrizar.' };
+                        return { ok: false, msg: 'Nubank 2/5: declare uma variável de limite (ex: int limite = 15) para parametrizar.' };
                     }
                     // Flexible: accept using variable in for condition
                     const hasForWithVar = /for\s*\([^;]*;[^;]*(<=?|<)\s*(limite|limit|max|n|range|end|total)\s*;/.test(code);
                     if (!hasForWithVar) {
-                        return { ok: false, msg: 'Nubank 2/5: use sua variavel de limite na condicao do for.' };
+                        return { ok: false, msg: 'Nubank 2/5: use sua variável de limite na condição do for.' };
                     }
                     return { ok: true };
                 },
                 helpText: 'COMO EXPANDIR (NUBANK 2/5):\n1. Tire numero magico do for.\n2. Use limite como parametro de escala.\n3. Mantenha regra de negocio intacta.\n\nCOLA -- Copie este codigo na IDE:\n\npublic class FizzBuzz {\n    public static void main(String[] args) {\n        int limite = 15;\n        for (int i = 1; i <= limite; i++) {\n            if (i % 3 == 0 && i % 5 == 0) {\n                System.out.println("FizzBuzz");\n            } else if (i % 3 == 0) {\n                System.out.println("Fizz");\n            } else if (i % 5 == 0) {\n                System.out.println("Buzz");\n            } else {\n                System.out.println(i);\n            }\n        }\n    }\n}'
             },
             {
-                name: 'Metodo de dominio',
+                name: 'Método de domínio',
                 objective: 'Expanda para static String classify(int n) e chame no loop.',
                 validator(code) {
                     // Flexible: accept various method names and signatures
@@ -6640,7 +6655,7 @@ const SCALE_MISSIONS = {
             },
             {
                 name: 'Observabilidade',
-                objective: 'Expanda com contadores e resumo final de execucao.',
+                objective: 'Expanda com contadores e resumo final de execução.',
                 validator(code) {
                     // Flexible: accept various counter names
                     const hasCounters = /(int\s+(count|total|num|qty)|int\s+\w*(Fizz|Buzz|Count|Total)\w*\s*=)/.test(code);
@@ -6675,8 +6690,8 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (AMAZON 1/3):\n1. Use Map<String, Integer> para armazenar linguagens e anos.\n2. Insira com put(), busque com get() e containsKey().\n3. Itere todos os pares com entrySet().\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashMap;\nimport java.util.Map;\n\npublic class HashMapDemo {\n    public static void main(String[] args) {\n        Map<String, Integer> map = new HashMap<>();\n        map.put(\"Java\", 1995);\n        map.put(\"Python\", 1991);\n        map.put(\"Go\", 2009);\n\n        System.out.println(\"Contem Java: \" + map.containsKey(\"Java\"));\n        System.out.println(\"Python: \" + map.get(\"Python\"));\n\n        for (Map.Entry<String, Integer> e : map.entrySet()) {\n            System.out.println(e.getKey() + \"=\" + e.getValue());\n        }\n    }\n}'
             },
             {
-                name: 'Metodo de busca',
-                objective: 'Extraia um metodo static String findValue(HashMap<String,Integer> map, String key) que retorna o valor ou "NOT_FOUND".',
+                name: 'Método de busca',
+                objective: 'Extraia um método static String findValue(HashMap<String,Integer> map, String key) que retorna o valor ou "NOT_FOUND".',
                 validator(code) {
                     if (!/static\s+String\s+\w+\s*\(\s*HashMap/.test(code)) return { ok: false, msg: 'Amazon 2/3: crie um metodo static String que recebe HashMap como parametro.' };
                     if (!/(NOT_FOUND|not.?found)/i.test(code)) return { ok: false, msg: 'Amazon 2/3: retorne "NOT_FOUND" quando a chave nao existir.' };
@@ -6686,7 +6701,7 @@ const SCALE_MISSIONS = {
             },
             {
                 name: 'Tratamento null-safe',
-                objective: 'Adicione validacao para evitar NullPointerException com chaves ou valores nulos.',
+                objective: 'Adicione validação para evitar NullPointerException com chaves ou valores nulos.',
                 validator(code) {
                     if (!/null/.test(code)) return { ok: false, msg: 'Amazon 3/3: adicione verificacao de null para seguranca.' };
                     if (!/(if\s*\(|Objects\.|Optional\.)/.test(code)) return { ok: false, msg: 'Amazon 3/3: use if, Objects ou Optional para tratar null.' };
@@ -6707,8 +6722,8 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (MERCADO LIVRE 1/3):\n1. Crie a Queue usando LinkedList.\n2. Enfileire pedidos com add().\n3. Processe com poll() dentro de while(!isEmpty()).\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.LinkedList;\nimport java.util.Queue;\n\npublic class QueueFIFO {\n    public static void main(String[] args) {\n        Queue<String> pedidos = new LinkedList<>();\n        pedidos.add("Pedido 001");\n        pedidos.add("Pedido 002");\n        pedidos.add("Pedido 003");\n\n        while (!pedidos.isEmpty()) {\n            System.out.println(pedidos.poll());\n        }\n    }\n}'
             },
             {
-                name: 'Metodo de processamento',
-                objective: 'Extraia um metodo static void processQueue(Queue<String> q) que processa todos os elementos.',
+                name: 'Método de processamento',
+                objective: 'Extraia um método static void processQueue(Queue<String> q) que processa todos os elementos.',
                 validator(code) {
                     if (!/static\s+void\s+\w+\s*\(\s*Queue/.test(code)) return { ok: false, msg: 'Mercado Livre 2/3: crie um metodo static void que recebe Queue.' };
                     if (!/while\s*\(\s*!\s*\w+\.isEmpty\(\)/.test(code)) return { ok: false, msg: 'Mercado Livre 2/3: use while(!queue.isEmpty()) para processar.' };
@@ -6739,8 +6754,8 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (JP MORGAN 1/3):\n1. Array deve estar ORDENADO para Binary Search funcionar.\n2. Use low e high como ponteiros das extremidades do intervalo.\n3. Calcule mid = low + (high - low) / 2 para evitar overflow.\n4. Reduza o intervalo pela metade a cada iteracao.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class BinarySearch {\n    static int binarySearch(int[] arr, int target) {\n        int low = 0, high = arr.length - 1;\n        while (low <= high) {\n            int mid = low + (high - low) / 2;\n            if (arr[mid] == target) return mid;\n            else if (arr[mid] < target) low = mid + 1;\n            else high = mid - 1;\n        }\n        return -1;\n    }\n\n    public static void main(String[] args) {\n        int[] arr = {2, 5, 8, 12, 16, 23, 38, 56, 72, 91};\n        System.out.println(binarySearch(arr, 23));\n        System.out.println(binarySearch(arr, 99));\n    }\n}'
             },
             {
-                name: 'Metodo reutilizavel',
-                objective: 'Extraia para static int binarySearch(int[] arr, int target) retornando indice ou -1.',
+                name: 'Método reutilizável',
+                objective: 'Extraia para static int binarySearch(int[] arr, int target) retornando índice ou -1.',
                 validator(code) {
                     if (!/static\s+int\s+\w+\s*\(\s*int\s*\[\]/.test(code)) return { ok: false, msg: 'JP Morgan 2/3: crie um metodo static int que recebe int[].' };
                     const methodMatch = code.match(/static\s+int\s+(\w+)\s*\(\s*int\s*\[\]/);
@@ -6754,7 +6769,7 @@ const SCALE_MISSIONS = {
             },
             {
                 name: 'Tratamento de bordas',
-                objective: 'Adicione validacao para array vazio ou nulo antes da busca.',
+                objective: 'Adicione validação para array vazio ou nulo antes da busca.',
                 validator(code) {
                     if (!/(\.length\s*==\s*0|null|isEmpty)/.test(code)) return { ok: false, msg: 'JP Morgan 3/3: verifique array vazio ou nulo.' };
                     if (!/(return\s*-1|throw)/.test(code)) return { ok: false, msg: 'JP Morgan 3/3: retorne -1 ou lance excecao para casos invalidos.' };
@@ -6771,12 +6786,12 @@ const SCALE_MISSIONS = {
         steps: [
             {
                 name: 'Base funcional',
-                objective: 'Implemente a verificacao de anagrama base.',
+                objective: 'Implemente a verificação de anagrama base.',
                 helpText: 'COMO EXPANDIR (PAYPAL 1/3):\n1. Crie static boolean isAnagram(String a, String b).\n2. Converta para char arrays com toCharArray().\n3. Ordene com Arrays.sort() e compare com Arrays.equals().\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class AnagramCheck {\n    static boolean isAnagram(String a, String b) {\n        char[] ca = a.toCharArray();\n        char[] cb = b.toCharArray();\n        Arrays.sort(ca);\n        Arrays.sort(cb);\n        return Arrays.equals(ca, cb);\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isAnagram(\"listen\", \"silent\"));\n        System.out.println(isAnagram(\"hello\", \"world\"));\n    }\n}'
             },
             {
-                name: 'Verificacao de comprimento',
-                objective: 'Adicione verificacao de length para early-exit antes de ordenar.',
+                name: 'Verificação de comprimento',
+                objective: 'Adicione verificação de length para early-exit antes de ordenar.',
                 validator(code) {
                     if (!/\.length\(\)/.test(code) && !/length\s*!=/.test(code) && !/!=\s*\w+\.length/.test(code)) return { ok: false, msg: 'PayPal 2/3: adicione if (a.length() != b.length()) return false; antes de ordenar.' };
                     return { ok: true };
@@ -6784,8 +6799,8 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (PAYPAL 2/3):\n1. Antes de ordenar, compare os tamanhos das strings.\n2. Se lengths diferentes, retorne false imediatamente (early-exit O(1)).\n3. Isso evita ordenar strings que definitivamente nao sao anagramas.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class AnagramCheck {\n    static boolean isAnagram(String a, String b) {\n        if (a.length() != b.length()) return false;\n        char[] ca = a.toCharArray();\n        char[] cb = b.toCharArray();\n        Arrays.sort(ca);\n        Arrays.sort(cb);\n        return Arrays.equals(ca, cb);\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isAnagram(\"listen\", \"silent\"));\n        System.out.println(isAnagram(\"hello\", \"world\"));\n    }\n}'
             },
             {
-                name: 'Normalizacao',
-                objective: 'Adicione toLowerCase() e remocao de espacos para comparacao case-insensitive.',
+                name: 'Normalização',
+                objective: 'Adicione toLowerCase() e remoção de espaços para comparação case-insensitive.',
                 validator(code) {
                     if (!/toLowerCase|toUpperCase/.test(code)) return { ok: false, msg: 'PayPal 3/3: use toLowerCase() para normalizar.' };
                     if (!/replace|replaceAll|trim/.test(code)) return { ok: false, msg: 'PayPal 3/3: remova espacos com replace/trim.' };
@@ -6817,7 +6832,7 @@ const SCALE_MISSIONS = {
             },
             {
                 name: 'Tratamento array vazio',
-                objective: 'Adicione verificacao para array vazio retornando 0 ou lancando excecao.',
+                objective: 'Adicione verificação para array vazio retornando 0 ou lançando exceção.',
                 validator(code) {
                     if (!/(\.length\s*==\s*0|null)/.test(code)) return { ok: false, msg: 'Netflix 3/3: verifique array vazio.' };
                     if (!/(return\s*0|throw|Integer\.MIN)/.test(code)) return { ok: false, msg: 'Netflix 3/3: trate o caso vazio (return 0 ou throw).' };
@@ -6834,11 +6849,11 @@ const SCALE_MISSIONS = {
         steps: [
             {
                 name: 'Base funcional',
-                objective: 'Implemente a deduplicacao com HashSet base.',
+                objective: 'Implemente a deduplicação com HashSet base.',
                 helpText: 'COMO EXPANDIR (SPACEX 1/3):\n1. Use HashSet para detectar duplicatas em O(1).\n2. Para cada elemento: se ja esta no set, ha duplicata; senao, adicione.\n3. O método retorna boolean -- verdadeiro se houver qualquer duplicata.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashSet;\n\npublic class ContainsDuplicate {\n    static boolean containsDuplicate(int[] nums) {\n        HashSet<Integer> set = new HashSet<>();\n        for (int num : nums) {\n            if (set.contains(num)) return true;\n            set.add(num);\n        }\n        return false;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(containsDuplicate(new int[]{1, 2, 3, 1}));\n        System.out.println(containsDuplicate(new int[]{1, 2, 3, 4}));\n    }\n}'
             },
             {
-                name: 'Metodo deduplicate',
+                name: 'Método deduplicate',
                 objective: 'Adicione static Set<Integer> deduplicate(int[] arr) na mesma classe ContainsDuplicate.',
                 validator(code) {
                     if (!/static\s+(Set|HashSet)\s*</.test(code)) return { ok: false, msg: 'SpaceX 2/3: adicione um metodo que retorna Set<Integer> para coletar os valores unicos.' };
@@ -6850,7 +6865,7 @@ const SCALE_MISSIONS = {
                 name: 'Contagem de duplicatas',
                 objective: 'Imprima quantas duplicatas foram removidas (tamanho original - tamanho final).',
                 validator(code) {
-                    if (!/(length|size).*-/.test(code) && !/-\s*\w+\.(length|size)/.test(code)) return { ok: false, msg: 'SpaceX 3/3: calcule o numero de duplicatas removidas.' };
+                    if (!/(length|size).*-/.test(code) && !/-\s*\w+\.(length|size)/.test(code)) return { ok: false, msg: 'SpaceX 3/3: calcule o número de duplicatas removidas.' };
                     return { ok: true };
                 },
                 helpText: 'COMO EXPANDIR (SPACEX 3/3):\n1. Use deduplicate() para obter os valores unicos.\n2. Calcule duplicatas = arr.length - unicos.size().\n3. Imprima o relatorio completo.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashSet;\nimport java.util.Set;\n\npublic class ContainsDuplicate {\n    static boolean containsDuplicate(int[] nums) {\n        HashSet<Integer> set = new HashSet<>();\n        for (int num : nums) {\n            if (set.contains(num)) return true;\n            set.add(num);\n        }\n        return false;\n    }\n\n    static Set<Integer> deduplicate(int[] nums) {\n        Set<Integer> set = new HashSet<>();\n        for (int n : nums) {\n            set.add(n);\n        }\n        return set;\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {1, 2, 2, 3, 3, 3, 4, 5, 5};\n        System.out.println(containsDuplicate(nums));\n        Set<Integer> unicos = deduplicate(nums);\n        int duplicatas = nums.length - unicos.size();\n        System.out.println(\"Unicos: \" + unicos);\n        System.out.println(\"Duplicatas removidas: \" + duplicatas);\n    }\n}'
@@ -6868,7 +6883,7 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (TESLA 1/3):\n1. Para cada nums[i], calcule o complemento = target - nums[i].\n2. Se o complemento ja esta no mapa, encontrou o par.\n3. Caso contrario, adicione nums[i] ao mapa.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashMap;\nimport java.util.Map;\nimport java.util.Arrays;\n\npublic class TwoSum {\n    public static void main(String[] args) {\n        int[] nums = {2, 7, 11, 15};\n        int target = 9;\n        Map<Integer, Integer> map = new HashMap<>();\n\n        for (int i = 0; i < nums.length; i++) {\n            int complemento = target - nums[i];\n            if (map.containsKey(complemento)) {\n                System.out.println(Arrays.toString(new int[]{map.get(complemento), i}));\n                break;\n            }\n            map.put(nums[i], i);\n        }\n    }\n}'
             },
             {
-                name: 'Metodo twoSum',
+                name: 'Método twoSum',
                 objective: 'Extraia para static int[] twoSum(int[] nums, int target).',
                 validator(code) {
                     if (!/static\s+int\s*\[\]\s*\w+\s*\(\s*int\s*\[\]/.test(code)) return { ok: false, msg: 'Tesla 2/3: crie metodo static int[] twoSum(int[], int target).' };
@@ -6877,10 +6892,10 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (TESLA 2/3):\n1. Extraia para um metodo reutilizavel.\n2. Use HashMap para O(n).\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashMap;\nimport java.util.Map;\nimport java.util.Arrays;\n\npublic class TwoSum {\n    static int[] twoSum(int[] nums, int target) {\n        Map<Integer, Integer> map = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int complemento = target - nums[i];\n            if (map.containsKey(complemento)) {\n                return new int[]{map.get(complemento), i};\n            }\n            map.put(nums[i], i);\n        }\n        return new int[]{};\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {2, 7, 11, 15};\n        int target = 9;\n\n        int[] result = twoSum(nums, target);\n        System.out.println(\"Indices: \" + Arrays.toString(result));\n    }\n}'
             },
             {
-                name: 'Tratamento sem solucao',
-                objective: 'Retorne array vazio ou lance excecao quando nao houver solucao.',
+                name: 'Tratamento sem solução',
+                objective: 'Retorne array vazio ou lance exceção quando não houver solução.',
                 validator(code) {
-                    if (!/(return\s+new\s+int\s*\[\s*\]|throw|null)/.test(code)) return { ok: false, msg: 'Tesla 3/3: trate o caso sem solucao (array vazio ou throw).' };
+                    if (!/(return\s+new\s+int\s*\[\s*\]|throw|null)/.test(code)) return { ok: false, msg: 'Tesla 3/3: trate o caso sem solução (array vazio ou throw).' };
                     return { ok: true };
                 },
                 helpText: 'COMO EXPANDIR (TESLA 3/3):\n1. Se nao encontrar, retorne array vazio.\n2. Trate o caso sem solucao adequadamente.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.HashMap;\nimport java.util.Map;\nimport java.util.Arrays;\n\npublic class TwoSum {\n    static int[] twoSum(int[] nums, int target) {\n        Map<Integer, Integer> map = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int complemento = target - nums[i];\n            if (map.containsKey(complemento)) {\n                return new int[]{map.get(complemento), i};\n            }\n            map.put(nums[i], i);\n        }\n        return new int[]{}; // sem solucao\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {2, 7, 11, 15};\n\n        System.out.println(\"Target 9: \" + Arrays.toString(twoSum(nums, 9)));\n        System.out.println(\"Target 100: \" + Arrays.toString(twoSum(nums, 100)));\n    }\n}'
@@ -6898,7 +6913,7 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (ITAU 1/3):\n1. Use prev e curr para guardar os dois ultimos valores.\n2. A cada passo: next = prev + curr, depois avance.\n3. Imprima cada F(i).\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class Fibonacci {\n    public static void main(String[] args) {\n        int n = 10;\n        int prev = 0, curr = 1;\n\n        System.out.println("F(0) = " + prev);\n        System.out.println("F(1) = " + curr);\n\n        for (int i = 2; i <= n; i++) {\n            int next = prev + curr;\n            prev = curr;\n            curr = next;\n            System.out.println("F(" + i + ") = " + curr);\n        }\n    }\n}'
             },
             {
-                name: 'Metodo fibonacci',
+                name: 'Método fibonacci',
                 objective: 'Extraia para static int fibonacci(int n).',
                 validator(code) {
                     if (!/static\s+int\s+\w+\s*\(\s*int\s+\w+\s*\)/.test(code)) return { ok: false, msg: 'Itau 2/3: crie metodo static int fibonacci(int n).' };
@@ -6907,8 +6922,8 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (ITAU 2/3):\n1. Extraia para um metodo reutilizavel.\n2. Use variaveis prev e curr.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class Fibonacci {\n    static int fibonacci(int n) {\n        if (n <= 1) return n;\n        int prev = 0, curr = 1;\n        for (int i = 2; i <= n; i++) {\n            int next = prev + curr;\n            prev = curr;\n            curr = next;\n        }\n        return curr;\n    }\n\n    public static void main(String[] args) {\n        for (int i = 0; i <= 10; i++) {\n            System.out.println("F(" + i + ") = " + fibonacci(i));\n        }\n    }\n}'
             },
             {
-                name: 'Validacao de entrada',
-                objective: 'Adicione validacao para n negativo (retorne 0 ou lance excecao).',
+                name: 'Validação de entrada',
+                objective: 'Adicione validação para n negativo (retorne 0 ou lance exceção).',
                 validator(code) {
                     if (!/<\s*0|<=?\s*-1|< 0/.test(code)) return { ok: false, msg: 'Itau 3/3: verifique se n e negativo.' };
                     if (!/(return\s*0|return\s*-1|throw)/.test(code)) return { ok: false, msg: 'Itau 3/3: trate n negativo (return 0/-1 ou throw).' };
@@ -6929,7 +6944,7 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (UBER 1/3):\n1. Loop externo: n - 1 passagens.\n2. Loop interno: compare arr[j] com arr[j+1].\n3. Se fora de ordem, troque usando variavel temp.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class BubbleSort {\n    public static void main(String[] args) {\n        int[] arr = {64, 34, 25, 12, 22, 11, 90};\n        int n = arr.length;\n\n        for (int i = 0; i < n - 1; i++) {\n            for (int j = 0; j < n - i - 1; j++) {\n                if (arr[j] > arr[j + 1]) {\n                    int temp = arr[j];\n                    arr[j] = arr[j + 1];\n                    arr[j + 1] = temp;\n                }\n            }\n        }\n\n        System.out.println("Ordenado: " + Arrays.toString(arr));\n    }\n}'
             },
             {
-                name: 'Metodo bubbleSort',
+                name: 'Método bubbleSort',
                 objective: 'Extraia para static void bubbleSort(int[] arr).',
                 validator(code) {
                     if (!/static\s+void\s+\w+\s*\(\s*int\s*\[\]/.test(code)) return { ok: false, msg: 'Uber 2/3: crie metodo static void bubbleSort(int[]).' };
@@ -6938,7 +6953,7 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (UBER 2/3):\n1. Extraia para um metodo void.\n2. Modifique o array in-place.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class BubbleSort {\n    static void bubbleSort(int[] arr) {\n        for (int i = 0; i < arr.length - 1; i++) {\n            for (int j = 0; j < arr.length - 1 - i; j++) {\n                if (arr[j] > arr[j + 1]) {\n                    int temp = arr[j];\n                    arr[j] = arr[j + 1];\n                    arr[j + 1] = temp;\n                }\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {64, 34, 25, 12, 22, 11, 90};\n\n        bubbleSort(nums);\n        System.out.println(\"Ordenado: \" + Arrays.toString(nums));\n    }\n}'
             },
             {
-                name: 'Otimizacao early-exit',
+                name: 'Otimização early-exit',
                 objective: 'Adicione flag swapped para sair cedo se array ja ordenado.',
                 validator(code) {
                     if (!/(swapped|sorted|changed|flag)/.test(code)) return { ok: false, msg: 'Uber 3/3: adicione uma flag (swapped/sorted) para otimizacao.' };
@@ -6960,7 +6975,7 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (NVIDIA 1/3):\n1. Divida o array ao meio com copyOfRange.\n2. Mescle dois subarrays comparando elemento a elemento.\n3. Copie sobras do array que nao esgotou.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class MergeSort {\n    public static void main(String[] args) {\n        int[] arr = {12, 11, 13, 5, 6, 7};\n        int mid = arr.length / 2;\n\n        int[] L = Arrays.copyOfRange(arr, 0, mid);\n        int[] R = Arrays.copyOfRange(arr, mid, arr.length);\n\n        int i = 0, j = 0, k = 0;\n        while (i < L.length && j < R.length) {\n            if (L[i] <= R[j]) arr[k++] = L[i++];\n            else arr[k++] = R[j++];\n        }\n        while (i < L.length) arr[k++] = L[i++];\n        while (j < R.length) arr[k++] = R[j++];\n\n        System.out.println("Merged: " + Arrays.toString(arr));\n    }\n}'
             },
             {
-                name: 'Metodo merge separado',
+                name: 'Método merge separado',
                 objective: 'Extraia o merge para static void merge(int[] arr, int l, int m, int r).',
                 validator(code) {
                     if (!/static\s+void\s+merge\s*\(/.test(code)) return { ok: false, msg: 'Nvidia 2/3: crie metodo static void merge(int[], int, int, int).' };
@@ -6969,7 +6984,7 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (NVIDIA 2/3):\n1. Separe o merge em um metodo proprio.\n2. Receba indices left, mid, right.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class MergeSort {\n    static void merge(int[] arr, int l, int m, int r) {\n        int n1 = m - l + 1;\n        int n2 = r - m;\n        int[] L = new int[n1];\n        int[] R = new int[n2];\n\n        for (int i = 0; i < n1; i++) L[i] = arr[l + i];\n        for (int j = 0; j < n2; j++) R[j] = arr[m + 1 + j];\n\n        int i = 0, j = 0, k = l;\n        while (i < n1 && j < n2) {\n            if (L[i] <= R[j]) arr[k++] = L[i++];\n            else arr[k++] = R[j++];\n        }\n        while (i < n1) arr[k++] = L[i++];\n        while (j < n2) arr[k++] = R[j++];\n    }\n\n    public static void main(String[] args) {\n        int[] nums = {12, 11, 13, 5, 6, 7};\n        merge(nums, 0, 2, 5);\n        System.out.println(Arrays.toString(nums));\n    }\n}'
             },
             {
-                name: 'Metodo mergeSort recursivo',
+                name: 'Método mergeSort recursivo',
                 objective: 'Crie static void mergeSort(int[] arr, int l, int r) que chama merge.',
                 validator(code) {
                     if (!/static\s+void\s+mergeSort\s*\(/.test(code)) return { ok: false, msg: 'Nvidia 3/3: crie metodo static void mergeSort(int[], int, int).' };
@@ -6991,7 +7006,7 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (AURORA LABS 1/3):\n1. Use Queue para a fila e Set para visitados.\n2. Adicione o no inicial na fila e no set.\n3. Enquanto a fila nao esvaziar: retire, processe e enfileire vizinhos.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.*;\n\npublic class BFSGraph {\n    public static void main(String[] args) {\n        Map<Integer, List<Integer>> graph = new HashMap<>();\n        graph.put(1, Arrays.asList(2, 3));\n        graph.put(2, Arrays.asList(4, 5));\n        graph.put(3, Arrays.asList(6));\n\n        Queue<Integer> queue = new LinkedList<>();\n        Set<Integer> visited = new HashSet<>();\n        queue.add(1);\n        visited.add(1);\n\n        while (!queue.isEmpty()) {\n            int node = queue.poll();\n            System.out.println(node);\n\n            for (int neighbor : graph.getOrDefault(node, List.of())) {\n                if (!visited.contains(neighbor)) {\n                    visited.add(neighbor);\n                    queue.add(neighbor);\n                }\n            }\n        }\n    }\n}'
             },
             {
-                name: 'Metodo bfs separado',
+                name: 'Método bfs separado',
                 objective: 'Extraia para static void bfs(Map<Integer, List<Integer>> graph, int start).',
                 validator(code) {
                     if (!/static\s+void\s+bfs\s*\(/.test(code)) return { ok: false, msg: 'Aurora Labs 2/3: crie metodo static void bfs(...).' };
@@ -7000,8 +7015,8 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (AURORA LABS 2/3):\n1. Extraia BFS para um metodo.\n2. Receba o grafo e o no inicial.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.*;\n\npublic class BFSGraph {\n    static void bfs(Map<Integer, List<Integer>> graph, int start) {\n        Queue<Integer> queue = new LinkedList<>();\n        Set<Integer> visited = new HashSet<>();\n\n        queue.add(start);\n        visited.add(start);\n\n        while (!queue.isEmpty()) {\n            int node = queue.poll();\n            System.out.println(node);\n\n            for (int neighbor : graph.getOrDefault(node, List.of())) {\n                if (!visited.contains(neighbor)) {\n                    visited.add(neighbor);\n                    queue.add(neighbor);\n                }\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        Map<Integer, List<Integer>> graph = new HashMap<>();\n        graph.put(1, Arrays.asList(2, 3));\n        graph.put(2, Arrays.asList(4, 5));\n        graph.put(3, Arrays.asList(6));\n\n        bfs(graph, 1);\n    }\n}'
             },
             {
-                name: 'Retorno de lista de nos',
-                objective: 'Modifique para retornar List<Integer> com a ordem de visita.',
+                name: 'Retorno de lista de nós',
+                objective: 'Modifique para retornar List<Integer> com a ordem de visitação.',
                 validator(code) {
                     if (!/static\s+(List|ArrayList)\s*<\s*Integer\s*>\s*bfs/.test(code)) return { ok: false, msg: 'Aurora Labs 3/3: mude o retorno para List<Integer>.' };
                     if (!/return\s+\w+/.test(code)) return { ok: false, msg: 'Aurora Labs 3/3: retorne a lista de nos visitados.' };
@@ -7018,11 +7033,11 @@ const SCALE_MISSIONS = {
         steps: [
             {
                 name: 'Base funcional',
-                objective: 'Implemente verificacao de palindromo base.',
+                objective: 'Implemente verificação de palíndromo base.',
                 helpText: 'COMO EXPANDIR (SANTANDER 1/3):\n1. Use dois ponteiros: left no inicio, right no fim.\n2. Compare s.charAt(left) com s.charAt(right).\n3. Se diferentes, nao e palindromo.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class Palindrome {\n    public static void main(String[] args) {\n        String s = "radar";\n        int left = 0, right = s.length() - 1;\n        boolean resultado = true;\n\n        while (left < right) {\n            if (s.charAt(left) != s.charAt(right)) {\n                resultado = false;\n                break;\n            }\n            left++;\n            right--;\n        }\n\n        System.out.println("radar: " + resultado);\n        System.out.println("hello: " + false);\n    }\n}'
             },
             {
-                name: 'Metodo isPalindrome',
+                name: 'Método isPalindrome',
                 objective: 'Extraia para static boolean isPalindrome(String s).',
                 validator(code) {
                     if (!/static\s+boolean\s+\w+\s*\(\s*String/.test(code)) return { ok: false, msg: 'Santander 2/3: crie metodo static boolean isPalindrome(String).' };
@@ -7031,7 +7046,7 @@ const SCALE_MISSIONS = {
                 helpText: 'COMO EXPANDIR (SANTANDER 2/3):\n1. Extraia para um metodo boolean.\n2. Use dois ponteiros.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class Palindrome {\n    static boolean isPalindrome(String s) {\n        int left = 0, right = s.length() - 1;\n        while (left < right) {\n            if (s.charAt(left) != s.charAt(right)) {\n                return false;\n            }\n            left++;\n            right--;\n        }\n        return true;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(isPalindrome(\"radar\"));\n        System.out.println(isPalindrome(\"hello\"));\n    }\n}'
             },
             {
-                name: 'Normalizacao case-insensitive',
+                name: 'Normalização case-insensitive',
                 objective: 'Adicione toLowerCase() e filtre apenas letras/digitos.',
                 validator(code) {
                     if (!/toLowerCase|toUpperCase/.test(code)) return { ok: false, msg: 'Santander 3/3: use toLowerCase() para normalizar.' };
@@ -7063,7 +7078,7 @@ const SCALE_MISSIONS = {
             },
             {
                 name: 'Tratamento lista vazia',
-                objective: 'Adicione verificacao para head == null no inicio.',
+                objective: 'Adicione verificação para head == null no início.',
                 validator(code) {
                     if (!/head\s*==\s*null|null\s*==\s*head/.test(code)) return { ok: false, msg: 'Bradesco 3/3: verifique se head e null.' };
                     if (!/return\s+(null|head)/.test(code)) return { ok: false, msg: 'Bradesco 3/3: retorne null ou head se lista vazia.' };
@@ -7127,7 +7142,7 @@ const SCALE_MISSIONS = {
             },
             {
                 name: 'Otimizacao O(1) espaco',
-                objective: 'Use apenas duas variaveis (prev/curr) em vez de array completo.',
+                objective: 'Use apenas duas variáveis (prev/curr) em vez de array completo.',
                 validator(code) {
                     if (/new\s+int\s*\[\s*n/.test(code)) return { ok: false, msg: 'Bio Code 3/3: use apenas 2 variaveis, nao array de tamanho n.' };
                     if (!/(prev|a|first).*(curr|b|second)|(curr|b|second).*(prev|a|first)/.test(code)) return { ok: false, msg: 'Bio Code 3/3: use duas variaveis para guardar os ultimos valores.' };
@@ -7233,7 +7248,7 @@ const IDE = {
 
         const step = this._getScaleStep();
         const progress = this._getScaleProgressLabel();
-        const objective = step && step.objective ? step.objective : 'Evolua o codigo para a proxima fase.';
+        const objective = step && step.objective ? step.objective : 'Evolua o código para a próxima fase.';
         if (descEl) {
             descEl.textContent = (this._baseChallengeDesc || this._currentChallenge.description || '') +
                 '\n\nESCALABILIDADE ' + progress + ': ' + objective;
@@ -7253,7 +7268,7 @@ const IDE = {
                 let baseHelp = step && step.helpText ? step.helpText : ch.helpText || '';
                 baseHelp += '\n\n=== EXPANSAO 1/' + this._scalePlan.requiredValidations + ' ===\n';
                 baseHelp += 'Objetivo: ' + (step ? step.objective : 'Monte a base funcional.');
-                baseHelp += '\n\n--- NOTA ---\nA validacao aceita solucoes alternativas criativas!\nSe seu codigo compila e resolve o problema de forma diferente,\napenas garanta que contenha os elementos-chave solicitados.\nO importante e o aprendizado, nao o engessamento.';
+                baseHelp += '\n\n--- NOTA ---\nA validação aceita soluções alternativas criativas!\nSe seu código compila e resolve o problema de forma diferente,\napenas garanta que contenha os elementos-chave solicitados.\nO importante é o aprendizado, não o engessamento.';
                 return baseHelp;
             }
             // Accumulate help text from all completed steps + current step
@@ -7277,7 +7292,7 @@ const IDE = {
                 }
             }
             // Add creative solutions note
-            accumulatedHelp += '\n\n--- NOTA ---\nA validacao aceita solucoes alternativas criativas!\nSe seu codigo compila e resolve o problema de forma diferente,\napenas garanta que contenha os elementos-chave solicitados.\nO importante e o aprendizado, nao o engessamento.';
+            accumulatedHelp += '\n\n--- NOTA ---\nA validação aceita soluções alternativas criativas!\nSe seu código compila e resolve o problema de forma diferente,\napenas garanta que contenha os elementos-chave solicitados.\nO importante é o aprendizado, não o engessamento.';
             return accumulatedHelp || ch.helpText || '---';
         }
         return ch.helpText || '---';
@@ -7365,8 +7380,8 @@ const IDE = {
         if (this._isScalingActive()) {
             const step = this._getScaleStep();
             const term = document.getElementById('ideTermOutput');
-            term.innerHTML += '\n<span class="ide-term-info">Escalonamento ativo: ' + this._scalePlan.requiredValidations + ' validacoes obrigatorias nesta empresa.</span>';
-            term.innerHTML += '\n<span class="ide-term-info">Fase ' + this._getScaleProgressLabel() + ': ' + (step ? step.objective : 'Evolua o codigo.') + '</span>';
+            term.innerHTML += '\n<span class="ide-term-info">Escalonamento ativo: ' + this._scalePlan.requiredValidations + ' validações obrigatórias nesta empresa.</span>';
+            term.innerHTML += '\n<span class="ide-term-info">Fase ' + this._getScaleProgressLabel() + ': ' + (step ? step.objective : 'Evolua o código.') + '</span>';
             termStatus.textContent = 'Escala ' + this._getScaleProgressLabel();
         } else {
             termStatus.textContent = 'Pronto';
@@ -7387,6 +7402,10 @@ const IDE = {
 
         // Pause music during coding challenge (seamless resume on close)
         SFX.pauseMusic();
+
+        // Block world interactions (movement, books, NPCs) while IDE is open.
+        // This mirrors what UI.showChallenge() does for theory challenges.
+        State.isInChallenge = true;
 
         // Show overlay
         document.getElementById('ideOverlay').classList.add('visible');
@@ -7468,7 +7487,7 @@ const IDE = {
             if (this._scalePasses > 0 && code === this._scaleLastCode) {
                 result = {
                     ok: false,
-                    msg: 'Escala ' + progress + ': expanda o codigo antes de validar novamente. Nao repita exatamente a mesma versao.',
+                    msg: 'Escala ' + progress + ': expanda o código antes de validar novamente. Não repita exatamente a mesma versão.',
                 };
             } else {
                 const step = this._getScaleStep();
@@ -7492,8 +7511,8 @@ const IDE = {
                 if (!finishedScaling) {
                     const nextStep = this._getScaleStep();
                     term.innerHTML += '\n\n<span class="ide-term-success">FASE VALIDADA (' + this._scalePasses + '/' + required + ').</span>';
-                    term.innerHTML += '\n<span class="ide-term-info">Proxima expansao: ' + (nextStep ? nextStep.objective : 'Evolua o codigo.') + '</span>';
-                    term.innerHTML += '\n<span class="ide-term-info">Use VER SOLUCAO para a cola da proxima fase.</span>';
+                    term.innerHTML += '\n<span class="ide-term-info">Próxima expansão: ' + (nextStep ? nextStep.objective : 'Evolua o código.') + '</span>';
+                    term.innerHTML += '\n<span class="ide-term-info">Use VER SOLUÇÃO para a cola da próxima fase.</span>';
                     termStatus.textContent = 'Escala ' + this._getScaleProgressLabel();
                     termStatus.className = 'ide-terminal-status';
                     this._refreshScaleUI();
@@ -7565,7 +7584,7 @@ const IDE = {
         // Show the correct answer in terminal as learning opportunity
         const helpText = this._getCurrentHelpText();
         if (this._currentChallenge && helpText) {
-            term.innerHTML += '\n<span class="ide-term-info">--- SOLUCAO DE REFERENCIA ---</span>';
+            term.innerHTML += '\n<span class="ide-term-info">--- SOLUÇÃO DE REFERÊNCIA ---</span>';
             term.innerHTML += '\n<span class="ide-term-info">' + helpText + '</span>';
         }
 

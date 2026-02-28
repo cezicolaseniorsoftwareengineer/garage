@@ -79,13 +79,13 @@ def test_repos():
 
         challenges = challenge_repo.get_all()
         assert len(challenges) > 0, "No challenges loaded"
-        assert len(challenges) == 72, "Expected 72 challenges, got " + str(len(challenges))
+        assert len(challenges) == 75, "Expected 75 challenges, got " + str(len(challenges))
     else:
         from app.infrastructure.repositories.challenge_repository import ChallengeRepository
 
         repo = ChallengeRepository(os.path.join("app", "data", "challenges.json"))
         challenges = repo.get_all()
-        assert len(challenges) == 72, "Expected 72 challenges, got " + str(len(challenges))
+        assert len(challenges) == 75, "Expected 75 challenges, got " + str(len(challenges))
 
 
 # ============================================================================
@@ -280,7 +280,7 @@ def test_data_files():
     with open(os.path.join("app", "data", "challenges.json"), "r", encoding="utf-8") as f:
         challenges = json.load(f)
 
-    assert len(challenges) == 72, "Expected 72 challenges, got " + str(len(challenges))
+    assert len(challenges) == 75, "Expected 75 challenges, got " + str(len(challenges))
 
     for ch in challenges:
         assert "id" in ch, "Challenge missing 'id'"

@@ -1149,8 +1149,8 @@
   },
   {
     "id": "principal_06_bradesco_ai",
-    "title": "computacao Explicavel em Banking",
-    "description": "O Bradesco usa computacao para aprovar/negar crédito. Um cliente tem o crédito negado. Como garantir que o modelo não é discriminatório?",
+    "title": "IA Explicável em Banking",
+    "description": "O Bradesco usa Inteligência Artificial para aprovar/negar crédito. Um cliente tem o crédito negado. Como garantir que o modelo não é discriminatório?",
     "context_code": "// Modelo ML: input = dados do cliente -> output = score de credito\n// Score < 0.5 = credito negado\n// Regulacao: decisoes automatizadas devem ser explicaveis (LGPD Art. 20)",
     "category": "architecture",
     "required_stage": "Principal",
@@ -1164,7 +1164,7 @@
         "explanation": "Remover a variável explícita não basta. Proxies (CEP, escola, bairro) podem codificar discriminação indiretamente. Isso se chama 'indirect discrimination' ou 'proxy bias'."
       },
       {
-        "text": "computacao Explicável (XAI): SHAP values para explicar cada decisão + fairness metrics (demographic parity, equalized odds) + auditoria periódica do modelo",
+        "text": "IA Explicável (XAI): SHAP values para explicar cada decisão + fairness metrics (demographic parity, equalized odds) + auditoria periódica do modelo",
         "is_correct": true,
         "explanation": "SHAP values mostram o peso de cada variável na decisão. Fairness metrics medem se o modelo trata grupos diferentes de forma equitativa. Auditoria periódica detecta drift e bias emergente. LGPD Art. 20 garante ao cidadão o direito de explicação de decisões automatizadas."
       },
@@ -1267,7 +1267,7 @@
     "category": "domain_modeling",
     "required_stage": "Junior",
     "region": "Disney",
-    "mentor": null,
+    "mentor": "The Refactorer",
     "points_on_correct": 150,
     "options": [
       {
@@ -1295,7 +1295,7 @@
     "category": "domain_modeling",
     "required_stage": "Junior",
     "region": "Disney",
-    "mentor": null,
+    "mentor": "The Refactorer",
     "points_on_correct": 150,
     "options": [
       {
@@ -1323,7 +1323,7 @@
     "category": "logic",
     "required_stage": "Junior",
     "region": "Disney",
-    "mentor": null,
+    "mentor": "The Refactorer",
     "points_on_correct": 150,
     "options": [
       {
@@ -1351,7 +1351,7 @@
     "category": "logic",
     "required_stage": "Mid",
     "region": "IBM",
-    "mentor": null,
+    "mentor": "The Simplifier",
     "points_on_correct": 200,
     "options": [
       {
@@ -1379,7 +1379,7 @@
     "category": "logic",
     "required_stage": "Mid",
     "region": "IBM",
-    "mentor": null,
+    "mentor": "The Simplifier",
     "points_on_correct": 200,
     "options": [
       {
@@ -1407,7 +1407,7 @@
     "category": "logic",
     "required_stage": "Mid",
     "region": "IBM",
-    "mentor": null,
+    "mentor": "The Simplifier",
     "points_on_correct": 200,
     "options": [
       {
@@ -1435,7 +1435,7 @@
     "category": "logic",
     "required_stage": "Senior",
     "region": "PayPal",
-    "mentor": null,
+    "mentor": "The Pragmatist",
     "points_on_correct": 250,
     "options": [
       {
@@ -1463,7 +1463,7 @@
     "category": "logic",
     "required_stage": "Senior",
     "region": "PayPal",
-    "mentor": null,
+    "mentor": "The Pragmatist",
     "points_on_correct": 250,
     "options": [
       {
@@ -1491,7 +1491,7 @@
     "category": "architecture",
     "required_stage": "Senior",
     "region": "PayPal",
-    "mentor": null,
+    "mentor": "The Pragmatist",
     "points_on_correct": 250,
     "options": [
       {
@@ -1519,7 +1519,7 @@
     "category": "logic",
     "required_stage": "Senior",
     "region": "Netflix",
-    "mentor": null,
+    "mentor": "The Pragmatist",
     "points_on_correct": 250,
     "options": [
       {
@@ -1547,7 +1547,7 @@
     "category": "architecture",
     "required_stage": "Senior",
     "region": "Netflix",
-    "mentor": null,
+    "mentor": "The Pragmatist",
     "points_on_correct": 250,
     "options": [
       {
@@ -1575,7 +1575,7 @@
     "category": "logic",
     "required_stage": "Senior",
     "region": "Netflix",
-    "mentor": null,
+    "mentor": "The Pragmatist",
     "points_on_correct": 250,
     "options": [
       {
@@ -1938,7 +1938,7 @@
     "context_code": "// Fibonacci recursivo: fib(5) chama fib(4)+fib(3)\n// fib(4) chama fib(3)+fib(2) -- fib(3) calculado 2x!",
     "category": "logic",
     "required_stage": "Principal",
-    "region": "Aurora Labs",
+    "region": "Nexus Labs",
     "mentor": null,
     "points_on_correct": 300,
     "options": [
@@ -1966,7 +1966,7 @@
     "context_code": "// Troco de moedas: moedas = [1, 5, 10, 25]\n// Valor: 30 centavos. Mínimo de moedas?",
     "category": "logic",
     "required_stage": "Principal",
-    "region": "Aurora Labs",
+    "region": "Nexus Labs",
     "mentor": null,
     "points_on_correct": 300,
     "options": [
@@ -1994,7 +1994,7 @@
     "context_code": "// Top-down: fib(n) = fib(n-1) + fib(n-2) com cache\n// Bottom-up: dp[0]=0, dp[1]=1, dp[i]=dp[i-1]+dp[i-2]",
     "category": "logic",
     "required_stage": "Principal",
-    "region": "Aurora Labs",
+    "region": "Nexus Labs",
     "mentor": null,
     "points_on_correct": 300,
     "options": [
