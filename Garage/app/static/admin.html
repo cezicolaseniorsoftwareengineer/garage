@@ -755,6 +755,9 @@
             loadAll();
             // Auto-refresh a cada 10 segundos
             _intervals.push(setInterval(loadAll, 10000));
+            // Auto-purge orfas: imediato + a cada 20 horas
+            purgeOrphanedSessions(true);
+            _intervals.push(setInterval(() => purgeOrphanedSessions(true), 20 * 60 * 60 * 1000));
         }
 
         async function loadAll() {
@@ -1111,8 +1114,10 @@
         }
 
         // -- Delete orphaned sessions (no linked user) --
-        async function purgeOrphanedSessions() {
-            if (!confirm('Deletar TODAS as sessoes sem usuario registrado?\nEssas sao sessoes de teste ou anonimas que nao aparecem no ranking.')) return;
+        // silent=true: chamado automaticamente (sem confirm/alert)
+        // silent=false: chamado pelo botao (mostra confirm + resultado)
+        async function purgeOrphanedSessions(silent = false) {
+            if (!silent && !confirm('Deletar TODAS as sessoes sem usuario registrado?\nEssas sao sessoes de teste ou anonimas que nao aparecem no ranking.')) return;
             try {
                 const res = await fetch('/api/admin/sessions/orphaned', {
                     method: 'DELETE',
@@ -1120,13 +1125,13 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    alert(data.message);
-                    loadAll();
+                    if (!silent) alert(data.message);
+                    if (data.deleted > 0) loadAll(); // atualiza so se havia orfas
                 } else {
-                    alert('Erro: ' + (data.detail || 'Falha ao limpar sessoes.'));
+                    if (!silent) alert('Erro: ' + (data.detail || 'Falha ao limpar sessoes.'));
                 }
             } catch (e) {
-                alert('Erro de conexao: ' + e.message);
+                if (!silent) alert('Erro de conexao: ' + e.message);
             }
         }
 
