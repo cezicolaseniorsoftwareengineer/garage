@@ -455,29 +455,84 @@ const StudyChat = {
 
     _renderMarkdown(text) {
         if (!text) return '';
-        // Escape HTML entities first to avoid XSS
+        // Escape HTML entities to avoid XSS
         const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-        // Fenced code blocks: ```lang\ncode\n```
-        text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_m, lang, code) => {
-            const langLabel = lang ? `<span class="study-code-lang">${esc(lang)}</span>` : '';
-            return `<pre class="study-code-block">${langLabel}<code>${esc(code.trimEnd())}</code></pre>`;
-        });
-        // Inline code: `code`
-        text = text.replace(/`([^`\n]+)`/g, (_m, code) => `<code class="study-inline-code">${esc(code)}</code>`);
-        // Bold: **text**
-        text = text.replace(/\*\*([^*\n]+)\*\*/g, (_m, t) => `<strong>${esc(t)}</strong>`);
-        // Italic: *text* or _text_
-        text = text.replace(/\*([^*\n]+)\*/g, (_m, t) => `<em>${esc(t)}</em>`);
-        text = text.replace(/_([^_\n]+)_/g, (_m, t) => `<em>${esc(t)}</em>`);
+        // ---- Copy button IIFE (single-quoted to stay inside template literal) ----
+        const _copyOnClick = `(function(b){var c=b.closest('.study-code-block').querySelector('code');navigator.clipboard.writeText(c.innerText).then(function(){b.textContent='\\u2714 COPIADO';b.classList.add('study-code-copy--ok');setTimeout(function(){b.textContent='COPIAR';b.classList.remove('study-code-copy--ok')},1600)}).catch(function(){var t=document.createElement('textarea');t.value=c.innerText;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);b.textContent='\\u2714';setTimeout(function(){b.textContent='COPIAR'},1600)})})(this)`;
 
-        // Process line-by-line for lists and paragraphs
+        // ---- Step 1: Extract existing fenced code blocks into placeholders ----
+        // Placeholders use \x00CODE{n}\x00 so they survive line-split processing cleanly.
+        const _codeBlocks = [];
+        const _mkCodeBlock = (lang, rawCode) => {
+            const displayLang = (lang || 'java').toUpperCase();
+            const langSpan = `<span class="study-code-lang">${esc(displayLang)}</span>`;
+            const copyBtn  = `<button class="study-code-copy" onclick="${_copyOnClick}" title="Copiar código">COPIAR</button>`;
+            const html = `<pre class="study-code-block">${langSpan}${copyBtn}<code>${esc(rawCode.trimEnd())}</code></pre>`;
+            const idx = _codeBlocks.length;
+            _codeBlocks.push(html);
+            return `\x00CODE${idx}\x00`;
+        };
+
+        text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_m, lang, code) => _mkCodeBlock(lang, code));
+
+        // ---- Step 2: Rescue unfenced Java/code blocks ----
+        // Detects 3+ consecutive lines that look like source code and auto-wraps them.
+        // Heuristic: line ends with ; { or } alone, starts with keyword, or is deeply indented.
+        const _isCodeLine = (l) =>
+            /[;{]\s*$/.test(l) ||
+            /^\s*\}[\s;,)]*$/.test(l) ||
+            /^\s*(public |private |protected |static |void |class |interface |enum |import |package |return |if\s*\(|}\s*else|else\s*\{|for\s*\(|while\s*\(|do\s*\{|try\s*\{|catch\s*\(|finally\s*\{|new\s+\w|throw |int |long |double |float |boolean |char |String |var |final |@\w)/.test(l) ||
+            /^\s{4,}\S/.test(l);  // 4+ spaces of indentation
+
+        const _rawLines = text.split('\n');
+        const _rescued = [];
+        let _codeBuf = [];
+        const _flushCodeBuf = () => {
+            if (_codeBuf.length >= 3) {
+                _rescued.push(_mkCodeBlock('java', _codeBuf.join('\n')));
+            } else {
+                _codeBuf.forEach(l => _rescued.push(l));
+            }
+            _codeBuf = [];
+        };
+        for (const rl of _rawLines) {
+            if (rl.startsWith('\x00CODE')) {
+                _flushCodeBuf();
+                _rescued.push(rl);
+            } else if (_isCodeLine(rl)) {
+                _codeBuf.push(rl);
+            } else {
+                _flushCodeBuf();
+                _rescued.push(rl);
+            }
+        }
+        _flushCodeBuf();
+        text = _rescued.join('\n');
+
+        // ---- Step 3: Inline formatting ----
+        text = text.replace(/`([^`\n]+)`/g, (_m, code) => `<code class="study-inline-code">${esc(code)}</code>`);
+        text = text.replace(/\*\*([^*\n]+)\*\*/g, (_m, t) => `<strong>${esc(t)}</strong>`);
+        text = text.replace(/\*([^*\n]+)\*/g,    (_m, t) => `<em>${esc(t)}</em>`);
+        text = text.replace(/_([^_\n]+)_/g,       (_m, t) => `<em>${esc(t)}</em>`);
+
+        // ---- Step 4: Line-by-line rendering (with placeholder restoration) ----
         const lines = text.split('\n');
         const out = [];
         let inUl = false, inOl = false;
 
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
+
+            // Restore code block placeholder
+            if (line.startsWith('\x00CODE')) {
+                if (inUl) { out.push('</ul>'); inUl = false; }
+                if (inOl) { out.push('</ol>'); inOl = false; }
+                const idx = parseInt(line.slice(5, line.lastIndexOf('\x00')), 10);
+                out.push(_codeBlocks[idx]);
+                continue;
+            }
+
             const ulMatch = line.match(/^[-*] (.+)/);
             const olMatch = line.match(/^\d+\. (.+)/);
             const hrMatch = /^---+$/.test(line.trim());

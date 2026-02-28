@@ -2419,25 +2419,68 @@ body {
     position: relative;
     background: #020817;
     border: 1px solid #22d3ee33;
-    border-radius: 7px;
-    padding: 10px 12px;
+    border-radius: 8px;
+    padding: 30px 14px 12px 14px; /* top padding = room for header row */
     margin: 8px 0;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    box-sizing: border-box;
     font-family: 'Fira Code', 'Courier New', monospace;
     font-size: 0.75rem;
-    line-height: 1.5;
+    line-height: 1.6;
     color: #7dd3fc;
     white-space: pre;
+    tab-size: 4;
+}
+
+.study-msg-body .study-code-block code {
+    display: block;
+    white-space: pre;
+    word-break: normal;
+    overflow-wrap: normal;
 }
 
 .study-msg-body .study-code-lang {
-    display: block;
-    font-size: 0.6rem;
-    letter-spacing: 1px;
+    position: absolute;
+    top: 7px;
+    left: 12px;
+    font-size: 0.58rem;
+    letter-spacing: 1.2px;
     text-transform: uppercase;
     color: #22d3ee;
-    margin-bottom: 4px;
-    opacity: 0.7;
+    opacity: 0.75;
+    pointer-events: none;
+}
+
+/* ---- Copy button ---- */
+.study-code-copy {
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    background: transparent;
+    border: 1px solid #22d3ee44;
+    border-radius: 4px;
+    color: #22d3ee;
+    font-family: var(--font, 'Courier New', monospace);
+    font-size: 0.58rem;
+    letter-spacing: 0.8px;
+    padding: 2px 9px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    line-height: 1.6;
+    white-space: nowrap;
+}
+
+.study-code-copy:hover {
+    background: #22d3ee18;
+    border-color: #22d3ee88;
+}
+
+.study-code-copy.study-code-copy--ok {
+    background: #22d3ee22;
+    border-color: #22d3ee;
+    color: #6ee7b7;
 }
 
 .study-msg-body .study-inline-code {
@@ -3457,6 +3500,17 @@ body {
     .study-chat-actions .btn-primary {
         width: 100%;
     }
+
+    .study-msg-body .study-code-block {
+        font-size: 0.7rem;
+        padding: 28px 10px 10px 10px;
+    }
+
+    .study-code-copy {
+        font-size: 0.6rem;
+        padding: 3px 10px;
+        min-height: 24px;
+    }
 }
 
 /* ---- responsive: IDE on phones ---- */
@@ -3476,6 +3530,18 @@ body {
 
     .study-chat-card {
         height: 100%;
+    }
+
+    .study-msg-body .study-code-block {
+        font-size: 0.65rem;
+        padding: 26px 8px 8px 8px;
+    }
+
+    .study-code-copy {
+        font-size: 0.58rem;
+        padding: 3px 8px;
+        top: 4px;
+        right: 6px;
     }
 
     .ide-sidebar {
