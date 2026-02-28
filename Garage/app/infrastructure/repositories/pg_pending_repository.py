@@ -15,6 +15,8 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+from sqlalchemy import or_
+
 from app.domain.user import User
 from app.infrastructure.database.models import PendingRegistrationModel, UserModel, UserMetricsModel
 
@@ -42,19 +44,29 @@ class PgPendingRepository:
     # ------------------------------------------------------------------
 
     def exists_username(self, username: str) -> bool:
+        """Return True only for non-expired pending records with this username."""
+        now = datetime.now(timezone.utc)
         with self._sf() as session:
             return (
                 session.query(PendingRegistrationModel)
-                .filter(PendingRegistrationModel.username == username)
+                .filter(
+                    PendingRegistrationModel.username == username,
+                    PendingRegistrationModel.expires_at > now,
+                )
                 .count()
                 > 0
             )
 
     def exists_email(self, email: str) -> bool:
+        """Return True only for non-expired pending records with this email."""
+        now = datetime.now(timezone.utc)
         with self._sf() as session:
             return (
                 session.query(PendingRegistrationModel)
-                .filter(PendingRegistrationModel.email == email)
+                .filter(
+                    PendingRegistrationModel.email == email,
+                    PendingRegistrationModel.expires_at > now,
+                )
                 .count()
                 > 0
             )
@@ -79,10 +91,14 @@ class PgPendingRepository:
         expires_at = datetime.now(timezone.utc) + timedelta(minutes=_CODE_TTL_MINUTES)
 
         with self._sf() as session:
-            # Remove any previous pending for same email/username (re-registration)
+            # Remove any previous pending for same email OR username (re-registration)
+            # Using synchronize_session=False for correct bulk delete behavior
             session.query(PendingRegistrationModel).filter(
-                PendingRegistrationModel.email == email
-            ).delete()
+                or_(
+                    PendingRegistrationModel.email == email,
+                    PendingRegistrationModel.username == username,
+                )
+            ).delete(synchronize_session=False)
 
             session.add(
                 PendingRegistrationModel(
