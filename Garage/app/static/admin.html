@@ -598,9 +598,10 @@
             document.getElementById('dashboardScreen').style.display = 'block';
             document.getElementById('adminUserLabel').textContent = user ? user.full_name : 'Admin';
             loadAll();
-            // Auto-refresh: full reload every 30s; online-only every 10s
-            _intervals.push(setInterval(loadOnlineOnly, 10000));
-            _intervals.push(setInterval(loadAll, 30000));
+            // Auto-refresh: online-only every 60s; full reload every 5 min
+            // (reduced from 10s/30s to protect Neon free-tier data transfer quota)
+            _intervals.push(setInterval(loadOnlineOnly, 60000));
+            _intervals.push(setInterval(loadAll, 300000));
         }
 
         async function loadAll() {

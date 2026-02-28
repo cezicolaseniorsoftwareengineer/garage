@@ -158,14 +158,15 @@ const WorldStatePersistence = {
 // ---- heartbeat for real-time online tracking ----
 const Heartbeat = {
     _intervalId: null,
-    _intervalMs: 30000, // 30 seconds
+    _intervalMs: 120000, // 120s -- reduced from 30s to save Neon data transfer quota
+    _stopped: false,    // true after 401 (token expired) -- prevents auto-restart
 
     /**
      * Start sending heartbeat pings to mark player as online.
      */
     start() {
+        this._stopped = false;
         this.stop(); // Ensure no duplicate intervals
-        console.log('[Heartbeat] Starting online tracking...');
 
         // Send immediate ping
         this._sendPing();
@@ -183,23 +184,36 @@ const Heartbeat = {
         if (this._intervalId) {
             clearInterval(this._intervalId);
             this._intervalId = null;
-            console.log('[Heartbeat] Stopped online tracking.');
         }
     },
 
     /**
      * Send a heartbeat ping to the server.
+     * Stops permanently on 401 / session expired to avoid flooding.
      */
     async _sendPing() {
-        if (!State.sessionId) return;
+        if (!State.sessionId || this._stopped) return;
+        // Stop immediately if user is no longer authenticated
+        if (typeof Auth !== 'undefined' && !Auth.isLoggedIn()) {
+            this._stopped = true;
+            this.stop();
+            return;
+        }
 
         try {
             await API.post('/api/heartbeat', {
                 session_id: State.sessionId,
             });
-            console.log('[Heartbeat] Ping sent successfully.');
         } catch (e) {
-            console.warn('[Heartbeat] Failed to send ping:', e.message);
+            // Stop heartbeat permanently on auth failure (token expired / invalid)
+            const msg = (e && e.message) ? e.message.toLowerCase() : '';
+            const isAuthError = (e && e.status === 401) ||
+                msg.includes('expirada') || msg.includes('expired') ||
+                msg.includes('unauthorized') || msg.includes('401');
+            if (isAuthError) {
+                this._stopped = true;
+                this.stop();
+            }
         }
     },
 };

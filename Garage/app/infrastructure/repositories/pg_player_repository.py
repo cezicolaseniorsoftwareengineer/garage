@@ -3,6 +3,8 @@ from uuid import UUID
 from datetime import datetime, timezone, timedelta
 from typing import Optional, List
 
+from sqlalchemy import text
+
 from app.domain.player import Player, Attempt
 from app.domain.character import Character
 from app.domain.enums import (
@@ -97,6 +99,20 @@ class PgPlayerRepository:
     # ------------------------------------------------------------------
     # Read
     # ------------------------------------------------------------------
+
+    def touch_timestamp(self, session_id: str) -> bool:
+        """Update only updated_at for a session -- minimal 1-row write for heartbeat.
+
+        Avoids loading the full player JSON just to bump a timestamp.
+        Returns True if the row was found and updated, False otherwise.
+        """
+        with self._sf() as session:
+            result = session.execute(
+                text("UPDATE game_sessions SET updated_at = NOW() WHERE id = :sid"),
+                {"sid": session_id},
+            )
+            session.commit()
+            return result.rowcount > 0
 
     def get(self, player_id: str) -> Optional[Player]:
         """Load a full Player aggregate by session id."""

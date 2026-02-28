@@ -310,22 +310,24 @@ class HeartbeatRequest(BaseModel):
 @router.post("/heartbeat")
 def api_heartbeat(req: HeartbeatRequest, current_user: dict = Depends(get_current_user)):
     """
-    Heartbeat endpoint — updates session timestamp to mark player as online.
-    Called every 30s by the frontend.
+    Heartbeat endpoint -- updates session timestamp to mark player as online.
+    Called periodically by the frontend.
 
-    Performance note: PgPlayerRepository.save() issues a full row UPDATE, but
-    SQLAlchemy’s ``onupdate=_utcnow`` on the sessions table ensures only
-    ``updated_at`` changes if no other fields are dirty. For tracking "online
-    now" this is acceptable; at higher scale swap to a Redis TTL key.
+    Performance: uses a single UPDATE updated_at = NOW() (no SELECT, minimal transfer).
     """
+    # Lightweight touch: single UPDATE, no SELECT, no JSON round-trip
+    if hasattr(_player_repo, 'touch_timestamp'):
+        found = _player_repo.touch_timestamp(req.session_id)
+        if not found:
+            raise HTTPException(status_code=404, detail="Session not found")
+        return {"status": "ok", "heartbeat": True}
+
+    # Fallback for non-PG repos (local JSON)
     player = _player_repo.get(req.session_id)
     if not player:
         raise HTTPException(status_code=404, detail="Session not found")
     _assert_owner(player, current_user)
-
-    # Bump updated_at via a minimal save
     _player_repo.save(player)
-
     return {"status": "ok", "heartbeat": True}
 
 
