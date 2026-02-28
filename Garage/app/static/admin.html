@@ -480,6 +480,7 @@
                             <th onclick="sortTable('rankingTable', 7, 'num')">TENTATIVAS</th>
                             <th onclick="sortTable('rankingTable', 8, 'num')">GAME OVERS</th>
                             <th onclick="sortTable('rankingTable', 9, 'str')">INICIO</th>
+                            <th style="width:60px;">ACAO</th>
                         </tr>
                     </thead>
                     <tbody id="rankingBody"></tbody>
@@ -766,7 +767,10 @@
                     '<td data-sortval="' + (e.duration_seconds || 0) + '">' + formatDuration(e.duration_seconds) + '</td>' +
                     '<td>' + e.total_attempts + '</td>' +
                     '<td>' + e.game_over_count + '</td>' +
-                    '<td>' + formatDate(e.created_at) + '</td>';
+                    '<td>' + formatDate(e.created_at) + '</td>' +
+                    (e.user_id
+                        ? '<td><button class="btn-delete-user" onclick="deleteUser(event, \'' + esc(e.user_id) + '\', \'' + esc(e.player_name) + '\')" title="Deletar usuario">&#128465;</button></td>'
+                        : '<td></td>');
                 body.appendChild(tr);
             });
         }

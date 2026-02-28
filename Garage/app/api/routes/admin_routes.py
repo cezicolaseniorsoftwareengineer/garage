@@ -291,6 +291,7 @@ def api_admin_ranking(current_user: dict = Depends(get_current_user)):
         entries.append({
             "rank": 0,
             "player_name": s.get("name"),
+            "user_id": user.id if user else None,
             "user_name": user.full_name if user else "---",
             "user_email": user.email if user else "---",
             "stage": s.get("stage"),
