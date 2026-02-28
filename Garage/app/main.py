@@ -106,9 +106,9 @@ verification_repo = None  # set only when PostgreSQL is available
 pending_repo = None       # PgPendingRepository -- pre-verification staging table
 
 if DATABASE_URL:
-    # -- PostgreSQL (Neon) --------------------------------------------------
+    # -- PostgreSQL (Neon primary + Supabase fallback) ----------------------
     from app.infrastructure.database.connection import (
-        init_engine, create_tables, get_session_factory, check_health,
+        init_engine, create_tables, dynamic_session_factory, check_health, get_db_status,
     )
     from app.infrastructure.repositories.pg_user_repository import PgUserRepository
     from app.infrastructure.repositories.pg_player_repository import PgPlayerRepository
@@ -122,7 +122,7 @@ if DATABASE_URL:
 
     init_engine()
     create_tables()
-    _sf = get_session_factory()
+    _sf = dynamic_session_factory   # proxy — always routes to active engine
 
     challenge_repo = PgChallengeRepository(_sf)
     player_repo = PgPlayerRepository(_sf)
@@ -250,9 +250,10 @@ def health():
     except Exception as exc:
         result["challenges_loaded"] = f"ERROR: {type(exc).__name__}"
     if DATABASE_URL:
-        from app.infrastructure.database.connection import check_health
+        from app.infrastructure.database.connection import check_health, get_db_status
         try:
             result["database"] = "connected" if check_health() else "disconnected"
+            result["db_circuit"] = get_db_status()
         except Exception as exc:
             result["database"] = f"ERROR: {type(exc).__name__}"
     return result
