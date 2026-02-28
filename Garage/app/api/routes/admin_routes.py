@@ -346,6 +346,66 @@ def api_admin_ranking(current_user: dict = Depends(get_current_user)):
 
 
 # ---------------------------------------------------------------------------
+# User detail (all DB data for a single user)
+# ---------------------------------------------------------------------------
+
+@router.get("/users/{user_id}")
+def api_admin_user_detail(
+    user_id: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """Return all database data for a specific user: profile + all sessions."""
+    _assert_admin(current_user)
+
+    users = _user_repo.get_all() if hasattr(_user_repo, "get_all") else []
+    user = next((u for u in users if str(u.id) == user_id), None)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario nao encontrado.")
+
+    user_dict = user.to_dict() if hasattr(user, "to_dict") else {}
+    # Remove sensitive credentials before sending to client
+    user_dict.pop("password_hash", None)
+    user_dict.pop("salt", None)
+
+    all_sessions = _player_repo.get_all_dict() if hasattr(_player_repo, "get_all_dict") else []
+    user_sessions = [s for s in all_sessions if str(s.get("user_id")) == user_id]
+
+    # Enrich each session with readable duration
+    for s in user_sessions:
+        attempts = s.get("attempts", [])
+        duration_sec = 0
+        if attempts:
+            timestamps = [a.get("timestamp", "") for a in attempts if a.get("timestamp")]
+            if len(timestamps) >= 2:
+                try:
+                    first = datetime.fromisoformat(min(timestamps))
+                    last = datetime.fromisoformat(max(timestamps))
+                    duration_sec = int((last - first).total_seconds())
+                except (ValueError, TypeError):
+                    pass
+        s["duration_seconds"] = duration_sec
+
+    return {
+        "user": user_dict,
+        "sessions": user_sessions,
+        "stats": {
+            "total_sessions": len(user_sessions),
+            "total_score": sum(s.get("score", 0) for s in user_sessions),
+            "total_attempts": sum(s.get("total_attempts", 0) for s in user_sessions),
+            "total_completed_challenges": sum(
+                len(s.get("completed_challenges", [])) for s in user_sessions
+            ),
+            "total_game_overs": sum(s.get("game_over_count", 0) for s in user_sessions),
+            "best_score": max((s.get("score", 0) for s in user_sessions), default=0),
+            "completed_runs": sum(
+                1 for s in user_sessions
+                if s.get("status") == "completed" or s.get("stage") == "Distinguished"
+            ),
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
 # Delete user
 # ---------------------------------------------------------------------------
 
