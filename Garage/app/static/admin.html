@@ -461,7 +461,7 @@
                             <th onclick="sortTable('rankingTable', 3, 'str')">CARGO</th>
                             <th onclick="sortTable('rankingTable', 4, 'num')">PONTOS</th>
                             <th onclick="sortTable('rankingTable', 5, 'str')">STATUS</th>
-                            <th onclick="sortTable('rankingTable', 6, 'str')">TEMPO</th>
+                            <th onclick="sortTable('rankingTable', 6, 'num')">TEMPO &#9650;</th>
                             <th onclick="sortTable('rankingTable', 7, 'num')">TENTATIVAS</th>
                             <th onclick="sortTable('rankingTable', 8, 'num')">GAME OVERS</th>
                             <th onclick="sortTable('rankingTable', 9, 'str')">INICIO</th>
@@ -504,7 +504,7 @@
                             <th onclick="sortTable('sessionsTable', 3, 'num')">PONTOS</th>
                             <th onclick="sortTable('sessionsTable', 4, 'str')">STATUS</th>
                             <th onclick="sortTable('sessionsTable', 5, 'num')">DESAFIOS</th>
-                            <th onclick="sortTable('sessionsTable', 6, 'str')">TEMPO</th>
+                            <th onclick="sortTable('sessionsTable', 6, 'num')">TEMPO &#9650;</th>
                             <th onclick="sortTable('sessionsTable', 7, 'num')">TENTATIVAS</th>
                             <th onclick="sortTable('sessionsTable', 8, 'str')">LINGUAGEM</th>
                             <th onclick="sortTable('sessionsTable', 9, 'str')">INICIO</th>
@@ -519,6 +519,7 @@
     <script>
         let accessToken = localStorage.getItem('garage_admin_token') || '';
         let refreshToken = localStorage.getItem('garage_admin_refresh') || '';
+        let _intervals = [];
 
         // -- Auth --
         async function doLogin() {
@@ -548,6 +549,8 @@
             refreshToken = '';
             localStorage.removeItem('garage_admin_token');
             localStorage.removeItem('garage_admin_refresh');
+            _intervals.forEach(clearInterval);
+            _intervals = [];
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('dashboardScreen').style.display = 'none';
         }
@@ -580,8 +583,8 @@
             document.getElementById('adminUserLabel').textContent = user ? user.full_name : 'Admin';
             loadAll();
             // Auto-refresh: full reload every 30s; online-only every 10s
-            setInterval(loadOnlineOnly, 10000);
-            setInterval(loadAll, 30000);
+            _intervals.push(setInterval(loadOnlineOnly, 10000));
+            _intervals.push(setInterval(loadAll, 30000));
         }
 
         async function loadAll() {
@@ -636,6 +639,17 @@
             Intern: 'Estagiario', Junior: 'Junior', Mid: 'Pleno', Senior: 'Senior',
             Staff: 'Staff', Principal: 'Principal', Distinguished: 'CEO',
         };
+
+        const LANG_COLOR = {
+            'Java':   '#f89820', 'Python': '#3572A5', 'C':    '#555555',
+            'C++':    '#f34b7d', 'C#':    '#178600', '.NET': '#512bd4',
+            'Ruby':   '#701516', 'Rust':  '#dea584', 'Go':   '#00add8',
+        };
+        function langBadge(lang) {
+            if (!lang || lang === '---') return '---';
+            const bg = LANG_COLOR[lang] || '#334155';
+            return '<span style="display:inline-block;padding:2px 9px;border-radius:8px;font-size:0.65rem;font-weight:700;letter-spacing:1px;background:' + bg + ';color:#fff;">' + esc(lang) + '</span>';
+        }
 
         function formatDuration(sec) {
             if (!sec || sec <= 0) return '---';
@@ -708,7 +722,7 @@
                     '<td><span class="badge badge-in_progress">' + esc(s.stage_pt) + '</span></td>' +
                     '<td>' + s.score + '</td>' +
                     '<td>' + s.completed_challenges + '</td>' +
-                    '<td>' + esc(s.language) + '</td>' +
+                    '<td>' + langBadge(s.language) + '</td>' +
                     '<td>' + errBadge + '</td>' +
                     '<td><span class="seconds-badge ' + secClass + '">' + secLabel + '</span></td>';
                 body.appendChild(tr);
@@ -731,7 +745,7 @@
                     '<td>' + (STAGE_PT[e.stage] || e.stage) + '</td>' +
                     '<td>' + e.score + '</td>' +
                     '<td>' + statusBadge(statusText) + '</td>' +
-                    '<td>' + formatDuration(e.duration_seconds) + '</td>' +
+                    '<td data-sortval="' + (e.duration_seconds || 0) + '">' + formatDuration(e.duration_seconds) + '</td>' +
                     '<td>' + e.total_attempts + '</td>' +
                     '<td>' + e.game_over_count + '</td>' +
                     '<td>' + formatDate(e.created_at) + '</td>';
@@ -776,9 +790,9 @@
                     '<td>' + s.score + '</td>' +
                     '<td>' + statusBadge(s.status) + '</td>' +
                     '<td>' + s.completed_challenges + '</td>' +
-                    '<td>' + formatDuration(s.duration_seconds) + '</td>' +
+                    '<td data-sortval="' + (s.duration_seconds || 0) + '">' + formatDuration(s.duration_seconds) + '</td>' +
                     '<td>' + s.total_attempts + '</td>' +
-                    '<td>' + esc(s.language) + '</td>' +
+                    '<td>' + langBadge(s.language) + '</td>' +
                     '<td>' + formatDate(s.created_at) + '</td>';
                 body.appendChild(tr);
             });
@@ -806,8 +820,11 @@
             table.dataset.sortCol = colIdx;
             table.dataset.sortDir = dir;
             rows.sort((a, b) => {
-                let va = a.cells[colIdx].textContent.trim();
-                let vb = b.cells[colIdx].textContent.trim();
+                const cellA = a.cells[colIdx];
+                const cellB = b.cells[colIdx];
+                // Use data-sortval when present (e.g. duration stored as seconds)
+                let va = cellA.dataset.sortval !== undefined ? cellA.dataset.sortval : cellA.textContent.trim();
+                let vb = cellB.dataset.sortval !== undefined ? cellB.dataset.sortval : cellB.textContent.trim();
                 if (type === 'num') {
                     va = parseFloat(va) || 0;
                     vb = parseFloat(vb) || 0;
