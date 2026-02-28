@@ -492,9 +492,6 @@ const StudyChat = {
         if (!messages) return;
         messages.innerHTML = '';
         this._messages.forEach((m) => {
-            const wrap = document.createElement('div');
-            wrap.className = 'study-msg ' + (m.role === 'user' ? 'study-msg-user' : 'study-msg-assistant');
-
             // Placeholder de carregamento: não renderiza nenhum card na área de mensagens
             const isLoadingPlaceholder =
                 m.role === 'assistant' &&
@@ -505,11 +502,12 @@ const StudyChat = {
             const wrap = document.createElement('div');
             wrap.className = 'study-msg ' + (m.role === 'user' ? 'study-msg-user' : 'study-msg-assistant');
 
-            const meta = document.createElement('span');
-            meta.className = 'study-msg-meta';
-            meta.textContent = m.role === 'user'
-                ? 'VOCÊ'
-                : 'Garage A.I';
+            if (m.role === 'user') {
+                const meta = document.createElement('span');
+                meta.className = 'study-msg-meta';
+                meta.textContent = 'VOCÊ';
+                wrap.appendChild(meta);
+            }
 
             const body = document.createElement('div');
             body.className = 'study-msg-body';
@@ -519,7 +517,6 @@ const StudyChat = {
                 body.textContent = m.content;
             }
 
-            wrap.appendChild(meta);
             wrap.appendChild(body);
             messages.appendChild(wrap);
         });
