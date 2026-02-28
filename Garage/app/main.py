@@ -59,6 +59,7 @@ if os.path.exists(STATIC_DIR):
 
 metrics_service = None
 event_service = None
+verification_repo = None  # set only when PostgreSQL is available
 
 if DATABASE_URL:
     # -- PostgreSQL (Neon) --------------------------------------------------
@@ -69,6 +70,7 @@ if DATABASE_URL:
     from app.infrastructure.repositories.pg_player_repository import PgPlayerRepository
     from app.infrastructure.repositories.pg_leaderboard_repository import PgLeaderboardRepository
     from app.infrastructure.repositories.pg_challenge_repository import PgChallengeRepository
+    from app.infrastructure.repositories.pg_verification_repository import PgVerificationRepository
     from app.infrastructure.database.seed import seed_challenges
     from app.application.metrics_service import MetricsService
     from app.application.event_service import EventService
@@ -81,6 +83,7 @@ if DATABASE_URL:
     player_repo = PgPlayerRepository(_sf)
     leaderboard_repo = PgLeaderboardRepository(_sf)
     user_repo = PgUserRepository(_sf)
+    verification_repo = PgVerificationRepository(_sf)
     metrics_service = MetricsService(_sf)
     event_service = EventService(_sf)
 
@@ -141,7 +144,11 @@ else:
 # Wire repos + services into route modules
 init_routes(player_repo, challenge_repo, leaderboard_repo,
             metrics_service=metrics_service, event_service=event_service)
-init_auth_routes(user_repo, event_service=event_service)
+init_auth_routes(
+    user_repo,
+    event_service=event_service,
+    verification_repo=verification_repo if DATABASE_URL else None,
+)
 init_admin_routes(user_repo, player_repo, leaderboard_repo, challenge_repo)
 init_study_routes(player_repo, challenge_repo)
 

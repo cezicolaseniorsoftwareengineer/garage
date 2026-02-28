@@ -105,6 +105,47 @@
         </div>
     </div>
 
+    <!-- ========== SCREEN: EMAIL VERIFICATION ========== -->
+    <div id="screen-verify-email" class="screen">
+        <div class="auth-bg">
+            <img src="/static/login_bg.png" alt="Garage Characters" class="auth-bg-img">
+            <div class="auth-bg-overlay"></div>
+        </div>
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-logo">[<span>GARAGE</span>]</div>
+                <p class="auth-subtitle">Confirme seu e-mail para entrar no jogo</p>
+                <p id="verifyEmailHint" class="auth-hint" style="text-align:center;color:#94a3b8;font-size:13px;margin-bottom:20px;">
+                    Enviamos um código de 6 dígitos para o seu e-mail.
+                </p>
+
+                <!-- 6-digit OTP boxes -->
+                <div id="otpContainer" style="display:flex;justify-content:center;gap:8px;margin-bottom:24px;">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-idx="0" autocomplete="one-time-code">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-idx="1">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-idx="2">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-idx="3">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-idx="4">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-idx="5">
+                </div>
+
+                <div id="verifyError" class="auth-error" hidden></div>
+                <div id="verifySuccess" class="auth-success" hidden></div>
+
+                <button id="btnVerifyCode" class="auth-btn auth-btn-primary">VERIFICAR CÓDIGO</button>
+
+                <div style="text-align:center;margin-top:16px;">
+                    <a href="#" id="btnResendCode" style="color:#fbbf24;font-size:12px;letter-spacing:1px;">
+                        Reenviar código
+                    </a>
+                </div>
+                <div class="auth-switch" style="margin-top:12px;">
+                    Voltou a ter acesso? <a href="#" id="verifyGoToLogin">Fazer login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ========== SCREEN: TITLE (ARCADE RETRO) ========== -->
     <div id="screen-title" class="screen">
         <div class="arcade-scanlines"></div>

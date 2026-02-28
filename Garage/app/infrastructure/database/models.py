@@ -42,11 +42,34 @@ class UserModel(Base):
     password_hash = Column(String(255), nullable=False)
     salt = Column(String(64), nullable=False, default="")
     hash_algorithm = Column(String(10), nullable=False, default="bcrypt")
+    # email_verified defaults TRUE so existing users are never locked out.
+    # New registrations are created with email_verified=False via the repo.
+    email_verified = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), nullable=False, default=_utcnow)
     last_login_at = Column(DateTime(timezone=True), nullable=True)
 
     sessions = relationship("GameSessionModel", back_populates="user", lazy="select")
     metrics = relationship("UserMetricsModel", back_populates="user", uselist=False, lazy="select")
+    email_verifications = relationship("EmailVerificationModel", back_populates="user", lazy="select")
+
+
+# ---------------------------------------------------------------------------
+# Email Verification OTP tokens
+# ---------------------------------------------------------------------------
+
+class EmailVerificationModel(Base):
+    __tablename__ = "email_verifications"
+
+    id = Column(UUID(as_uuid=False), primary_key=True, default=_new_uuid)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id"), nullable=False, index=True)
+    # SHA-256 hex digest of the 6-digit code (never store plaintext)
+    token_hash = Column(String(64), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    # NULL means not yet used; set to the timestamp when consumed
+    used_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=_utcnow)
+
+    user = relationship("UserModel", back_populates="email_verifications")
 
 
 # ---------------------------------------------------------------------------

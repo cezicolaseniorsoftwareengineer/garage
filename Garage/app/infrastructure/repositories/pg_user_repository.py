@@ -32,6 +32,8 @@ class PgUserRepository:
                 existing.hash_algorithm = (
                     "bcrypt" if data["password_hash"].startswith("$2") else "sha256"
                 )
+                if "email_verified" in data:
+                    existing.email_verified = data["email_verified"]
             else:
                 created_at = data.get("created_at")
                 if isinstance(created_at, str):
@@ -55,6 +57,7 @@ class PgUserRepository:
                         "bcrypt" if data["password_hash"].startswith("$2") else "sha256"
                     ),
                     created_at=created_at,
+                    email_verified=data.get("email_verified", False),
                 )
                 session.add(model)
                 # Initialise empty metrics row for new users
@@ -142,4 +145,5 @@ class PgUserRepository:
             password_hash=row.password_hash,
             salt=row.salt,
             created_at=row.created_at.isoformat() if row.created_at else None,
+            email_verified=bool(row.email_verified) if row.email_verified is not None else True,
         )

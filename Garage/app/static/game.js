@@ -20,13 +20,13 @@ const API = {
     async get(p) {
         let r = await fetch(p, { headers: this._headers() });
         if (r.status === 401) { if (await this._handle401(p)) r = await fetch(p, { headers: this._headers() }); }
-        if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || r.statusText); }
+        if (!r.ok) { const e = await r.json().catch(() => ({})); const err = new Error(e.detail || r.statusText); err.status = r.status; throw err; }
         return r.json();
     },
     async post(p, b) {
         let r = await fetch(p, { method: 'POST', headers: this._headers(), body: JSON.stringify(b) });
         if (r.status === 401) { if (await this._handle401(p)) r = await fetch(p, { method: 'POST', headers: this._headers(), body: JSON.stringify(b) }); }
-        if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || r.statusText); }
+        if (!r.ok) { const e = await r.json().catch(() => ({})); const err = new Error(e.detail || r.statusText); err.status = r.status; throw err; }
         return r.json();
     },
 };
@@ -7861,6 +7861,7 @@ const Auth = {
     _token: null,
     _refreshToken: null,
     _refreshing: null,
+    _pendingEmail: null,  // email awaiting OTP verification
 
     init() {
         const stored = localStorage.getItem('garage_user');
@@ -7896,6 +7897,7 @@ const Auth = {
         }
         this._bindForms();
         this._bindNavigation();
+        this._bindVerification();
     },
 
     isLoggedIn() {
@@ -8017,6 +8019,129 @@ const Auth = {
         const goLog = document.getElementById('goToLogin');
         if (goReg) goReg.addEventListener('click', (e) => { e.preventDefault(); UI.showScreen('screen-register'); });
         if (goLog) goLog.addEventListener('click', (e) => { e.preventDefault(); UI.showScreen('screen-login'); });
+
+        const verifyGoLogin = document.getElementById('verifyGoToLogin');
+        if (verifyGoLogin) verifyGoLogin.addEventListener('click', (e) => { e.preventDefault(); UI.showScreen('screen-login'); });
+    },
+
+    _bindVerification() {
+        const boxes = Array.from(document.querySelectorAll('.otp-box'));
+        if (!boxes.length) return;
+
+        // Auto-advance focus and mark filled
+        boxes.forEach((box, idx) => {
+            box.addEventListener('input', () => {
+                box.value = box.value.replace(/\D/g, '').slice(-1);
+                box.classList.toggle('filled', box.value.length === 1);
+                if (box.value && idx < boxes.length - 1) {
+                    boxes[idx + 1].focus();
+                }
+                // If last box filled, auto-submit
+                if (idx === boxes.length - 1 && box.value) {
+                    document.getElementById('btnVerifyCode')?.click();
+                }
+            });
+            box.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !box.value && idx > 0) {
+                    boxes[idx - 1].focus();
+                    boxes[idx - 1].value = '';
+                    boxes[idx - 1].classList.remove('filled');
+                }
+            });
+            // Handle paste on first box
+            if (idx === 0) {
+                box.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+                    pasted.split('').slice(0, 6).forEach((ch, i) => {
+                        if (boxes[i]) {
+                            boxes[i].value = ch;
+                            boxes[i].classList.add('filled');
+                        }
+                    });
+                    const nextEmpty = boxes.find(b => !b.value);
+                    (nextEmpty || boxes[5]).focus();
+                });
+            }
+        });
+
+        // Verify button handler
+        const btnVerify = document.getElementById('btnVerifyCode');
+        if (btnVerify) {
+            btnVerify.addEventListener('click', async () => {
+                const errEl = document.getElementById('verifyError');
+                const sucEl = document.getElementById('verifySuccess');
+                errEl.hidden = true;
+                sucEl.hidden = true;
+
+                const code = boxes.map(b => b.value).join('');
+                if (code.length < 6) {
+                    errEl.textContent = 'Insira todos os 6 dígitos do código.';
+                    errEl.hidden = false;
+                    return;
+                }
+                const email = this._pendingEmail;
+                if (!email) {
+                    errEl.textContent = 'Sessão expirada. Faça o cadastro novamente.';
+                    errEl.hidden = false;
+                    return;
+                }
+
+                btnVerify.disabled = true;
+                btnVerify.textContent = 'VERIFICANDO...';
+                try {
+                    const res = await API.post('/api/auth/verify-email', { email, code });
+                    this._setUser(res.user, res.access_token, res.refresh_token);
+                    sucEl.textContent = res.message || 'E-mail verificado! Entrando...';
+                    sucEl.hidden = false;
+                    this._pendingEmail = null;
+                    setTimeout(() => UI.showScreen('screen-title'), 1400);
+                } catch (err) {
+                    errEl.textContent = err.message || 'Código inválido ou expirado.';
+                    errEl.hidden = false;
+                    // Shake boxes
+                    boxes.forEach(b => b.classList.add('filled'));
+                    setTimeout(() => boxes.forEach(b => { b.value = ''; b.classList.remove('filled'); }), 600);
+                    setTimeout(() => boxes[0].focus(), 650);
+                } finally {
+                    btnVerify.disabled = false;
+                    btnVerify.textContent = 'VERIFICAR CÓDIGO';
+                }
+            });
+        }
+
+        // Resend button handler
+        const btnResend = document.getElementById('btnResendCode');
+        if (btnResend) {
+            btnResend.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const errEl = document.getElementById('verifyError');
+                const sucEl = document.getElementById('verifySuccess');
+                errEl.hidden = true;
+                sucEl.hidden = true;
+
+                const email = this._pendingEmail;
+                if (!email) {
+                    errEl.textContent = 'Nenhum e-mail pendente. Faça o cadastro novamente.';
+                    errEl.hidden = false;
+                    return;
+                }
+                btnResend.style.pointerEvents = 'none';
+                btnResend.textContent = 'Enviando...';
+                try {
+                    const res = await API.post('/api/auth/resend-verification', { email });
+                    sucEl.textContent = res.message || 'Novo código enviado!';
+                    sucEl.hidden = false;
+                    // Brief cooldown
+                    setTimeout(() => { btnResend.style.pointerEvents = ''; btnResend.textContent = 'Reenviar código'; }, 30000);
+                } catch (err) {
+                    errEl.textContent = err.message || 'Erro ao reenviar. Tente novamente.';
+                    errEl.hidden = false;
+                    btnResend.style.pointerEvents = '';
+                    btnResend.textContent = 'Reenviar código';
+                }
+            });
+        }
     },
 
     _bindForms() {
@@ -8039,8 +8164,31 @@ const Auth = {
                 this._setUser(res.user, res.access_token, res.refresh_token);
                 UI.showScreen('screen-title');
             } catch (err) {
-                errEl.textContent = err.message || 'Erro ao fazer login.';
-                errEl.hidden = false;
+                // Special case: account exists but email not verified yet
+                if (err.status === 403 || (err.message && err.message.toLowerCase().includes('verificad'))) {
+                    errEl.innerHTML =
+                        'E-mail não verificado. ' +
+                        '<a href="#" id="goVerifyFromLogin" style="color:#fbbf24;">Verificar agora</a>';
+                    errEl.hidden = false;
+                    const link = document.getElementById('goVerifyFromLogin');
+                    if (link) link.addEventListener('click', (ev) => {
+                        ev.preventDefault();
+                        // Pre-fill pending email from username if it's an email, otherwise ask user
+                        const usernameVal = document.getElementById('loginUsername').value.trim();
+                        if (usernameVal.includes('@')) this._pendingEmail = usernameVal;
+                        const hintEl = document.getElementById('verifyEmailHint');
+                        if (hintEl && this._pendingEmail) {
+                            hintEl.textContent = `Insira o código enviado para ${this._pendingEmail}:`;
+                        }
+                        document.querySelectorAll('.otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+                        document.getElementById('verifyError').hidden = true;
+                        document.getElementById('verifySuccess').hidden = true;
+                        UI.showScreen('screen-verify-email');
+                    });
+                } else {
+                    errEl.textContent = err.message || 'Erro ao fazer login.';
+                    errEl.hidden = false;
+                }
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'ENTRAR';
@@ -8063,14 +8211,38 @@ const Auth = {
                 if (pwd !== pwdConfirm) {
                     throw new Error('As senhas não coincidem.');
                 }
+                const emailVal = document.getElementById('regEmail').value.trim();
                 const res = await API.post('/api/auth/register', {
                     full_name: document.getElementById('regFullName').value.trim(),
                     username: document.getElementById('regUsername').value.trim(),
-                    email: document.getElementById('regEmail').value.trim(),
+                    email: emailVal,
                     whatsapp: document.getElementById('regWhatsapp').value.trim(),
                     profession: document.getElementById('regProfession').value,
                     password: pwd,
                 });
+
+                // --- Email verification required ---
+                if (res.requires_verification) {
+                    // Store email for subsequent verify/resend requests
+                    this._pendingEmail = emailVal;
+                    const hintEl = document.getElementById('verifyEmailHint');
+                    if (hintEl) {
+                        hintEl.textContent =
+                            `Enviamos um código de 6 dígitos para ${res.email_hint || emailVal}. Insira abaixo:`;
+                    }
+                    // Clear OTP boxes
+                    document.querySelectorAll('.otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+                    document.getElementById('verifyError').hidden = true;
+                    document.getElementById('verifySuccess').hidden = true;
+                    UI.showScreen('screen-verify-email');
+                    setTimeout(() => {
+                        const first = document.querySelector('.otp-box[data-idx="0"]');
+                        if (first) first.focus();
+                    }, 120);
+                    return;
+                }
+
+                // --- Dev/JSON mode: tokens returned directly ---
                 this._setUser(res.user, res.access_token, res.refresh_token);
                 sucEl.textContent = 'Cadastro realizado! Entrando...';
                 sucEl.hidden = false;

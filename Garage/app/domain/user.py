@@ -19,6 +19,7 @@ class User:
         salt: str,
         user_id: str | None = None,
         created_at: str | None = None,
+        email_verified: bool = False,
     ):
         self._id = user_id or str(uuid4())
         self._full_name = full_name
@@ -29,6 +30,7 @@ class User:
         self._password_hash = password_hash
         self._salt = salt
         self._created_at = created_at or datetime.now(timezone.utc).isoformat()
+        self._email_verified = email_verified
 
     @property
     def id(self) -> str:
@@ -45,6 +47,10 @@ class User:
     @property
     def full_name(self) -> str:
         return self._full_name
+
+    @property
+    def email_verified(self) -> bool:
+        return self._email_verified
 
     @staticmethod
     def hash_password(password: str, salt: str) -> str:
@@ -72,6 +78,7 @@ class User:
             "password_hash": self._password_hash,
             "salt": self._salt,
             "created_at": self._created_at,
+            "email_verified": self._email_verified,
         }
 
     def to_public_dict(self) -> dict:
@@ -82,4 +89,5 @@ class User:
             "username": self._username,
             "email": self._email,
             "profession": self._profession,
+            "email_verified": self._email_verified,
         }
