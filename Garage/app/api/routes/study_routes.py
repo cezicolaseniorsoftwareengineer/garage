@@ -193,8 +193,8 @@ async def _stream_openai_sse(system_prompt: str, user_prompt: str):  # pragma: n
 
     base_url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1").strip().rstrip("/")
     endpoint = base_url + "/responses"
-    max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
-    timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
+    timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     hdrs = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
     async with httpx.AsyncClient(timeout=timeout) as client:
@@ -295,7 +295,7 @@ def _call_openai_responses(system_prompt: str, user_prompt: str) -> tuple[str, s
 
     base_url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1").strip().rstrip("/")
     endpoint = base_url + "/responses"
-    max_output_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
+    max_output_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
     request_retries = int(os.environ.get("OPENAI_REQUEST_RETRIES", "2") or "2")
     request_retries = max(1, min(request_retries, 4))
     attempted: list[str] = []
@@ -360,16 +360,17 @@ def _call_openai_responses(system_prompt: str, user_prompt: str) -> tuple[str, s
     )
 
 
-# Limite de tokens de saida compartilhado por todos os provedores (default: 4096)
-_AI_MAX_TOKENS = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
+# Limite de tokens para o chat de estudo -- respostas curtas e rapidas
+# Separado de AI_MAX_TOKENS (que vale para todo o sistema)
+_AI_CHAT_MAX_TOKENS = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
 
 
 def _call_gemini(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:  # pragma: no cover
     """Non-streaming call to Google Gemini. Returns (text, response_id, model)."""
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
-    max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
-    timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
+    timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     endpoint = (
         f"https://generativelanguage.googleapis.com/v1beta/models/{model}"
         f":generateContent?key={api_key}"
@@ -377,7 +378,7 @@ def _call_gemini(system_prompt: str, user_prompt: str) -> tuple[str, str, str]: 
     body = {
         "system_instruction": {"parts": [{"text": system_prompt}]},
         "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
-        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.7},
+        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.5},
     }
     request = urllib.request.Request(
         endpoint,
@@ -413,8 +414,8 @@ async def _stream_gemini_sse(system_prompt: str, user_prompt: str):  # pragma: n
         yield 'data: {"err": "Study chat unavailable: missing GEMINI_API_KEY."}\n\n'
         return
     model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
-    max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
-    timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
+    timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     endpoint = (
         f"https://generativelanguage.googleapis.com/v1beta/models/{model}"
         f":streamGenerateContent?key={api_key}&alt=sse"
@@ -422,7 +423,7 @@ async def _stream_gemini_sse(system_prompt: str, user_prompt: str):  # pragma: n
     body = {
         "system_instruction": {"parts": [{"text": system_prompt}]},
         "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
-        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.7},
+        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.5},
     }
     try:
         got_delta = False
@@ -463,7 +464,7 @@ def _call_groq(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:  #
     api_key = os.environ.get("GROQ_API_KEY", "").strip()
     model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
     endpoint = "https://api.groq.com/openai/v1/chat/completions"
-    max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
     payload = json.dumps({
         "model": model,
         "messages": [
@@ -508,7 +509,7 @@ async def _stream_groq_sse(system_prompt: str, user_prompt: str):  # pragma: no 
         return
     model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
     endpoint = "https://api.groq.com/openai/v1/chat/completions"
-    max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
     hdrs = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
@@ -578,8 +579,8 @@ def _call_anthropic(system_prompt: str, user_prompt: str) -> tuple[str, str, str
     api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if not api_key:
         raise HTTPException(status_code=503, detail="Missing ANTHROPIC_API_KEY.")
-    max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
-    timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
+    timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     endpoint = "https://api.anthropic.com/v1/messages"
     hdrs = {
         "x-api-key": api_key,
@@ -631,8 +632,8 @@ async def _stream_anthropic_sse(system_prompt: str, user_prompt: str):  # pragma
     if not api_key:
         yield 'data: {"err": "Study chat unavailable: missing ANTHROPIC_API_KEY."}\n\n'
         return
-    max_tokens = int(os.environ.get("AI_MAX_TOKENS", "4096") or "4096")
-    timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "90") or "90")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
+    timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     endpoint = "https://api.anthropic.com/v1/messages"
     hdrs = {
         "x-api-key": api_key,
@@ -918,144 +919,34 @@ def _build_prompts(
     books_text: str,
     message: str,
 ) -> tuple[str, str]:
-    """Constroi system + user prompt para o agente especialista por stage."""
+    """Constroi system + user prompt ENXUTO para respostas rapidas."""
     curriculum = _STAGE_CURRICULUM.get(stage, _STAGE_CURRICULUM["Mid"])
 
+    # System prompt compacto: ~700 tokens (era ~5000)
     system_prompt = (
-        "Você é Cezi Cola — Senior Software Engineer e CEO da Bio Code Technology, "
-        "criador do jogo 404 Garage. Você é o mesmo Cezi Cola que aparece no jogo como NPC Principal. "
-        "Sua identidade é humana e técnica: engenheiro experiente, direto, apaixonado por ensinar. "
-        "Jamais se apresente como robô, professor artificial ou IA genérica. "
-        "Você é Cezi Cola — ponto. Especialista em Lógica de Programação, "
-        "Estruturas de Dados e Algoritmos, do nível Intern ao Principal Engineer.\n\n"
-
-        # ── Logica de Programacao ──────────────────────────────────────────
-        "LOGICA DE PROGRAMACAO (base de tudo):\n"
-        "Sequencia, selecao (if/else/switch), repeticao (for/while/do-while/for-each). "
-        "Decomposicao de problemas em subproblemas. Recursao (caso base, caso recursivo, pilha de chamadas). "
-        "Invariantes de loop (o que e verdade antes/durante/apos cada iteracao). "
-        "Raciocinio por exemplos: trace manual linha a linha antes de codificar.\n\n"
-
-        # ── Java ──────────────────────────────────────────────────────────
-        "JAVA JDK 21+ (linguagem exclusiva de implementacao):\n"
-        "Tipos primitivos e wrappers. OOP: heranca, polimorfismo, encapsulamento, abstracao, interfaces. "
-        "Generics, Collections Framework (List/Set/Map/Queue/Deque), Streams API, lambdas, Optional. "
-        "Records, sealed classes, pattern matching (instanceof). "
-        "Excecoes: checked vs unchecked, try-with-resources. "
-        "Concorrencia: Thread, ExecutorService, CompletableFuture, synchronized, volatile, "
-        "ReentrantLock, AtomicInteger, ConcurrentHashMap, BlockingQueue. "
-        "JVM: stack vs heap, GC basico, JIT. JUnit 5 para testes.\n\n"
-
-        # ── Estruturas de Dados ───────────────────────────────────────────
-        "ESTRUTURAS DE DADOS (conhecimento completo):\n"
-        "Lineares: Array, ArrayList, LinkedList (simples/dupla/circular), Stack, Queue, Deque, CircularBuffer.\n"
-        "Hash: HashMap, LinkedHashMap, TreeMap, HashSet, LinkedHashSet, TreeSet — "
-        "funcao hash, colisao (chaining/open addressing), load factor, rehashing.\n"
-        "Arvores: BST, AVL (conceito), Red-Black Tree (conceito), Heap (MinHeap/MaxHeap), "
-        "Trie, Segment Tree (point update, range query, lazy propagation), Fenwick Tree.\n"
-        "Grafos: lista de adjacencia, matriz de adjacencia, grafo dirigido/nao-dirigido/ponderado.\n"
-        "Avancadas: Union-Find (DSU) com path compression e union by rank, "
-        "Sparse Table (RMQ), Suffix Array, Persistent Segment Tree (conceito).\n\n"
-
-        # ── Algoritmos ────────────────────────────────────────────────────
-        "ALGORITMOS (repertorio completo):\n"
-        "Busca: linear O(n), binaria O(log n), ternaria O(log n).\n"
-        "Ordenacao: Bubble/Selection/Insertion O(n^2) [didatico], "
-        "Merge Sort O(n log n) [estavel], Quick Sort O(n log n) medio [in-place], "
-        "Heap Sort O(n log n), Counting/Radix Sort O(n+k) [nao-comparativo].\n"
-        "Grafos: BFS O(V+E), DFS O(V+E), Dijkstra O((V+E)log V), Bellman-Ford O(VE), "
-        "Floyd-Warshall O(V^3), Prim/Kruskal O(E log V), Topological Sort, Tarjan (SCC).\n"
-        "Programacao Dinamica: memoizacao top-down, tabulacao bottom-up, reconstrucao. "
-        "Classicos: Fibonacci, LCS, LIS, Knapsack 0/1, Coin Change, Edit Distance, "
-        "DP em grid, DP em arvore, bitmask DP.\n"
-        "Tecnicas: Two Pointers, Sliding Window (fixo/variavel), Prefix Sum, "
-        "Monotonic Stack, Monotonic Queue, Backtracking com poda, "
-        "Divisao e Conquista, Algoritmos Gulosos, Bit Manipulation.\n"
-        "Strings: KMP O(n+m), Rabin-Karp O(n+m) medio, Z-Algorithm O(n).\n\n"
-
-        # ── Complexidade ──────────────────────────────────────────────────
-        "ANALISE DE COMPLEXIDADE:\n"
-        "Big-O (pior caso), Big-Theta (caso medio), Big-Omega (melhor caso). "
-        "Complexidade espacial (auxiliar vs total). Analise amortizada. "
-        "Comparacao de crescimento: O(1) < O(log n) < O(n) < O(n log n) < O(n^2) < O(2^n) < O(n!).\n\n"
-
-        # ── Engenharia ────────────────────────────────────────────────────
-        "ENGENHARIA DE SOFTWARE:\n"
-        "SOLID, DRY, KISS, YAGNI. Design Patterns (GoF): Strategy, Factory Method, Builder, "
-        "Observer, Singleton (thread-safe), Decorator, Composite, Iterator, Command, Proxy. "
-        "DDD basico: entidade, value object, repositorio, servico de dominio. "
-        "Clean Code: nomes expressivos, funcoes pequenas, comentarios apenas quando necessario. "
-        "Testes: JUnit 5, AAA (Arrange/Act/Assert), TDD conceito, mocking basico.\n\n"
-
-        # ── Regras absolutas ──────────────────────────────────────────────
-        "REGRAS ABSOLUTAS — NUNCA VIOLE:\n"
-        "1. Todo codigo Java deve ser SEMPRE COMPLETO e compilavel no JDK 21 sem dependencias externas.\n"
-        "   Isso significa: NUNCA truncar blocos de codigo, NUNCA omitir fechamento de chaves, "
-        "NUNCA escrever '// resto do codigo...' ou '// ...' ou comentarios que substituam codigo real.\n"
-        "2. Todo codigo Java postado DEVE incluir a classe completa com 'public static void main(String[] args)' "
-        "   e TODOS os metodos mencionados completamente implementados — sem esqueletos vazios.\n"
-        "3. Se o desafio ativo na IDE tiver um nome de classe especifico (ex: AnagramCheck, MaxSubarray), "
-        "   o codigo gerado DEVE usar exatamente esse nome de classe.\n"
-        "4. Sempre informe complexidade de TEMPO e ESPACO com justificativa.\n"
-        "5. Jamais invente metodos, classes ou APIs inexistentes no Java stdlib.\n"
-        "6. Se faltar informacao, declare a suposicao ANTES de responder.\n"
-        "7. Responda em pt-BR. Nomes de variaveis, metodos e classes em ingles.\n"
-        "8. Adapte profundidade e linguagem EXATAMENTE ao nivel do aluno (abaixo).\n\n"
-
-        # ── Nivel do aluno ────────────────────────────────────────────────
-        f"NIVEL DO ALUNO: {stage}\n"
-        f"FOCO DESTE NIVEL: {curriculum['foco']}\n"
-        f"TOPICOS PRIORITARIOS: {curriculum['topicos']}\n"
-        f"ESTRUTURAS-CHAVE: {curriculum['estruturas']}\n"
-        f"ALGORITMOS-CHAVE: {curriculum['algoritmos']}\n"
-        f"ANALISE DE COMPLEXIDADE: {curriculum['complexidade']}\n"
-        f"ERROS COMUNS NESTE NIVEL: {curriculum['erros_comuns']}\n"
-        f"TOM E ABORDAGEM: {curriculum['tom']}"
+        "Voce e Cezi Cola — Senior Engineer, criador do jogo 404 Garage. "
+        "Humano, direto, apaixonado por ensinar. Nunca se apresente como IA.\n\n"
+        "LINGUAGEM: Java JDK 21 exclusivamente. "
+        "OOP, Collections, Streams, Generics, Concorrencia, JUnit 5.\n\n"
+        f"NIVEL DO ALUNO: {stage} — {curriculum['foco']}\n"
+        f"Foco: {curriculum['topicos'][:400]}\n"
+        f"Tom: {curriculum['tom']}\n\n"
+        "REGRAS INEGOCIAVEIS:\n"
+        "- Codigo Java SEMPRE completo e compilavel. Nunca truncar com '// ...' ou esqueletos.\n"
+        "- Sempre informar complexidade Tempo O(??) e Espaco O(??) com justificativa de 1 linha.\n"
+        "- Responda em pt-BR. Variaveis/metodos/classes em ingles.\n"
+        "- SEJA CONCISO: maximo 3 paragrafos ou 1 bloco de codigo. Sem repeticoes.\n"
+        "- Se a pergunta for simples (ex: 'o que e X'), responda em 2-4 linhas diretas sem formatacao.\n"
+        "- Codigo somente se perguntado explicitamente ou se for a melhor forma de explicar."
     )
 
-    desc_trunc = (challenge_desc[:300] + "...") if len(challenge_desc) > 300 else challenge_desc
-
-    # Formato de resposta varia por stage
-    if stage in ("Intern", "Junior"):
-        response_format = (
-            "1. INTUICAO: Explique em 2-3 linhas com analogia do cotidiano.\n"
-            "2. TRACE MANUAL: Mostre passo a passo com valores concretos (ex: i=0, arr=[3,1,2]).\n"
-            "3. CODIGO JAVA: Curto, comentado linha a linha. Inclua main() com exemplo executavel.\n"
-            "4. COMPLEXIDADE: Tempo O(??) | Espaco O(??) — explique contando passos, nao formula.\n"
-            "5. ERRO COMUM: Um erro tipico neste nivel e como evitar.\n"
-            "6. DESAFIO: Uma variacao simples para praticar (1-2 linhas)."
-        )
-    elif stage in ("Mid", "Senior"):
-        response_format = (
-            "1. INTUICAO: Conceito central em 2-3 linhas. Por que esta estrutura/algoritmo existe?\n"
-            "2. INVARIANTE: O que e verdade em todo momento de execucao do algoritmo?\n"
-            "3. CODIGO JAVA: Implementacao limpa com comentarios nos pontos criticos.\n"
-            "4. COMPLEXIDADE: Tempo O(??) | Espaco O(??) — justifique cada termo.\n"
-            "5. TRADE-OFFS: Quando usar vs. quando evitar. Compare com alternativas.\n"
-            "6. DESAFIO: Um exercicio que exige adaptacao do conceito, nao copia direta."
-        )
-    else:  # Staff, Principal
-        response_format = (
-            "1. CONTEXTO: Por que esse problema/estrutura existe em sistemas reais? Cite exemplo FAANG.\n"
-            "2. ABORDAGEM OTIMA: Algoritmo com complexidade maxima justificada.\n"
-            "3. CODIGO JAVA: Implementacao production-grade (thread-safety se aplicavel, edge cases tratados).\n"
-            "4. ANALISE FORMAL: Prova ou argumento rigoroso de corretude e complexidade.\n"
-            "5. ALTERNATIVAS E TRADE-OFFS: Outras abordagens, quando cada uma vence.\n"
-            "6. EXTENSAO: Como escalar para 10^8 elementos ou ambiente distribuido?"
-        )
+    desc_trunc = (challenge_desc[:200] + "...") if len(challenge_desc) > 200 else challenge_desc
 
     user_prompt = (
-        "=== CONTEXTO DO JOGADOR ===\n"
-        f"Stage: {stage} | Regiao: {region}\n"
-        f"Desafio: {challenge_title or 'N/A'}\n"
+        f"Stage: {stage} | Regiao: {region} | Desafio: {challenge_title or 'N/A'}\n"
         f"Enunciado: {desc_trunc or 'N/A'}\n\n"
-        "=== HISTORICO RECENTE ===\n"
-        f"{history_text}\n\n"
-        "=== LIVROS COLETADOS ===\n"
-        f"{books_text}\n\n"
-        f"=== FORMATO DE RESPOSTA OBRIGATORIO (nivel {stage}) ===\n"
-        f"{response_format}\n\n"
-        f"=== PERGUNTA DO ALUNO ===\n{message}"
+        f"Historico:\n{history_text}\n\n"
+        f"Pergunta: {message}"
     )
 
     return system_prompt, user_prompt
@@ -1065,33 +956,11 @@ def _build_prompts(
 # Fallback em runtime: Groq → OpenAI (tenta o proximo se 4xx/5xx)
 # ---------------------------------------------------------------------------
 def _call_with_fallback(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:  # pragma: no cover
-    """Tenta provedores em ordem: OpenAI (primario) → Groq (fallback de quota) → Gemini."""
+    """Tenta provedores em ordem: Groq (rapido ~300ms) → Gemini → OpenAI → Anthropic."""
     errors: list[str] = []
 
     # 401/403 = key invalida/revogada; 429 = quota esgotada; 5xx = erro do servidor
     _RETRIABLE = (401, 403, 429, 500, 502, 503, 504)
-
-    if os.environ.get("ANTHROPIC_API_KEY", "").strip():
-        try:
-            return _call_anthropic(system_prompt, user_prompt)
-        except HTTPException as exc:
-            if exc.status_code in _RETRIABLE:
-                errors.append(f"Anthropic HTTP {exc.status_code}")
-            else:
-                raise
-        except Exception as exc:  # noqa: BLE001
-            errors.append(f"Anthropic erro: {exc}")
-
-    if os.environ.get("OPENAI_API_KEY", "").strip():
-        try:
-            return _call_openai_responses(system_prompt, user_prompt)
-        except HTTPException as exc:
-            if exc.status_code in _RETRIABLE:
-                errors.append(f"OpenAI HTTP {exc.status_code}")
-            else:
-                raise
-        except Exception as exc:  # noqa: BLE001
-            errors.append(f"OpenAI erro: {exc}")
 
     if os.environ.get("GROQ_API_KEY", "").strip():
         try:
@@ -1114,6 +983,28 @@ def _call_with_fallback(system_prompt: str, user_prompt: str) -> tuple[str, str,
                 raise
         except Exception as exc:  # noqa: BLE001
             errors.append(f"Gemini erro: {exc}")
+
+    if os.environ.get("OPENAI_API_KEY", "").strip():
+        try:
+            return _call_openai_responses(system_prompt, user_prompt)
+        except HTTPException as exc:
+            if exc.status_code in _RETRIABLE:
+                errors.append(f"OpenAI HTTP {exc.status_code}")
+            else:
+                raise
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"OpenAI erro: {exc}")
+
+    if os.environ.get("ANTHROPIC_API_KEY", "").strip():
+        try:
+            return _call_anthropic(system_prompt, user_prompt)
+        except HTTPException as exc:
+            if exc.status_code in _RETRIABLE:
+                errors.append(f"Anthropic HTTP {exc.status_code}")
+            else:
+                raise
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"Anthropic erro: {exc}")
 
     raise HTTPException(
         status_code=503,
@@ -1151,22 +1042,16 @@ def api_study_chat(req: StudyChatRequest, current_user: dict = Depends(get_curre
         challenge_title = challenge.title
         challenge_desc = challenge.description
 
-    recent = req.recent_messages[-8:]
-    books = req.books[:40]
-    collected_count = sum(1 for b in books if b.collected)
-    prompt_books = [b for b in books if b.collected]
-    if not prompt_books:
-        prompt_books = books
-    prompt_books = prompt_books[:5]  # keep prompt small for speed
+    recent = req.recent_messages[-4:]  # apenas 4 mensagens — suficiente para contexto
+    books = req.books[:10]
+    prompt_books = [b for b in books if b.collected][:3]  # max 3 livros no prompt
 
     history_lines = []
     for msg in recent:
-        prefix = "Aluno" if msg.role == "user" else "Inteligencia Artificial"
-        compact = (msg.content or "").strip()
-        if len(compact) > 180:
-            compact = compact[:180].rstrip() + "..."
-        history_lines.append(f"- {prefix}: {compact}")
-    history_text = "\n".join(history_lines) if history_lines else "- Sem historico anterior."
+        prefix = "Aluno" if msg.role == "user" else "IA"
+        compact = (msg.content or "").strip()[:120]  # truncado em 120 chars
+        history_lines.append(f"{prefix}: {compact}")
+    history_text = "\n".join(history_lines) if history_lines else "(sem historico)"
 
     if prompt_books:
         book_lines = []
@@ -1199,7 +1084,7 @@ def api_study_chat(req: StudyChatRequest, current_user: dict = Depends(get_curre
         stage, region, challenge_title, challenge_desc, history_text, books_text, msg_clean
     )
 
-    # Fallback em runtime: Gemini → Groq → OpenAI
+    # Fallback em runtime: Groq (rapido) → Gemini → OpenAI → Anthropic
     answer, response_id, model = _call_with_fallback(system_prompt, user_prompt)
 
     if len(msg_clean) > 20:
@@ -1240,18 +1125,16 @@ async def api_study_chat_stream(req: StudyChatRequest, current_user: dict = Depe
     challenge_title = challenge.title if challenge else ""
     challenge_desc  = challenge.description if challenge else ""
 
-    recent = req.recent_messages[-8:]
-    books  = req.books[:40]
-    collected_count = sum(1 for b in books if b.collected)
-    prompt_books = [b for b in books if b.collected] or books
-    prompt_books = prompt_books[:5]
+    recent = req.recent_messages[-4:]  # apenas 4 mensagens
+    books  = req.books[:10]
+    prompt_books = ([b for b in books if b.collected] or books)[:3]  # max 3 livros
 
     history_lines = []
     for msg in recent:
         prefix  = "Aluno" if msg.role == "user" else "IA"
-        compact = (msg.content or "").strip()[:180]
-        history_lines.append(f"- {prefix}: {compact}")
-    history_text = "\n".join(history_lines) or "- Sem historico."
+        compact = (msg.content or "").strip()[:120]
+        history_lines.append(f"{prefix}: {compact}")
+    history_text = "\n".join(history_lines) or "(sem historico)"
 
     book_lines = []
     for b in prompt_books:
