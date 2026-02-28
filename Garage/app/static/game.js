@@ -733,9 +733,29 @@ const StudyChat = {
                     if (parsed.err) {
                         throw new Error(parsed.err);
                     }
-                    // Accumulate silently — DO NOT update bubble until done
                     if (parsed.d !== undefined) {
+                        const _isFirst = fullText.length === 0;
                         fullText += parsed.d;
+                        // Typewriter: update bubble live as each token arrives
+                        const _last = this._messages[this._messages.length - 1];
+                        if (_last && _last.role === 'assistant') {
+                            _last.content = fullText;
+                            const { messages: _msgs } = this._els();
+                            if (_msgs) {
+                                const _lastEl = _msgs.children[_msgs.children.length - 1];
+                                if (_lastEl) {
+                                    const _body = _lastEl.querySelector('.study-msg-body');
+                                    if (_body) {
+                                        _body.innerHTML = this._renderMarkdown(fullText);
+                                        if (_isFirst) {
+                                            // First token: scroll to the top of the response
+                                            // so the user reads from the very first character
+                                            _lastEl.scrollIntoView({ behavior: 'instant', block: 'start' });
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                     if (parsed.done) {
                         finalModel = parsed.model || '';

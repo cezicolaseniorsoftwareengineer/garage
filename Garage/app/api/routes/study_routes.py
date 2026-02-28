@@ -193,7 +193,7 @@ async def _stream_openai_sse(system_prompt: str, user_prompt: str):  # pragma: n
 
     base_url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1").strip().rstrip("/")
     endpoint = base_url + "/responses"
-    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
     timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     hdrs = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
@@ -295,7 +295,7 @@ def _call_openai_responses(system_prompt: str, user_prompt: str) -> tuple[str, s
 
     base_url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1").strip().rstrip("/")
     endpoint = base_url + "/responses"
-    max_output_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
+    max_output_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
     request_retries = int(os.environ.get("OPENAI_REQUEST_RETRIES", "2") or "2")
     request_retries = max(1, min(request_retries, 4))
     attempted: list[str] = []
@@ -362,14 +362,14 @@ def _call_openai_responses(system_prompt: str, user_prompt: str) -> tuple[str, s
 
 # Limite de tokens para o chat de estudo -- respostas curtas e rapidas
 # Separado de AI_MAX_TOKENS (que vale para todo o sistema)
-_AI_CHAT_MAX_TOKENS = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
+_AI_CHAT_MAX_TOKENS = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
 
 
 def _call_gemini(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:  # pragma: no cover
     """Non-streaming call to Google Gemini. Returns (text, response_id, model)."""
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
-    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
     timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     endpoint = (
         f"https://generativelanguage.googleapis.com/v1beta/models/{model}"
@@ -414,7 +414,7 @@ async def _stream_gemini_sse(system_prompt: str, user_prompt: str):  # pragma: n
         yield 'data: {"err": "Study chat unavailable: missing GEMINI_API_KEY."}\n\n'
         return
     model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
-    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
     timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     endpoint = (
         f"https://generativelanguage.googleapis.com/v1beta/models/{model}"
@@ -464,7 +464,7 @@ def _call_groq(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:  #
     api_key = os.environ.get("GROQ_API_KEY", "").strip()
     model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
     endpoint = "https://api.groq.com/openai/v1/chat/completions"
-    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
     payload = json.dumps({
         "model": model,
         "messages": [
@@ -509,7 +509,7 @@ async def _stream_groq_sse(system_prompt: str, user_prompt: str):  # pragma: no 
         return
     model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
     endpoint = "https://api.groq.com/openai/v1/chat/completions"
-    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
     hdrs = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
@@ -579,7 +579,7 @@ def _call_anthropic(system_prompt: str, user_prompt: str) -> tuple[str, str, str
     api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if not api_key:
         raise HTTPException(status_code=503, detail="Missing ANTHROPIC_API_KEY.")
-    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
     timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     endpoint = "https://api.anthropic.com/v1/messages"
     hdrs = {
@@ -632,7 +632,7 @@ async def _stream_anthropic_sse(system_prompt: str, user_prompt: str):  # pragma
     if not api_key:
         yield 'data: {"err": "Study chat unavailable: missing ANTHROPIC_API_KEY."}\n\n'
         return
-    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "600") or "600")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "350") or "350")
     timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     endpoint = "https://api.anthropic.com/v1/messages"
     hdrs = {
@@ -926,33 +926,32 @@ def _build_prompts(
     system_prompt = (
         "Voce e Cezi Cola — Senior Engineer, criador do jogo 404 Garage. "
         "Humano, direto, apaixonado por ensinar. Nunca se apresente como IA.\n\n"
-        "LINGUAGEM: Java JDK 21 exclusivamente. "
-        "OOP, Collections, Streams, Generics, Concorrencia, JUnit 5.\n\n"
+        "DOMINIO: Responda QUALQUER pergunta de tecnologia, programacao, engenharia de software, "
+        "sistemas distribuidos, arquitetura, integracao, banco de dados, redes, seguranca, "
+        "estruturas de dados, algoritmos, logica e ciencia da computacao — sem restricao de nivel "
+        "(desde basico ate ultra-avancado e ultra-moderno). "
+        "Linguagem padrao do jogo: Java JDK 21. Se o aluno perguntar em outra linguagem "
+        "ou tecnologia, responda normalmente nessa tecnologia, sem forcar Java.\n\n"
         f"NIVEL DO ALUNO: {stage} — {curriculum['foco']}\n"
-        f"Foco: {curriculum['topicos'][:400]}\n"
+        f"Foco do desafio atual: {curriculum['topicos'][:400]}\n"
         f"Tom: {curriculum['tom']}\n\n"
         "REGRAS INEGOCIAVEIS:\n"
         "1. Responda em pt-BR. Nomes de variaveis/metodos/classes em ingles.\n"
-        "2. SEJA CONCISO: maximo 3 paragrafos + 1 bloco de codigo. Sem repeticoes.\n"
-        "3. Se a pergunta nao pede codigo, responda em 2-4 linhas diretas sem bloco de codigo.\n"
-        "4. Complexidade de TEMPO O(??) e ESPACO O(??) obrigatoria em 1 linha quando houver codigo.\n\n"
-        "REGRAS DE CODIGO JAVA — VIOLACAO ZERO:\n"
-        "A. O codigo DEVE compilar sem erros no JDK 21. Teste mentalmente cada linha antes de escrever.\n"
-        "B. INDENTACAO OBRIGATORIA: 4 espacos por nivel. NUNCA use tab. Alinhe chaves de fechamento "
-        "   no mesmo nivel do bloco que abriu. Exemplo correto:\n"
-        "   public class Foo {\n"
-        "       public static void main(String[] args) {\n"
-        "           System.out.println(\"ok\");\n"
-        "       }\n"
-        "   }\n"
-        "C. NUNCA truncar: proibido '// ...', '// resto do codigo', '/* omitido */', esqueletos vazios.\n"
-        "D. Todo codigo deve ter 'public static void main(String[] args)' com exemplo executavel.\n"
-        "E. Feche TODAS as chaves: cada '{' tem um '}' correspondente, no nivel correto.\n"
-        "F. Use o fence correto: inicie com ```java e feche com ``` em linha propria.\n"
+        "2. SEJA PRECISO E OBJETIVO: use quantos paragrafos forem necessarios para "
+        "   responder bem. Sem rodeios, sem repeticoes. Respostas simples = curtas; "
+        "   topicos complexos = completos.\n"
+        "3. Se a pergunta nao pede codigo, responda em prosa direta sem bloco de codigo.\n"
+        "4. Complexidade O(tempo) e O(espaco) obrigatoria em 1 linha quando houver codigo.\n\n"
+        "REGRAS DE CODIGO JAVA — VIOLACAO ZERO (quando o codigo for Java):\n"
+        "A. O codigo DEVE compilar sem erros no JDK 21. Teste mentalmente cada linha.\n"
+        "B. INDENTACAO: 4 espacos por nivel. NUNCA use tab. Chaves no nivel correto.\n"
+        "C. NUNCA truncar: proibido '// ...', '// resto do codigo', esqueletos vazios.\n"
+        "D. Todo codigo tem 'public static void main(String[] args)' com exemplo executavel.\n"
+        "E. Feche TODAS as chaves corretamente.\n"
+        "F. Fence correto: ```java ... ``` em linha propria.\n"
         "G. Imports completos no topo. Sem imports desnecessarios.\n"
-        "H. ASSINATURA EXATA: se o enunciado do desafio especificar nome de classe, nome de metodo "
-        "   ou tipo de retorno (ex: 'static long fibonacci(int n)', 'class Fibonacci'), use EXATAMENTE "
-        "   esses nomes e tipos — nenhuma variacao. Use 'long' quando o enunciado diz 'long', nao 'int'."
+        "H. ASSINATURA EXATA: se o enunciado especificar nome de classe/metodo/tipo de retorno, "
+        "   use EXATAMENTE esses nomes e tipos sem variacao."
     )
 
     desc_trunc = (challenge_desc[:200] + "...") if len(challenge_desc) > 200 else challenge_desc
