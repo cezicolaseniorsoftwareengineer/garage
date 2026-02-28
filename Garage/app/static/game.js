@@ -7505,7 +7505,7 @@ const IDE = {
         lineNums.innerHTML = html;
     },
 
-    runCode() {
+    async runCode() {
         if (this._solved) return;
         const ch = this._currentChallenge;
         if (!ch) return;
@@ -7520,9 +7520,111 @@ const IDE = {
             return;
         }
 
-        // Compile check
-        term.innerHTML += '\n<span class="ide-prompt">&gt;</span> javac ' + ch.fileName + '\n';
+        // ----------------------------------------------------------------
+        // Lock UI during execution
+        // ----------------------------------------------------------------
+        const runBtn = document.getElementById('ideRunBtn');
+        if (runBtn) { runBtn.disabled = true; runBtn.style.opacity = '0.5'; }
 
+        // Show "compiling..." feedback immediately
+        term.innerHTML += '\n<span class="ide-prompt">&gt;</span> javac ' + ch.fileName + '\n';
+        term.innerHTML += '<span class="ide-term-info">Compilando com Java 17...</span>';
+        termStatus.textContent = 'Compilando...';
+        termStatus.className = 'ide-terminal-status';
+        term.scrollTop = term.scrollHeight;
+
+        // ----------------------------------------------------------------
+        // Real Java 17 compilation + execution via backend
+        // ----------------------------------------------------------------
+        let javaOk      = false;   // javac + java both succeeded
+        let compileOk   = false;
+        let javaFailed  = false;   // backend unavailable → fall back to validator
+        let realStdout  = '';
+        let realStderr  = '';
+        let compileErr  = '';
+        let elapsedMs   = 0;
+
+        try {
+            const resp = await fetch('/api/run-java', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code }),
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                javaOk      = data.ok;
+                compileOk   = data.compile_ok;
+                realStdout  = (data.stdout  || '').trim();
+                realStderr  = (data.stderr  || '').trim();
+                compileErr  = (data.compile_error || '').trim();
+                elapsedMs   = data.elapsed_ms || 0;
+
+                // Remove last "Compilando..." line so we can replace it
+                const lastInfo = term.querySelector('span.ide-term-info:last-child');
+                if (lastInfo && lastInfo.textContent.startsWith('Compilando com Java 17')) {
+                    lastInfo.remove();
+                }
+
+                if (!compileOk) {
+                    // Real javac error — show exactly what the compiler says
+                    const errLines = compileErr.split('\n').map(l =>
+                        `<span class="ide-term-error">${this._escapeHtml(l)}</span>`
+                    ).join('\n');
+                    term.innerHTML += errLines;
+                    term.innerHTML += '\n<span class="ide-term-error">1 error</span>';
+                    termStatus.textContent = 'Erro na Compilacao';
+                    termStatus.className = 'ide-terminal-status error';
+                    SFX.wrong();
+                    term.innerHTML += '\n<span class="ide-term-info">' + this._attemptCoachMessage(ch, this._attempts) + '</span>';
+                    if (this._attempts >= 3) document.getElementById('ideSkipBtn').style.display = 'flex';
+                    term.scrollTop = term.scrollHeight;
+                    if (runBtn) { runBtn.disabled = false; runBtn.style.opacity = ''; }
+                    return;
+                }
+
+                // Compilation succeeded — show real execution output
+                term.innerHTML += '<span class="ide-term-success">Compilation successful. (' + elapsedMs + 'ms)</span>\n';
+                term.innerHTML += '<span class="ide-prompt">&gt;</span> java ' + ch.fileName.replace('.java', '') + '\n';
+
+                if (realStdout) {
+                    const outLines = realStdout.split('\n').map(l =>
+                        `<span class="ide-term-output">${this._escapeHtml(l)}</span>`
+                    ).join('\n');
+                    term.innerHTML += outLines + '\n';
+                }
+                if (realStderr) {
+                    const errLines = realStderr.split('\n').map(l =>
+                        `<span class="ide-term-error">${this._escapeHtml(l)}</span>`
+                    ).join('\n');
+                    term.innerHTML += errLines + '\n';
+                }
+
+                if (!javaOk && realStdout === '' && realStderr === '') {
+                    // Non-zero exit but no output
+                    term.innerHTML += '<span class="ide-term-error">Processo encerrado com código ' + (data.exit_code || '?') + '.</span>\n';
+                }
+
+            } else {
+                javaFailed = true;
+            }
+        } catch (_e) {
+            javaFailed = true;
+        }
+
+        // ----------------------------------------------------------------
+        // Fallback: Java not installed on server → regex validator only
+        // ----------------------------------------------------------------
+        if (javaFailed) {
+            const lastInfo = term.querySelector('span.ide-term-info:last-child');
+            if (lastInfo && lastInfo.textContent.startsWith('Compilando com Java 17')) lastInfo.remove();
+            term.innerHTML += '<span class="ide-term-warn">⚠ Java 17 indisponível no servidor — usando validador estrutural.</span>\n';
+            compileOk = true;  // let game logic proceed
+        }
+
+        // ----------------------------------------------------------------
+        // Game logic: structural validator (challenge-specific rules)
+        // Runs only when compilation succeeded (or fallback active).
+        // ----------------------------------------------------------------
         let result = ch.validator(code);
         if (result.ok && this._isScalingActive()) {
             const progress = this._getScaleProgressLabel();
@@ -7541,9 +7643,10 @@ const IDE = {
         }
 
         if (result.ok) {
-            term.innerHTML += '<span class="ide-term-success">Compilation successful.</span>\n';
-            term.innerHTML += '<span class="ide-prompt">&gt;</span> java ' + ch.fileName.replace('.java', '') + '\n';
-            term.innerHTML += '<span class="ide-term-success">' + result.msg + '</span>';
+            // Show challenge-specific success message (may complement real stdout)
+            if (result.msg && result.msg.trim()) {
+                term.innerHTML += '<span class="ide-term-success">' + result.msg + '</span>\n';
+            }
             if (this._isScalingActive()) {
                 this._scalePasses += 1;
                 this._scaleLastCode = code;
@@ -7552,7 +7655,7 @@ const IDE = {
 
                 if (!finishedScaling) {
                     const nextStep = this._getScaleStep();
-                    term.innerHTML += '\n\n<span class="ide-term-success">FASE VALIDADA (' + this._scalePasses + '/' + required + ').</span>';
+                    term.innerHTML += '\n<span class="ide-term-success">FASE VALIDADA (' + this._scalePasses + '/' + required + ').</span>';
                     term.innerHTML += '\n<span class="ide-term-info">Próxima expansão: ' + (nextStep ? nextStep.objective : 'Evolua o código.') + '</span>';
                     term.innerHTML += '\n<span class="ide-term-info">Use VER SOLUÇÃO para a cola da próxima fase.</span>';
                     termStatus.textContent = 'Escala ' + this._getScaleProgressLabel();
@@ -7560,18 +7663,19 @@ const IDE = {
                     this._refreshScaleUI();
                     SFX.correct();
                     term.scrollTop = term.scrollHeight;
+                    if (runBtn) { runBtn.disabled = false; runBtn.style.opacity = ''; }
                     return;
                 }
 
-                term.innerHTML += '\n\n<span class="ide-term-success">ESCALABILIDADE CONCLUIDA (' + required + '/' + required + ').</span>';
+                term.innerHTML += '\n<span class="ide-term-success">ESCALABILIDADE CONCLUIDA (' + required + '/' + required + ').</span>';
             }
-            term.innerHTML += '\n\n<span class="ide-term-success">DESAFIO COMPLETO! Código validado com sucesso.</span>';
+            term.innerHTML += '\n<span class="ide-term-success">DESAFIO COMPLETO! Código validado com sucesso.</span>';
             termStatus.textContent = 'Compilacao OK';
             termStatus.className = 'ide-terminal-status';
             this._solved = true;
             SFX.correct();
 
-            // Show CONTINUAR button instead of auto-closing
+            // Show CONTINUAR button
             document.getElementById('ideSkipBtn').style.display = 'none';
             const actions = document.querySelector('.ide-actions');
             let continueBtn = document.getElementById('ideContinueBtn');
@@ -7584,25 +7688,32 @@ const IDE = {
                 actions.appendChild(continueBtn);
             }
             continueBtn.style.display = 'flex';
-            // Disable RUN and HELP buttons
             document.getElementById('ideRunBtn').style.display = 'none';
             document.getElementById('ideHelpBtn').style.display = 'none';
         } else {
+            // Game logic check failed (structural requirement not met)
             term.innerHTML += '<span class="ide-term-error">' + ch.fileName + ': ' + result.msg + '</span>';
-            term.innerHTML += '\n<span class="ide-term-error">1 error</span>';
+            term.innerHTML += '\n<span class="ide-term-error">Desafio não concluído.</span>';
             termStatus.textContent = 'Erro na Compilacao';
             termStatus.className = 'ide-terminal-status error';
             SFX.wrong();
             term.innerHTML += '\n<span class="ide-term-info">' + this._attemptCoachMessage(ch, this._attempts) + '</span>';
-
-            // After 3 failed attempts, show skip button
-            if (this._attempts >= 3) {
-                document.getElementById('ideSkipBtn').style.display = 'flex';
-            }
+            if (this._attempts >= 3) document.getElementById('ideSkipBtn').style.display = 'flex';
         }
 
         // Scroll terminal to bottom
         term.scrollTop = term.scrollHeight;
+        if (runBtn) { runBtn.disabled = false; runBtn.style.opacity = ''; }
+    },
+
+    // Escape HTML special chars to safely inject user code into terminal innerHTML
+    _escapeHtml(str) {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     },
 
     askHelp() {

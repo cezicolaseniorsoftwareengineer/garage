@@ -2835,6 +2835,11 @@ body {
     color: #ffbd2e;
 }
 
+/* Real JVM stdout — neutral white, like a real terminal */
+.ide-term-output {
+    color: #e6edf3;
+}
+
 /* Bottom Bar */
 .ide-bottombar {
     display: flex;

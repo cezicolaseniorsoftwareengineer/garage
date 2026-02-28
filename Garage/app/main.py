@@ -23,6 +23,7 @@ from app.api.routes.game_routes import router as game_router, init_routes
 from app.api.routes.auth_routes import router as auth_router, init_auth_routes
 from app.api.routes.admin_routes import router as admin_router, init_admin_routes
 from app.api.routes.study_routes import router as study_router, init_study_routes
+from app.api.routes.code_runner_routes import router as code_runner_router
 
 DATA_DIR = os.path.join(BASE_DIR, "data")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
@@ -202,6 +203,7 @@ app.include_router(auth_router)
 app.include_router(game_router)
 app.include_router(admin_router)
 app.include_router(study_router)
+app.include_router(code_runner_router)
 
 
 @app.get("/")

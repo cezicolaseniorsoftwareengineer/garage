@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: free
     rootDir: Garage
-    buildCommand: pip install -r requirements.txt
+    buildCommand: apt-get update -qq && apt-get install -y --no-install-recommends openjdk-17-jdk-headless && pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
@@ -25,7 +25,13 @@ services:
       - key: GROQ_MODEL
         value: "llama-3.3-70b-versatile"  # Groq free: 14400 req/day — fallback de quota do OpenAI
       - key: AI_CHAT_MAX_TOKENS
-        value: "600"  # Max tokens for study chat responses (fast, concise answers)
+        value: "350"  # Max tokens for study chat responses
+      - key: JAVA_HOME
+        value: "/usr/lib/jvm/java-17-openjdk-amd64"  # Java 17 path on Render (Ubuntu)
+      - key: JAVA_COMPILE_TIMEOUT
+        value: "15"  # seconds — javac wall-clock limit
+      - key: JAVA_RUN_TIMEOUT
+        value: "10"  # seconds — java process wall-clock limit
       - key: ADMIN_USERNAME
         sync: false  # Configure manually in Render dashboard (e.g., cezar)
       - key: ADMIN_EMAIL
