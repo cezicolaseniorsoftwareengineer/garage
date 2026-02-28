@@ -949,7 +949,10 @@ def _build_prompts(
         "D. Todo codigo deve ter 'public static void main(String[] args)' com exemplo executavel.\n"
         "E. Feche TODAS as chaves: cada '{' tem um '}' correspondente, no nivel correto.\n"
         "F. Use o fence correto: inicie com ```java e feche com ``` em linha propria.\n"
-        "G. Imports completos no topo. Sem imports desnecessarios."
+        "G. Imports completos no topo. Sem imports desnecessarios.\n"
+        "H. ASSINATURA EXATA: se o enunciado do desafio especificar nome de classe, nome de metodo "
+        "   ou tipo de retorno (ex: 'static long fibonacci(int n)', 'class Fibonacci'), use EXATAMENTE "
+        "   esses nomes e tipos — nenhuma variacao. Use 'long' quando o enunciado diz 'long', nao 'int'."
     )
 
     desc_trunc = (challenge_desc[:200] + "...") if len(challenge_desc) > 200 else challenge_desc
