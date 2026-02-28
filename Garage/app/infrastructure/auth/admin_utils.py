@@ -1,14 +1,44 @@
 """Shared admin authorization utilities.
 
-Single source of truth for admin e-mail lookup.
+Single source of truth for admin username/e-mail lookup.
 Used by both auth_routes and admin_routes to prevent drift.
+
+Primary check: ADMIN_USERNAME (case-insensitive username match).
+Legacy fallback: ADMIN_EMAIL / ADMIN_EMAILS (e-mail match).
 """
 import os
 
 
-def configured_admin_emails() -> set[str]:
+# ---------------------------------------------------------------------------
+# Username-based (primary) admin check
+# ---------------------------------------------------------------------------
+
+def configured_admin_usernames() -> set[str]:
+    """Return the set of normalized admin usernames from environment variables.
+
+    Env var:
+        ADMIN_USERNAME  – single admin username (case-insensitive)
     """
-    Return the set of normalized admin e-mails from environment variables.
+    usernames: set[str] = set()
+    primary = os.environ.get("ADMIN_USERNAME", "").strip().lower()
+    if primary:
+        usernames.add(primary)
+    return usernames
+
+
+def is_admin_username(username: str | None) -> bool:
+    """Return True if *username* is a configured admin account."""
+    if not username:
+        return False
+    return username.strip().lower() in configured_admin_usernames()
+
+
+# ---------------------------------------------------------------------------
+# E-mail-based (legacy fallback) admin check
+# ---------------------------------------------------------------------------
+
+def configured_admin_emails() -> set[str]:
+    """Return the set of normalized admin e-mails from environment variables.
 
     Env vars:
         ADMIN_EMAIL   – primary admin e-mail (single value)

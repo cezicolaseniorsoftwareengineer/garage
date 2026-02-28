@@ -51,6 +51,7 @@ class MapConfig:
         "Uber": "Staff",
         "Nvidia": "Staff",
         "Aurora Labs": "Staff",
+        "Nexus Labs": "Staff",
         "Santander": "Principal",
         "Bradesco": "Principal",
         "Gemini": "Principal",

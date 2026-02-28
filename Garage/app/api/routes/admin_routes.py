@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.infrastructure.auth.dependencies import get_current_user
-from app.infrastructure.auth.admin_utils import configured_admin_emails, is_admin_email
+from app.infrastructure.auth.admin_utils import configured_admin_emails, is_admin_email, is_admin_username
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -29,20 +29,23 @@ _is_admin_email = is_admin_email
 
 
 def _assert_admin(current_user: dict):
-    """Raise 403 if the authenticated user is not the admin."""
-    user_id = current_user.get("sub")
-    if not user_id:
+    """Raise 403 if the authenticated user is not the admin.
+
+    Primary check: role=admin claim in JWT (set at login via ADMIN_USERNAME).
+    Fallback: username claim matches ADMIN_USERNAME env var.
+    """
+    if not current_user.get("sub"):
         raise HTTPException(status_code=403, detail="Access denied.")
-    # First, check role claim on token
+
+    # Primary: role claim embedded in JWT
     if current_user.get("role") == "admin":
         return
 
-    # Fallback: legacy email-based admin check
-    user = None
-    if hasattr(_user_repo, "find_by_id"):
-        user = _user_repo.find_by_id(user_id)
-    if not user or not _is_admin_email(getattr(user, "email", None)):
-        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+    # Fallback: username in token matches ADMIN_USERNAME
+    if is_admin_username(current_user.get("username")):
+        return
+
+    raise HTTPException(status_code=403, detail="Access denied. Admin only.")
 
 
 # ---------------------------------------------------------------------------
@@ -332,5 +335,37 @@ def api_admin_ranking(current_user: dict = Depends(get_current_user)):
     ranked = completed + incomplete
     for i, e in enumerate(ranked):
         e["rank"] = i + 1
+
+
+# ---------------------------------------------------------------------------
+# Delete user
+# ---------------------------------------------------------------------------
+
+@router.delete("/users/{user_id}")
+def api_admin_delete_user(
+    user_id: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """Permanently delete a user and all their data from the database."""
+    _assert_admin(current_user)
+
+    # Prevent self-deletion
+    if current_user.get("sub") == user_id:
+        raise HTTPException(status_code=400, detail="Voce nao pode deletar sua propria conta.")
+
+    if not hasattr(_user_repo, "delete_user"):
+        raise HTTPException(status_code=501, detail="Delete nao suportado neste modo.")
+
+    deleted = _user_repo.delete_user(user_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Usuario nao encontrado.")
+
+    try:
+        from app.infrastructure.audit import log_event as audit_log
+        audit_log("admin_delete_user", current_user["sub"], {"deleted_user_id": user_id})
+    except Exception:
+        pass
+
+    return {"success": True, "message": "Usuario deletado com sucesso."}
 
     return ranked

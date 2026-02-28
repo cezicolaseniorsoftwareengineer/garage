@@ -17,11 +17,16 @@ from email.mime.text import MIMEText
 
 log = logging.getLogger("garage.email")
 
-_SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
-_SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
-_SMTP_USER = os.environ.get("SMTP_USER", "")
-_SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
-_SMTP_FROM = os.environ.get("SMTP_FROM", _SMTP_USER)
+
+def _smtp_config() -> dict:
+    """Read SMTP credentials fresh from env on every call (supports hot-reload)."""
+    return {
+        "host":     os.environ.get("SMTP_HOST", "smtp.gmail.com"),
+        "port":     int(os.environ.get("SMTP_PORT", "587")),
+        "user":     os.environ.get("SMTP_USER", ""),
+        "password": os.environ.get("SMTP_PASSWORD", ""),
+        "from":     os.environ.get("SMTP_FROM", os.environ.get("SMTP_USER", "")),
+    }
 
 
 def _html_template(full_name: str, code: str) -> str:
@@ -67,16 +72,20 @@ def _html_template(full_name: str, code: str) -> str:
 def send_verification_email(to_email: str, code: str, full_name: str) -> None:
     """Send a 6-digit OTP verification code to the given address.
 
-    In dev mode (SMTP_USER not configured) logs the code to stdout only.
+    Falls back to console print (dev mode) when SMTP is not configured
+    or when the SMTP connection fails.
     """
-    if not _SMTP_USER:
+    cfg = _smtp_config()
+
+    if not cfg["user"]:
+        # Dev mode: no SMTP configured
         log.info("[DEV MODE] Verification code for %s: %s", to_email, code)
         print(f"[GARAGE][EMAIL DEV] Verification code for {to_email}: {code}")
         return
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = f"[{code}] Confirme seu e-mail — Garage"
-    msg["From"] = _SMTP_FROM or _SMTP_USER
+    msg["From"] = cfg["from"] or cfg["user"]
     msg["To"] = to_email
 
     plain = (
@@ -89,12 +98,15 @@ def send_verification_email(to_email: str, code: str, full_name: str) -> None:
     msg.attach(MIMEText(_html_template(full_name, code), "html"))
 
     try:
-        with smtplib.SMTP(_SMTP_HOST, _SMTP_PORT, timeout=15) as server:
+        with smtplib.SMTP(cfg["host"], cfg["port"], timeout=15) as server:
             server.ehlo()
             server.starttls()
-            server.login(_SMTP_USER, _SMTP_PASSWORD)
-            server.sendmail(_SMTP_USER, to_email, msg.as_string())
+            server.login(cfg["user"], cfg["password"])
+            server.sendmail(cfg["user"], to_email, msg.as_string())
         log.info("Verification email sent to %s", to_email)
     except Exception as exc:
         log.error("Failed to send verification email to %s: %s", to_email, exc)
-        raise RuntimeError(f"Falha ao enviar e-mail de verificação: {exc}") from exc
+        # Fallback to console so the code is never lost during development
+        print(f"[GARAGE][EMAIL FALLBACK] SMTP failed. Code for {to_email}: {code}")
+        print(f"[GARAGE][EMAIL FALLBACK] Error: {exc}")
+        # Do NOT raise — caller decides whether to abort or continue

@@ -361,6 +361,21 @@
                 padding: 6px 8px;
             }
         }
+        .btn-delete-user {
+            background: none;
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 2px 7px;
+            font-size: 14px;
+            line-height: 1;
+            transition: background 0.15s, color 0.15s;
+        }
+        .btn-delete-user:hover {
+            background: #ef4444;
+            color: #fff;
+        }
     </style>
 </head>
 
@@ -486,6 +501,7 @@
                             <th onclick="sortTable('usersTable', 6, 'str')">MELHOR CARGO</th>
                             <th onclick="sortTable('usersTable', 7, 'num')">MELHOR SCORE</th>
                             <th onclick="sortTable('usersTable', 8, 'str')">CADASTRO</th>
+                            <th style="width:60px;">ACAO</th>
                         </tr>
                     </thead>
                     <tbody id="usersBody"></tbody>
@@ -770,7 +786,8 @@
                     '<td>' + u.completed_runs + '</td>' +
                     '<td>' + (STAGE_PT[u.best_stage] || u.best_stage) + '</td>' +
                     '<td>' + u.best_score + '</td>' +
-                    '<td>' + formatDate(u.created_at) + '</td>';
+                    '<td>' + formatDate(u.created_at) + '</td>' +
+                    '<td><button class="btn-delete-user" onclick="deleteUser(\'' + esc(u.id) + '\', \'' + esc(u.username) + '\')">&#128465;</button></td>';
                 body.appendChild(tr);
             });
         }
@@ -809,6 +826,26 @@
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + tab));
+        }
+
+        // -- Delete user --
+        async function deleteUser(userId, username) {
+            if (!confirm('Tem certeza que deseja DELETAR o usuario "' + username + '" permanentemente?\nEsta acao nao pode ser desfeita.')) return;
+            try {
+                const res = await fetch('/api/admin/users/' + encodeURIComponent(userId), {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Usuario "' + username + '" deletado com sucesso.');
+                    loadDashboard();
+                } else {
+                    alert('Erro: ' + (data.detail || 'Falha ao deletar usuario.'));
+                }
+            } catch (e) {
+                alert('Erro de conexao: ' + e.message);
+            }
         }
 
         // -- Table sorting --

@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 import os
 
 from app.domain.user import User
-from app.infrastructure.auth.admin_utils import configured_admin_emails, is_admin_email
+from app.infrastructure.auth.admin_utils import configured_admin_emails, is_admin_email, is_admin_username
 from app.infrastructure.auth.jwt_handler import (
     create_access_token,
     create_refresh_token,
@@ -153,7 +153,7 @@ def api_register(req: RegisterRequest):
         }
 
     # --- Dev / JSON fallback: return tokens immediately ---
-    role = "admin" if _is_admin_email(user.email) else None
+    role = "admin" if is_admin_username(user.username) else None
     access_token = create_access_token(user.id, user.username, role=role)
     refresh_token = create_refresh_token(user.id)
 
@@ -216,9 +216,8 @@ def api_login(req: LoginRequest):
             ),
         )
 
-    # Attach role claim if the user is configured as admin
-    user_obj = _user_repo.find_by_id(user_data["id"]) if hasattr(_user_repo, "find_by_id") else None
-    role = "admin" if _is_admin_email(getattr(user_obj, "email", None) if user_obj else None) else None
+    # Attach role claim if the user is configured as admin (username-based check)
+    role = "admin" if is_admin_username(user_data["username"]) else None
     access_token = create_access_token(user_data["id"], user_data["username"], role=role)
     refresh_token = create_refresh_token(user_data["id"])
 
@@ -262,7 +261,7 @@ def api_refresh(req: RefreshRequest):
     user = _user_repo.find_by_id(user_id) if hasattr(_user_repo, "find_by_id") else None
     username = user.username if user else payload.get("username", "")
 
-    role = "admin" if _is_admin_email(getattr(user, "email", None) if user else None) else None
+    role = "admin" if is_admin_username(username) else None
     access_token = create_access_token(user_id, username, role=role)
     return {
         "access_token": access_token,
@@ -311,7 +310,7 @@ def api_verify_email(req: VerifyEmailRequest):
     # Reload user so email_verified=True is reflected
     user = _user_repo.find_by_id(user.id)
 
-    role = "admin" if _is_admin_email(user.email) else None
+    role = "admin" if is_admin_username(user.username) else None
     access_token = create_access_token(user.id, user.username, role=role)
     refresh_token = create_refresh_token(user.id)
 
@@ -353,7 +352,7 @@ def api_resend_verification(req: ResendVerificationRequest):
     except Exception as exc:
         import logging
         logging.getLogger("garage.auth").error("Resend verification failed: %s", exc)
-        raise HTTPException(status_code=500, detail="Falha ao enviar e-mail. Tente novamente.")
+        # email_sender already falls back to console; don't expose 500 to the user
 
     return {
         "success": True,

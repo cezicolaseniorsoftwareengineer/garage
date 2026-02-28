@@ -84,6 +84,7 @@ class MapRegion(str, Enum):
     UBER = "Uber"
     NVIDIA = "Nvidia"
     AURORA_LABS = "Aurora Labs"
+    NEXUS_LABS = "Nexus Labs"
     SANTANDER = "Santander"
     BRADESCO = "Bradesco"
     GEMINI = "Gemini"
