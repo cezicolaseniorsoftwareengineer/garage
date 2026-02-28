@@ -4097,7 +4097,10 @@ const UI = {
     updateTitleButtons() {
         const continueBtn = document.getElementById('btnContinueGame');
         if (continueBtn) {
-            continueBtn.style.display = Auth.hasSession() ? '' : 'none';
+            // Show CONTINUAR whenever the user is logged in.
+            // loadSession() handles both localStorage and server-side fallback,
+            // so the button is safe to show even without a local session_id.
+            continueBtn.style.display = Auth.isLoggedIn() ? '' : 'none';
         }
         // Show admin dashboard link for users with admin role on JWT
         const adminBtn = document.getElementById('btnAdminDash');
@@ -5416,11 +5419,16 @@ const Game = {
     },
 
     async loadSession(silent = false) {
-        const id = localStorage.getItem('garage_session_id');
-        if (!id) { if (!silent) alert('Nenhuma sessao salva.'); return false; }
-        try {
-            State.player = await API.get('/api/session/' + id);
-            State.sessionId = id;
+        const stored = localStorage.getItem('garage_session_id');
+
+        // ── Inner helpers ────────────────────────────────────────────────────
+        // Load all session data given a confirmed session_id, update global State.
+        const _loadCore = async (sessionId) => {
+            const playerData = await API.get('/api/session/' + sessionId);
+            State.player = playerData;
+            State.sessionId = sessionId;
+            // Always sync localStorage so next visit uses the correct id
+            localStorage.setItem('garage_session_id', sessionId);
             State.challenges = await API.get('/api/challenges');
             Learning.syncSessionState(State.player, State.challenges);
 
@@ -5432,39 +5440,82 @@ const Game = {
             World.init(State.player.character ? State.player.character.avatar_index : 0, savedX);
             State.avatarIndex = State.player.character ? State.player.character.avatar_index : 0;
 
-            // _reconstructCompletedRegions is no longer needed as we restore from server
-            // but keep it as fallback for backward compatibility
+            // Fallback region reconstruction for backward compatibility
             if (!State.completedRegions || State.completedRegions.length === 0) {
                 _reconstructCompletedRegions();
             }
 
             UI.updateHUD(State.player);
             UI.showScreen('screen-world');
-
-            // Start periodic save for position persistence
             WorldStatePersistence.startPeriodicSave(30000);
-
-            // Start heartbeat for online tracking
             Heartbeat.start();
-
             if (!silent) Learning.showStageBriefingIfNeeded(State.player.stage);
-
-            // Victory fires ONLY when all 24 companies are fully complete
             if (_allCompaniesComplete()) {
                 setTimeout(() => UI.showVictory(State.player), 800);
             }
             return true;
-        } catch (e) {
-            // Session no longer exists on server -- clean up and let user start fresh
-            if (e.message && (e.message.includes('not found') || e.message.includes('404'))) {
-                localStorage.removeItem('garage_session_id');
-                UI.updateTitleButtons();
-                if (!silent) alert('Sessão anterior não encontrada. Inicie um novo jogo.');
-            } else {
-                if (!silent) alert('Erro ao carregar sessão: ' + e.message);
+        };
+
+        // Ask the server for the user's most recent session (by user_id).
+        // Returns a session_id string or null.
+        const _findServerSession = async () => {
+            try {
+                const sessions = await API.get('/api/me/sessions');
+                if (!Array.isArray(sessions) || sessions.length === 0) return null;
+                const active = sessions.find(s => s.status === 'in_progress') || sessions[0];
+                return active ? String(active.session_id) : null;
+            } catch (_e) { return null; }
+        };
+
+        const _clearStored = () => {
+            localStorage.removeItem('garage_session_id');
+            UI.updateTitleButtons();
+        };
+        // ────────────────────────────────────────────────────────────────────
+
+        // 1. Try the stored session_id first
+        if (stored) {
+            try {
+                return await _loadCore(stored);
+            } catch (e) {
+                const status = e.status || 0;
+                if (status === 403 || status === 404) {
+                    // 403 = this session belongs to a different account
+                    // 404 = session was deleted from the DB
+                    // In both cases: look for the real session on the server
+                    const fallbackId = await _findServerSession();
+                    if (fallbackId && fallbackId !== stored) {
+                        try { return await _loadCore(fallbackId); } catch (_e2) { /* fall through */ }
+                    }
+                    _clearStored();
+                    if (!silent) {
+                        if (status === 404) {
+                            alert('Sessão anterior não encontrada. Inicie um novo jogo.');
+                        } else {
+                            alert('Sessão anterior inválida. Inicie um novo jogo ou verifique seu login.');
+                        }
+                    }
+                } else {
+                    if (!silent) alert('Erro ao carregar sessão: ' + e.message);
+                }
+                return false;
             }
-            return false;
         }
+
+        // 2. No localStorage entry -- try to auto-recover from the server
+        //    (handles first login on a new device, or cleared localStorage)
+        const serverId = await _findServerSession();
+        if (serverId) {
+            try {
+                return await _loadCore(serverId);
+            } catch (e) {
+                if (!silent) alert('Erro ao carregar sessão: ' + e.message);
+                return false;
+            }
+        }
+
+        if (!silent) alert('Nenhuma sessão salva. Inicie um novo jogo.');
+        return false;
     },
 
     async enterRegion(regionId, opts = {}) {
@@ -8489,20 +8540,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             UI.showScreen('screen-login');
             return;
         }
-        if (Auth.hasSession()) {
-            const resumed = await Game.loadSession(true);
-            if (!resumed) {
-                // loadSession may have cleared auth on 401
-                if (!Auth.isLoggedIn()) {
-                    UI.showScreen('screen-login');
-                } else {
-                    UI.showScreen('screen-title');
-                    UI.updateTitleButtons();
-                }
+        // Always try to auto-resume. loadSession() now handles missing localStorage
+        // by falling back to /api/me/sessions (works on new devices too).
+        const resumed = await Game.loadSession(true);
+        if (!resumed) {
+            if (!Auth.isLoggedIn()) {
+                UI.showScreen('screen-login');
+            } else {
+                UI.showScreen('screen-title');
+                UI.updateTitleButtons();
             }
-        } else {
-            UI.showScreen('screen-title');
-            UI.updateTitleButtons();
         }
     } else {
         UI.showScreen('screen-login');

@@ -415,6 +415,32 @@ def api_get_user_sessions(current_user: dict = Depends(get_current_user)):
     return []  # pragma: no cover
 
 
+@router.get("/me/latest-session")
+def api_get_latest_session(current_user: dict = Depends(get_current_user)):
+    """Return the full player data for the most recent active session.
+
+    Used by the frontend when the localStorage session_id is stale (403/404)
+    or when the player logs in on a new device with no localStorage entry.
+    Preference: in_progress > most recent of any status.
+    """
+    if not hasattr(_player_repo, "find_by_user_id"):
+        raise HTTPException(status_code=404, detail="No session found")
+
+    sessions = _player_repo.find_by_user_id(current_user["sub"])
+    if not sessions:
+        raise HTTPException(status_code=404, detail="No session found")
+
+    # Prefer an active game; fall back to the most recent one (ordered desc by created_at)
+    best = next((s for s in sessions if s["status"] == "in_progress"), sessions[0])
+    session_id = str(best["session_id"])
+
+    player = _player_repo.get(session_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return {"session_id": session_id, "player": player.to_dict()}
+
+
 @router.get("/map")
 def api_get_map():
     """Get Silicon Valley map regions and their metadata."""
