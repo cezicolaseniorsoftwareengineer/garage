@@ -262,6 +262,16 @@ const StudyChat = {
                 actions.appendChild(btn);
             }
         }
+
+        // Ensure exit button exists in dynamically-mounted IDE (cached HTML)
+        if (actions && !document.getElementById('ideExitBtn')) {
+            const exitBtn = document.createElement('button');
+            exitBtn.className = 'ide-btn ide-btn-exit';
+            exitBtn.id = 'ideExitBtn';
+            exitBtn.onclick = () => IDE.close();
+            exitBtn.innerHTML = '<span class="ide-btn-icon">&#8617;</span> SAIR';
+            actions.appendChild(exitBtn);
+        }
     },
 
     _storageKey() {
@@ -6920,22 +6930,22 @@ const SCALE_MISSIONS = {
             },
             {
                 name: 'Método fibonacci',
-                objective: 'Extraia para static int fibonacci(int n).',
+                objective: 'Extraia para static long fibonacci(int n). Use long, nao int.',
                 validator(code) {
                     if (!/static\s+long\s+\w+\s*\(\s*int\s+\w+\s*\)/.test(code)) return { ok: false, msg: 'Itau 2/3: crie metodo static long fibonacci(int n). Use long, nao int, para suportar fibonacci(20)=6765.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (ITAU 2/3):\n1. Extraia para um metodo reutilizavel.\n2. Use long (nao int) para suportar valores grandes.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class Fibonacci {\n    static long fibonacci(int n) {\n        if (n <= 1) return n;\n        long prev = 0, curr = 1;\n        for (int i = 2; i <= n; i++) {\n            long next = prev + curr;\n            prev = curr;\n            curr = next;\n        }\n        return curr;\n    }\n\n    public static void main(String[] args) {\n        for (int i = 0; i <= 10; i++) {\n            System.out.println("F(" + i + ") = " + fibonacci(i));\n        }\n    }\n}'
+                helpText: 'COMO EXPANDIR (ITAU 2/3):\n1. Extraia o calculo para um metodo reutilizavel.\n2. Use long (nao int) para suportar valores grandes como fibonacci(20)=6765.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class Fibonacci {\n    static long fibonacci(int n) {\n        if (n <= 1) return n;\n        long prev = 0, curr = 1;\n        for (int i = 2; i <= n; i++) {\n            long next = prev + curr;\n            prev = curr;\n            curr = next;\n        }\n        return curr;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(fibonacci(5));\n        System.out.println(fibonacci(10));\n        System.out.println(fibonacci(20));\n    }\n}'
             },
             {
                 name: 'Validação de entrada',
-                objective: 'Adicione validação para n negativo (retorne 0 ou lance exceção).',
+                objective: 'Adicione if (n < 0) throw new IllegalArgumentException no inicio do metodo.',
                 validator(code) {
-                    if (!/<\s*0|<=?\s*-1|< 0/.test(code)) return { ok: false, msg: 'Itau 3/3: verifique se n e negativo.' };
-                    if (!/(return\s*0|return\s*-1|throw)/.test(code)) return { ok: false, msg: 'Itau 3/3: trate n negativo (return 0/-1 ou throw).' };
+                    if (!/<\s*0|<=?\s*-1|< 0/.test(code)) return { ok: false, msg: 'Itau 3/3: verifique se n e negativo com if (n < 0).' };
+                    if (!/(return\s*0|return\s*-1|throw)/.test(code)) return { ok: false, msg: 'Itau 3/3: trate n negativo (throw new IllegalArgumentException ou return 0).' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (ITAU 3/3):\n1. Verifique if (n < 0).\n2. Lance excecao ou retorne valor especial.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class Fibonacci {\n    static long fibonacci(int n) {\n        if (n < 0) throw new IllegalArgumentException("n negativo");\n        if (n <= 1) return n;\n        long prev = 0, curr = 1;\n        for (int i = 2; i <= n; i++) {\n            long next = prev + curr;\n            prev = curr;\n            curr = next;\n        }\n        return curr;\n    }\n\n    public static void main(String[] args) {\n        System.out.println("F(10) = " + fibonacci(10));\n        System.out.println("F(0) = " + fibonacci(0));\n\n        try {\n            fibonacci(-1);\n        } catch (IllegalArgumentException e) {\n            System.out.println("Erro: " + e.getMessage());\n        }\n    }\n}'
+                helpText: 'COMO EXPANDIR (ITAU 3/3):\n1. No inicio do metodo, verifique if (n < 0).\n2. Lance IllegalArgumentException ou retorne 0.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\npublic class Fibonacci {\n    static long fibonacci(int n) {\n        if (n < 0) throw new IllegalArgumentException("n negativo");\n        if (n <= 1) return n;\n        long prev = 0, curr = 1;\n        for (int i = 2; i <= n; i++) {\n            long next = prev + curr;\n            prev = curr;\n            curr = next;\n        }\n        return curr;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(fibonacci(10));\n        System.out.println(fibonacci(0));\n        try {\n            fibonacci(-1);\n        } catch (IllegalArgumentException e) {\n            System.out.println(e.getMessage());\n        }\n    }\n}'
             },
         ],
     },

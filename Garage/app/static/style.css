@@ -2948,6 +2948,17 @@ body {
     background: #293548;
 }
 
+.ide-btn-exit {
+    background: #1f2937;
+    border-color: #374151;
+    color: #f87171;
+}
+
+.ide-btn-exit:hover {
+    background: #2a1515;
+    border-color: #ef4444;
+}
+
 /* Help Overlay */
 .ide-help-overlay {
     position: absolute;

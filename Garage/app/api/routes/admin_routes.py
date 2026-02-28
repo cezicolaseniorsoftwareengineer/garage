@@ -341,6 +341,8 @@ def api_admin_ranking(current_user: dict = Depends(get_current_user)):
     for i, e in enumerate(ranked):
         e["rank"] = i + 1
 
+    return ranked
+
 
 # ---------------------------------------------------------------------------
 # Delete user
@@ -372,5 +374,3 @@ def api_admin_delete_user(
         pass
 
     return {"success": True, "message": "Usuario deletado com sucesso."}
-
-    return ranked
