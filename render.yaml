@@ -1,50 +1,63 @@
 services:
+  # ── 1. Python game server ───────────────────────────────────────────────
   - type: web
     name: garage
     runtime: python
     region: oregon
     plan: free
     rootDir: Garage
-    buildCommand: >-
-      pip install -r requirements.txt &&
-      if [ ! -f jdk17/bin/javac ]; then
-        curl -fsSL "https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_linux-x64_bin.tar.gz" -o /tmp/jdk17.tar.gz &&
-        mkdir -p jdk17 &&
-        tar -xzf /tmp/jdk17.tar.gz -C jdk17 --strip-components=1;
-      fi &&
-      jdk17/bin/javac -version
-    startCommand: >-
-      export JAVA_HOME="$(pwd)/jdk17" &&
-      export PATH="$(pwd)/jdk17/bin:$PATH" &&
-      uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: JWT_SECRET_KEY
-        sync: false  # Configure manually in Render dashboard
+        sync: false
       - key: DATABASE_URL
-        sync: false  # Configure manually in Render dashboard
+        sync: false
       - key: OPENAI_API_KEY
-        sync: false  # Configure manually in Render dashboard
+        sync: false
       - key: OPENAI_MODEL
-        value: "gpt-4.1-mini"  # Default model
+        value: "gpt-4.1-mini"
       - key: OPENAI_FALLBACK_MODELS
-        value: "gpt-4.1-mini,gpt-4.1,gpt-4o"  # Fallback chain
+        value: "gpt-4.1-mini,gpt-4.1,gpt-4o"
       - key: GROQ_API_KEY
-        sync: false  # Configure manually in Render dashboard
+        sync: false
       - key: GROQ_MODEL
-        value: "llama-3.3-70b-versatile"  # Groq free: 14400 req/day
+        value: "llama-3.3-70b-versatile"
       - key: AI_CHAT_MAX_TOKENS
-        value: "1200"  # Max tokens for study chat responses
+        value: "1200"
       - key: JAVA_COMPILE_TIMEOUT
-        value: "15"  # seconds — javac wall-clock limit
+        value: "15"
       - key: JAVA_RUN_TIMEOUT
-        value: "10"  # seconds — java process wall-clock limit
-      - key: JAVA_HOME
-        value: "/opt/render/project/src/jdk17"
-        # buildCommand extracts JDK17 to ./jdk17 (relative to rootDir=Garage).
-        # On Render, rootDir is served from /opt/render/project/src/ at runtime.
-        # startCommand overrides with $(pwd)/jdk17 for exact path resolution.
+        value: "10"
+      - key: JAVA_RUNNER_URL
+        # After deploying garage-java-runner, paste its URL here.
+        # Example: https://garage-java-runner.onrender.com
+        # The Python service proxies all /api/run-java calls to this URL.
+        sync: false
+      - key: JAVA_RUNNER_SECRET
+        # Must match RUNNER_SECRET set on the garage-java-runner service.
+        sync: false
       - key: ADMIN_USERNAME
-        sync: false  # Configure manually in Render dashboard
+        sync: false
       - key: ADMIN_EMAIL
-        sync: false  # Configure manually in Render dashboard
+        sync: false
+
+  # ── 2. Java 17 code runner (Spring Boot) ───────────────────────────────
+  - type: web
+    name: garage-java-runner
+    runtime: docker
+    region: oregon
+    plan: free
+    rootDir: Garage/java-runner
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: JAVA_COMPILE_TIMEOUT
+        value: "15"
+      - key: JAVA_RUN_TIMEOUT
+        value: "10"
+      - key: RUNNER_SECRET
+        # Set a strong random value here AND in JAVA_RUNNER_SECRET above.
+        # Shared secret prevents unauthorized direct calls to this service.
+        sync: false
