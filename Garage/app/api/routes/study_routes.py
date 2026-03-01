@@ -558,6 +558,139 @@ async def _stream_groq_sse(system_prompt: str, user_prompt: str):  # pragma: no 
 
 
 # ---------------------------------------------------------------------------
+# OpenRouter — acesso gratuito a dezenas de modelos (Llama, Gemma, Qwen...)
+# Compatível com OpenAI Chat Completions — mesma estrutura do Groq
+# Env vars: OPENROUTER_API_KEY, OPENROUTER_MODEL, OPENROUTER_FALLBACK_MODELS
+# ---------------------------------------------------------------------------
+_OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
+_OPENROUTER_REFERER  = "https://garage-0lw9.onrender.com"
+_OPENROUTER_TITLE    = "404 Garage"
+
+
+def _candidate_openrouter_models() -> list[str]:  # pragma: no cover
+    primary = (
+        os.environ.get("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free").strip()
+        or "meta-llama/llama-3.3-70b-instruct:free"
+    )
+    fallback_raw = os.environ.get(
+        "OPENROUTER_FALLBACK_MODELS",
+        "nousresearch/hermes-3-llama-3.1-405b:free,mistralai/mistral-small-3.1-24b-instruct:free,google/gemma-3-27b-it:free",
+    )
+    models: list[str] = [primary]
+    for item in fallback_raw.split(","):
+        m = item.strip()
+        if m and m not in models:
+            models.append(m)
+    return models
+
+
+def _call_openrouter(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:  # pragma: no cover
+    """Non-streaming call to OpenRouter. Returns (text, request_id, model)."""
+    api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    if not api_key:
+        raise HTTPException(status_code=503, detail="OPENROUTER_API_KEY nao configurada.")
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "1000") or "1000")
+    for model in _candidate_openrouter_models():
+        payload = json.dumps({
+            "model": model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user",   "content": user_prompt},
+            ],
+            "max_tokens": max_tokens,
+        }).encode()
+        req = urllib.request.Request(
+            _OPENROUTER_ENDPOINT,
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": _OPENROUTER_REFERER,
+                "X-Title": _OPENROUTER_TITLE,
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+            text = data["choices"][0]["message"]["content"].strip()
+            return text, data.get("id", "or"), data.get("model", model)
+        except urllib.error.HTTPError as exc:
+            try:
+                detail = json.loads(exc.read().decode()).get("error", {}).get("message", f"HTTP {exc.code}")
+            except Exception:
+                detail = f"HTTP {exc.code}"
+            if exc.code in (429, 502, 503):
+                continue  # tenta proximo modelo
+            raise HTTPException(status_code=502, detail=f"OpenRouter error: {detail}")
+        except (urllib.error.URLError, TimeoutError, socket.timeout):
+            continue
+    raise HTTPException(status_code=502, detail="OpenRouter: todos os modelos indisponíveis.")
+
+
+async def _stream_openrouter_sse(system_prompt: str, user_prompt: str):  # pragma: no cover
+    """Async streaming SSE generator para OpenRouter (Chat Completions format)."""
+    api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    if not api_key:
+        yield 'data: {"err": "Study chat unavailable: missing OPENROUTER_API_KEY."}\n\n'
+        return
+    max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "1000") or "1000")
+    hdrs = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": _OPENROUTER_REFERER,
+        "X-Title": _OPENROUTER_TITLE,
+    }
+    for model in _candidate_openrouter_models():
+        body = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user",   "content": user_prompt},
+            ],
+            "max_tokens": max_tokens,
+            "stream": True,
+        }
+        got_delta = False
+        try:
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                async with client.stream("POST", _OPENROUTER_ENDPOINT, json=body, headers=hdrs) as resp:
+                    if resp.status_code in (429, 502, 503):
+                        await resp.aread()
+                        continue  # tenta proximo modelo
+                    if resp.status_code >= 400:
+                        err_bytes = await resp.aread()
+                        try:
+                            msg = json.loads(err_bytes).get("error", {}).get("message", f"HTTP {resp.status_code}")
+                        except Exception:
+                            msg = f"HTTP {resp.status_code}"
+                        yield f'data: {{"err": {json.dumps(msg)}}}\n\n'
+                        return
+                    async for line in resp.aiter_lines():
+                        line = line.strip()
+                        if not line.startswith("data:"):
+                            continue
+                        payload_str = line[5:].strip()
+                        if payload_str == "[DONE]":
+                            if got_delta:
+                                yield f'data: {{"done": true, "model": {json.dumps(model)}}}\n\n'
+                            return
+                        try:
+                            chunk = json.loads(payload_str)
+                            token = chunk["choices"][0].get("delta", {}).get("content", "")
+                            if token:
+                                got_delta = True
+                                yield f'data: {json.dumps({"d": token})}\n\n'
+                        except (KeyError, json.JSONDecodeError):
+                            continue
+        except (httpx.TimeoutException, httpx.RequestError):
+            continue
+        if got_delta:
+            return
+    yield 'data: {"err": "OpenRouter: todos os modelos indisponíveis. Tente novamente."}\n\n'
+
+
+# ---------------------------------------------------------------------------
 # Anthropic Claude — _call_anthropic (sync) e _stream_anthropic_sse (async)
 # ---------------------------------------------------------------------------
 def _candidate_anthropic_models() -> list[str]:  # pragma: no cover
@@ -702,25 +835,24 @@ async def _stream_with_fallback(system_prompt: str, user_prompt: str):  # pragma
     abandona e tenta o proximo provedor.
     """
     providers: list[tuple[str, object]] = []
+
+    # 1) OpenRouter — primário: gratuito, 29+ modelos (Llama 405B, Qwen, Gemma, Mistral...)
+    if os.environ.get("OPENROUTER_API_KEY", "").strip():
+        providers.append(("OpenRouter", lambda: _stream_openrouter_sse(system_prompt, user_prompt)))
+
+    # 2) Anthropic Claude — ativa apenas se tiver créditos
     if os.environ.get("ANTHROPIC_API_KEY", "").strip():
         providers.append(("Anthropic", lambda: _stream_anthropic_sse(system_prompt, user_prompt)))
 
-    # AI_GROQ_PRIORITY=true coloca Groq antes do OpenAI para respostas mais rápidas (~300-800ms)
-    groq_priority = os.environ.get("AI_GROQ_PRIORITY", "false").strip().lower() in ("1", "true", "yes")
-    openai_entry = ("OpenAI", lambda: _stream_openai_sse(system_prompt, user_prompt))
-    groq_entry = ("Groq", lambda: _stream_groq_sse(system_prompt, user_prompt))
+    # 3) Groq — gratuito mas chave pode expirar
+    if os.environ.get("GROQ_API_KEY", "").strip():
+        providers.append(("Groq", lambda: _stream_groq_sse(system_prompt, user_prompt)))
 
-    if groq_priority:
-        if os.environ.get("GROQ_API_KEY", "").strip():
-            providers.append(groq_entry)
-        if os.environ.get("OPENAI_API_KEY", "").strip():
-            providers.append(openai_entry)
-    else:
-        if os.environ.get("OPENAI_API_KEY", "").strip():
-            providers.append(openai_entry)
-        if os.environ.get("GROQ_API_KEY", "").strip():
-            providers.append(groq_entry)
+    # 4) OpenAI — pago, último recurso
+    if os.environ.get("OPENAI_API_KEY", "").strip():
+        providers.append(("OpenAI", lambda: _stream_openai_sse(system_prompt, user_prompt)))
 
+    # 5) Gemini — fallback opcional
     if os.environ.get("GEMINI_API_KEY", "").strip():
         providers.append(("Gemini", lambda: _stream_gemini_sse(system_prompt, user_prompt)))
 
@@ -970,14 +1102,36 @@ def _build_prompts(
 
 
 # ---------------------------------------------------------------------------
-# Fallback em runtime: Groq → OpenAI (tenta o proximo se 4xx/5xx)
+# Fallback em runtime: OpenRouter → Anthropic → Groq → Gemini → OpenAI
 # ---------------------------------------------------------------------------
 def _call_with_fallback(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:  # pragma: no cover
-    """Tenta provedores em ordem: Groq (rapido ~300ms) → Gemini → OpenAI → Anthropic."""
+    """Tenta provedores em ordem: OpenRouter (gratis) → Anthropic → Groq → Gemini → OpenAI."""
     errors: list[str] = []
 
     # 401/403 = key invalida/revogada; 429 = quota esgotada; 5xx = erro do servidor
     _RETRIABLE = (401, 403, 429, 500, 502, 503, 504)
+
+    if os.environ.get("OPENROUTER_API_KEY", "").strip():
+        try:
+            return _call_openrouter(system_prompt, user_prompt)
+        except HTTPException as exc:
+            if exc.status_code in _RETRIABLE:
+                errors.append(f"OpenRouter HTTP {exc.status_code}")
+            else:
+                raise
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"OpenRouter erro: {exc}")
+
+    if os.environ.get("ANTHROPIC_API_KEY", "").strip():
+        try:
+            return _call_anthropic(system_prompt, user_prompt)
+        except HTTPException as exc:
+            if exc.status_code in _RETRIABLE:
+                errors.append(f"Anthropic HTTP {exc.status_code}")
+            else:
+                raise
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"Anthropic erro: {exc}")
 
     if os.environ.get("GROQ_API_KEY", "").strip():
         try:
@@ -1011,17 +1165,6 @@ def _call_with_fallback(system_prompt: str, user_prompt: str) -> tuple[str, str,
                 raise
         except Exception as exc:  # noqa: BLE001
             errors.append(f"OpenAI erro: {exc}")
-
-    if os.environ.get("ANTHROPIC_API_KEY", "").strip():
-        try:
-            return _call_anthropic(system_prompt, user_prompt)
-        except HTTPException as exc:
-            if exc.status_code in _RETRIABLE:
-                errors.append(f"Anthropic HTTP {exc.status_code}")
-            else:
-                raise
-        except Exception as exc:  # noqa: BLE001
-            errors.append(f"Anthropic erro: {exc}")
 
     raise HTTPException(
         status_code=503,

@@ -24,8 +24,17 @@ services:
         sync: false
       - key: GROQ_MODEL
         value: "llama-3.3-70b-versatile"
+      - key: AI_GROQ_PRIORITY
+        value: "true"
       - key: AI_CHAT_MAX_TOKENS
-        value: "1200"
+        value: "1000"
+      - key: OPENROUTER_API_KEY
+        # Provedor primario de IA — gratuito, 29+ modelos
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: "meta-llama/llama-3.3-70b-instruct:free"
+      - key: OPENROUTER_FALLBACK_MODELS
+        value: "nousresearch/hermes-3-llama-3.1-405b:free,mistralai/mistral-small-3.1-24b-instruct:free,google/gemma-3-27b-it:free"
       - key: JAVA_COMPILE_TIMEOUT
         value: "15"
       - key: JAVA_RUN_TIMEOUT
