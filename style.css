@@ -1182,16 +1182,22 @@ body {
 /* --- DIALOG BOX --- */
 .dialog-box {
     position: fixed;
-    bottom: -200px;
+    bottom: 100px;
+    /* desktop: resting position when open */
     left: 50%;
-    transform: translateX(-50%);
+    /* HIDDEN STATE: slide entire box below viewport (own height + 200px margin) */
+    transform: translateX(-50%) translateY(calc(100% + 200px));
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
     width: min(92vw, 700px);
     background: var(--panel);
     border: 2px solid #374151;
     border-radius: 12px;
     padding: 20px;
     z-index: 30;
-    transition: bottom 0.4s ease;
+    /* animate transform & opacity; visibility delay matches slide-out duration */
+    transition: transform 0.4s ease, opacity 0.4s ease, visibility 0s linear 0.4s;
     /* flex column keeps CONTINUAR button always visible at bottom */
     display: flex;
     flex-direction: column;
@@ -1199,11 +1205,16 @@ body {
 }
 
 .dialog-box.open {
-    bottom: 100px;
+    transform: translateX(-50%) translateY(0);
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    /* slide-IN: visibility becomes visible instantly */
+    transition: transform 0.4s ease, opacity 0.4s ease, visibility 0s linear 0s;
 }
 
 @media (max-width: 768px) {
-    .dialog-box.open {
+    .dialog-box {
         bottom: 160px;
         max-height: calc(100vh - 200px);
     }
@@ -3237,9 +3248,6 @@ body {
     .dialog-box {
         width: 96vw;
         padding: 14px;
-    }
-
-    .dialog-box.open {
         bottom: 150px;
         max-height: calc(100vh - 190px);
     }
@@ -3697,7 +3705,7 @@ body {
         font-size: 0.55rem;
     }
 
-    .dialog-box.open {
+    .dialog-box {
         bottom: 120px;
     }
 
