@@ -47,7 +47,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1024)
 # Saves bandwidth: browser caches assets instead of re-downloading every visit.
 # ---------------------------------------------------------------------------
 _LONG_CACHE   = "public, max-age=2592000, immutable"   # 30 days  — MP3, PNG, images
-_REVALIDATE   = "no-cache, must-revalidate"            # always revalidate — JS, CSS
+_REVALIDATE   = "no-store, no-cache, must-revalidate"  # never cache — JS, CSS (version-busted via ?v=)
 _NO_CACHE     = "no-store, no-cache, must-revalidate"  # HTML, API responses
 
 _CACHE_BY_EXT = {
