@@ -28,3 +28,6 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# JDK downloaded by buildCommand (Render runtime -- do NOT commit)
+jdk17/

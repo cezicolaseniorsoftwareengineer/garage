@@ -83,7 +83,8 @@ def _find_java_binary(name: str) -> str:
 
     # 4. Conventional system locations — Java 17 first (standardized)
     system_dirs = [
-        "/opt/render/project/jdk17/bin",             # Render buildCommand download path
+        "/opt/render/project/src/jdk17/bin",         # Render: rootDir=Garage extracted here
+        "/opt/render/project/jdk17/bin",             # Render: legacy path attempt
         "/usr/lib/jvm/java-17-openjdk-amd64/bin",   # Debian/Ubuntu apt path
         "/usr/lib/jvm/java-17-openjdk-arm64/bin",   # ARM nodes
         "/usr/lib/jvm/java-17/bin",
@@ -346,11 +347,7 @@ def run_java(req: RunJavaRequest) -> RunJavaResponse:
 
 @router.get("/java-status")
 def java_status() -> dict:
-    """Return Java installation diagnostics for the Render.com environment.
-
-    Useful for verifying that nixpacks correctly installed the JDK.
-    Access at: https://<your-app>.onrender.com/api/java-status
-    """
+    """Return Java installation diagnostics for the Render.com environment."""
     import platform
 
     def _run_version(binary: str) -> str:
@@ -365,17 +362,37 @@ def java_status() -> dict:
         except Exception as exc:
             return f"ERROR: {exc}"
 
-    # Check nix store for any JDK
+    cwd = os.getcwd()
+
+    # Probe all candidate jdk17 locations
+    candidate_paths = [
+        os.path.join(cwd, "jdk17", "bin", "javac"),
+        "/opt/render/project/src/jdk17/bin/javac",
+        "/opt/render/project/jdk17/bin/javac",
+        "/home/render/jdk17/bin/javac",
+    ]
+    candidates_found = {p: os.path.isfile(p) for p in candidate_paths}
+
+    # Lazy-resolved at request time
+    lazy_javac = _get_javac()
+    lazy_java  = _get_java()
+
     nix_jdks = sorted(glob.glob("/nix/store/*jdk*/bin/javac"), reverse=True)[:5]
 
     return {
-        "javac_path": _JAVAC,
-        "java_path": _JAVA,
-        "javac_version": _run_version(_JAVAC),
-        "java_version": _run_version(_JAVA),
+        "cwd": cwd,
+        "lazy_javac_path": lazy_javac,
+        "lazy_javac_version": _run_version(lazy_javac),
+        "lazy_java_path": lazy_java,
         "JAVA_HOME": os.environ.get("JAVA_HOME", "(not set)"),
         "PATH": os.environ.get("PATH", "(not set)"),
         "platform": platform.platform(),
+        "candidate_paths_exist": candidates_found,
         "nix_store_jdks_found": nix_jdks,
+        # Legacy fields kept for backward compat
+        "javac_path": _JAVAC,
+        "java_path":  _JAVA,
+        "javac_version": _run_version(_JAVAC),
+        "java_version":  _run_version(_JAVA),
     }
 
