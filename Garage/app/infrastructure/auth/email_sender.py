@@ -12,6 +12,7 @@ If SMTP_USER is not set, emails are printed to stdout (dev mode).
 import os
 import smtplib
 import logging
+import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -69,12 +70,22 @@ def _html_template(full_name: str, code: str) -> str:
 </html>"""
 
 
+def _try_send(cfg: dict, to_email: str, msg) -> None:
+    """Single SMTP send attempt (raises on any failure)."""
+    with smtplib.SMTP(cfg["host"], cfg["port"], timeout=20) as server:
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
+        server.login(cfg["user"], cfg["password"])
+        server.sendmail(cfg["user"], to_email, msg.as_string())
+
+
 def send_verification_email(to_email: str, code: str, full_name: str) -> bool:
     """Send a 6-digit OTP verification code to the given address.
 
+    Retries up to 3 times with exponential backoff to handle Gmail rate limits.
     Returns True if the email was sent successfully, False otherwise.
-    Falls back to console print (dev mode) when SMTP is not configured
-    or when the SMTP connection fails — the OTP is always preserved in DB.
+    Falls back to console print when SMTP is not configured or all retries fail.
     """
     cfg = _smtp_config()
 
@@ -98,17 +109,28 @@ def send_verification_email(to_email: str, code: str, full_name: str) -> bool:
     msg.attach(MIMEText(plain, "plain"))
     msg.attach(MIMEText(_html_template(full_name, code), "html"))
 
-    try:
-        with smtplib.SMTP(cfg["host"], cfg["port"], timeout=15) as server:
-            server.ehlo()
-            server.starttls()
-            server.login(cfg["user"], cfg["password"])
-            server.sendmail(cfg["user"], to_email, msg.as_string())
-        log.info("Verification email sent to %s", to_email)
-        return True
-    except Exception as exc:
-        log.error("Failed to send verification email to %s: %s", to_email, exc)
-        # Fallback to console so the code is never lost during development
-        print(f"[GARAGE][EMAIL FALLBACK] SMTP failed. Code for {to_email}: {code}")
-        print(f"[GARAGE][EMAIL FALLBACK] Error: {exc}")
-        return False  # Caller can surface a warning to the user
+    last_exc = None
+    for attempt in range(3):
+        if attempt > 0:
+            wait = 2 ** (attempt - 1)   # 1s, then 2s
+            log.warning("SMTP retry %d/3 for %s (wait %ds)...", attempt + 1, to_email, wait)
+            time.sleep(wait)
+        try:
+            _try_send(cfg, to_email, msg)
+            log.info("Verification email sent to %s (attempt %d)", to_email, attempt + 1)
+            print(f"[GARAGE][EMAIL OK] Code sent to {to_email} (attempt {attempt + 1})")
+            return True
+        except smtplib.SMTPAuthenticationError as exc:
+            log.error("[SMTP AUTH] Bad credentials for %s: %s", cfg["user"], exc)
+            print(f"[GARAGE][EMAIL ERR] AUTH FAILED user={cfg['user']} — check App Password")
+            print(f"[GARAGE][EMAIL FALLBACK] Code for {to_email}: {code}")
+            return False   # Auth errors won't fix themselves — no point retrying
+        except Exception as exc:
+            last_exc = exc
+            log.warning("SMTP attempt %d failed for %s: %s", attempt + 1, to_email, exc)
+
+    import traceback
+    log.error("All SMTP retries exhausted for %s. Last error: %s", to_email, last_exc)
+    print(f"[GARAGE][EMAIL FALLBACK] All retries failed. Code for {to_email}: {code}")
+    print(f"[GARAGE][EMAIL FALLBACK] Last error: {last_exc}")
+    return False
