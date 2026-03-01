@@ -11,6 +11,9 @@ const API = {
     },
     async _handle401(p) {
         if (p.includes('/auth/')) return false;
+        // Background state-sync calls must NEVER redirect to login mid-flow
+        // (user may be on register/verify screen; the save will just fail silently)
+        if (p.includes('/save-world-state') || p.includes('/heartbeat') || p.includes('/beacon')) return false;
         const refreshed = await Auth.tryRefresh();
         if (refreshed) return true;
         Auth.handleExpired();
@@ -8759,6 +8762,25 @@ const Auth = {
                 sucEl.hidden = false;
                 setTimeout(() => UI.showScreen('screen-title'), 1200);
             } catch (err) {
+                // 409 "aguardando verificacao": pending record already exists → go to OTP screen
+                // User already received the verification code, just redirect them to enter it
+                if (err.status === 409 && err.message && err.message.toLowerCase().includes('aguardando')) {
+                    const emailFromInput = document.getElementById('regEmail').value.trim();
+                    this._pendingEmail = emailFromInput;
+                    const hintEl = document.getElementById('verifyEmailHint');
+                    if (hintEl) {
+                        hintEl.textContent = `Já enviamos um código para ${emailFromInput}. Insira abaixo para concluir o cadastro:`;
+                    }
+                    document.querySelectorAll('.otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+                    document.getElementById('verifyError').hidden = true;
+                    document.getElementById('verifySuccess').hidden = true;
+                    UI.showScreen('screen-verify-email');
+                    setTimeout(() => {
+                        const first = document.querySelector('.otp-box[data-idx="0"]');
+                        if (first) first.focus();
+                    }, 120);
+                    return;
+                }
                 errEl.textContent = err.message || 'Erro ao cadastrar.';
                 errEl.hidden = false;
             } finally {
