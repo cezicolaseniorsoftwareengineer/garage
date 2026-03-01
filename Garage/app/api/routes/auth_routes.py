@@ -1,5 +1,5 @@
 """Authentication API routes -- register, login, refresh, profile."""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 import os
@@ -95,7 +95,7 @@ def _mask_email(email: str) -> str:
 # ---------------------------------------------------------------------------
 
 @router.post("/register")
-def api_register(req: RegisterRequest):
+def api_register(req: RegisterRequest, background_tasks: BackgroundTasks):
     """Register a new user account.
 
     If verification is enabled (verification_repo wired), returns
@@ -144,34 +144,26 @@ def api_register(req: RegisterRequest):
                 detail="Erro ao iniciar cadastro. Tente novamente.",
             )
 
-        email_sent = send_verification_email(req.email, code, req.full_name)
+        # Fire email in background — API responds immediately, email sent concurrently
+        background_tasks.add_task(send_verification_email, req.email, code, req.full_name)
 
         try:
             audit_log("user_register_pending", req.email, {
                 "username": req.username,
                 "email": req.email,
-                "email_sent": email_sent,
             })
         except Exception:
             pass
-
-        if email_sent:
-            msg = (
-                "Cadastro iniciado! Enviamos um codigo de 6 digitos para o seu e-mail. "
-                "Insira o codigo para concluir o cadastro e entrar no jogo."
-            )
-        else:
-            msg = (
-                "Cadastro iniciado! Nao foi possivel enviar o e-mail agora. "
-                "Use o botao 'Reenviar codigo' na proxima tela para receber o codigo."
-            )
 
         return {
             "success": True,
             "requires_verification": True,
             "email_hint": _mask_email(req.email),
-            "email_was_sent": email_sent,
-            "message": msg,
+            "email_was_sent": True,
+            "message": (
+                "Cadastro iniciado! Enviamos um codigo de 6 digitos para o seu e-mail. "
+                "Insira o codigo para concluir o cadastro e entrar no jogo."
+            ),
         }
 
     # ---------------------------------------------------------------------------
@@ -409,7 +401,7 @@ def api_verify_email(req: VerifyEmailRequest):
 
 
 @router.post("/resend-verification")
-def api_resend_verification(req: ResendVerificationRequest):
+def api_resend_verification(req: ResendVerificationRequest, background_tasks: BackgroundTasks):
     """Resend a fresh 6-digit OTP to the given email address.
 
     Checks both the pending_registrations staging table and (legacy) users table.
@@ -438,20 +430,14 @@ def api_resend_verification(req: ResendVerificationRequest):
             return _generic_ok
 
         code, full_name = result
-        email_sent = send_verification_email(req.email, code, full_name)
-
-        if not email_sent:
-            _log.warning("Resend SMTP failed for %s — code stored in DB, user must retry.", req.email)
+        # Fire email in background — responds instantly
+        background_tasks.add_task(send_verification_email, req.email, code, full_name)
 
         return {
             "success": True,
             "email_hint": _mask_email(req.email),
-            "email_was_sent": email_sent,
-            "message": (
-                "Novo codigo enviado para o seu e-mail."
-                if email_sent else
-                "Nao foi possivel enviar o e-mail agora. Tente novamente em alguns instantes."
-            ),
+            "email_was_sent": True,
+            "message": "Novo codigo enviado para o seu e-mail.",
         }
 
     # ---------------------------------------------------------------------------

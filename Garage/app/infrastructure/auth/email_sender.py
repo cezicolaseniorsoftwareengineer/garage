@@ -112,9 +112,7 @@ def send_verification_email(to_email: str, code: str, full_name: str) -> bool:
     last_exc = None
     for attempt in range(3):
         if attempt > 0:
-            wait = 2 ** (attempt - 1)   # 1s, then 2s
-            log.warning("SMTP retry %d/3 for %s (wait %ds)...", attempt + 1, to_email, wait)
-            time.sleep(wait)
+            log.warning("SMTP retry %d/3 for %s...", attempt + 1, to_email)
         try:
             _try_send(cfg, to_email, msg)
             log.info("Verification email sent to %s (attempt %d)", to_email, attempt + 1)
