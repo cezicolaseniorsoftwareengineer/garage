@@ -7683,8 +7683,8 @@ const IDE = {
 
         // Show "compiling..." feedback immediately
         term.innerHTML += '\n<span class="ide-prompt">&gt;</span> javac ' + ch.fileName + '\n';
-        term.innerHTML += '<span class="ide-term-info">⚡ Validando com IA Java 17...</span>';
-        termStatus.textContent = 'Compilando...';
+        term.innerHTML += '<span class="ide-term-info">Building...</span>';
+        termStatus.textContent = 'Building...';
         termStatus.className = 'ide-terminal-status';
         term.scrollTop = term.scrollHeight;
 
@@ -7801,7 +7801,7 @@ const IDE = {
             }
 
             // Compilação OK pela IA
-            term.innerHTML += `<span class="ide-term-success">Compilation successful ✓ (${elapsedMs}ms · IA Java 17)</span>\n`;
+            term.innerHTML += `<span class="ide-term-success">BUILD SUCCESSFUL in ${elapsedMs}ms</span>\n`;
             term.innerHTML += '<span class="ide-prompt">&gt;</span> java ' + ch.fileName.replace('.java', '') + '\n';
             if (realStdout) term.innerHTML += realStdout.split('\n').map(l => `<span class="ide-term-output">${this._escapeHtml(l)}</span>`).join('\n') + '\n';
             if (realStderr) term.innerHTML += realStderr.split('\n').map(l => `<span class="ide-term-error">${this._escapeHtml(l)}</span>`).join('\n') + '\n';
@@ -7866,7 +7866,7 @@ const IDE = {
                             if (runBtn) { runBtn.disabled = false; runBtn.style.opacity = ''; }
                             return;
                         }
-                        term.innerHTML += `<span class="ide-term-success">Compilation successful ✓ (${elapsedMs}ms · javac17)</span>\n`;
+                        term.innerHTML += `<span class="ide-term-success">BUILD SUCCESSFUL in ${elapsedMs}ms</span>\n`;
                         term.innerHTML += '<span class="ide-prompt">&gt;</span> java ' + ch.fileName.replace('.java', '') + '\n';
                         if (realStdout) term.innerHTML += realStdout.split('\n').map(l => `<span class="ide-term-output">${this._escapeHtml(l)}</span>`).join('\n') + '\n';
                     }
@@ -7885,8 +7885,7 @@ const IDE = {
             if (dockerFailed) {
                 const lastInfo = term.querySelector('span.ide-term-info:last-child');
                 if (lastInfo) lastInfo.remove();
-                term.innerHTML += '<span class="ide-term-success">Compilation successful ✓ (Turbo Engine)</span>\n';
-                term.innerHTML += '<span class="ide-term-warn">⚡ Offline: Validação estrutural avançada ativa.</span>\n';
+                term.innerHTML += '<span class="ide-term-success">BUILD SUCCESSFUL</span>\n';
                 engineUsed = 'turbo';
                 javaOk = true;
                 compileOk = true;
