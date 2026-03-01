@@ -7194,7 +7194,7 @@ const SCALE_MISSIONS = {
                     if (!/mergeSort\s*\([^)]*\)\s*;[^}]*mergeSort\s*\(/.test(code)) return { ok: false, msg: 'Nvidia 3/3: faca duas chamadas recursivas para as metades.' };
                     return { ok: true };
                 },
-                helpText: 'COMO EXPANDIR (NVIDIA 3/3):\n1. mergeSort divide o array recursivamente ao meio.\n2. Caso base: quando l >= r (array de 1 elemento, ja ordenado).\n3. Calcule mid = (l + r) / 2.\n4. Chame mergeSort para [l..mid] e depois para [mid+1..r].\n5. Por fim, chame merge para juntar as duas metades ordenadas.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class MergeSort {\n    static void merge(int[] arr, int l, int m, int r) {\n        int n1 = m - l + 1;\n        int n2 = r - m;\n        int[] L = new int[n1];\n        int[] R = new int[n2];\n\n        for (int i = 0; i < n1; i++) L[i] = arr[l + i];\n        for (int j = 0; j < n2; j++) R[j] = arr[m + 1 + j];\n\n        int i = 0, j = 0, k = l;\n        while (i < n1 && j < n2) {\n            if (L[i] <= R[j]) arr[k++] = L[i++];\n            else arr[k++] = R[j++];\n        }\n        while (i < n1) arr[k++] = L[i++];\n        while (j < n2) arr[k++] = R[j++];\n    }\n\n    static void mergeSort(int[] arr, int l, int r) {\n        if (l < r) {\n            int mid = (l + r) / 2;\n            mergeSort(arr, l, mid);\n            mergeSort(arr, mid + 1, r);\n            merge(arr, l, mid, r);\n        }\n    }\n\n    public static void main(String[] args) {\n        int[] arr = {38, 27, 43, 3, 9, 82, 10};\n        mergeSort(arr, 0, arr.length - 1);\n        System.out.println(Arrays.toString(arr));\n    }\n}'
+                helpText: 'COMO EXPANDIR (NVIDIA 3/3):\n1. mergeSort divide o array recursivamente ao meio.\n2. Caso base: quando l >= r (array de 1 elemento, ja ordenado).\n3. Calcule mid = (l + r) / 2.\n4. Chame mergeSort para [l..mid] e depois para [mid+1..r].\n5. Por fim, chame merge para juntar as duas metades ordenadas.\n\nCOLA -- Copie este codigo COMPLETO na IDE:\n\nimport java.util.Arrays;\n\npublic class MergeSort {\n    static void merge(int[] arr, int l, int m, int r) {\n        int n1 = m - l + 1;\n        int n2 = r - m;\n        int[] L = new int[n1];\n        int[] R = new int[n2];\n\n        for (int i = 0; i < n1; i++) L[i] = arr[l + i];\n        for (int j = 0; j < n2; j++) R[j] = arr[m + 1 + j];\n\n        int i = 0, j = 0, k = l;\n        while (i < n1 && j < n2) {\n            if (L[i] <= R[j]) arr[k++] = L[i++];\n            else arr[k++] = R[j++];\n        }\n        while (i < n1) arr[k++] = L[i++];\n        while (j < n2) arr[k++] = R[j++];\n    }\n\n    // Recursivo: divide ao meio, ordena cada metade, mescla\n    static void mergeSort(int[] arr, int l, int r) {\n        if (l < r) {\n            int mid = (l + r) / 2;\n            mergeSort(arr, l, mid);\n            mergeSort(arr, mid + 1, r);\n            merge(arr, l, mid, r);\n        }\n    }\n\n    public static void main(String[] args) {\n        int[] arr = {38, 27, 43, 3, 9, 82, 10};\n        mergeSort(arr, 0, arr.length - 1);\n        System.out.println(Arrays.toString(arr));\n\n        int[] arr2 = {5, 3, 1};\n        mergeSort(arr2, 0, arr2.length - 1);\n        System.out.println(Arrays.toString(arr2));\n    }\n}'
             },
         ],
     },
@@ -7899,17 +7899,21 @@ const IDE = {
         let result = ch.validator(code);
         if (result.ok && this._isScalingActive()) {
             const progress = this._getScaleProgressLabel();
-            if (this._scalePasses > 0 && code === this._scaleLastCode) {
+            const step = this._getScaleStep();
+            if (step && typeof step.validator === 'function') {
+                // Step validator runs FIRST — if code satisfies the step requirements, allow it
+                const stepResult = step.validator(code);
+                if (!stepResult.ok) {
+                    result = stepResult;
+                }
+                // If step validator passed: allow even if code is identical to last step
+                // (step requirements already enforce structural evolution)
+            } else if (this._scalePasses > 0 && code === this._scaleLastCode) {
+                // No specific step validator: guard against copy-paste without any change
                 result = {
                     ok: false,
                     msg: 'Escala ' + progress + ': expanda o código antes de validar novamente. Não repita exatamente a mesma versão.',
                 };
-            } else {
-                const step = this._getScaleStep();
-                if (step && typeof step.validator === 'function') {
-                    const stepResult = step.validator(code);
-                    if (!stepResult.ok) result = stepResult;
-                }
             }
         }
 
