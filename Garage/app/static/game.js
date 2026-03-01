@@ -7835,26 +7835,41 @@ const IDE = {
                     elapsedMs = d.elapsed_ms || 0;
                     engineUsed = 'docker';
 
-                    const lastInfo = term.querySelector('span.ide-term-info:last-child');
-                    if (lastInfo) lastInfo.remove();
+                    // Infra-level errors (java-runner down, 502, cold-start) must NOT
+                    // be shown to the student — fall through to Turbo Engine instead.
+                    const isInfraErr = !compileOk && (
+                        compileErr.startsWith('Erro HTTP') ||
+                        compileErr.startsWith('Erro ao contactar') ||
+                        compileErr.startsWith('java-runner') ||
+                        compileErr.includes('<!DOCTYPE') ||
+                        compileErr.includes('502') ||
+                        compileErr.includes('503') ||
+                        compileErr.includes('504')
+                    );
+                    if (isInfraErr) {
+                        dockerFailed = true;
+                    } else {
+                        const lastInfo = term.querySelector('span.ide-term-info:last-child');
+                        if (lastInfo) lastInfo.remove();
 
-                    if (!compileOk) {
-                        const errLines = compileErr.split('\n').map(l =>
-                            `<span class="ide-term-error">${this._escapeHtml(l)}</span>`
-                        ).join('\n');
-                        term.innerHTML += errLines;
-                        termStatus.textContent = 'Erro na Compilacao';
-                        termStatus.className = 'ide-terminal-status error';
-                        SFX.wrong();
-                        term.innerHTML += '\n<span class="ide-term-info">' + this._attemptCoachMessage(ch, this._attempts) + '</span>';
-                        if (this._attempts >= 3) document.getElementById('ideSkipBtn').style.display = 'flex';
-                        term.scrollTop = term.scrollHeight;
-                        if (runBtn) { runBtn.disabled = false; runBtn.style.opacity = ''; }
-                        return;
+                        if (!compileOk) {
+                            const errLines = compileErr.split('\n').map(l =>
+                                `<span class="ide-term-error">${this._escapeHtml(l)}</span>`
+                            ).join('\n');
+                            term.innerHTML += errLines;
+                            termStatus.textContent = 'Erro na Compilacao';
+                            termStatus.className = 'ide-terminal-status error';
+                            SFX.wrong();
+                            term.innerHTML += '\n<span class="ide-term-info">' + this._attemptCoachMessage(ch, this._attempts) + '</span>';
+                            if (this._attempts >= 3) document.getElementById('ideSkipBtn').style.display = 'flex';
+                            term.scrollTop = term.scrollHeight;
+                            if (runBtn) { runBtn.disabled = false; runBtn.style.opacity = ''; }
+                            return;
+                        }
+                        term.innerHTML += `<span class="ide-term-success">Compilation successful ✓ (${elapsedMs}ms · javac17)</span>\n`;
+                        term.innerHTML += '<span class="ide-prompt">&gt;</span> java ' + ch.fileName.replace('.java', '') + '\n';
+                        if (realStdout) term.innerHTML += realStdout.split('\n').map(l => `<span class="ide-term-output">${this._escapeHtml(l)}</span>`).join('\n') + '\n';
                     }
-                    term.innerHTML += `<span class="ide-term-success">Compilation successful ✓ (${elapsedMs}ms · javac17)</span>\n`;
-                    term.innerHTML += '<span class="ide-prompt">&gt;</span> java ' + ch.fileName.replace('.java', '') + '\n';
-                    if (realStdout) term.innerHTML += realStdout.split('\n').map(l => `<span class="ide-term-output">${this._escapeHtml(l)}</span>`).join('\n') + '\n';
                 } else {
                     dockerFailed = true;
                 }

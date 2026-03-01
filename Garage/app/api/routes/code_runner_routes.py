@@ -125,21 +125,22 @@ def run_java(req: RunJavaRequest) -> RunJavaResponse:
             javac_version=data.get("javacVersion", ""),
         )
     except urllib.error.HTTPError as exc:
+        # Java-runner returned 5xx (cold-start, crash, overload).
+        # Propagate as 503 so the frontend jResp.ok=false → Turbo Engine fires.
         body = ""
         try:
-            body = exc.read().decode("utf-8", errors="replace")
+            body = exc.read().decode("utf-8", errors="replace")[:200]
         except Exception:
             pass
-        return RunJavaResponse(
-            ok=False, compile_ok=False, stdout="", stderr="",
-            compile_error=f"Erro HTTP {exc.code} ao contactar o compilador Java: {body}",
-            exit_code=1, elapsed_ms=0, javac_version="",
+        raise HTTPException(
+            status_code=503,
+            detail=f"java-runner unavailable (HTTP {exc.code}): {body}",
         )
     except Exception as exc:
-        return RunJavaResponse(
-            ok=False, compile_ok=False, stdout="", stderr="",
-            compile_error=f"Erro ao contactar o serviço de compilação Java: {exc}",
-            exit_code=1, elapsed_ms=0, javac_version="",
+        # Network error / timeout reaching java-runner → 503 so Turbo Engine fires.
+        raise HTTPException(
+            status_code=503,
+            detail=f"java-runner unreachable: {exc}",
         )
 
 
