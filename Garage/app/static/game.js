@@ -8644,10 +8644,19 @@ const Auth = {
                 btnResend.textContent = 'Enviando...';
                 try {
                     const res = await API.post('/api/auth/resend-verification', { email });
-                    sucEl.textContent = res.message || 'Novo código enviado!';
-                    sucEl.hidden = false;
-                    // Brief cooldown
-                    setTimeout(() => { btnResend.style.pointerEvents = ''; btnResend.textContent = 'Reenviar código'; }, 30000);
+                    if (res.email_was_sent === false) {
+                        errEl.innerHTML =
+                            '<span style="color:#fbbf24;">⚠ Falha ao enviar e-mail.</span> ' +
+                            'Tente novamente em alguns instantes.';
+                        errEl.hidden = false;
+                        btnResend.style.pointerEvents = '';
+                        btnResend.textContent = 'Reenviar código';
+                    } else {
+                        sucEl.textContent = res.message || 'Novo código enviado!';
+                        sucEl.hidden = false;
+                        // Brief cooldown
+                        setTimeout(() => { btnResend.style.pointerEvents = ''; btnResend.textContent = 'Reenviar código'; }, 30000);
+                    }
                 } catch (err) {
                     errEl.textContent = err.message || 'Erro ao reenviar. Tente novamente.';
                     errEl.hidden = false;
@@ -8741,8 +8750,15 @@ const Auth = {
                     this._pendingEmail = emailVal;
                     const hintEl = document.getElementById('verifyEmailHint');
                     if (hintEl) {
-                        hintEl.textContent =
-                            `Enviamos um código de 6 dígitos para ${res.email_hint || emailVal}. Insira abaixo:`;
+                        if (res.email_was_sent === false) {
+                            hintEl.innerHTML =
+                                `<span style="color:#fbbf24;">⚠ Falha ao enviar e-mail.</span> ` +
+                                `Clique em <strong>"Reenviar código"</strong> abaixo para receber o código de verificação.`;
+                        } else {
+                            hintEl.textContent =
+                                `Enviamos um código de 6 dígitos para ${res.email_hint || emailVal}. ` +
+                                `Não encontrou? Verifique o spam ou clique em "Reenviar código".`;
+                        }
                     }
                     // Clear OTP boxes
                     document.querySelectorAll('.otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });

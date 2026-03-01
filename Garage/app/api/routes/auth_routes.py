@@ -136,28 +136,42 @@ def api_register(req: RegisterRequest):
                 profession=req.profession,
                 password_hash=pwd_hash,
             )
-            send_verification_email(req.email, code, req.full_name)
         except Exception as exc:
             import logging
-            logging.getLogger("garage.auth").error("Failed to create pending/send email: %s", exc)
+            logging.getLogger("garage.auth").error("Failed to create pending registration: %s", exc)
             raise HTTPException(
                 status_code=500,
-                detail="Erro ao enviar e-mail de verificacao. Tente novamente.",
+                detail="Erro ao iniciar cadastro. Tente novamente.",
             )
 
+        email_sent = send_verification_email(req.email, code, req.full_name)
+
         try:
-            audit_log("user_register_pending", req.email, {"username": req.username, "email": req.email})
+            audit_log("user_register_pending", req.email, {
+                "username": req.username,
+                "email": req.email,
+                "email_sent": email_sent,
+            })
         except Exception:
             pass
+
+        if email_sent:
+            msg = (
+                "Cadastro iniciado! Enviamos um codigo de 6 digitos para o seu e-mail. "
+                "Insira o codigo para concluir o cadastro e entrar no jogo."
+            )
+        else:
+            msg = (
+                "Cadastro iniciado! Nao foi possivel enviar o e-mail agora. "
+                "Use o botao 'Reenviar codigo' na proxima tela para receber o codigo."
+            )
 
         return {
             "success": True,
             "requires_verification": True,
             "email_hint": _mask_email(req.email),
-            "message": (
-                "Cadastro iniciado! Enviamos um codigo de 6 digitos para o seu e-mail. "
-                "Insira o codigo para concluir o cadastro e entrar no jogo."
-            ),
+            "email_was_sent": email_sent,
+            "message": msg,
         }
 
     # ---------------------------------------------------------------------------
@@ -424,15 +438,20 @@ def api_resend_verification(req: ResendVerificationRequest):
             return _generic_ok
 
         code, full_name = result
-        try:
-            send_verification_email(req.email, code, full_name)
-        except Exception as exc:
-            _log.error("Resend verification failed: %s", exc)
+        email_sent = send_verification_email(req.email, code, full_name)
+
+        if not email_sent:
+            _log.warning("Resend SMTP failed for %s — code stored in DB, user must retry.", req.email)
 
         return {
             "success": True,
             "email_hint": _mask_email(req.email),
-            "message": "Novo codigo enviado para o seu e-mail.",
+            "email_was_sent": email_sent,
+            "message": (
+                "Novo codigo enviado para o seu e-mail."
+                if email_sent else
+                "Nao foi possivel enviar o e-mail agora. Tente novamente em alguns instantes."
+            ),
         }
 
     # ---------------------------------------------------------------------------

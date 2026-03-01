@@ -69,11 +69,12 @@ def _html_template(full_name: str, code: str) -> str:
 </html>"""
 
 
-def send_verification_email(to_email: str, code: str, full_name: str) -> None:
+def send_verification_email(to_email: str, code: str, full_name: str) -> bool:
     """Send a 6-digit OTP verification code to the given address.
 
+    Returns True if the email was sent successfully, False otherwise.
     Falls back to console print (dev mode) when SMTP is not configured
-    or when the SMTP connection fails.
+    or when the SMTP connection fails — the OTP is always preserved in DB.
     """
     cfg = _smtp_config()
 
@@ -81,7 +82,7 @@ def send_verification_email(to_email: str, code: str, full_name: str) -> None:
         # Dev mode: no SMTP configured
         log.info("[DEV MODE] Verification code for %s: %s", to_email, code)
         print(f"[GARAGE][EMAIL DEV] Verification code for {to_email}: {code}")
-        return
+        return False
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = f"[{code}] Confirme seu e-mail — Garage"
@@ -104,9 +105,10 @@ def send_verification_email(to_email: str, code: str, full_name: str) -> None:
             server.login(cfg["user"], cfg["password"])
             server.sendmail(cfg["user"], to_email, msg.as_string())
         log.info("Verification email sent to %s", to_email)
+        return True
     except Exception as exc:
         log.error("Failed to send verification email to %s: %s", to_email, exc)
         # Fallback to console so the code is never lost during development
         print(f"[GARAGE][EMAIL FALLBACK] SMTP failed. Code for {to_email}: {code}")
         print(f"[GARAGE][EMAIL FALLBACK] Error: {exc}")
-        # Do NOT raise — caller decides whether to abort or continue
+        return False  # Caller can surface a warning to the user
