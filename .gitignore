@@ -61,3 +61,8 @@ Garage/leaderboard.json
 
 # Build artifacts
 node_modules/
+
+# Java / Maven
+Garage/java-runner/target/
+*.jar
+*.class
