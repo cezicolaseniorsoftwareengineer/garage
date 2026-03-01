@@ -83,8 +83,9 @@ def _find_java_binary(name: str) -> str:
 
     # 4. Conventional system locations — Java 17 first (standardized)
     system_dirs = [
-        "/usr/lib/jvm/java-17-openjdk-amd64/bin",   # Dockerfile target path
-        "/usr/lib/jvm/java-17-openjdk-arm64/bin",   # Render ARM nodes
+        "/opt/render/project/jdk17/bin",             # Render buildCommand download path
+        "/usr/lib/jvm/java-17-openjdk-amd64/bin",   # Debian/Ubuntu apt path
+        "/usr/lib/jvm/java-17-openjdk-arm64/bin",   # ARM nodes
         "/usr/lib/jvm/java-17/bin",
         "/usr/lib/jvm/java-21-openjdk-amd64/bin",
         "/usr/lib/jvm/java-21/bin",
@@ -100,7 +101,20 @@ def _find_java_binary(name: str) -> str:
     return name
 
 
-# Resolved once at module load time (fast path for all subsequent requests)
+# ---------------------------------------------------------------------------
+# Lazy resolution — re-evaluated on every call so that env vars set by the
+# shell before uvicorn starts (e.g. JAVA_HOME, PATH) are always respected,
+# even if they were not present when the module was first imported.
+# ---------------------------------------------------------------------------
+def _get_javac() -> str:
+    return _find_java_binary("javac")
+
+def _get_java() -> str:
+    return _find_java_binary("java")
+
+# Keep module-level aliases for the /api/java-status diagnostic endpoint
+# (resolved at import time — may show "javac" if Java not yet in PATH,
+#  but the lazy functions above are used for actual compilation).
 _JAVAC: str = _find_java_binary("javac")
 _JAVA:  str = _find_java_binary("java")
 
@@ -150,7 +164,7 @@ def _detect_javac_version() -> str:
     """Return javac version string or empty string if unavailable."""
     try:
         r = subprocess.run(
-            [_JAVAC, "-version"],
+            [_get_javac(), "-version"],
             capture_output=True, text=True, timeout=5,
         )
         return (r.stdout or r.stderr or "").strip()
@@ -194,7 +208,7 @@ def run_java(req: RunJavaRequest) -> RunJavaResponse:
         # Step 1 — Compile
         # ----------------------------------------------------------------
         compile_cmd = [
-            _JAVAC,
+            _get_javac(),
             "--release", "17",
             "-encoding", "UTF-8",
             file_name,
@@ -260,7 +274,7 @@ def run_java(req: RunJavaRequest) -> RunJavaResponse:
         # Step 2 — Run
         # ----------------------------------------------------------------
         run_cmd = [
-            _JAVA,
+            _get_java(),
             # Memory limits — protects the host from player code
             "-Xmx128m",
             "-Xss512k",

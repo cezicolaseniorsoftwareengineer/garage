@@ -1,9 +1,15 @@
-# Nixpacks configuration for Render.com
-# Installs Java JDK alongside Python so javac/java are available in PATH.
-# 'jdk' is the stable alias in nixpkgs pointing to the current LTS (Java 21).
-# Java 21 compiles Java 17 source code without any issues.
-# NOTE: [phases.build].cmds is intentionally absent — render.yaml buildCommand takes precedence.
+# ============================================================
+# Nixpacks configuration for 404 Garage (Render.com)
+# jdk17_headless = OpenJDK 17 LTS (headless, no GUI libs)
+# Nixpacks injects the nix store bin path into PATH, so
+# javac/java are available at startup — not just build time.
+# ============================================================
 
 [phases.setup]
-# 'jdk' is always valid in any nixpkgs channel Render uses (safe alias for latest LTS)
-nixPkgs = ["jdk"]
+nixPkgs = ["jdk17_headless"]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt"]
+
+[start]
+cmd = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"

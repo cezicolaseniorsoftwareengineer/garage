@@ -1,12 +1,20 @@
 services:
   - type: web
     name: garage
-    runtime: docker
+    runtime: python
     region: oregon
     plan: free
     rootDir: Garage
-    dockerfilePath: ./Dockerfile
-    # PORT 10000 matches the CMD in the Dockerfile and Render's default
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      curl -fsSL https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_linux-x64_bin.tar.gz -o /tmp/jdk17.tar.gz &&
+      mkdir -p /opt/render/project/jdk17 &&
+      tar -xzf /tmp/jdk17.tar.gz -C /opt/render/project/jdk17 --strip-components=1 &&
+      /opt/render/project/jdk17/bin/javac -version
+    startCommand: >-
+      export JAVA_HOME=/opt/render/project/jdk17 &&
+      export PATH=/opt/render/project/jdk17/bin:$PATH &&
+      uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: JWT_SECRET_KEY
@@ -30,9 +38,10 @@ services:
       - key: JAVA_RUN_TIMEOUT
         value: "10"  # seconds — java process wall-clock limit
       - key: JAVA_HOME
-        value: "/usr/lib/jvm/java-17-openjdk-amd64"
-        # Dockerfile installs openjdk-17-jdk-headless to this exact path.
-        # This ENV is the primary resolver in _find_java_binary().
+        value: "/opt/render/project/jdk17"
+        # buildCommand baixa OpenJDK 17 para /opt/render/project/jdk17 (path gravavel no Render).
+        # startCommand exporta JAVA_HOME e PATH antes de iniciar uvicorn.
+        # _find_java_binary() usa JAVA_HOME (layer 1) como resolver principal.
       - key: ADMIN_USERNAME
         sync: false  # Configure manually in Render dashboard
       - key: ADMIN_EMAIL
