@@ -1,18 +1,31 @@
 package com.garage.runner.controller;
 
-import com.garage.runner.model.RunJavaRequest;
-import com.garage.runner.model.RunJavaResponse;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.garage.runner.model.RunJavaRequest;
+import com.garage.runner.model.RunJavaResponse;
 
 /**
  * Core endpoint: POST /run-java
@@ -126,9 +139,18 @@ public class RunnerController {
             if (!compileFinished) {
                 compileProc.destroyForcibly();
                 long elapsed = System.currentTimeMillis() - tStart;
-                return ResponseEntity.ok(RunJavaResponse.error(
-                    "Tempo limite de compilação excedido (" + compileTimeoutSeconds + "s).",
-                    elapsed, javacVer));
+                // Return compile_ok=false with empty compile_error so the
+                // frontend Turbo Engine fallback handles the UX gracefully.
+                RunJavaResponse tr = new RunJavaResponse();
+                tr.setOk(false);
+                tr.setCompileOk(false);
+                tr.setCompileError("");  // intentionally empty — frontend handles messaging
+                tr.setStdout("");
+                tr.setStderr("");
+                tr.setExitCode(1);
+                tr.setElapsedMs(elapsed);
+                tr.setJavacVersion(javacVer);
+                return ResponseEntity.ok(tr);
             }
             compileOutThr.join(2000L);
             compileErrThr.join(2000L);
