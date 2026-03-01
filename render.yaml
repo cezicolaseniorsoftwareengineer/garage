@@ -59,7 +59,8 @@ services:
     region: oregon
     plan: free
     rootDir: Garage/java-runner
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: Dockerfile
+    dockerContext: .
     healthCheckPath: /health
     envVars:
       - key: JAVA_COMPILE_TIMEOUT
