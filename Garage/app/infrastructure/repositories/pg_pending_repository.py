@@ -157,6 +157,19 @@ class PgPendingRepository:
             session.expunge(row)
             return row
 
+    def find_by_username(self, username: str) -> Optional[PendingRegistrationModel]:
+        """Return the pending registration row for the given username, or None."""
+        with self._sf() as session:
+            row = (
+                session.query(PendingRegistrationModel)
+                .filter(PendingRegistrationModel.username == username)
+                .first()
+            )
+            if not row:
+                return None
+            session.expunge(row)
+            return row
+
     # ------------------------------------------------------------------
     # Confirm & promote
     # ------------------------------------------------------------------

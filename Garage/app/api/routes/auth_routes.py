@@ -1,5 +1,6 @@
 """Authentication API routes -- register, login, refresh, profile."""
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 import os
@@ -211,6 +212,21 @@ def api_login(req: LoginRequest):
 
     user = _user_repo.find_by_username(req.username)
     if not user:
+        # Check if awaiting email verification (pending_registrations table)
+        if _pending_repo is not None:
+            pending = _pending_repo.find_by_username(req.username)
+            if pending is not None:
+                return JSONResponse(
+                    status_code=403,
+                    content={
+                        "detail": (
+                            "Cadastro aguardando verificacao de e-mail. "
+                            "Verifique sua caixa de entrada e insira o codigo de 6 digitos."
+                        ),
+                        "email": pending.email,
+                        "email_hint": _mask_email(pending.email),
+                    },
+                )
         record_failed(req.username)
         raise HTTPException(status_code=401, detail="Usuario ou senha incorretos.")
 
@@ -236,12 +252,16 @@ def api_login(req: LoginRequest):
 
     # Block unverified accounts (only when verification is active)
     if _verification_repo is not None and not user.email_verified:
-        raise HTTPException(
+        return JSONResponse(
             status_code=403,
-            detail=(
-                "E-mail nao verificado. Verifique sua caixa de entrada e insira "
-                "o codigo de 6 digitos. Use 'Reenviar codigo' se necessario."
-            ),
+            content={
+                "detail": (
+                    "E-mail nao verificado. Verifique sua caixa de entrada e insira "
+                    "o codigo de 6 digitos. Use 'Reenviar codigo' se necessario."
+                ),
+                "email": user.email,
+                "email_hint": _mask_email(user.email),
+            },
         )
 
     # Attach role claim if the user is configured as admin (username-based check)

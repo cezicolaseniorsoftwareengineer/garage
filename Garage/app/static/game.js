@@ -23,13 +23,13 @@ const API = {
     async get(p) {
         let r = await fetch(p, { headers: this._headers() });
         if (r.status === 401) { if (await this._handle401(p)) r = await fetch(p, { headers: this._headers() }); }
-        if (!r.ok) { const e = await r.json().catch(() => ({})); const err = new Error(e.detail || r.statusText); err.status = r.status; throw err; }
+        if (!r.ok) { const e = await r.json().catch(() => ({})); const msg = typeof e.detail === 'string' ? e.detail : (e.detail?.message || r.statusText); const err = new Error(msg); err.status = r.status; err.email = e.email || null; err.emailHint = e.email_hint || null; throw err; }
         return r.json();
     },
     async post(p, b) {
         let r = await fetch(p, { method: 'POST', headers: this._headers(), body: JSON.stringify(b) });
         if (r.status === 401) { if (await this._handle401(p)) r = await fetch(p, { method: 'POST', headers: this._headers(), body: JSON.stringify(b) }); }
-        if (!r.ok) { const e = await r.json().catch(() => ({})); const err = new Error(e.detail || r.statusText); err.status = r.status; throw err; }
+        if (!r.ok) { const e = await r.json().catch(() => ({})); const msg = typeof e.detail === 'string' ? e.detail : (e.detail?.message || r.statusText); const err = new Error(msg); err.status = r.status; err.email = e.email || null; err.emailHint = e.email_hint || null; throw err; }
         return r.json();
     },
 };
@@ -8375,7 +8375,8 @@ const Auth = {
     _token: null,
     _refreshToken: null,
     _refreshing: null,
-    _pendingEmail: null,  // email awaiting OTP verification
+    _pendingEmail: null,     // email awaiting OTP verification
+    _pendingUsername: null,  // username pre-fill for login screen after OTP
 
     init() {
         const stored = localStorage.getItem('garage_user');
@@ -8605,11 +8606,18 @@ const Auth = {
                 btnVerify.textContent = 'VERIFICANDO...';
                 try {
                     const res = await API.post('/api/auth/verify-email', { email, code });
-                    this._setUser(res.user, res.access_token, res.refresh_token);
-                    sucEl.textContent = res.message || 'E-mail verificado! Entrando...';
-                    sucEl.hidden = false;
+                    // Verification successful — go to login screen (user enters credentials explicitly)
+                    const uname = this._pendingUsername || '';
                     this._pendingEmail = null;
-                    setTimeout(() => UI.showScreen('screen-title'), 1400);
+                    this._pendingUsername = null;
+                    sucEl.textContent = 'E-mail verificado! Agora faça seu login para entrar no jogo.';
+                    sucEl.hidden = false;
+                    setTimeout(() => {
+                        const loginField = document.getElementById('loginUsername');
+                        if (loginField && uname) loginField.value = uname;
+                        document.getElementById('loginPassword')?.focus();
+                        UI.showScreen('screen-login');
+                    }, 1800);
                 } catch (err) {
                     errEl.textContent = err.message || 'Código inválido ou expirado.';
                     errEl.hidden = false;
@@ -8687,17 +8695,22 @@ const Auth = {
                     const link = document.getElementById('goVerifyFromLogin');
                     if (link) link.addEventListener('click', (ev) => {
                         ev.preventDefault();
-                        // Pre-fill pending email from username if it's an email, otherwise ask user
+                        // Use email returned by backend (403 body) — works even when user typed username
                         const usernameVal = document.getElementById('loginUsername').value.trim();
-                        if (usernameVal.includes('@')) this._pendingEmail = usernameVal;
+                        const emailFromErr = err.email || (usernameVal.includes('@') ? usernameVal : null);
+                        if (emailFromErr) this._pendingEmail = emailFromErr;
+                        // Always store username for pre-fill after OTP success
+                        this._pendingUsername = usernameVal.includes('@') ? '' : usernameVal;
                         const hintEl = document.getElementById('verifyEmailHint');
-                        if (hintEl && this._pendingEmail) {
-                            hintEl.textContent = `Insira o código enviado para ${this._pendingEmail}:`;
+                        const hintDisplay = err.emailHint || emailFromErr || 'seu e-mail';
+                        if (hintEl) {
+                            hintEl.textContent = `Código já enviado para ${hintDisplay}. Verifique sua caixa de entrada ou clique em "Reenviar código".`;
                         }
                         document.querySelectorAll('.otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
                         document.getElementById('verifyError').hidden = true;
                         document.getElementById('verifySuccess').hidden = true;
                         UI.showScreen('screen-verify-email');
+                        setTimeout(() => { const first = document.querySelector('.otp-box[data-idx="0"]'); if (first) first.focus(); }, 120);
                     });
                 } else {
                     errEl.textContent = err.message || 'Erro ao fazer login.';
@@ -8737,8 +8750,9 @@ const Auth = {
 
                 // --- Email verification required ---
                 if (res.requires_verification) {
-                    // Store email for subsequent verify/resend requests
+                    // Store email and username for OTP screen
                     this._pendingEmail = emailVal;
+                    this._pendingUsername = document.getElementById('regUsername').value.trim();
                     const hintEl = document.getElementById('verifyEmailHint');
                     if (hintEl) {
                         hintEl.textContent =
@@ -8768,6 +8782,7 @@ const Auth = {
                 if (err.status === 409 && err.message && err.message.toLowerCase().includes('aguardando')) {
                     const emailFromInput = document.getElementById('regEmail').value.trim();
                     this._pendingEmail = emailFromInput;
+                    this._pendingUsername = document.getElementById('regUsername').value.trim();
                     const hintEl = document.getElementById('verifyEmailHint');
                     if (hintEl) {
                         hintEl.textContent = `Já enviamos um código para ${emailFromInput}. Insira abaixo para concluir o cadastro:`;
