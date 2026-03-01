@@ -6143,6 +6143,44 @@ const JavaAnalyzer = {
         const printCheck = this.checkPrintStatements(code, decls);
         if (!printCheck.ok) return printCheck;
 
+        // Phase 7: Java 17 Specifics (Records, Var, Sealed logic placeholders)
+        const modernJava = this.checkModernJava17(code);
+        if (!modernJava.ok) return modernJava;
+
+        return { ok: true };
+    },
+
+    /**
+     * STEROIDS: Java 17 Pattern Recognition
+     * Validates modern syntax patterns even if backend is slow.
+     */
+    checkModernJava17(code) {
+        const lines = code.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+
+            // 1. Record Validation (Java 14+)
+            if (line.includes('record ')) {
+                if (!line.match(/record\s+\w+\s*\(.*\)\s*\{/)) {
+                    return { ok: false, line: i + 1, msg: 'Erro Java 17: Record mal formado. Use: record Nome(params) { }' };
+                }
+            }
+
+            // 2. Multi-line Text Blocks (Java 15+)
+            if (line.includes('"""')) {
+                const textBlockCount = (code.match(/"""/g) || []).length;
+                if (textBlockCount % 2 !== 0) {
+                    return { ok: false, line: i + 1, msg: 'Erro Java 17: Bloco de texto (""") não foi fechado.' };
+                }
+            }
+
+            // 3. Var keyword validation
+            if (line.startsWith('var ')) {
+                if (!line.includes('=') || !line.endsWith(';')) {
+                    return { ok: false, line: i + 1, msg: 'Erro Java 17: "var" exige inicialização imediata e ";".' };
+                }
+            }
+        }
         return { ok: true };
     },
 };
