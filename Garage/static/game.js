@@ -467,7 +467,7 @@ const StudyChat = {
         const _mkCodeBlock = (lang, rawCode) => {
             const displayLang = (lang || 'java').toUpperCase();
             const langSpan = `<span class="study-code-lang">${esc(displayLang)}</span>`;
-            const copyBtn  = `<button class="study-code-copy" onclick="${_copyOnClick}" title="Copiar código">COPIAR</button>`;
+            const copyBtn = `<button class="study-code-copy" onclick="${_copyOnClick}" title="Copiar código">COPIAR</button>`;
             const html = `<pre class="study-code-block">${langSpan}${copyBtn}<code>${esc(rawCode.trimEnd())}</code></pre>`;
             const idx = _codeBlocks.length;
             _codeBlocks.push(html);
@@ -513,8 +513,8 @@ const StudyChat = {
         // ---- Step 3: Inline formatting ----
         text = text.replace(/`([^`\n]+)`/g, (_m, code) => `<code class="study-inline-code">${esc(code)}</code>`);
         text = text.replace(/\*\*([^*\n]+)\*\*/g, (_m, t) => `<strong>${esc(t)}</strong>`);
-        text = text.replace(/\*([^*\n]+)\*/g,    (_m, t) => `<em>${esc(t)}</em>`);
-        text = text.replace(/_([^_\n]+)_/g,       (_m, t) => `<em>${esc(t)}</em>`);
+        text = text.replace(/\*([^*\n]+)\*/g, (_m, t) => `<em>${esc(t)}</em>`);
+        text = text.replace(/_([^_\n]+)_/g, (_m, t) => `<em>${esc(t)}</em>`);
 
         // ---- Step 4: Line-by-line rendering (with placeholder restoration) ----
         const lines = text.split('\n');
@@ -7653,13 +7653,13 @@ const IDE = {
         // ----------------------------------------------------------------
         // Real Java 17 compilation + execution via backend
         // ----------------------------------------------------------------
-        let javaOk      = false;   // javac + java both succeeded
-        let compileOk   = false;
-        let javaFailed  = false;   // backend unavailable → fall back to validator
-        let realStdout  = '';
-        let realStderr  = '';
-        let compileErr  = '';
-        let elapsedMs   = 0;
+        let javaOk = false;   // javac + java both succeeded
+        let compileOk = false;
+        let javaFailed = false;   // backend unavailable → fall back to validator
+        let realStdout = '';
+        let realStderr = '';
+        let compileErr = '';
+        let elapsedMs = 0;
 
         try {
             const resp = await fetch('/api/run-java', {
@@ -7669,12 +7669,12 @@ const IDE = {
             });
             if (resp.ok) {
                 const data = await resp.json();
-                javaOk      = data.ok;
-                compileOk   = data.compile_ok;
-                realStdout  = (data.stdout  || '').trim();
-                realStderr  = (data.stderr  || '').trim();
-                compileErr  = (data.compile_error || '').trim();
-                elapsedMs   = data.elapsed_ms || 0;
+                javaOk = data.ok;
+                compileOk = data.compile_ok;
+                realStdout = (data.stdout || '').trim();
+                realStderr = (data.stderr || '').trim();
+                compileErr = (data.compile_error || '').trim();
+                elapsedMs = data.elapsed_ms || 0;
 
                 // Remove last "Compilando..." line so we can replace it
                 const lastInfo = term.querySelector('span.ide-term-info:last-child');
@@ -7683,12 +7683,13 @@ const IDE = {
                 }
 
                 if (!compileOk) {
-                    // Detect infrastructure error (Java not installed on server yet)
-                    // → degrade gracefully to structural validator instead of blocking player
+                    // Detect infrastructure error (Java not installed on server yet or timeout)
                     const isInfraError = compileErr.includes('não encontrado no servidor') ||
-                                        compileErr.includes('JAVA_HOME') ||
-                                        compileErr.includes('Java runtime') ||
-                                        compileErr.includes('FileNotFoundError');
+                        compileErr.includes('JAVA_HOME') ||
+                        compileErr.includes('Java runtime') ||
+                        compileErr.includes('FileNotFoundError') ||
+                        compileErr.includes('excedido') ||
+                        compileErr.includes('timeout');
                     if (isInfraError) {
                         javaFailed = true;
                     } else {

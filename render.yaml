@@ -58,15 +58,15 @@ services:
     runtime: docker
     region: oregon
     plan: free
-    rootDir: Garage/java-runner
+    rootDir: java-runner
     dockerfilePath: Dockerfile
     dockerContext: .
     healthCheckPath: /health
     envVars:
       - key: JAVA_COMPILE_TIMEOUT
-        value: "15"
+        value: "30"
       - key: JAVA_RUN_TIMEOUT
-        value: "10"
+        value: "20"
       - key: RUNNER_SECRET
         # Set a strong random value here AND in JAVA_RUNNER_SECRET above.
         # Shared secret prevents unauthorized direct calls to this service.
