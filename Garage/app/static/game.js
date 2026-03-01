@@ -2691,21 +2691,24 @@ const World = {
 
         // Book collision -- collect on touch (like Mario coins)
         // (blocked during active challenges via the isInChallenge early-return above)
+        // Guard: books cannot be collected while inside a company (lockedRegion active)
         const pcx = p.x + p.w / 2;
         const playerHeight = -p.y; // height above ground (p.y is negative when jumping)
-        BOOKS_DATA.forEach(book => {
-            if (State.collectedBooks.includes(book.id)) return;
-            const dx = Math.abs(pcx - book.worldX);
-            const dy = Math.abs(playerHeight + p.h * 0.4 - book.floatY);
-            if (dx < 40 && dy < 40) {
-                State.collectedBooks.push(book.id);
-                SFX.bookCollect();
-                this.showBookPopup(book);
-                this.updateBookHUD();
-                // Persist book collection immediately
-                WorldStatePersistence.save(true);
-            }
-        });
+        if (!State.lockedRegion) {
+            BOOKS_DATA.forEach(book => {
+                if (State.collectedBooks.includes(book.id)) return;
+                const dx = Math.abs(pcx - book.worldX);
+                const dy = Math.abs(playerHeight + p.h * 0.4 - book.floatY);
+                if (dx < 40 && dy < 40) {
+                    State.collectedBooks.push(book.id);
+                    SFX.bookCollect();
+                    this.showBookPopup(book);
+                    this.updateBookHUD();
+                    // Persist book collection immediately
+                    WorldStatePersistence.save(true);
+                }
+            });
+        }
 
         // Lock player movement to company area when locked
         if (State.lockedRegion && State.doorAnimBuilding) {

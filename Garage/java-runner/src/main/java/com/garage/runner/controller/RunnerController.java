@@ -113,6 +113,15 @@ public class RunnerController {
                 .redirectErrorStream(false)
                 .start();
 
+            // Read streams in background threads BEFORE waitFor() to prevent
+            // deadlock when output exceeds OS pipe buffer (~64 KB on Linux).
+            StringBuilder compileOutBuf = new StringBuilder();
+            StringBuilder compileErrBuf = new StringBuilder();
+            Thread compileOutThr = streamReader(compileProc.getInputStream(), compileOutBuf);
+            Thread compileErrThr = streamReader(compileProc.getErrorStream(), compileErrBuf);
+            compileOutThr.start();
+            compileErrThr.start();
+
             boolean compileFinished = compileProc.waitFor(compileTimeoutSeconds, TimeUnit.SECONDS);
             if (!compileFinished) {
                 compileProc.destroyForcibly();
@@ -121,10 +130,10 @@ public class RunnerController {
                     "Tempo limite de compilação excedido (" + compileTimeoutSeconds + "s).",
                     elapsed, javacVer));
             }
+            compileOutThr.join(2000L);
+            compileErrThr.join(2000L);
 
-            String compileOut = readStream(compileProc.getInputStream());
-            String compileErr = readStream(compileProc.getErrorStream());
-            String rawCompileErrors = (compileOut + compileErr).trim();
+            String rawCompileErrors = (compileOutBuf.toString() + compileErrBuf.toString()).trim();
 
             if (compileProc.exitValue() != 0) {
                 // Strip absolute temp path from error messages
@@ -157,6 +166,15 @@ public class RunnerController {
 
             Process runProc = runPb.start();
 
+            // Start stream readers BEFORE writing stdin and before waitFor()
+            // to prevent pipe-buffer deadlock.
+            StringBuilder runOutBuf = new StringBuilder();
+            StringBuilder runErrBuf = new StringBuilder();
+            Thread runOutThr = streamReader(runProc.getInputStream(), runOutBuf);
+            Thread runErrThr = streamReader(runProc.getErrorStream(), runErrBuf);
+            runOutThr.start();
+            runErrThr.start();
+
             // Pipe optional stdin
             if (req.getStdinInput() != null && !req.getStdinInput().isBlank()) {
                 try (OutputStream stdin = runProc.getOutputStream()) {
@@ -181,9 +199,11 @@ public class RunnerController {
                 resp.setJavacVersion(javacVer);
                 return ResponseEntity.ok(resp);
             }
+            runOutThr.join(2000L);
+            runErrThr.join(2000L);
 
-            String stdout = truncate(readStream(runProc.getInputStream()));
-            String stderr = truncate(readStream(runProc.getErrorStream()));
+            String stdout = truncate(runOutBuf.toString());
+            String stderr = truncate(runErrBuf.toString());
             int    exitCode = runProc.exitValue();
             long   elapsed  = System.currentTimeMillis() - tStart;
 
@@ -228,6 +248,24 @@ public class RunnerController {
             }
             return sb.toString();
         }
+    }
+
+    /**
+     * Returns a daemon thread that drains an InputStream into a StringBuilder.
+     * Must be started before calling Process.waitFor() to prevent pipe-buffer deadlock.
+     */
+    private Thread streamReader(InputStream is, StringBuilder out) {
+        Thread t = new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    out.append(line).append("\n");
+                }
+            } catch (IOException ignored) {}
+        });
+        t.setDaemon(true);
+        return t;
     }
 
     private String truncate(String text) {
