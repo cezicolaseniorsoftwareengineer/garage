@@ -31,12 +31,12 @@ services:
       - key: JAVA_RUN_TIMEOUT
         value: "10"
       - key: JAVA_RUNNER_URL
-        # After deploying garage-java-runner, paste its URL here.
-        # Example: https://garage-java-runner.onrender.com
-        # The Python service proxies all /api/run-java calls to this URL.
-        sync: false
+        # Points to the garage-java-runner Spring Boot service (Docker, Java 17).
+        # Python proxies all /api/run-java calls here.
+        value: "https://garage-java-runner.onrender.com"
       - key: JAVA_RUNNER_SECRET
-        # Must match RUNNER_SECRET set on the garage-java-runner service.
+        # Shared secret — must match RUNNER_SECRET on the garage-java-runner service.
+        # Set this manually in the Render dashboard (keep it secret).
         sync: false
       - key: ADMIN_USERNAME
         sync: false
