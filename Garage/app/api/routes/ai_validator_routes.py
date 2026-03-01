@@ -17,10 +17,16 @@ Prompt Engineering Strategy
     Temperature = 0 for deterministic results.
     Max tokens = 350 to force concise JSON-only output.
 
-Env vars:
-    OPENROUTER_API_KEY   — required in production (set on Render)
-    OPENROUTER_MODEL     — override model (default: google/gemini-flash-1.5)
-    OPENROUTER_TIMEOUT   — HTTP timeout in seconds (default: 5)
+Env vars (production — set on Render):
+    OPENROUTER_API_KEY_IDE  — chave EXCLUSIVA da IDE Java (isola billing/rate-limit)
+    OPENROUTER_API_KEY      — fallback se a chave IDE ainda não estiver configurada
+    OPENROUTER_IDE_MODEL    — modelo da IDE (default: google/gemini-flash-1.5)
+    OPENROUTER_IDE_TIMEOUT  — timeout HTTP em segundos (default: 5)
+
+Rotas do Garage IA (chat de estudo) → study_routes.py:
+    OPENAI_API_KEY          — OpenAI (primário)
+    OPENROUTER_API_KEY      — OpenRouter (fallback/alternativo)
+    GROQ_API_KEY            — Groq (fallback 2)
 """
 
 import os
@@ -37,12 +43,24 @@ from pydantic import BaseModel, Field
 router = APIRouter(prefix="/api", tags=["ai-validator"])
 
 # ---------------------------------------------------------------------------
-# Config
+# Config — roteamento de chaves
+# ┌───────────────────────────┬───────────────────────────────────┐
+# │ IDE Java (este arquivo)      │ OPENROUTER_API_KEY_IDE (exclusivo) │
+# │ Garage IA / chat de estudos  │ OPENAI_API_KEY + OPENROUTER_API_KEY  │
+# └───────────────────────────┴───────────────────────────────────┘
 # ---------------------------------------------------------------------------
-OPENROUTER_API_KEY: str = os.environ.get("OPENROUTER_API_KEY", "")
-OPENROUTER_MODEL: str   = os.environ.get("OPENROUTER_MODEL", "google/gemini-flash-1.5")
-OPENROUTER_TIMEOUT: int = int(os.environ.get("OPENROUTER_TIMEOUT", "5"))
+_IDE_KEY_DEDICATED: str = os.environ.get("OPENROUTER_API_KEY_IDE", "").strip()
+_IDE_KEY_SHARED: str    = os.environ.get("OPENROUTER_API_KEY", "").strip()
+OPENROUTER_API_KEY: str = _IDE_KEY_DEDICATED or _IDE_KEY_SHARED   # prefere dedicada
+OPENROUTER_MODEL: str   = os.environ.get("OPENROUTER_IDE_MODEL",
+                              os.environ.get("OPENROUTER_MODEL", "google/gemini-flash-1.5"))
+OPENROUTER_TIMEOUT: int = int(os.environ.get("OPENROUTER_IDE_TIMEOUT",
+                              os.environ.get("OPENROUTER_TIMEOUT", "5")))
 OPENROUTER_URL: str     = "https://openrouter.ai/api/v1/chat/completions"
+
+# Fonte da chave ativa (exposta em /api/ai-validator-status)
+_KEY_SOURCE: str = "OPENROUTER_API_KEY_IDE" if _IDE_KEY_DEDICATED else (
+    "OPENROUTER_API_KEY (fallback)" if _IDE_KEY_SHARED else "(none)" )
 
 # System prompt engineered for maximum speed and accuracy
 # Temperature 0 → deterministic, max_tokens 350 → forces pure JSON only
@@ -214,8 +232,11 @@ def ai_validate_java(req: AIValidateRequest) -> AIValidateResponse:
 def ai_validator_status() -> dict:
     """Diagnostic endpoint — confirms OpenRouter connectivity and key presence."""
     return {
-        "configured":      bool(OPENROUTER_API_KEY),
-        "model":           OPENROUTER_MODEL,
-        "timeout_seconds": OPENROUTER_TIMEOUT,
-        "api_key_prefix":  (OPENROUTER_API_KEY[:8] + "...") if OPENROUTER_API_KEY else "(not set)",
+        "configured":           bool(OPENROUTER_API_KEY),
+        "key_source":           _KEY_SOURCE,
+        "dedicated_key_set":    bool(_IDE_KEY_DEDICATED),
+        "fallback_key_set":     bool(_IDE_KEY_SHARED),
+        "model":                OPENROUTER_MODEL,
+        "timeout_seconds":      OPENROUTER_TIMEOUT,
+        "api_key_prefix":       (OPENROUTER_API_KEY[:8] + "...") if OPENROUTER_API_KEY else "(not set)",
     }
