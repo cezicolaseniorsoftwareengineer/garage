@@ -70,7 +70,7 @@ def init_routes(player_repo, challenge_repo, leaderboard_repo,
 
 def _assert_owner(player, current_user: dict):
     """Raise 403 if the authenticated user does not own the session."""
-    if player.user_id and current_user and player.user_id != current_user.get("sub"):
+    if player.user_id and current_user and str(player.user_id).lower() != str(current_user.get("sub", "")).lower():
         raise HTTPException(status_code=403, detail="Access denied.")
 
 

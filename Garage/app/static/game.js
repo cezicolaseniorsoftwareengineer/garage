@@ -5509,7 +5509,15 @@ const Game = {
             try {
                 return await _loadCore(serverId);
             } catch (e) {
-                if (!silent) alert('Erro ao carregar sessão: ' + e.message);
+                const st = e.status || 0;
+                _clearStored();
+                if (!silent) {
+                    if (st === 403 || st === 404) {
+                        alert('Sessão anterior não encontrada. Inicie um novo jogo.');
+                    } else {
+                        alert('Erro ao carregar sessão: ' + e.message);
+                    }
+                }
                 return false;
             }
         }
