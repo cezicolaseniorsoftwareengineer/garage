@@ -2376,9 +2376,15 @@ const World = {
             // TAB toggles the metrics overlay
             if (e.key === 'Tab') { e.preventDefault(); UI.toggleMetrics(); return; }
 
-            // ESC: resume pause first; then close metrics overlay if open
-            if (e.key === 'Escape' && State.paused) { e.preventDefault(); Game.resume(); return; }
-            if (e.key === 'Escape' && UI._metricsOpen) { e.preventDefault(); UI.toggleMetrics(); return; }
+            // ESC priority chain: overlays first, then pause, then metrics
+            if (e.key === 'Escape') {
+                const promoVis = document.getElementById('promotionOverlay').style.display === 'flex';
+                if (promoVis) { e.preventDefault(); UI.hidePromotion(); return; }
+                if (State.isInChallenge) { e.preventDefault(); UI.hideChallenge(); return; }
+                if (State.isBookPopup) { e.preventDefault(); this.closeBookPopup(); return; }
+                if (State.paused) { e.preventDefault(); Game.resume(); return; }
+                if (UI._metricsOpen) { e.preventDefault(); UI.toggleMetrics(); return; }
+            }
 
             // P toggles pause (when world is active and no overlay is open)
             if ((e.key === 'p' || e.key === 'P') && !UI._metricsOpen) {
@@ -2417,7 +2423,7 @@ const World = {
         const hold = (id, code) => {
             const el = document.getElementById(id);
             if (!el) return;
-            const on = () => { if (State.paused || State.isInPrep) return; this.keys[code] = true; el.classList.add('pressed'); };
+            const on = () => { if (State.paused || State.isInPrep || State.isInChallenge || IDE.isOpen()) return; this.keys[code] = true; el.classList.add('pressed'); };
             const off = () => { this.keys[code] = false; el.classList.remove('pressed'); };
             el.addEventListener('mousedown', on);
             el.addEventListener('mouseup', off);
@@ -4055,7 +4061,10 @@ const World = {
         document.getElementById('bookAuthor').textContent = book.author;
         document.getElementById('bookSummary').textContent = book.summary;
         document.getElementById('bookLesson').textContent = 'Licao-chave: ' + book.lesson;
-        document.getElementById('bookPopup').classList.add('visible');
+        const popup = document.getElementById('bookPopup');
+        popup.classList.add('visible');
+        // Tap backdrop or card to close (mobile UX — no separate close button needed)
+        popup.onclick = (e) => { this.closeBookPopup(); };
     },
 
     closeBookPopup() {
@@ -4499,6 +4508,10 @@ const UI = {
     showChallenge(challenge) {
         State.isInChallenge = true;
         State._actionCooldownUntil = performance.now() + 300;
+        // Release any held movement keys and disable D-pad during MCQ
+        if (typeof World !== 'undefined') World.keys = {};
+        const _mc = document.querySelector('.mobile-controls');
+        if (_mc) _mc.style.pointerEvents = 'none';
         SFX.pauseMusic();
         SFX.challengeOpen();
         document.getElementById('challengeMentor').textContent = challenge.mentor || 'MENTOR';
@@ -4528,6 +4541,9 @@ const UI = {
     hideChallenge(opts = {}) {
         State.isInChallenge = false;
         document.getElementById('challengeOverlay').classList.remove('visible');
+        // Restore D-pad interaction after MCQ closes
+        const _mc = document.querySelector('.mobile-controls');
+        if (_mc) _mc.style.pointerEvents = '';
         if (opts.resumeMusic !== false) SFX.resumeMusic();
     },
 
@@ -7608,9 +7624,12 @@ const IDE = {
         }
         termStatus.className = 'ide-terminal-status';
 
-        // Line numbers sync
+        // Line numbers sync — use stored bound handler to prevent listener stacking on re-open
         this._syncLineNumbers();
-        document.getElementById('ideCodeInput').addEventListener('input', () => IDE._syncLineNumbers());
+        const _inputEl = document.getElementById('ideCodeInput');
+        if (this._syncBound) _inputEl.removeEventListener('input', this._syncBound);
+        this._syncBound = () => IDE._syncLineNumbers();
+        _inputEl.addEventListener('input', this._syncBound);
 
         // Draw characters on canvases
         this._drawPlayerChar();
@@ -7626,6 +7645,10 @@ const IDE = {
         // Block world interactions (movement, books, NPCs) while IDE is open.
         // This mirrors what UI.showChallenge() does for theory challenges.
         State.isInChallenge = true;
+        // Release held keys and disable mobile D-pad while IDE is open
+        if (typeof World !== 'undefined') World.keys = {};
+        const _mcIde = document.querySelector('.mobile-controls');
+        if (_mcIde) _mcIde.style.pointerEvents = 'none';
 
         // Show overlay
         document.getElementById('ideOverlay').classList.add('visible');
@@ -7639,6 +7662,9 @@ const IDE = {
     _setupMobileKeyboardHandlers() {
         const isMobile = window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
         if (!isMobile) return;
+        // Guard: attach listeners only once per page-load to prevent stacking
+        if (this._mobileKbSetup) return;
+        this._mobileKbSetup = true;
 
         const codeInput = document.getElementById('ideCodeInput');
         const container = document.querySelector('.ide-container');
@@ -8050,6 +8076,9 @@ const IDE = {
     close() {
         document.getElementById('ideOverlay').classList.remove('visible');
         document.getElementById('ideHelpOverlay').style.display = 'none';
+        // Restore mobile D-pad after IDE closes
+        const _mcIde = document.querySelector('.mobile-controls');
+        if (_mcIde) _mcIde.style.pointerEvents = '';
         if (StudyChat.isOpen()) StudyChat.close();
         const wasSolved = this._solved;
         const regionBeingWorked = State.lockedRegion;
