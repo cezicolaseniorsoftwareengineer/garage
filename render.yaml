@@ -1,21 +1,14 @@
 services:
   - type: web
     name: garage
-    runtime: python
+    runtime: docker
     region: oregon
     plan: free
     rootDir: Garage
-    buildCommand: >-
-      apt-get update -qq &&
-      apt-get install -y -q default-jdk-headless &&
-      echo "=== JAVA INSTALLED ===" &&
-      javac -version &&
-      pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    dockerfilePath: ./Dockerfile
+    # PORT 10000 matches the CMD in the Dockerfile and Render's default
     healthCheckPath: /health
     envVars:
-      - key: PYTHON_VERSION
-        value: "3.12.0"
       - key: JWT_SECRET_KEY
         sync: false  # Configure manually in Render dashboard
       - key: DATABASE_URL
@@ -23,25 +16,24 @@ services:
       - key: OPENAI_API_KEY
         sync: false  # Configure manually in Render dashboard
       - key: OPENAI_MODEL
-        value: "gpt-4.1-mini"  # Default model (gpt-5 also works if your key has access)
+        value: "gpt-4.1-mini"  # Default model
       - key: OPENAI_FALLBACK_MODELS
-        value: "gpt-4.1-mini,gpt-4.1,gpt-4o"  # Fallback chain if primary model is unavailable
+        value: "gpt-4.1-mini,gpt-4.1,gpt-4o"  # Fallback chain
       - key: GROQ_API_KEY
-        sync: false  # Configure manually in Render dashboard (fallback quando OpenAI atingir quota)
+        sync: false  # Configure manually in Render dashboard
       - key: GROQ_MODEL
-        value: "llama-3.3-70b-versatile"  # Groq free: 14400 req/day — fallback de quota do OpenAI
+        value: "llama-3.3-70b-versatile"  # Groq free: 14400 req/day
       - key: AI_CHAT_MAX_TOKENS
-        value: "1200"  # Max tokens for study chat responses (full code answers)
+        value: "1200"  # Max tokens for study chat responses
       - key: JAVA_COMPILE_TIMEOUT
         value: "15"  # seconds — javac wall-clock limit
       - key: JAVA_RUN_TIMEOUT
         value: "10"  # seconds — java process wall-clock limit
-        # Note: JAVA_HOME is NOT set — nixpacks installs openjdk17 and puts javac/java in PATH automatically
       - key: JAVA_HOME
-        value: "/usr/lib/jvm/java-21-openjdk-amd64"
-        # default-jdk-headless on Ubuntu 22.04 installs Java 21 to this path
-        # If the path differs, check /api/java-status after deploy
+        value: "/usr/lib/jvm/java-17-openjdk-amd64"
+        # Dockerfile installs openjdk-17-jdk-headless to this exact path.
+        # This ENV is the primary resolver in _find_java_binary().
       - key: ADMIN_USERNAME
-        sync: false  # Configure manually in Render dashboard (e.g., cezar)
+        sync: false  # Configure manually in Render dashboard
       - key: ADMIN_EMAIL
-        sync: false  # Configure manually in Render dashboard (e.g., cezicolatecnologia@gmail.com)
+        sync: false  # Configure manually in Render dashboard

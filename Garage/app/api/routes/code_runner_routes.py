@@ -81,12 +81,13 @@ def _find_java_binary(name: str) -> str:
         if candidates:
             return candidates[0]
 
-    # 4. Conventional system locations
+    # 4. Conventional system locations — Java 17 first (standardized)
     system_dirs = [
-        "/usr/lib/jvm/java-21-openjdk-amd64/bin",
-        "/usr/lib/jvm/java-17-openjdk-amd64/bin",
-        "/usr/lib/jvm/java-21/bin",
+        "/usr/lib/jvm/java-17-openjdk-amd64/bin",   # Dockerfile target path
+        "/usr/lib/jvm/java-17-openjdk-arm64/bin",   # Render ARM nodes
         "/usr/lib/jvm/java-17/bin",
+        "/usr/lib/jvm/java-21-openjdk-amd64/bin",
+        "/usr/lib/jvm/java-21/bin",
         "/usr/local/bin",
         "/usr/bin",
     ]
@@ -226,9 +227,8 @@ def run_java(req: RunJavaRequest) -> RunJavaResponse:
                 stdout="",
                 stderr="",
                 compile_error=(
-                    f"javac não encontrado no servidor (tentou: {_JAVAC}). "
-                    "nixpacks.toml deve declarar nixPkgs=[\"jdk\"]. "
-                    "Verifique os build logs no Render dashboard."
+                    "Erro interno: compilador Java 17 não encontrado no servidor. "
+                    "Por favor, tente novamente em alguns instantes ou contate o suporte."
                 ),
                 exit_code=1,
                 elapsed_ms=elapsed,
