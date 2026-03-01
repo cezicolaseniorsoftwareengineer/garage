@@ -1879,7 +1879,7 @@ const NPC_DATA = [
     {
         id: 'npc_biocode', name: 'CEZI COLA', role: 'CEO - Bio Code Technology', region: 'Bio Code Technology', stage: 'Principal', worldX: 31600,
         dialog: 'Ol\u00e1! Sou Cezi Cola, Senior Software Engineer e CEO da Bio Code Technology. Desenvolvi este jogo para ajudar desenvolvedores e programadores a aperfei\u00e7oar suas habilidades com estrutura de dados e algoritmos. Aqui, conhecimento \u00e9 compartilhado em comunidade -- n\u00e3o guardamos segredos. Programa\u00e7\u00e3o din\u00e2mica \u00e9 o cora\u00e7\u00e3o do racioc\u00ednio: decompor problemas grandes em subproblemas menores, memorizar resultados e construir a solu\u00e7\u00e3o de baixo para cima. Continue estudando, evoluindo, e lembre-se: o melhor investimento \u00e9 em voc\u00ea mesmo.',
-        look: { hair: '#1a1a1a', hairStyle: 'short', beard: '#1a1a1a', glasses: true, glassesStyle: 'square', shirt: '#00a86b', pants: '#2c3e50', skinTone: '#c68642' }
+        look: { hair: '#FFD700', hairStyle: 'pompadour', shirt: '#111111', pants: '#1a5fb4', shoes: '#f0f0f0', skinTone: '#c68642' }
     },
     {
         id: 'npc_cloud', name: 'LINUS TORVALDS', role: 'Criador - Linux / Git', region: 'Cloud Valley', stage: 'Principal', worldX: 33000,
@@ -3631,7 +3631,7 @@ const World = {
             ctx.fillRect(sx + 2, ny + 60 - legSwing, 7, 28 + legSwing);
 
             // Shoes
-            ctx.fillStyle = '#333';
+            ctx.fillStyle = L.shoes || '#333';
             ctx.fillRect(sx - 10, this.GROUND_Y - 6, 11, 6);
             ctx.fillRect(sx + 1, this.GROUND_Y - 6, 11, 6);
 
@@ -3757,6 +3757,29 @@ const World = {
                 ctx.arc(sx, ny + 4, 16, Math.PI + 0.2, Math.PI * 2 - 0.2);
                 ctx.fill();
                 ctx.fillRect(sx - 12, ny - 6, 24, 5);
+            } else if (L.hairStyle === 'pompadour') {
+                // Pompadour Johnny Bravo style
+                ctx.fillStyle = L.hair || '#FFD700';
+                // Base cap on head
+                ctx.beginPath();
+                ctx.arc(sx, ny + 4, 16, Math.PI, Math.PI * 2);
+                ctx.fill();
+                ctx.fillRect(sx - 14, ny - 4, 28, 6);
+                // Tall swept-back pompadour wave
+                ctx.beginPath();
+                ctx.moveTo(sx - 14, ny - 2);
+                ctx.bezierCurveTo(sx - 18, ny - 20, sx - 4, ny - 34, sx + 4, ny - 34);
+                ctx.bezierCurveTo(sx + 18, ny - 30, sx + 18, ny - 14, sx + 14, ny - 2);
+                ctx.closePath();
+                ctx.fill();
+                // Highlight on pompadour
+                ctx.fillStyle = 'rgba(255,255,200,0.3)';
+                ctx.beginPath();
+                ctx.moveTo(sx - 4, ny - 8);
+                ctx.bezierCurveTo(sx - 6, ny - 22, sx, ny - 30, sx + 3, ny - 30);
+                ctx.bezierCurveTo(sx + 9, ny - 26, sx + 7, ny - 14, sx + 3, ny - 6);
+                ctx.closePath();
+                ctx.fill();
             } else {
                 // Short hair (default - Jobs, Musk, Thiel, Torvalds)
                 ctx.fillStyle = L.hair || '#222';
@@ -8186,9 +8209,32 @@ const IDE = {
         // Hair
         if (look.hair && look.hairStyle !== 'bald') {
             ctx.fillStyle = look.hair;
-            ctx.beginPath();
-            ctx.arc(cx, 11, 11.5, Math.PI, Math.PI * 2);
-            ctx.fill();
+            if (look.hairStyle === 'pompadour') {
+                // Base
+                ctx.beginPath();
+                ctx.arc(cx, 11, 11.5, Math.PI, Math.PI * 2);
+                ctx.fill();
+                ctx.fillRect(cx - 10, 5, 20, 5);
+                // Tall pompadour wave
+                ctx.beginPath();
+                ctx.moveTo(cx - 10, 6);
+                ctx.bezierCurveTo(cx - 13, -6, cx - 2, -12, cx + 1, -12);
+                ctx.bezierCurveTo(cx + 11, -10, cx + 13, -2, cx + 10, 6);
+                ctx.closePath();
+                ctx.fill();
+                // Shine
+                ctx.fillStyle = 'rgba(255,255,200,0.3)';
+                ctx.beginPath();
+                ctx.moveTo(cx - 2, 3);
+                ctx.bezierCurveTo(cx - 4, -5, cx, -10, cx + 2, -10);
+                ctx.bezierCurveTo(cx + 6, -8, cx + 4, -1, cx + 2, 3);
+                ctx.closePath();
+                ctx.fill();
+            } else {
+                ctx.beginPath();
+                ctx.arc(cx, 11, 11.5, Math.PI, Math.PI * 2);
+                ctx.fill();
+            }
         }
 
         // Beard
@@ -8277,7 +8323,7 @@ const IDE = {
         ctx.fillRect(cx + 1, bodyTop + 24, 7, 20);
 
         // Shoes
-        ctx.fillStyle = '#222';
+        ctx.fillStyle = look.shoes || '#222';
         ctx.fillRect(cx - 9, bodyTop + 43, 9, 5);
         ctx.fillRect(cx + 1, bodyTop + 43, 9, 5);
     },
