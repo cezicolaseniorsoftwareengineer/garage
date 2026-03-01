@@ -1192,6 +1192,10 @@ body {
     padding: 20px;
     z-index: 30;
     transition: bottom 0.4s ease;
+    /* flex column keeps CONTINUAR button always visible at bottom */
+    display: flex;
+    flex-direction: column;
+    max-height: min(80vh, 520px);
 }
 
 .dialog-box.open {
@@ -1201,6 +1205,7 @@ body {
 @media (max-width: 768px) {
     .dialog-box.open {
         bottom: 160px;
+        max-height: calc(100vh - 200px);
     }
 }
 
@@ -1209,6 +1214,7 @@ body {
     align-items: center;
     gap: 14px;
     margin-bottom: 12px;
+    flex-shrink: 0;
 }
 
 .dialog-avatar {
@@ -1242,8 +1248,10 @@ body {
     color: #d1d5db;
     margin-bottom: 12px;
     white-space: pre-line;
+    flex: 1 1 auto;
     max-height: 40vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .dialog-close-hint {
@@ -1761,6 +1769,8 @@ body {
 .dialog-actions {
     display: flex;
     justify-content: flex-end;
+    flex-shrink: 0;
+    padding-top: 4px;
 }
 
 .btn-dialog {
@@ -3230,7 +3240,8 @@ body {
     }
 
     .dialog-box.open {
-        bottom: 180px;
+        bottom: 150px;
+        max-height: calc(100vh - 190px);
     }
 
     .dialog-avatar {

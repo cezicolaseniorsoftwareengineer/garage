@@ -2382,6 +2382,7 @@ const World = {
                 if (promoVis) { e.preventDefault(); UI.hidePromotion(); return; }
                 if (State.isInChallenge) { e.preventDefault(); UI.hideChallenge(); return; }
                 if (State.isBookPopup) { e.preventDefault(); this.closeBookPopup(); return; }
+                if (State.isInDialog) { e.preventDefault(); this.closeDialog(); return; }
                 if (State.paused) { e.preventDefault(); Game.resume(); return; }
                 if (UI._metricsOpen) { e.preventDefault(); UI.toggleMetrics(); return; }
             }
@@ -2563,6 +2564,10 @@ const World = {
     showDialog(name, role, text) {
         State.isInDialog = true;
         State._actionCooldownUntil = performance.now() + 300;
+        // Disable D-pad so player cannot walk while dialog is open
+        if (typeof World !== 'undefined') World.keys = {};
+        const _mc = document.querySelector('.mobile-controls');
+        if (_mc) _mc.style.pointerEvents = 'none';
         document.getElementById('dName').textContent = name;
         document.getElementById('dRole').textContent = role;
         document.getElementById('dContent').textContent = text;
@@ -2577,6 +2582,9 @@ const World = {
     closeDialog() {
         State.isInDialog = false;
         document.getElementById('dialogBox').classList.remove('open');
+        // Re-enable D-pad for world navigation
+        const _mc = document.querySelector('.mobile-controls');
+        if (_mc) _mc.style.pointerEvents = '';
 
         if (State._pendingNpcRegion) {
             const region = State._pendingNpcRegion;
