@@ -7476,6 +7476,12 @@ const IDE = {
     _scaleLastCode: '',
     _baseChallengeDesc: '',
 
+    /** Returns true when the coding IDE overlay is visible on screen. */
+    isOpen() {
+        const ideOverlay = document.getElementById('ideOverlay');
+        return !!(ideOverlay && ideOverlay.classList.contains('visible'));
+    },
+
     _selectChallenge(stage, region) {
         // Find a challenge matching the NPC's region (1 unique challenge per company)
         let challenge = region ? CODE_CHALLENGES.find(c => c.region === region) : null;
