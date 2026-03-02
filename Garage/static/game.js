@@ -1948,144 +1948,152 @@ const COMPANY_LOGOS = {
 };
 
 // ---- collectible books ----
+// Layout: 1 book BEFORE each company -> book -> company -> book -> company -> ...
+// 24 companies, 24 books (each ~600 units before building start)
 const BOOKS_DATA = [
     {
         id: 'b01', title: 'Clean Code', author: 'Robert C. Martin', color: '#22c55e',
-        summary: 'Código é um ativo de longo prazo. Legibilidade > esperteza. Funções pequenas, nomes claros, responsabilidade única e testes automatizados.',
-        lesson: 'Código é para humanos primeiro; manutenção custa mais que escrever.',
-        worldX: 400, floatY: 130
+        summary: 'Codigo eh um ativo de longo prazo. Legibilidade > esperteza. Funcoes pequenas, nomes claros, responsabilidade unica e testes automatizados.',
+        lesson: 'Codigo eh para humanos primeiro; manutencao custa mais que escrever.',
+        worldX: 200, floatY: 130   // before XEROX PARC (x=500)
     },
     {
         id: 'b02', title: 'The Clean Coder', author: 'Robert C. Martin', color: '#16a34a',
-        summary: 'Profissionalismo em engenharia. Disciplina, estimativas realistas, dizer "não", foco, prática deliberada e responsabilidade pessoal pela qualidade.',
-        lesson: 'Ser sênior não é saber mais tecnologia, é assumir compromisso com entrega previsível e qualidade.',
-        worldX: 700, floatY: 150
+        summary: 'Profissionalismo em engenharia. Disciplina, estimativas realistas, dizer nao, foco, pratica deliberada e responsabilidade pessoal pela qualidade.',
+        lesson: 'Ser senior nao eh saber mais tecnologia, eh assumir compromisso com entrega previsivel e qualidade.',
+        worldX: 1350, floatY: 150  // before APPLE GARAGE (x=1900)
     },
     {
         id: 'b03', title: 'Clean Architecture', author: 'Robert C. Martin', color: '#15803d',
-        summary: 'Arquitetura orientada a independência: do framework, do banco, da UI e de detalhes externos. Dependências apontam para o domínio.',
-        lesson: 'O negócio é o núcleo; tecnologia é detalhe substituível.',
-        worldX: 1200, floatY: 140
+        summary: 'Arquitetura orientada a independencia: do framework, do banco, da UI e de detalhes externos. Dependencias apontam para o dominio.',
+        lesson: 'O negocio eh o nucleo; tecnologia eh detalhe substituivel.',
+        worldX: 2700, floatY: 140  // before MICROSOFT (x=3300)
     },
     {
         id: 'b04', title: 'Design Patterns', author: 'GoF (Gang of Four)', color: '#3b82f6',
-        summary: 'Catálogo de soluções recorrentes para problemas clássicos de design orientado a objetos. Ensina quando abstrair, desacoplar e reutilizar.',
-        lesson: 'Não reinventar a roda; use padrões para reduzir complexidade e acoplamento.',
-        worldX: 2000, floatY: 160
+        summary: 'Catalogo de solucoes recorrentes para problemas classicos de design orientado a objetos. Ensina quando abstrair, desacoplar e reutilizar.',
+        lesson: 'Nao reinventar a roda; use padroes para reduzir complexidade e acoplamento.',
+        worldX: 4150, floatY: 160  // before NUBANK (x=4700)
     },
     {
         id: 'b05', title: 'Refactoring', author: 'Martin Fowler', color: '#6366f1',
-        summary: 'Melhorar código sem alterar comportamento. Pequenas mudanças contínuas mantém o sistema saudável.',
-        lesson: 'Dívida técnica cresce em silêncio; refatorar é manutenção estratégica, não luxo.',
-        worldX: 2600, floatY: 130
+        summary: 'Melhorar codigo sem alterar comportamento. Pequenas mudancas continuas mantem o sistema saudavel.',
+        lesson: 'Divida tecnica cresce em silencio; refatorar eh manutencao estrategica, nao luxo.',
+        worldX: 5500, floatY: 130  // before DISNEY (x=6100)
     },
     {
         id: 'b06', title: 'Domain-Driven Design', author: 'Eric Evans', color: '#8b5cf6',
-        summary: 'Modelar software a partir do domínio do negócio, usando linguagem ubíqua e limites claros (Bounded Contexts).',
-        lesson: 'Software complexo falha quando a tecnologia ignora o negócio.',
-        worldX: 3500, floatY: 150
+        summary: 'Modelar software a partir do dominio do negocio, usando linguagem ubiqua e limites claros (Bounded Contexts).',
+        lesson: 'Software complexo falha quando a tecnologia ignora o negocio.',
+        worldX: 6900, floatY: 150  // before GOOGLE (x=7500)
     },
     {
         id: 'b07', title: 'Implementing DDD', author: 'Vaughn Vernon', color: '#7c3aed',
-        summary: 'Versão prática do DDD: agregados, eventos de domínio, consistência, microsserviços orientados a contexto.',
-        lesson: 'Limites bem definidos evitam sistemas distribuídos caóticos.',
-        worldX: 4200, floatY: 140
+        summary: 'Versao pratica do DDD: agregados, eventos de dominio, consistencia, microsservicos orientados a contexto.',
+        lesson: 'Limites bem definidos evitam sistemas distribuidos caoticos.',
+        worldX: 8350, floatY: 140  // before FACEBOOK (x=8900)
     },
     {
         id: 'b08', title: 'Designing Data-Intensive Apps', author: 'Martin Kleppmann', color: '#ef4444',
-        summary: 'Bíblia de sistemas distribuídos: consistência, replicação, particionamento, tolerância a falhas, trade-offs CAP.',
-        lesson: 'Escala é sobre trade-offs; não existe sistema distribuído perfeito.',
-        worldX: 5100, floatY: 160
+        summary: 'Biblia de sistemas distribuidos: consistencia, replicacao, particionamento, tolerancia a falhas, trade-offs CAP.',
+        lesson: 'Escala eh sobre trade-offs; nao existe sistema distribuido perfeito.',
+        worldX: 9700, floatY: 160  // before IBM (x=10300)
     },
     {
         id: 'b09', title: 'Building Microservices', author: 'Sam Newman', color: '#f97316',
-        summary: 'Como decompor sistemas, evitar acoplamento e gerenciar comunicação, deploy e governança.',
-        lesson: 'Microsserviços só funcionam com autonomia, observabilidade e cultura madura.',
-        worldX: 5700, floatY: 130
+        summary: 'Como decompor sistemas, evitar acoplamento e gerenciar comunicacao, deploy e governanca.',
+        lesson: 'Microsservicos so funcionam com autonomia, observabilidade e cultura madura.',
+        worldX: 11100, floatY: 130 // before AMAZON (x=11700)
     },
     {
         id: 'b10', title: 'Release It!', author: 'Michael Nygard', color: '#dc2626',
-        summary: 'Sistemas falham em produção por causas previsíveis. Circuit breaker, bulkhead, retry, timeout e padrões de resiliência.',
-        lesson: 'Projetar para falhar é o único caminho para estabilidade.',
-        worldX: 6500, floatY: 150
+        summary: 'Sistemas falham em producao por causas previsiveis. Circuit breaker, bulkhead, retry, timeout e padroes de resiliencia.',
+        lesson: 'Projetar para falhar eh o unico caminho para estabilidade.',
+        worldX: 12500, floatY: 150 // before MERCADO LIVRE (x=13100)
     },
     {
         id: 'b11', title: 'Site Reliability Engineering', author: 'Google SRE Team', color: '#fbbf24',
-        summary: 'Operar sistemas como engenharia: SLO, error budget, automação, redução de toil.',
-        lesson: 'Confiabilidade é uma métrica de negócio, não apenas técnica.',
-        worldX: 7200, floatY: 140
+        summary: 'Operar sistemas como engenharia: SLO, error budget, automacao, reducao de toil.',
+        lesson: 'Confiabilidade eh uma metrica de negocio, nao apenas tecnica.',
+        worldX: 13900, floatY: 140 // before JP MORGAN (x=14500)
     },
     {
         id: 'b12', title: 'The Phoenix Project', author: 'Gene Kim', color: '#f59e0b',
-        summary: 'Romance sobre transformação DevOps. Mostra gargalos, fluxo, dependências e melhoria contínua.',
-        lesson: 'TI é sistema de produção; otimizar o fluxo gera resultado real.',
-        worldX: 8200, floatY: 160
+        summary: 'Romance sobre transformacao DevOps. Mostra gargalos, fluxo, dependencias e melhoria continua.',
+        lesson: 'TI eh sistema de producao; otimizar o fluxo gera resultado real.',
+        worldX: 15300, floatY: 160 // before PAYPAL (x=15900)
     },
     {
         id: 'b13', title: 'The DevOps Handbook', author: 'Gene Kim', color: '#eab308',
-        summary: 'Manual prático: CI/CD, infraestrutura como código, feedback rápido, cultura colaborativa.',
-        lesson: 'Velocidade com qualidade só vem com automação e integração contínua.',
-        worldX: 9500, floatY: 130
+        summary: 'Manual pratico: CI/CD, infraestrutura como codigo, feedback rapido, cultura colaborativa.',
+        lesson: 'Velocidade com qualidade so vem com automacao e integracao continua.',
+        worldX: 16700, floatY: 130 // before NETFLIX (x=17300)
     },
     {
         id: 'b14', title: 'The Lean Startup', author: 'Eric Ries', color: '#ec4899',
-        summary: 'Construir, medir, aprender. Validar hipóteses antes de escalar.',
-        lesson: 'Não construa mais; aprenda mais rápido com o mercado.',
-        worldX: 10200, floatY: 150
+        summary: 'Construir, medir, aprender. Validar hipoteses antes de escalar.',
+        lesson: 'Nao construa mais; aprenda mais rapido com o mercado.',
+        worldX: 18100, floatY: 150 // before SPACEX (x=18700)
     },
     {
         id: 'b15', title: 'Measure What Matters', author: 'John Doerr', color: '#d946ef',
-        summary: 'OKRs para alinhar estratégia e execução. Foco em resultados mensuráveis e prioridades claras.',
-        lesson: 'O que não é medido não é gerenciado.',
-        worldX: 11200, floatY: 140
+        summary: 'OKRs para alinhar estrategia e execucao. Foco em resultados mensuráveis e prioridades claras.',
+        lesson: 'O que nao eh medido nao eh gerenciado.',
+        worldX: 19500, floatY: 140 // before TESLA (x=20100)
     },
     {
         id: 'b16', title: 'Good Strategy Bad Strategy', author: 'Richard Rumelt', color: '#a855f7',
-        summary: 'Estratégia real é diagnóstico + escolha clara + ações coerentes. Evita metas genéricas e slogans.',
-        lesson: 'Estratégia é foco e renúncia, não ambição vaga.',
-        worldX: 12800, floatY: 160
+        summary: 'Estrategia real eh diagnostico + escolha clara + acoes coerentes. Evita metas genericas e slogans.',
+        lesson: 'Estrategia eh foco e renuncia, nao ambicao vaga.',
+        worldX: 20900, floatY: 160 // before ITAU (x=21500)
     },
     {
         id: 'b17', title: 'Cracking the Coding Interview', author: 'Gayle Laakmann McDowell', color: '#06b6d4',
-        summary: 'Preparação para entrevistas técnicas: arrays, strings, árvores, grafos, recursão e complexidade algorítmica.',
-        lesson: 'Entrevistas medem raciocínio, não decoreba. Pratique decomposição de problemas.',
-        worldX: 13500, floatY: 130
+        summary: 'Preparacao para entrevistas tecnicas: arrays, strings, arvores, grafos, recursao e complexidade algoritmica.',
+        lesson: 'Entrevistas medem raciocinio, nao decoreba. Pratique decomposicao de problemas.',
+        worldX: 22300, floatY: 130 // before UBER (x=22900)
     },
     {
         id: 'b18', title: 'Introduction to Algorithms', author: 'Cormen, Leiserson, Rivest, Stein', color: '#0891b2',
-        summary: 'CLRS: a referência acadêmica em algoritmos. Ordenação, grafos, programação dinâmica, NP-completude.',
-        lesson: 'Complexidade computacional define os limites do que é possível.',
-        worldX: 14500, floatY: 150
+        summary: 'CLRS: a referencia academica em algoritmos. Ordenacao, grafos, programacao dinamica, NP-completude.',
+        lesson: 'Complexidade computacional define os limites do que eh possivel.',
+        worldX: 23700, floatY: 150 // before NVIDIA (x=24300)
     },
     {
         id: 'b19', title: 'System Design Interview', author: 'Alex Xu', color: '#14b8a6',
-        summary: 'Como projetar sistemas escaláveis: load balancer, cache, CDN, sharding, message queue, rate limiter.',
-        lesson: 'Design de sistemas é sobre trade-offs mensuráveis, não escolhas absolutas.',
-        worldX: 15500, floatY: 140
+        summary: 'Como projetar sistemas escalaveis: load balancer, cache, CDN, sharding, message queue, rate limiter.',
+        lesson: 'Design de sistemas eh sobre trade-offs mensuraveis, nao escolhas absolutas.',
+        worldX: 25100, floatY: 140 // before AURORA LABS (x=25700)
     },
     {
         id: 'b20', title: 'Grokking Algorithms', author: 'Aditya Bhargava', color: '#10b981',
-        summary: 'Algoritmos explicados visualmente: busca binária, BFS, Dijkstra, programação dinâmica, KNN.',
-        lesson: 'Pensar algoritmicamente é mais importante que decorar implementações.',
-        worldX: 16500, floatY: 160
+        summary: 'Algoritmos explicados visualmente: busca binaria, BFS, Dijkstra, programacao dinamica, KNN.',
+        lesson: 'Pensar algoritmicamente eh mais importante que decorar implementacoes.',
+        worldX: 26500, floatY: 160 // before SANTANDER (x=27100)
     },
     {
         id: 'b21', title: 'Accelerate', author: 'Forsgren, Humble, Kim', color: '#84cc16',
-        summary: 'Métricas DORA: frequência de deploy, lead time, MTTR, taxa de falha. Evidência científica para DevOps.',
-        lesson: 'Performance de engenharia se mede com dados, não opinião.',
-        worldX: 17500, floatY: 130
+        summary: 'Metricas DORA: frequencia de deploy, lead time, MTTR, taxa de falha. Evidencia cientifica para DevOps.',
+        lesson: 'Performance de engenharia se mede com dados, nao opiniao.',
+        worldX: 27900, floatY: 130 // before BRADESCO (x=28500)
     },
     {
         id: 'b22', title: 'Staff Engineer', author: 'Will Larson', color: '#a3e635',
-        summary: 'Além de sênior: influência técnica, mentoria, decisões arquiteturais, navegação organizacional.',
+        summary: 'Alem de senior: influencia tecnica, mentoria, decisoes arquiteturais, navegacao organizacional.',
         lesson: 'Staff Engineer resolve problemas que nenhum time sozinho consegue.',
-        worldX: 18500, floatY: 150
+        worldX: 29300, floatY: 150 // before GEMINI (x=29900)
     },
     {
         id: 'b23', title: 'A Philosophy of Software Design', author: 'John Ousterhout', color: '#65a30d',
         summary: 'Complexidade e o inimigo. Modulos profundos, interfaces simples, abstrair o que importa.',
         lesson: 'Bom design e invisivel; mau design grita a cada mudanca.',
-        worldX: 19500, floatY: 140
+        worldX: 30700, floatY: 140 // before BIO CODE (x=31300)
+    },
+    {
+        id: 'b24', title: 'The Pragmatic Programmer', author: 'Andrew Hunt & David Thomas', color: '#f59e0b',
+        summary: 'O manual do engenheiro completo: ortogonalidade, tracer bullets, DRY, automacao, testes, comunicacao e responsabilidade profissional. Cobre toda a carreira, do codigo ao impacto organizacional.',
+        lesson: 'Engenheiros pragmaticos adaptam ferramentas ao problema - nunca o contrario. Pense grande, entregue incremental.',
+        worldX: 32100, floatY: 150 // before CLOUD VALLEY (x=32700)
     },
 ];
 

@@ -1949,7 +1949,7 @@ const COMPANY_LOGOS = {
 
 // ---- collectible books ----
 // Layout: 1 book BEFORE each company → book → company → book → company → ...
-// 24 companies, 23 books (each ~500 units before building start)
+// 24 companies, 24 books (each ~600 units before building start)
 const BOOKS_DATA = [
     {
         id: 'b01', title: 'Clean Code', author: 'Robert C. Martin', color: '#22c55e',
@@ -2088,6 +2088,12 @@ const BOOKS_DATA = [
         summary: 'Complexidade e o inimigo. Modulos profundos, interfaces simples, abstrair o que importa.',
         lesson: 'Bom design e invisivel; mau design grita a cada mudanca.',
         worldX: 30700, floatY: 140 // before BIO CODE (x=31300)
+    },
+    {
+        id: 'b24', title: 'The Pragmatic Programmer', author: 'Andrew Hunt & David Thomas', color: '#f59e0b',
+        summary: 'O manual do engenheiro completo: ortogonalidade, tracer bullets, DRY, automação, testes, comunicação e responsabilidade profissional. Cobre toda a carreira, do código ao impacto organizacional.',
+        lesson: 'Engenheiros pragmáticos adaptam ferramentas ao problema — nunca o contrário. Pense grande, entregue incremental.',
+        worldX: 32100, floatY: 150 // before CLOUD VALLEY (x=32700)
     },
 ];
 
