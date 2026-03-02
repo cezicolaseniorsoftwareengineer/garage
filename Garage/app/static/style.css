@@ -3169,6 +3169,17 @@ body {
         justify-content: flex-start;
     }
 
+    /* PAUSA e SAIR sempre visíveis no mobile — ficam na frente via order */
+    #btnPauseHud {
+        order: -2;
+        flex-shrink: 0;
+    }
+
+    #hudBtnSair {
+        order: -1;
+        flex-shrink: 0;
+    }
+
     .hud-block {
         padding: 2px 6px;
         flex-shrink: 1;
