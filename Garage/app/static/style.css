@@ -2866,14 +2866,19 @@ body {
     background: #0d1117;
     border-right: 1px solid #21262d;
     user-select: none;
+    overflow: hidden;
+    /* scroll sync via JS — no visible scrollbar */
+    flex-shrink: 0;
 }
 
 .ide-line-numbers span {
     color: #484f58;
     font-family: var(--font);
-    font-size: 0.78rem;
+    font-size: 0.82rem;
+    /* MUST match .ide-code-input font-size for pixel-perfect row alignment */
     line-height: 1.65;
     padding-right: 4px;
+    display: block;
 }
 
 .ide-code-input {

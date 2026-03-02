@@ -7670,12 +7670,20 @@ const IDE = {
         }
         termStatus.className = 'ide-terminal-status';
 
-        // Line numbers sync — use stored bound handler to prevent listener stacking on re-open
+        // Line numbers sync — use stored bound handlers to prevent listener stacking on re-open
         this._syncLineNumbers();
         const _inputEl = document.getElementById('ideCodeInput');
         if (this._syncBound) _inputEl.removeEventListener('input', this._syncBound);
+        if (this._scrollBound) _inputEl.removeEventListener('scroll', this._scrollBound);
         this._syncBound = () => IDE._syncLineNumbers();
+        // Scroll sync: keep line numbers vertically locked to textarea position (VSCode-style)
+        this._scrollBound = () => {
+            const ln = document.getElementById('ideLineNumbers');
+            const ta = document.getElementById('ideCodeInput');
+            if (ln && ta) ln.scrollTop = ta.scrollTop;
+        };
         _inputEl.addEventListener('input', this._syncBound);
+        _inputEl.addEventListener('scroll', this._scrollBound);
 
         // Draw characters on canvases
         this._drawPlayerChar();
@@ -7748,11 +7756,16 @@ const IDE = {
     _syncLineNumbers() {
         const textarea = document.getElementById('ideCodeInput');
         const lineNums = document.getElementById('ideLineNumbers');
+        if (!textarea || !lineNums) return;
         const lines = (textarea.value || '').split('\n').length;
-        const count = Math.max(lines, 10);
+        // Always render enough lines for the full content (never less than visible rows)
+        const visibleExtraRows = Math.ceil((textarea.clientHeight || 0) / (parseFloat(getComputedStyle(textarea).lineHeight) || 22));
+        const count = Math.max(lines + visibleExtraRows, 50);
         let html = '';
         for (let i = 1; i <= count; i++) html += '<span>' + i + '</span>';
         lineNums.innerHTML = html;
+        // Restore scroll sync after innerHTML rebuild (browser resets scrollTop on innerHTML change)
+        lineNums.scrollTop = textarea.scrollTop;
     },
 
     async runCode() {
