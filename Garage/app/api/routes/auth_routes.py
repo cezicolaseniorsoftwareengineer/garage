@@ -161,7 +161,33 @@ def api_register(req: RegisterRequest, background_tasks: BackgroundTasks):
             )
 
         # Fire email in background — API responds immediately, email sent concurrently
-        background_tasks.add_task(send_verification_email, req.email, code, req.full_name)
+        # Wrapped so SMTP failures are audited and never silently lost
+        def _send_email_with_audit(email: str, otp_code: str, name: str):
+            import logging as _logging
+            _log = _logging.getLogger("garage.email")
+            try:
+                ok = send_verification_email(email, otp_code, name)
+                if ok:
+                    _log.info("[EMAIL OK] OTP sent to %s", email)
+                    try:
+                        audit_log("otp_email_sent", email, {"status": "sent"})
+                    except Exception:
+                        pass
+                else:
+                    # SMTP not configured or auth failed — code printed to server log above
+                    _log.error("[EMAIL FAIL] send_verification_email returned False for %s", email)
+                    try:
+                        audit_log("otp_email_failed", email, {"status": "smtp_error", "code_in_server_log": True})
+                    except Exception:
+                        pass
+            except Exception as _exc:
+                _log.error("[EMAIL EXCEPTION] for %s: %s", email, _exc)
+                try:
+                    audit_log("otp_email_failed", email, {"status": "exception", "error": str(_exc)})
+                except Exception:
+                    pass
+
+        background_tasks.add_task(_send_email_with_audit, req.email, code, req.full_name)
 
         try:
             audit_log("user_register_pending", req.email, {
@@ -465,8 +491,30 @@ def api_resend_verification(req: ResendVerificationRequest, background_tasks: Ba
             return _generic_ok
 
         code, full_name = result
-        # Fire email in background — responds instantly
-        background_tasks.add_task(send_verification_email, req.email, code, full_name)
+        # Fire email in background — responds instantly (wrapped with audit on failure)
+        def _resend_with_audit(email: str, otp_code: str, name: str):
+            import logging as _logging2
+            _log2 = _logging2.getLogger("garage.email")
+            try:
+                ok = send_verification_email(email, otp_code, name)
+                if not ok:
+                    _log2.error("[EMAIL FAIL] resend returned False for %s", email)
+                    try:
+                        audit_log("otp_email_failed", email, {"status": "smtp_error", "action": "resend"})
+                    except Exception:
+                        pass
+                else:
+                    try:
+                        audit_log("otp_email_sent", email, {"status": "resent"})
+                    except Exception:
+                        pass
+            except Exception as _exc:
+                _log2.error("[EMAIL EXCEPTION] resend for %s: %s", email, _exc)
+                try:
+                    audit_log("otp_email_failed", email, {"status": "exception", "error": str(_exc), "action": "resend"})
+                except Exception:
+                    pass
+        background_tasks.add_task(_resend_with_audit, req.email, code, full_name)
 
         return {
             "success": True,
