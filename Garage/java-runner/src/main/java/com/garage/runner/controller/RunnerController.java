@@ -304,7 +304,10 @@ public class RunnerController {
                 .start();
             p.waitFor(5, TimeUnit.SECONDS);
             return readStream(p.getInputStream()).trim();
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();   // restore interrupted status
+            return "unavailable";
+        } catch (IOException e) {
             return "unavailable";
         }
     }
