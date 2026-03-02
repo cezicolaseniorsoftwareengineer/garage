@@ -51,6 +51,13 @@ services:
         sync: false
       - key: ADMIN_EMAIL
         sync: false
+      - key: RESEND_API_KEY
+        # Resend transactional email -- primary sender (anti-spam, SPF/DKIM ready)
+        sync: false
+      - key: RESEND_FROM
+        # From address -- use verified domain once configured, e.g. Garage <noreply@yourdomain.com>
+        # Default: Garage <onboarding@resend.dev> (Resend shared domain, works for all recipients)
+        value: "Garage <onboarding@resend.dev>"
 
   # ── 2. Java 17 code runner (Spring Boot) ───────────────────────────────
   - type: web
