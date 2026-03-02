@@ -35,7 +35,7 @@ import time
 import urllib.request
 import urllib.error
 from fastapi import APIRouter
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 # ---------------------------------------------------------------------------
 # Router
@@ -98,6 +98,8 @@ class AIValidateRequest(BaseModel):
 
 
 class AIValidateResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     ok:            bool
     compile_ok:    bool
     compile_error: str
