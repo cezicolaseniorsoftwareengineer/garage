@@ -8900,7 +8900,14 @@ const Auth = {
                 btnResend.textContent = 'Enviando...';
                 try {
                     const res = await API.post('/api/auth/resend-verification', { email });
-                    sucEl.textContent = res.message || 'Novo código enviado!';
+                    if (res._debug_otp) {
+                        const hintEl = document.getElementById('verifyEmailHint');
+                        if (hintEl) hintEl.textContent = `[DEV] Código: ${res._debug_otp} — cole nas caixas acima.`;
+                        console.info('[GARAGE DEV] Resend OTP:', res._debug_otp);
+                        sucEl.textContent = `[DEV] Novo código: ${res._debug_otp}`;
+                    } else {
+                        sucEl.textContent = res.message || 'Novo código enviado!';
+                    }
                     sucEl.hidden = false;
                     // Countdown 30s with live update so user knows it's not frozen
                     let _secs = 30;
@@ -9014,9 +9021,14 @@ const Auth = {
                     this._pendingUsername = document.getElementById('regUsername').value.trim();
                     const hintEl = document.getElementById('verifyEmailHint');
                     if (hintEl) {
-                        hintEl.textContent =
-                            `Código enviado para ${res.email_hint || emailVal}. ` +
-                            `Não encontrou? Verifique o spam ou clique em "Reenviar código".`;
+                        if (res._debug_otp) {
+                            hintEl.textContent = `[DEV] Código: ${res._debug_otp} — cole nas caixas acima.`;
+                            console.info('[GARAGE DEV] Register OTP:', res._debug_otp);
+                        } else {
+                            hintEl.textContent =
+                                `Código enviado para ${res.email_hint || emailVal}. ` +
+                                `Não encontrou? Verifique o spam ou clique em "Reenviar código".`;
+                        }
                     }
                     // Clear OTP boxes
                     document.querySelectorAll('.otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });

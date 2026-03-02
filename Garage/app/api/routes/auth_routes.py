@@ -205,7 +205,7 @@ def api_register(req: RegisterRequest, background_tasks: BackgroundTasks):
         except Exception:
             pass
 
-        return {
+        reg_response: dict = {
             "success": True,
             "requires_verification": True,
             "email_hint": _mask_email(req.email),
@@ -215,6 +215,12 @@ def api_register(req: RegisterRequest, background_tasks: BackgroundTasks):
                 "Insira o codigo para concluir o cadastro e entrar no jogo."
             ),
         }
+        if _DEBUG_MODE:
+            reg_response["_debug_otp"] = code
+            _lg.getLogger("garage.auth").warning(
+                "[DEV ONLY] registration OTP for %s: %s", req.email, code
+            )
+        return reg_response
 
     # ---------------------------------------------------------------------------
     # Dev / JSON fallback: create user directly (no email verification)
@@ -524,12 +530,18 @@ def api_resend_verification(req: ResendVerificationRequest, background_tasks: Ba
                     pass
         background_tasks.add_task(_resend_with_audit, req.email, code, full_name)
 
-        return {
+        resend_response: dict = {
             "success": True,
             "email_hint": _mask_email(req.email),
             "email_was_sent": True,
             "message": "Novo codigo enviado para o seu e-mail.",
         }
+        if _DEBUG_MODE:
+            resend_response["_debug_otp"] = code
+            _lg.getLogger("garage.auth").warning(
+                "[DEV ONLY] resend OTP for %s: %s", req.email, code
+            )
+        return resend_response
 
     # ---------------------------------------------------------------------------
     # Legacy fallback: email_verifications table
