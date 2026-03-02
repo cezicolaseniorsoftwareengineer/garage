@@ -5588,6 +5588,12 @@ const Game = {
             if (opened) return;
         }
 
+        // Always refresh player from server before filtering to prevent stale
+        // completed_challenges from showing an already-completed challenge again.
+        if (State.sessionId) {
+            try { State.player = await API.get('/api/session/' + State.sessionId); } catch (_) { }
+        }
+
         const next = State.challenges.filter(c => c.region === regionId)
             .find(c => !State.player.completed_challenges.includes(c.id));
         if (!next) {
@@ -5655,7 +5661,17 @@ const Game = {
                     State._pendingAfterFeedback = { type: 'next_theory', region: region, promotion: r.promotion ? r : null };
                 }
             }
-        } catch (e) { alert('Erro: ' + e.message); }
+        } catch (e) {
+            // If the challenge was already completed (stale client state), dismiss silently.
+            if (e.message && e.message.includes('already completed')) {
+                UI.hideChallenge();
+                if (State.sessionId) {
+                    try { State.player = await API.get('/api/session/' + State.sessionId); UI.updateHUD(State.player); } catch (_) { }
+                }
+                return;
+            }
+            alert('Erro: ' + e.message);
+        }
     },
 
     async nextChallenge() {
