@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 import hashlib
+import logging as _lg
 import os
 import secrets
 import time
@@ -570,11 +571,15 @@ class ResetPasswordRequest(BaseModel):
     new_password: str = Field(..., min_length=6, max_length=128)
 
 
+_DEBUG_MODE = os.environ.get("DEBUG", "").lower() in ("1", "true", "yes")
+
+
 @router.post("/forgot-password")
 def api_forgot_password(req: ForgotPasswordRequest, background_tasks: BackgroundTasks):
     """Send a 6-digit OTP to reset the password.
 
     Always returns HTTP 200 to prevent e-mail enumeration.
+    In DEBUG mode returns _debug_otp so dev can test without e-mail provider.
     """
     _generic_ok = {"success": True, "message": "Se este e-mail estiver cadastrado, você receberá um código de redefinição."}
 
@@ -595,6 +600,7 @@ def api_forgot_password(req: ForgotPasswordRequest, background_tasks: Background
         "expires_at": time.time() + _PWD_RESET_TTL,
         "email": user.email,
     }
+    _lg.getLogger("garage.auth").info("[PWD RESET] OTP stored for user_id=%s email=%s", user.id, user.email)
 
     # Fire email in background so endpoint responds instantly
     def _send_reset(email: str, otp: str, name: str):
@@ -605,16 +611,21 @@ def api_forgot_password(req: ForgotPasswordRequest, background_tasks: Background
             else:
                 audit_log("pwd_reset_email_sent", email, {})
         except Exception as exc:
-            import logging as _lg
             _lg.getLogger("garage.auth").error("[PWD RESET EMAIL FAIL] %s: %s", email, exc)
 
     background_tasks.add_task(_send_reset, user.email, code, user.full_name)
 
-    return {
+    response: dict = {
         "success": True,
         "email_hint": _mask_email(user.email),
         "message": "Se este e-mail estiver cadastrado, você receberá um código de redefinição.",
     }
+    if _DEBUG_MODE:
+        response["_debug_otp"] = code
+        _lg.getLogger("garage.auth").warning(
+            "[DEV ONLY] password reset OTP for %s: %s", user.email, code
+        )
+    return response
 
 
 @router.post("/reset-password")

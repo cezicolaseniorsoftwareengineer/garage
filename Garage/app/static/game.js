@@ -8660,23 +8660,41 @@ const Auth = {
             btn.disabled = true;
             btn.textContent = 'ENVIANDO...';
             try {
-                await API.post('/api/auth/forgot-password', { email });
+                const res = await API.post('/api/auth/forgot-password', { email });
                 this._pendingResetEmail = email;
-                sucEl.textContent = 'Código enviado! Verifique sua caixa de entrada.';
+
+                // DEV mode: server returns _debug_otp when DEBUG=true in .env
+                let msg = 'Código enviado! Verifique sua caixa de entrada.';
+                if (res && res._debug_otp) {
+                    msg = `[DEV] Código: ${res._debug_otp} — use-o na próxima tela.`;
+                    console.info('[GARAGE DEV] Reset OTP:', res._debug_otp);
+                }
+                sucEl.textContent = msg;
                 sucEl.hidden = false;
                 setTimeout(() => {
                     const hint = document.getElementById('resetEmailHint');
-                    if (hint) hint.textContent = `Código enviado para ${email}. Insira abaixo.`;
+                    if (hint) {
+                        hint.textContent = res && res._debug_otp
+                            ? `[DEV] Código: ${res._debug_otp}`
+                            : `Código enviado para ${email}. Insira abaixo.`;
+                    }
                     UI.showScreen('screen-reset-password');
                 }, 1200);
             } catch (err) {
-                // Still show success for anti-enumeration
-                sucEl.textContent = 'Se este e-mail está cadastrado, você receberá o código em breve.';
-                sucEl.hidden = false;
-                this._pendingResetEmail = email;
-                setTimeout(() => {
-                    UI.showScreen('screen-reset-password');
-                }, 1600);
+                console.error('[GARAGE] forgot-password error:', err);
+                if (!err.status) {
+                    // Erro de rede — servidor inacessível
+                    errEl.textContent = 'Servidor indisponível. Verifique se o servidor está rodando e tente novamente.';
+                    errEl.hidden = false;
+                } else {
+                    // Erro HTTP do servidor — anti-enumeração (4xx/5xx)
+                    sucEl.textContent = 'Se este e-mail está cadastrado, você receberá o código em breve.';
+                    sucEl.hidden = false;
+                    this._pendingResetEmail = email;
+                    setTimeout(() => {
+                        UI.showScreen('screen-reset-password');
+                    }, 1600);
+                }
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'ENVIAR CÓDIGO';
@@ -8756,6 +8774,7 @@ const Auth = {
                 sucEl.hidden = false;
                 setTimeout(() => UI.showScreen('screen-login'), 1800);
             } catch (err) {
+                console.error('[GARAGE] reset-password error:', err);
                 errEl.textContent = err.message || 'Código inválido, expirado ou e-mail incorreto.';
                 errEl.hidden = false;
                 rBoxes.forEach(b => b.classList.add('filled'));
