@@ -2302,7 +2302,9 @@ const World = {
         this.canvas.height = this.H;
         const mobileControls = document.querySelector('.mobile-controls');
         const controlsVisible = mobileControls && getComputedStyle(mobileControls).display !== 'none';
-        this.GROUND_Y = controlsVisible ? this.H - 160 : this.H - 80;
+        // Use actual rendered height of controls + buffer instead of hardcoded 160
+        const ctrlH = controlsVisible ? (mobileControls.offsetHeight || 110) + 24 : 80;
+        this.GROUND_Y = this.H - ctrlH;
     },
 
     generateDecorations() {
@@ -2423,18 +2425,33 @@ const World = {
             this.keys[e.code] = false;
         });
 
-        // Mobile buttons -- hold-to-move with touchcancel safety
+        // Mobile buttons -- PointerEvent API: multi-touch + setPointerCapture
+        // Solves: (1) keys stuck when finger slides off button,
+        //         (2) simultaneous left+jump not working,
+        //         (3) touchcancel race conditions on iOS.
         const hold = (id, code) => {
             const el = document.getElementById(id);
             if (!el) return;
-            const on = () => { if (State.paused || State.isInPrep || State.isInChallenge || IDE.isOpen()) return; this.keys[code] = true; el.classList.add('pressed'); };
-            const off = () => { this.keys[code] = false; el.classList.remove('pressed'); };
-            el.addEventListener('mousedown', on);
-            el.addEventListener('mouseup', off);
-            el.addEventListener('mouseleave', off);
-            el.addEventListener('touchstart', e => { e.preventDefault(); on(); }, { passive: false });
-            el.addEventListener('touchend', e => { e.preventDefault(); off(); }, { passive: false });
-            el.addEventListener('touchcancel', e => { e.preventDefault(); off(); }, { passive: false });
+            const on = () => {
+                if (State.paused || State.isInPrep || State.isInChallenge || IDE.isOpen()) return;
+                this.keys[code] = true;
+                el.classList.add('pressed');
+            };
+            const off = () => {
+                this.keys[code] = false;
+                el.classList.remove('pressed');
+            };
+            // pointerdown + setPointerCapture: all pointer events routed to this element
+            // even if the finger moves outside -- ensures pointerup/pointercancel always fires
+            el.addEventListener('pointerdown', e => {
+                e.preventDefault();
+                try { el.setPointerCapture(e.pointerId); } catch (_) { }
+                on();
+            });
+            el.addEventListener('pointerup', e => { e.preventDefault(); off(); });
+            el.addEventListener('pointercancel', e => { e.preventDefault(); off(); });
+            // lostpointercapture: last-resort cleanup (fires on finger lift, browser steal, etc.)
+            el.addEventListener('lostpointercapture', () => off());
         };
         hold('btnLeft', 'ArrowLeft');
         hold('btnRight', 'ArrowRight');
@@ -2452,12 +2469,22 @@ const World = {
                 else if (State.isInDialog) this.closeDialog();
                 else if (!State.isInChallenge) this.tryInteract();
             };
-            actBtn.addEventListener('click', doAction);
-            actBtn.addEventListener('touchstart', e => { e.preventDefault(); doAction(); }, { passive: false });
+            actBtn.addEventListener('pointerdown', e => {
+                e.preventDefault();
+                try { actBtn.setPointerCapture(e.pointerId); } catch (_) { }
+                doAction();
+            });
         }
 
         // Prevent body scroll and bounce on iOS when touching the game canvas
         document.getElementById('gameCanvas').addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+        // Safety net: if any movement key gets stuck (e.g. focus loss), release all on visibilitychange
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                ['ArrowLeft', 'ArrowRight', 'ArrowUp'].forEach(k => { this.keys[k] = false; });
+                document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('pressed'));
+            }
+        });
     },
 
     /* --- INTERACTION (NPC proximity) --- */
