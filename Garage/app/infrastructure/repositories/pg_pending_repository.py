@@ -237,6 +237,67 @@ class PgPendingRepository:
         return user
 
     # ------------------------------------------------------------------
+    # Admin search / management
+    # ------------------------------------------------------------------
+
+    def search(self, q: str = "", include_expired: bool = True) -> list:
+        """Return pending registrations filtered by optional search term.
+
+        q: partial match on username, email or full_name (case-insensitive).
+        include_expired: when False, returns only still-valid records.
+        """
+        now = datetime.now(timezone.utc)
+        with self._sf() as session:
+            query = session.query(PendingRegistrationModel)
+            if not include_expired:
+                query = query.filter(PendingRegistrationModel.expires_at > now)
+            if q:
+                like = f"%{q}%"
+                query = query.filter(
+                    or_(
+                        PendingRegistrationModel.username.ilike(like),
+                        PendingRegistrationModel.email.ilike(like),
+                        PendingRegistrationModel.full_name.ilike(like),
+                    )
+                )
+            rows = query.order_by(PendingRegistrationModel.created_at.desc()).all()
+            result = []
+            for row in rows:
+                result.append({
+                    "id": row.id,
+                    "full_name": row.full_name,
+                    "username": row.username,
+                    "email": row.email,
+                    "whatsapp": getattr(row, "whatsapp", "---"),
+                    "profession": getattr(row, "profession", "---"),
+                    "expires_at": row.expires_at.isoformat() if row.expires_at else None,
+                    "created_at": row.created_at.isoformat() if row.created_at else None,
+                    "is_expired": (row.expires_at < now) if row.expires_at else False,
+                })
+            return result
+
+    def count_active(self) -> int:
+        """Count non-expired pending registrations."""
+        now = datetime.now(timezone.utc)
+        with self._sf() as session:
+            return (
+                session.query(PendingRegistrationModel)
+                .filter(PendingRegistrationModel.expires_at > now)
+                .count()
+            )
+
+    def delete_by_id(self, pending_id: str) -> bool:
+        """Delete a pending registration by its ID. Returns True if a row was deleted."""
+        with self._sf() as session:
+            count = (
+                session.query(PendingRegistrationModel)
+                .filter(PendingRegistrationModel.id == pending_id)
+                .delete()
+            )
+            session.commit()
+            return count > 0
+
+    # ------------------------------------------------------------------
     # Cleanup
     # ------------------------------------------------------------------
 

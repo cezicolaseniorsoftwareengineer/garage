@@ -13,14 +13,16 @@ _user_repo = None
 _player_repo = None
 _leaderboard_repo = None
 _challenge_repo = None
+_pending_repo = None
 
 
-def init_admin_routes(user_repo, player_repo, leaderboard_repo, challenge_repo):
-    global _user_repo, _player_repo, _leaderboard_repo, _challenge_repo
+def init_admin_routes(user_repo, player_repo, leaderboard_repo, challenge_repo, pending_repo=None):
+    global _user_repo, _player_repo, _leaderboard_repo, _challenge_repo, _pending_repo
     _user_repo = user_repo
     _player_repo = player_repo
     _leaderboard_repo = leaderboard_repo
     _challenge_repo = challenge_repo
+    _pending_repo = pending_repo
 
 
 # Admin e-mail helpers are now shared via admin_utils to avoid drift.
@@ -87,6 +89,14 @@ def api_admin_dashboard(current_user: dict = Depends(get_current_user)):
         except Exception:  # pragma: no cover
             online_now = 0
 
+    # Pending registrations count (awaiting email verification)
+    pending_count = 0
+    if _pending_repo is not None and hasattr(_pending_repo, "count_active"):
+        try:
+            pending_count = _pending_repo.count_active()
+        except Exception:
+            pass
+
     return {
         "total_users": total_users,
         "total_sessions": total_sessions,
@@ -95,6 +105,7 @@ def api_admin_dashboard(current_user: dict = Depends(get_current_user)):
         "active_games": active_count,
         "game_over_sessions": game_over_count,
         "online_now": online_now,
+        "pending_count": pending_count,
     }
 
 
@@ -479,3 +490,44 @@ def api_admin_delete_user(
         pass
 
     return {"success": True, "message": "Usuario deletado com sucesso."}
+
+
+# ---------------------------------------------------------------------------
+# Pending registrations — busca de cadastros incompletos
+# ---------------------------------------------------------------------------
+
+@router.get("/pending")
+def api_admin_pending(
+    q: str = "",
+    include_expired: bool = True,
+    current_user: dict = Depends(get_current_user),
+):
+    """Return pending registrations awaiting email OTP verification.
+
+    ?q=      — optional text filter (name / username / email, case-insensitive)
+    ?include_expired=false — show only still-valid records (default: all)
+    """
+    _assert_admin(current_user)
+    if _pending_repo is None:
+        return []
+    return _pending_repo.search(q=q.strip(), include_expired=include_expired)
+
+
+@router.delete("/pending/{pending_id}")
+def api_admin_delete_pending(
+    pending_id: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """Delete a single pending registration record (admin only)."""
+    _assert_admin(current_user)
+    if _pending_repo is None:
+        raise HTTPException(status_code=404, detail="Pending repo indisponivel.")
+    deleted = _pending_repo.delete_by_id(pending_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Registro pendente nao encontrado.")
+    try:
+        from app.infrastructure.audit import log_event as audit_log
+        audit_log("admin_delete_pending", current_user["sub"], {"pending_id": pending_id})
+    except Exception:
+        pass
+    return {"success": True, "message": "Registro pendente removido."}

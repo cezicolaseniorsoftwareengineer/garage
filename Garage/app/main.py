@@ -196,7 +196,8 @@ init_auth_routes(
     verification_repo=verification_repo if DATABASE_URL else None,
     pending_repo=pending_repo if DATABASE_URL else None,
 )
-init_admin_routes(user_repo, player_repo, leaderboard_repo, challenge_repo)
+init_admin_routes(user_repo, player_repo, leaderboard_repo, challenge_repo,
+                  pending_repo=pending_repo if DATABASE_URL else None)
 init_study_routes(player_repo, challenge_repo)
 
 # Register API routes
