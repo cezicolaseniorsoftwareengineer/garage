@@ -145,6 +145,14 @@
             margin-bottom: 20px;
             border-bottom: 2px solid #1e293b;
             padding-bottom: 0;
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .tabs::-webkit-scrollbar {
+            display: none;
         }
 
         .tab-btn {
@@ -691,6 +699,10 @@
                     <div class="stat-value" id="statChallenges">--</div>
                     <div class="stat-label">DESAFIOS</div>
                 </div>
+                <div class="stat-card" style="border-color:#f59e0b;">
+                    <div class="stat-value" id="statPending" style="color:#f59e0b;">--</div>
+                    <div class="stat-label">AGUARDANDO OTP</div>
+                </div>
             </div>
 
             <!-- Tabs -->
@@ -700,6 +712,7 @@
                 <button class="tab-btn" data-tab="ranking" onclick="switchTab('ranking')">RANKING</button>
                 <button class="tab-btn" data-tab="users" onclick="switchTab('users')">USUARIOS</button>
                 <button class="tab-btn" data-tab="sessions" onclick="switchTab('sessions')">SESSOES</button>
+                <button class="tab-btn" data-tab="pending" onclick="switchTab('pending')">&#9888; PENDENTES</button>
             </div>
 
             <!-- Online tab -->
@@ -750,6 +763,15 @@
 
             <!-- Users tab -->
             <div id="tab-users" class="tab-content">
+                <div style="display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px;">
+                    <input type="text" id="usersSearchInput"
+                        placeholder="&#128269;  Pesquisar por nome, usuário, e-mail ou profissão..."
+                        style="flex:1;min-width:260px;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:9px 14px;color:#e2e8f0;font-size:0.82rem;outline:none;"
+                        oninput="filterUsers(this.value)">
+                    <button onclick="filterUsers('');document.getElementById('usersSearchInput').value=''"
+                        style="background:#334155;color:#94a3b8;border:1px solid #475569;border-radius:7px;padding:8px 16px;font-size:0.75rem;font-weight:700;letter-spacing:1px;cursor:pointer;">LIMPAR</button>
+                    <span id="usersCountLabel" style="font-size:0.75rem;color:#64748b;"></span>
+                </div>
                 <div class="loading" id="usersLoading">Carregando usuarios...</div>
                 <table id="usersTable" style="display:none;">
                     <thead>
@@ -789,6 +811,47 @@
                         </tr>
                     </thead>
                     <tbody id="sessionsBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Pending tab -->
+            <div id="tab-pending" class="tab-content">
+                <div style="display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px;">
+                    <input type="text" id="pendingSearchInput"
+                        placeholder="&#128269;  Pesquisar por nome, usuário ou e-mail..."
+                        style="flex:1;min-width:260px;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:9px 14px;color:#e2e8f0;font-size:0.82rem;outline:none;"
+                        onkeydown="if(event.key==='Enter')loadPending()" oninput="debouncePendingSearch()">
+                    <label
+                        style="display:flex;align-items:center;gap:6px;font-size:0.78rem;color:#94a3b8;cursor:pointer;white-space:nowrap;">
+                        <input type="checkbox" id="pendingExpiredCheck" checked onchange="loadPending()"
+                            style="accent-color:#f59e0b;width:14px;height:14px;"> Incluir expirados
+                    </label>
+                    <button onclick="loadPending()"
+                        style="background:#fbbf24;color:#0f172a;border:none;border-radius:7px;padding:8px 18px;font-size:0.75rem;font-weight:700;letter-spacing:1px;cursor:pointer;">BUSCAR</button>
+                    <button onclick="purgeExpiredPending()"
+                        style="background:#334155;color:#94a3b8;border:1px solid #475569;border-radius:7px;padding:8px 16px;font-size:0.75rem;font-weight:700;letter-spacing:1px;cursor:pointer;">LIMPAR
+                        EXPIRADOS</button>
+                </div>
+                <div id="pendingInfo" style="font-size:0.78rem;color:#64748b;margin-bottom:10px;"></div>
+                <div class="loading" id="pendingLoading" style="display:none;">Buscando registros pendentes...</div>
+                <div id="pendingEmpty"
+                    style="display:none;text-align:center;padding:40px;color:#475569;font-size:0.85rem;">Nenhum
+                    registro pendente encontrado.</div>
+                <table id="pendingTable" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>NOME COMPLETO</th>
+                            <th>USUÁRIO</th>
+                            <th>E-MAIL</th>
+                            <th>WHATSAPP</th>
+                            <th>PROFISSÃO</th>
+                            <th>CRIADO</th>
+                            <th>EXPIRA</th>
+                            <th>STATUS</th>
+                            <th style="width:60px;">AÇÃO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pendingBody"></tbody>
                 </table>
             </div>
         </div>
@@ -932,6 +995,8 @@
             document.getElementById('statActive').textContent = d.active_games;
             document.getElementById('statGameOver').textContent = d.game_over_sessions;
             document.getElementById('statChallenges').textContent = d.total_challenges;
+            const pEl = document.getElementById('statPending');
+            if (pEl) pEl.textContent = d.pending_count ?? '0';
         }
 
         const STAGE_PT = {
@@ -1062,7 +1127,33 @@
             const body = document.getElementById('usersBody');
             body.innerHTML = '';
             if (!data || !Array.isArray(data)) { table.style.display = 'none'; return; }
+            // Store for client-side filtering
+            window._allUsersData = data;
             table.style.display = '';
+            _renderUsersRows(data);
+        }
+
+        function filterUsers(q) {
+            const data = window._allUsersData || [];
+            const search = q.trim().toLowerCase();
+            const filtered = search
+                ? data.filter(u =>
+                    (u.full_name || '').toLowerCase().includes(search) ||
+                    (u.username || '').toLowerCase().includes(search) ||
+                    (u.email || '').toLowerCase().includes(search) ||
+                    (u.profession || '').toLowerCase().includes(search))
+                : data;
+            _renderUsersRows(filtered);
+        }
+
+        function _renderUsersRows(data) {
+            const table = document.getElementById('usersTable');
+            const body = document.getElementById('usersBody');
+            const label = document.getElementById('usersCountLabel');
+            body.innerHTML = '';
+            if (!data || !data.length) { table.style.display = 'none'; label.textContent = '0 usuários'; return; }
+            table.style.display = '';
+            label.textContent = data.length + ' usuário' + (data.length !== 1 ? 's' : '');
             data.forEach(u => {
                 const tr = document.createElement('tr');
                 tr.className = 'tr-clickable';
@@ -1237,6 +1328,11 @@
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + tab));
+            // Auto-load pending tab on first activation
+            if (tab === 'pending') {
+                const body = document.getElementById('pendingBody');
+                if (!body || body.innerHTML.trim() === '') loadPending();
+            }
         }
 
         // -- Delete orphaned sessions (no linked user) --
@@ -1317,6 +1413,142 @@
                 return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
             });
             rows.forEach(r => tbody.appendChild(r));
+        }
+
+        // -- Pending registrations --
+        let _pendingSearchTimer = null;
+
+        function debouncePendingSearch() {
+            clearTimeout(_pendingSearchTimer);
+            _pendingSearchTimer = setTimeout(loadPending, 380);
+        }
+
+        async function loadPending() {
+            const q = (document.getElementById('pendingSearchInput')?.value || '').trim();
+            const includeExpired = document.getElementById('pendingExpiredCheck')?.checked !== false;
+            document.getElementById('pendingLoading').style.display = 'block';
+            document.getElementById('pendingEmpty').style.display = 'none';
+            document.getElementById('pendingTable').style.display = 'none';
+            document.getElementById('pendingInfo').textContent = '';
+            try {
+                const params = new URLSearchParams();
+                if (q) params.set('q', q);
+                params.set('include_expired', includeExpired ? 'true' : 'false');
+                const data = await apiFetch('/api/admin/pending?' + params.toString());
+                renderPending(data, q, includeExpired);
+            } catch (e) {
+                document.getElementById('pendingLoading').style.display = 'none';
+                showToast('Erro ao buscar pendentes: ' + e.message, 'error');
+            }
+        }
+
+        function renderPending(data, q, includeExpired) {
+            document.getElementById('pendingLoading').style.display = 'none';
+            const table = document.getElementById('pendingTable');
+            const empty = document.getElementById('pendingEmpty');
+            const body = document.getElementById('pendingBody');
+            const info = document.getElementById('pendingInfo');
+            body.innerHTML = '';
+
+            const total = data ? data.length : 0;
+            const active = data ? data.filter(r => !r.is_expired).length : 0;
+            const expired = total - active;
+            info.innerHTML =
+                '<strong style="color:#e2e8f0">' + total + '</strong> registro(s) encontrado(s) — ' +
+                '<span style="color:#4ade80">' + active + ' ativos</span> · ' +
+                '<span style="color:#94a3b8">' + expired + ' expirados</span>' +
+                (q ? ' · filtrado por "<em style=\'color:#fbbf24\'>' + esc(q) + '</em>"' : '');
+
+            if (!data || total === 0) {
+                table.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            table.style.display = '';
+
+            data.forEach(rec => {
+                const expired = rec.is_expired;
+                const statusBadgeHtml = expired
+                    ? '<span style="display:inline-block;padding:2px 9px;border-radius:8px;font-size:0.65rem;font-weight:700;background:#475569;color:#94a3b8;">EXPIRADO</span>'
+                    : '<span style="display:inline-block;padding:2px 9px;border-radius:8px;font-size:0.65rem;font-weight:700;background:#166534;color:#4ade80;">AGUARDANDO</span>';
+                const rowStyle = expired ? 'opacity:0.55;' : '';
+                const expiresAt = rec.expires_at ? new Date(rec.expires_at) : null;
+                const createdAt = rec.created_at ? new Date(rec.created_at) : null;
+                const now = new Date();
+                let expiresDisplay = '---';
+                if (expiresAt) {
+                    if (expired) {
+                        expiresDisplay = '<span style="color:#f87171">' + esc(formatDate(rec.expires_at)) + '</span>';
+                    } else {
+                        const diffMin = Math.round((expiresAt - now) / 60000);
+                        expiresDisplay = '<span style="color:#fbbf24">' + esc(formatDate(rec.expires_at)) + ' (' + diffMin + 'min)</span>';
+                    }
+                }
+                const tr = document.createElement('tr');
+                tr.setAttribute('style', rowStyle);
+                tr.innerHTML =
+                    '<td>' + esc(rec.full_name) + '</td>' +
+                    '<td><code style="color:#60a5fa">' + esc(rec.username) + '</code></td>' +
+                    '<td>' + esc(rec.email) + '</td>' +
+                    '<td>' + esc(rec.whatsapp || '---') + '</td>' +
+                    '<td>' + esc(rec.profession || '---') + '</td>' +
+                    '<td>' + esc(formatDate(rec.created_at)) + '</td>' +
+                    '<td>' + expiresDisplay + '</td>' +
+                    '<td>' + statusBadgeHtml + '</td>' +
+                    '<td><button class="btn-delete-user" onclick="deletePendingRecord(event,\'' + esc(rec.id) + '\',\'' + esc(rec.username) + '\')" title="Remover registro">&#128465;</button></td>';
+                body.appendChild(tr);
+            });
+        }
+
+        async function deletePendingRecord(evt, pendingId, username) {
+            if (!confirm('Remover o registro pendente de "' + username + '"?\nO usuário precisará se cadastrar novamente.')) return;
+            const btn = evt.currentTarget;
+            btn.disabled = true;
+            btn.textContent = '...';
+            try {
+                const res = await fetch('/api/admin/pending/' + encodeURIComponent(pendingId), {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + accessToken },
+                });
+                const d = await res.json();
+                if (res.ok) {
+                    const row = btn.closest('tr');
+                    if (row) { row.style.transition = 'opacity .2s'; row.style.opacity = '0'; setTimeout(() => row.remove(), 200); }
+                    showToast('Registro de "' + username + '" removido.', 'ok');
+                    setTimeout(loadPending, 400);
+                } else {
+                    btn.disabled = false; btn.textContent = '🗑';
+                    showToast('Erro: ' + (d.detail || 'Falha ao remover.'), 'error');
+                }
+            } catch (e) {
+                btn.disabled = false; btn.textContent = '🗑';
+                showToast('Erro de conexão: ' + e.message, 'error');
+            }
+        }
+
+        async function purgeExpiredPending() {
+            if (!confirm('Limpar TODOS os registros expirados (OTP vencido)?\nEsses usuários não chegaram a verificar o e-mail.')) return;
+            try {
+                // Busca todos incluindo expirados e deleta os que estão expirados
+                const data = await apiFetch('/api/admin/pending?include_expired=true');
+                const expired = (data || []).filter(r => r.is_expired);
+                if (expired.length === 0) { showToast('Nenhum registro expirado encontrado.', 'info'); return; }
+                let deleted = 0;
+                for (const rec of expired) {
+                    try {
+                        const res = await fetch('/api/admin/pending/' + encodeURIComponent(rec.id), {
+                            method: 'DELETE',
+                            headers: { 'Authorization': 'Bearer ' + accessToken },
+                        });
+                        if (res.ok) deleted++;
+                    } catch (_) { /* ignore individual failure */ }
+                }
+                showToast(deleted + ' registro(s) expirado(s) removido(s).', 'ok');
+                loadPending();
+            } catch (e) {
+                showToast('Erro: ' + e.message, 'error');
+            }
         }
 
         // -- Auto-login if token exists --
