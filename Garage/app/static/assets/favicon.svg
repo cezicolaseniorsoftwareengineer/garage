@@ -1,0 +1,100 @@
+<!--
+  404 GARAGE — Favicon / Logo
+  Design concept:
+    • Retro CRT terminal aesthetic — dark background, amber glow
+    • Garage door panels (horizontal stripes) filling the frame
+    • "404" in heavy monospace — the error code IS the game title
+    • Terminal prompt ">_" — you are the dev, your story starts here
+    • Amber glow filter gives the "old monitor" warmth
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Amber glow for terminal feel -->
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Subtle inner shadow on door frame -->
+    <filter id="inset" x="-5%" y="-5%" width="110%" height="110%">
+      <feGaussianBlur stdDeviation="0.8" in="SourceAlpha" result="blur"/>
+      <feOffset dx="0" dy="1" result="offset"/>
+      <feComposite in="offset" in2="SourceGraphic" operator="atop"/>
+    </filter>
+  </defs>
+
+  <!-- ── Background: dark slate, slightly rounded ── -->
+  <rect width="64" height="64" rx="7" fill="#0d1117"/>
+
+  <!-- ── Subtle circuit-board dot grid (very faint) ── -->
+  <circle cx="10" cy="10" r="0.6" fill="#1e293b"/>
+  <circle cx="54" cy="10" r="0.6" fill="#1e293b"/>
+  <circle cx="10" cy="54" r="0.6" fill="#1e293b"/>
+  <circle cx="54" cy="54" r="0.6" fill="#1e293b"/>
+  <circle cx="32" cy="10" r="0.6" fill="#1e293b"/>
+  <circle cx="10" cy="32" r="0.6" fill="#1e293b"/>
+  <circle cx="54" cy="32" r="0.6" fill="#1e293b"/>
+
+  <!-- ── Garage door frame ── -->
+  <!-- Outer border (slate-700) -->
+  <rect x="5" y="6" width="54" height="43" rx="2"
+        fill="none" stroke="#334155" stroke-width="1.5"/>
+
+  <!-- Door interior fill (very dark, gives depth) -->
+  <rect x="6.5" y="7.5" width="51" height="40" rx="1.5" fill="#0a0f1a"/>
+
+  <!-- ── Horizontal door panels (garage roller shutter look) ── -->
+  <!-- Each line is a panel separator, slightly lighter than bg -->
+  <rect x="7" y="14.5" width="50" height="1.2" rx="0.5" fill="#1a2744" opacity="0.9"/>
+  <rect x="7" y="21"   width="50" height="1.2" rx="0.5" fill="#1a2744" opacity="0.9"/>
+  <rect x="7" y="27.5" width="50" height="1.2" rx="0.5" fill="#1a2744" opacity="0.9"/>
+  <rect x="7" y="34"   width="50" height="1.2" rx="0.5" fill="#1a2744" opacity="0.9"/>
+  <rect x="7" y="40.5" width="50" height="1.2" rx="0.5" fill="#1a2744" opacity="0.9"/>
+
+  <!-- ── Door handle / latch (center, bottom of door) ── -->
+  <rect x="28" y="44.5" width="8" height="2" rx="1" fill="#334155"/>
+  <rect x="30.5" y="43.5" width="3" height="4" rx="0.8" fill="#475569"/>
+
+  <!-- ── "404" text — main hero element ── -->
+  <!-- Shadow layer (darker amber slightly offset) -->
+  <text x="32.5" y="33.5"
+        font-family="'Courier New', Courier, monospace"
+        font-size="21"
+        font-weight="900"
+        fill="#92460a"
+        text-anchor="middle"
+        letter-spacing="-0.5">404</text>
+  <!-- Main amber glow text -->
+  <text x="32" y="33"
+        font-family="'Courier New', Courier, monospace"
+        font-size="21"
+        font-weight="900"
+        fill="#fbbf24"
+        text-anchor="middle"
+        letter-spacing="-0.5"
+        filter="url(#glow)">404</text>
+
+  <!-- ── Floor / ground line ── -->
+  <rect x="5" y="49.5" width="54" height="1.5" rx="0.5" fill="#1e3a5f" opacity="0.7"/>
+
+  <!-- ── Terminal prompt ">_" below the door ── -->
+  <!-- Amber prompt — you are the dev entering the garage -->
+  <text x="11" y="60"
+        font-family="'Courier New', Courier, monospace"
+        font-size="7"
+        font-weight="700"
+        fill="#fbbf24"
+        opacity="0.9"
+        filter="url(#glow)">&gt;_</text>
+
+  <!-- ── "GARAGE" micro label top-right ── -->
+  <text x="54" y="5"
+        font-family="'Courier New', Courier, monospace"
+        font-size="4.5"
+        font-weight="700"
+        fill="#475569"
+        text-anchor="end"
+        letter-spacing="1">GARAGE</text>
+</svg>

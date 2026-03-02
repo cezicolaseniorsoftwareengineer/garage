@@ -1,0 +1,154 @@
+<!--
+  404 GARAGE — Logo completo (180x180 / apple-touch-icon / og:image)
+  Mesmo DNA do favicon mas com espaço para mais detalhes:
+    • Garagem com porta rolante detalhada
+    • "404" grande, lettering amber com glow pronunciado
+    • Subtítulo "GARAGE" em tipo comprimido
+    • Prompt ">_" como assinatura visual
+    • Estrelas/pixels de fundo remetem a tela de computador dos anos 70
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <defs>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow-sm" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="doorGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#0d1b35"/>
+      <stop offset="100%" stop-color="#070e1f"/>
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#0d1117"/>
+      <stop offset="100%" stop-color="#060b14"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ── Background ── -->
+  <rect width="180" height="180" rx="20" fill="url(#bgGrad)"/>
+
+  <!-- ── Background pixel noise (circuit board dots) ── -->
+  <!-- Grid of very faint dots — 1970s PCB aesthetic -->
+  <g opacity="0.18" fill="#3b5998">
+    <!-- Row 1 -->
+    <circle cx="18"  cy="18"  r="1.2"/> <circle cx="36"  cy="18"  r="1.2"/>
+    <circle cx="54"  cy="18"  r="1.2"/> <circle cx="72"  cy="18"  r="1.2"/>
+    <circle cx="90"  cy="18"  r="1.2"/> <circle cx="108" cy="18"  r="1.2"/>
+    <circle cx="126" cy="18"  r="1.2"/> <circle cx="144" cy="18"  r="1.2"/>
+    <circle cx="162" cy="18"  r="1.2"/>
+    <!-- Row 2 -->
+    <circle cx="18"  cy="36"  r="1.2"/> <circle cx="162" cy="36"  r="1.2"/>
+    <circle cx="18"  cy="54"  r="1.2"/> <circle cx="162" cy="54"  r="1.2"/>
+    <circle cx="18"  cy="72"  r="1.2"/> <circle cx="162" cy="72"  r="1.2"/>
+    <circle cx="18"  cy="90"  r="1.2"/> <circle cx="162" cy="90"  r="1.2"/>
+    <circle cx="18"  cy="108" r="1.2"/> <circle cx="162" cy="108" r="1.2"/>
+    <circle cx="18"  cy="126" r="1.2"/> <circle cx="162" cy="126" r="1.2"/>
+    <!-- Row bottom -->
+    <circle cx="18"  cy="162" r="1.2"/> <circle cx="36"  cy="162" r="1.2"/>
+    <circle cx="54"  cy="162" r="1.2"/> <circle cx="72"  cy="162" r="1.2"/>
+    <circle cx="90"  cy="162" r="1.2"/> <circle cx="108" cy="162" r="1.2"/>
+    <circle cx="126" cy="162" r="1.2"/> <circle cx="144" cy="162" r="1.2"/>
+    <circle cx="162" cy="162" r="1.2"/>
+  </g>
+
+  <!-- ── Garage door outer frame ── -->
+  <!-- Frame shadow (offset slightly) -->
+  <rect x="17" y="19" width="148" height="122" rx="5" fill="#0a1628" opacity="0.6"/>
+  <!-- Frame border -->
+  <rect x="15" y="17" width="148" height="122" rx="5"
+        fill="none" stroke="#334155" stroke-width="2.5"/>
+  <!-- Door interior -->
+  <rect x="17" y="19" width="144" height="118" rx="3.5" fill="url(#doorGrad)"/>
+
+  <!-- ── Horizontal garage door panels ── -->
+  <!-- 7 panel separators = tall roller door -->
+  <rect x="18" y="34"  width="142" height="2.5" rx="1" fill="#1a2e50" opacity="0.9"/>
+  <rect x="18" y="51"  width="142" height="2.5" rx="1" fill="#1a2e50" opacity="0.9"/>
+  <rect x="18" y="68"  width="142" height="2.5" rx="1" fill="#1a2e50" opacity="0.9"/>
+  <rect x="18" y="85"  width="142" height="2.5" rx="1" fill="#1a2e50" opacity="0.9"/>
+  <rect x="18" y="102" width="142" height="2.5" rx="1" fill="#1a2e50" opacity="0.9"/>
+  <rect x="18" y="119" width="142" height="2.5" rx="1" fill="#1a2e50" opacity="0.9"/>
+
+  <!-- Vertical center seam (some garage doors have a center split) -->
+  <rect x="89" y="19" width="1.5" height="118" rx="0.5" fill="#1a2e50" opacity="0.5"/>
+
+  <!-- ── Door handle / latch — center ── -->
+  <rect x="82" y="130" width="16" height="5"  rx="2.5" fill="#334155"/>
+  <rect x="86" y="128" width="8"  height="9"  rx="2"   fill="#3b4f6d"/>
+  <circle cx="90" cy="132.5" r="2" fill="#4a6080"/>
+
+  <!-- ── "404" hero text ── -->
+  <!-- Deep shadow -->
+  <text x="92" y="107"
+        font-family="'Courier New', Courier, monospace"
+        font-size="66"
+        font-weight="900"
+        fill="#5c2d00"
+        text-anchor="middle"
+        letter-spacing="-2">404</text>
+  <!-- Mid glow layer -->
+  <text x="91.5" y="106"
+        font-family="'Courier New', Courier, monospace"
+        font-size="66"
+        font-weight="900"
+        fill="#d97706"
+        text-anchor="middle"
+        letter-spacing="-2"
+        opacity="0.5"
+        filter="url(#glow)">404</text>
+  <!-- Main amber -->
+  <text x="90" y="104"
+        font-family="'Courier New', Courier, monospace"
+        font-size="66"
+        font-weight="900"
+        fill="#fbbf24"
+        text-anchor="middle"
+        letter-spacing="-2"
+        filter="url(#glow)">404</text>
+
+  <!-- ── Floor / road surface ── -->
+  <rect x="15"  y="139" width="148" height="4"   rx="1.5" fill="#1e3a5f" opacity="0.8"/>
+  <!-- Road lane markings -->
+  <rect x="55"  y="140.5" width="20" height="1.5" rx="0.5" fill="#fbbf24" opacity="0.2"/>
+  <rect x="103" y="140.5" width="20" height="1.5" rx="0.5" fill="#fbbf24" opacity="0.2"/>
+
+  <!-- ── "GARAGE" label ── -->
+  <!-- Background pill -->
+  <rect x="36" y="149" width="108" height="18" rx="4" fill="#0f172a" opacity="0.8"/>
+  <rect x="36" y="149" width="108" height="18" rx="4"
+        fill="none" stroke="#fbbf24" stroke-width="0.8" opacity="0.4"/>
+  <text x="90" y="162"
+        font-family="'Courier New', Courier, monospace"
+        font-size="13"
+        font-weight="700"
+        fill="#fbbf24"
+        text-anchor="middle"
+        letter-spacing="6"
+        filter="url(#glow-sm)">GARAGE</text>
+
+  <!-- ── Terminal cursor prompt ── -->
+  <text x="22" y="175"
+        font-family="'Courier New', Courier, monospace"
+        font-size="9"
+        font-weight="700"
+        fill="#fbbf24"
+        opacity="0.7"
+        filter="url(#glow-sm)">&gt;_</text>
+
+  <!-- ── "Bio Code Technology" micro credit ── -->
+  <text x="158" y="175"
+        font-family="'Courier New', Courier, monospace"
+        font-size="5"
+        fill="#334155"
+        text-anchor="end"
+        letter-spacing="0.5">BIO CODE TECHNOLOGY</text>
+</svg>
