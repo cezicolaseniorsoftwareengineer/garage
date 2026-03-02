@@ -4199,10 +4199,9 @@ const UI = {
     updateTitleButtons() {
         const continueBtn = document.getElementById('btnContinueGame');
         if (continueBtn) {
-            // Show CONTINUAR whenever the user is logged in.
-            // loadSession() handles both localStorage and server-side fallback,
-            // so the button is safe to show even without a local session_id.
-            continueBtn.style.display = Auth.isLoggedIn() ? '' : 'none';
+            // Show CONTINUAR only when logged in AND there is a saved session_id
+            // stored in localStorage. This tells the player they have a game to resume.
+            continueBtn.style.display = (Auth.isLoggedIn() && Auth.hasSession()) ? '' : 'none';
         }
         // Show admin dashboard link for users with admin role on JWT
         const adminBtn = document.getElementById('btnAdminDash');
@@ -8467,6 +8466,7 @@ const Auth = {
     _refreshToken: null,
     _refreshing: null,
     _pendingEmail: null,     // email awaiting OTP verification
+    _pendingResetEmail: null,  // email awaiting password reset
     _pendingUsername: null,  // username pre-fill for login screen after OTP
 
     init() {
@@ -8504,6 +8504,8 @@ const Auth = {
         this._bindForms();
         this._bindNavigation();
         this._bindVerification();
+        this._bindForgotPassword();
+        this._bindResetPassword();
     },
 
     isLoggedIn() {
@@ -8628,10 +8630,146 @@ const Auth = {
 
         const verifyGoLogin = document.getElementById('verifyGoToLogin');
         if (verifyGoLogin) verifyGoLogin.addEventListener('click', (e) => { e.preventDefault(); UI.showScreen('screen-login'); });
+
+        const goForgot = document.getElementById('goToForgotPassword');
+        if (goForgot) goForgot.addEventListener('click', (e) => { e.preventDefault(); UI.showScreen('screen-forgot-password'); });
+
+        const forgotGoLogin = document.getElementById('forgotGoToLogin');
+        if (forgotGoLogin) forgotGoLogin.addEventListener('click', (e) => { e.preventDefault(); UI.showScreen('screen-login'); });
+
+        const resetGoLogin = document.getElementById('resetGoToLogin');
+        if (resetGoLogin) resetGoLogin.addEventListener('click', (e) => { e.preventDefault(); UI.showScreen('screen-login'); });
+    },
+
+    _bindForgotPassword() {
+        const btn = document.getElementById('btnSendReset');
+        if (!btn) return;
+        btn.addEventListener('click', async () => {
+            const emailInput = document.getElementById('forgotEmail');
+            const errEl = document.getElementById('forgotError');
+            const sucEl = document.getElementById('forgotSuccess');
+            errEl.hidden = true;
+            sucEl.hidden = true;
+
+            const email = (emailInput?.value || '').trim();
+            if (!email) {
+                errEl.textContent = 'Informe seu e-mail.';
+                errEl.hidden = false;
+                return;
+            }
+            btn.disabled = true;
+            btn.textContent = 'ENVIANDO...';
+            try {
+                await API.post('/api/auth/forgot-password', { email });
+                this._pendingResetEmail = email;
+                sucEl.textContent = 'Código enviado! Verifique sua caixa de entrada.';
+                sucEl.hidden = false;
+                setTimeout(() => {
+                    const hint = document.getElementById('resetEmailHint');
+                    if (hint) hint.textContent = `Código enviado para ${email}. Insira abaixo.`;
+                    UI.showScreen('screen-reset-password');
+                }, 1200);
+            } catch (err) {
+                // Still show success for anti-enumeration
+                sucEl.textContent = 'Se este e-mail está cadastrado, você receberá o código em breve.';
+                sucEl.hidden = false;
+                this._pendingResetEmail = email;
+                setTimeout(() => {
+                    UI.showScreen('screen-reset-password');
+                }, 1600);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'ENVIAR CÓDIGO';
+            }
+        });
+    },
+
+    _bindResetPassword() {
+        const container = document.getElementById('resetOtpContainer');
+        if (!container) return;
+        const rBoxes = Array.from(container.querySelectorAll('.otp-box'));
+
+        rBoxes.forEach((box, idx) => {
+            box.addEventListener('input', () => {
+                box.value = box.value.replace(/\D/g, '').slice(-1);
+                box.classList.toggle('filled', box.value.length === 1);
+                if (box.value && idx < rBoxes.length - 1) rBoxes[idx + 1].focus();
+            });
+            box.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !box.value && idx > 0) {
+                    rBoxes[idx - 1].focus();
+                    rBoxes[idx - 1].value = '';
+                    rBoxes[idx - 1].classList.remove('filled');
+                }
+            });
+            if (idx === 0) {
+                box.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+                    pasted.split('').slice(0, 6).forEach((ch, i) => {
+                        if (rBoxes[i]) { rBoxes[i].value = ch; rBoxes[i].classList.add('filled'); }
+                    });
+                    const nextEmpty = rBoxes.find(b => !b.value);
+                    (nextEmpty || rBoxes[5]).focus();
+                });
+            }
+        });
+
+        const btnReset = document.getElementById('btnDoReset');
+        if (!btnReset) return;
+        btnReset.addEventListener('click', async () => {
+            const errEl = document.getElementById('resetError');
+            const sucEl = document.getElementById('resetSuccess');
+            errEl.hidden = true;
+            sucEl.hidden = true;
+
+            const code = rBoxes.map(b => b.value).join('');
+            if (code.length < 6) {
+                errEl.textContent = 'Insira todos os 6 dígitos do código.';
+                errEl.hidden = false;
+                return;
+            }
+            const newPass = document.getElementById('resetNewPassword')?.value || '';
+            const confPass = document.getElementById('resetConfirmPassword')?.value || '';
+            if (newPass.length < 6) {
+                errEl.textContent = 'A nova senha deve ter no mínimo 6 caracteres.';
+                errEl.hidden = false;
+                return;
+            }
+            if (newPass !== confPass) {
+                errEl.textContent = 'As senhas não conferem.';
+                errEl.hidden = false;
+                return;
+            }
+            const email = this._pendingResetEmail;
+            if (!email) {
+                errEl.textContent = 'Sessão expirada. Solicite um novo código.';
+                errEl.hidden = false;
+                return;
+            }
+            btnReset.disabled = true;
+            btnReset.textContent = 'REDEFININDO...';
+            try {
+                const res = await API.post('/api/auth/reset-password', { email, code, new_password: newPass });
+                this._pendingResetEmail = null;
+                sucEl.textContent = res.message || 'Senha redefinida com sucesso!';
+                sucEl.hidden = false;
+                setTimeout(() => UI.showScreen('screen-login'), 1800);
+            } catch (err) {
+                errEl.textContent = err.message || 'Código inválido, expirado ou e-mail incorreto.';
+                errEl.hidden = false;
+                rBoxes.forEach(b => b.classList.add('filled'));
+                setTimeout(() => rBoxes.forEach(b => { b.value = ''; b.classList.remove('filled'); }), 600);
+                setTimeout(() => rBoxes[0].focus(), 650);
+            } finally {
+                btnReset.disabled = false;
+                btnReset.textContent = 'REDEFINIR SENHA';
+            }
+        });
     },
 
     _bindVerification() {
-        const boxes = Array.from(document.querySelectorAll('.otp-box'));
+        const boxes = Array.from(document.querySelectorAll('#otpContainer .otp-box'));
         if (!boxes.length) return;
 
         // Auto-advance focus and mark filled

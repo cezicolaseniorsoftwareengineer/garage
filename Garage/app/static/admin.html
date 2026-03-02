@@ -779,12 +779,13 @@
                             <th onclick="sortTable('usersTable', 0, 'str')">NOME</th>
                             <th onclick="sortTable('usersTable', 1, 'str')">USERNAME</th>
                             <th onclick="sortTable('usersTable', 2, 'str')">EMAIL</th>
-                            <th onclick="sortTable('usersTable', 3, 'str')">PROFISSAO</th>
-                            <th onclick="sortTable('usersTable', 4, 'num')">SESSOES</th>
-                            <th onclick="sortTable('usersTable', 5, 'num')">COMPLETOS</th>
-                            <th onclick="sortTable('usersTable', 6, 'str')">MELHOR CARGO</th>
-                            <th onclick="sortTable('usersTable', 7, 'num')">MELHOR SCORE</th>
-                            <th onclick="sortTable('usersTable', 8, 'str')">CADASTRO</th>
+                            <th onclick="sortTable('usersTable', 3, 'str')">WHATSAPP</th>
+                            <th onclick="sortTable('usersTable', 4, 'str')">PROFISSAO</th>
+                            <th onclick="sortTable('usersTable', 5, 'num')">SESSOES</th>
+                            <th onclick="sortTable('usersTable', 6, 'num')">COMPLETOS</th>
+                            <th onclick="sortTable('usersTable', 7, 'str')">MELHOR CARGO</th>
+                            <th onclick="sortTable('usersTable', 8, 'num')">MELHOR SCORE</th>
+                            <th onclick="sortTable('usersTable', 9, 'str')">CADASTRO</th>
                             <th style="width:60px;">ACAO</th>
                         </tr>
                     </thead>
@@ -1163,6 +1164,7 @@
                     '<td>' + esc(u.full_name) + '</td>' +
                     '<td>' + esc(u.username) + '</td>' +
                     '<td>' + esc(u.email) + '</td>' +
+                    '<td>' + esc(u.whatsapp || '---') + '</td>' +
                     '<td>' + esc(u.profession) + '</td>' +
                     '<td>' + u.total_sessions + '</td>' +
                     '<td>' + u.completed_runs + '</td>' +

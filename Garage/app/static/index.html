@@ -37,6 +37,10 @@
                     </div>
                     <div id="loginError" class="auth-error" hidden></div>
                     <button type="submit" class="auth-btn auth-btn-primary">ENTRAR</button>
+                    <div style="text-align:center;margin-top:12px;">
+                        <a href="#" id="goToForgotPassword"
+                            style="color:#ef4444;font-size:12px;letter-spacing:1px;">Esqueci minha senha</a>
+                    </div>
                 </form>
                 <div class="auth-switch">
                     Não tem conta? <a href="#" id="goToRegister">Cadastre-se</a>
@@ -143,6 +147,76 @@
                 </div>
                 <div class="auth-switch" style="margin-top:12px;">
                     Voltou a ter acesso? <a href="#" id="verifyGoToLogin">Fazer login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== SCREEN: FORGOT PASSWORD ========== -->
+    <div id="screen-forgot-password" class="screen">
+        <div class="auth-bg">
+            <img src="/static/login_bg.png" alt="Garage Characters" class="auth-bg-img">
+            <div class="auth-bg-overlay"></div>
+        </div>
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-logo">[<span>GARAGE</span>]</div>
+                <p class="auth-subtitle">Redefinir senha</p>
+                <p class="auth-hint" style="text-align:center;color:#94a3b8;font-size:13px;margin-bottom:20px;">
+                    Informe seu e-mail cadastrado. Enviaremos um código de 6 dígitos.
+                </p>
+                <div class="auth-field">
+                    <label for="forgotEmail">E-mail</label>
+                    <input type="email" id="forgotEmail" placeholder="seu@email.com" required>
+                </div>
+                <div id="forgotError" class="auth-error" hidden></div>
+                <div id="forgotSuccess" class="auth-success" hidden></div>
+                <button id="btnSendReset" class="auth-btn auth-btn-primary">ENVIAR CÓDIGO</button>
+                <div class="auth-switch" style="margin-top:12px;">
+                    Lembrou? <a href="#" id="forgotGoToLogin">Fazer login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== SCREEN: RESET PASSWORD ========== -->
+    <div id="screen-reset-password" class="screen">
+        <div class="auth-bg">
+            <img src="/static/login_bg.png" alt="Garage Characters" class="auth-bg-img">
+            <div class="auth-bg-overlay"></div>
+        </div>
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-logo" style="color:#ef4444;">[<span style="color:#ef4444;">GARAGE</span>]</div>
+                <p class="auth-subtitle">Redefinir senha</p>
+                <p id="resetEmailHint" class="auth-hint"
+                    style="text-align:center;color:#94a3b8;font-size:13px;margin-bottom:20px;">
+                    Insira o código de 6 dígitos recebido por e-mail.
+                </p>
+                <div id="resetOtpContainer" style="display:flex;justify-content:center;gap:8px;margin-bottom:24px;">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-ridx="0"
+                        autocomplete="one-time-code">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-ridx="1">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-ridx="2">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-ridx="3">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-ridx="4">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-ridx="5">
+                </div>
+                <div class="auth-field">
+                    <label for="resetNewPassword">Nova senha</label>
+                    <input type="password" id="resetNewPassword" placeholder="Mínimo 6 caracteres" required
+                        minlength="6" maxlength="128">
+                </div>
+                <div class="auth-field">
+                    <label for="resetConfirmPassword">Confirmar nova senha</label>
+                    <input type="password" id="resetConfirmPassword" placeholder="Repita a nova senha" required
+                        minlength="6">
+                </div>
+                <div id="resetError" class="auth-error" hidden></div>
+                <div id="resetSuccess" class="auth-success" hidden></div>
+                <button id="btnDoReset" class="auth-btn auth-btn-primary">REDEFINIR SENHA</button>
+                <div class="auth-switch" style="margin-top:12px;">
+                    Lembrou? <a href="#" id="resetGoToLogin">Fazer login</a>
                 </div>
             </div>
         </div>
@@ -598,7 +672,7 @@
         </div>
     </div>
 
-    <script src="/static/game.js?v=20260302-hud-sair-mobile-v20"></script>
+    <script src="/static/game.js?v=20260302-forgot-reset-password-v21"></script>
 </body>
 
 </html>

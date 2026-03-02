@@ -172,3 +172,101 @@ def send_verification_email(to_email: str, code: str, full_name: str) -> bool:
     log.warning("[DEV MODE] No email provider. Code for %s: %s", to_email, code)
     print(f"[GARAGE][DEV] Verification code for {to_email}: {code}")
     return False
+
+
+# ---------------------------------------------------------------------------
+# Password-reset email (same dispatch chain, different subject/body)
+# ---------------------------------------------------------------------------
+def _html_template_reset(full_name: str, code: str) -> str:
+    return f"""<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0f172a;font-family:'Courier New',monospace;">
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:40px 20px;">
+      <table width="480" style="background:#1e293b;border:1px solid #334155;border-radius:12px;">
+        <tr>
+          <td style="padding:32px 40px;text-align:center;">
+            <div style="color:#ef4444;font-size:24px;font-weight:700;letter-spacing:4px;">[GARAGE]</div>
+            <div style="color:#94a3b8;font-size:11px;margin-top:4px;letter-spacing:2px;">REDEFINIÇÃO DE SENHA</div>
+            <hr style="border:none;border-top:1px solid #334155;margin:24px 0;">
+            <p style="color:#e2e8f0;font-size:15px;margin:0 0 8px;">Olá, <strong>{full_name}</strong>!</p>
+            <p style="color:#94a3b8;font-size:13px;margin:0 0 28px;">
+              Use o código abaixo para redefinir sua senha.<br>
+              Ele expira em <strong style="color:#ef4444;">30 minutos</strong>.
+            </p>
+            <div style="background:#0f172a;border:2px solid #ef4444;border-radius:8px;padding:20px 0;margin:0 auto 28px;">
+              <span style="color:#ef4444;font-size:38px;font-weight:700;letter-spacing:12px;">{code}</span>
+            </div>
+            <p style="color:#64748b;font-size:11px;margin:0;">
+              Se você não solicitou a redefinição, ignore este e-mail.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#0f172a;padding:16px;text-align:center;border-radius:0 0 12px 12px;">
+            <span style="color:#475569;font-size:10px;letter-spacing:1px;">
+              GARAGE · DE ESTAGIÁRIO A PRINCIPAL ENGINEER · BIO CODE TECHNOLOGY
+            </span>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+
+def send_password_reset_email(to_email: str, code: str, full_name: str) -> bool:
+    """Send a password-reset OTP.  Same provider priority as send_verification_email."""
+    resend_key = os.environ.get("RESEND_API_KEY", "")
+    smtp_user  = os.environ.get("SMTP_USER", "")
+
+    subject = f"[{code}] Redefinição de senha — Garage"
+    html_body = _html_template_reset(full_name, code)
+    plain_body = (
+        f"Olá {full_name},\n\n"
+        f"Seu código para redefinição de senha do Garage é: {code}\n\n"
+        f"Ele expira em 30 minutos. Se não foi você, ignore este e-mail.\n\n"
+        f"— Bio Code Technology"
+    )
+
+    if resend_key:
+        try:
+            import resend
+            resend.api_key = resend_key
+            from_addr = os.environ.get("RESEND_FROM", "Garage <onboarding@resend.dev>")
+            result = resend.Emails.send({"from": from_addr, "to": [to_email],
+                                         "subject": subject, "html": html_body, "text": plain_body})
+            log.info("[RESEND RESET OK] to=%s", to_email)
+            return True
+        except Exception as exc:
+            log.error("[RESEND RESET FAIL] %s: %s", to_email, exc)
+
+    if smtp_user:
+        try:
+            cfg = {
+                "host": os.environ.get("SMTP_HOST", "smtp.gmail.com"),
+                "port": int(os.environ.get("SMTP_PORT", "587")),
+                "user": smtp_user,
+                "password": os.environ.get("SMTP_PASSWORD", ""),
+                "from": os.environ.get("SMTP_FROM", smtp_user),
+            }
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = cfg["from"]
+            msg["To"] = to_email
+            msg.attach(MIMEText(plain_body, "plain"))
+            msg.attach(MIMEText(html_body, "html"))
+            with smtplib.SMTP(cfg["host"], cfg["port"], timeout=20) as server:
+                server.ehlo(); server.starttls(); server.ehlo()
+                server.login(cfg["user"], cfg["password"])
+                server.sendmail(cfg["user"], to_email, msg.as_string())
+            log.info("[SMTP RESET OK] to=%s", to_email)
+            return True
+        except Exception as exc:
+            log.error("[SMTP RESET FAIL] %s: %s", to_email, exc)
+
+    log.warning("[DEV MODE] Reset code for %s: %s", to_email, code)
+    print(f"[GARAGE][DEV] Password reset code for {to_email}: {code}")
+    return False

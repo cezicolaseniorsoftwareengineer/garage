@@ -3,7 +3,10 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
+import hashlib
 import os
+import secrets
+import time
 
 from app.domain.user import User
 from app.infrastructure.auth.admin_utils import configured_admin_emails, is_admin_email, is_admin_username
@@ -19,7 +22,7 @@ from app.infrastructure.auth.password import (
     is_bcrypt_hash,
 )
 from app.infrastructure.auth.bruteforce import record_failed, is_blocked, clear_failed
-from app.infrastructure.auth.email_sender import send_verification_email
+from app.infrastructure.auth.email_sender import send_verification_email, send_password_reset_email
 from app.infrastructure.audit import log_event as audit_log
 from app.infrastructure.auth.dependencies import get_current_user
 
@@ -30,6 +33,10 @@ _user_repo = None
 _events = None
 _verification_repo = None
 _pending_repo = None   # PgPendingRepository — set when PostgreSQL is active
+
+# In-memory store for password-reset OTPs  { user_id: {code_hash, expires_at} }
+_pwd_reset_store: dict = {}
+_PWD_RESET_TTL = 30 * 60  # 30 minutes
 
 
 def init_auth_routes(user_repo, event_service=None, verification_repo=None, pending_repo=None):
@@ -547,3 +554,103 @@ def api_resend_verification(req: ResendVerificationRequest, background_tasks: Ba
         "email_hint": _mask_email(user.email),
         "message": "Novo codigo enviado para o seu e-mail.",
     }
+
+
+# ---------------------------------------------------------------------------
+# Password reset (forgot-password flow)
+# ---------------------------------------------------------------------------
+
+class ForgotPasswordRequest(BaseModel):
+    email: str = Field(..., min_length=5, max_length=120)
+
+
+class ResetPasswordRequest(BaseModel):
+    email: str = Field(..., min_length=5, max_length=120)
+    code: str = Field(..., min_length=6, max_length=6, pattern=r"^\d{6}$")
+    new_password: str = Field(..., min_length=6, max_length=128)
+
+
+@router.post("/forgot-password")
+def api_forgot_password(req: ForgotPasswordRequest, background_tasks: BackgroundTasks):
+    """Send a 6-digit OTP to reset the password.
+
+    Always returns HTTP 200 to prevent e-mail enumeration.
+    """
+    _generic_ok = {"success": True, "message": "Se este e-mail estiver cadastrado, você receberá um código de redefinição."}
+
+    if _user_repo is None:
+        return _generic_ok
+
+    user = None
+    if hasattr(_user_repo, "find_by_email"):
+        user = _user_repo.find_by_email(req.email)
+    if user is None:
+        return _generic_ok
+
+    # Generate OTP and store hash
+    code = str(secrets.randbelow(900_000) + 100_000)
+    code_hash = hashlib.sha256(code.encode()).hexdigest()
+    _pwd_reset_store[user.id] = {
+        "code_hash": code_hash,
+        "expires_at": time.time() + _PWD_RESET_TTL,
+        "email": user.email,
+    }
+
+    # Fire email in background so endpoint responds instantly
+    def _send_reset(email: str, otp: str, name: str):
+        try:
+            ok = send_password_reset_email(email, otp, name)
+            if not ok:
+                audit_log("pwd_reset_dev_mode", email, {"info": "printed to console"})
+            else:
+                audit_log("pwd_reset_email_sent", email, {})
+        except Exception as exc:
+            import logging as _lg
+            _lg.getLogger("garage.auth").error("[PWD RESET EMAIL FAIL] %s: %s", email, exc)
+
+    background_tasks.add_task(_send_reset, user.email, code, user.full_name)
+
+    return {
+        "success": True,
+        "email_hint": _mask_email(user.email),
+        "message": "Se este e-mail estiver cadastrado, você receberá um código de redefinição.",
+    }
+
+
+@router.post("/reset-password")
+def api_reset_password(req: ResetPasswordRequest):
+    """Validate OTP and set a new password hash."""
+    _bad = HTTPException(status_code=400, detail="Código inválido ou expirado.")
+
+    if _user_repo is None:
+        raise _bad
+
+    user = None
+    if hasattr(_user_repo, "find_by_email"):
+        user = _user_repo.find_by_email(req.email)
+    if user is None:
+        raise _bad
+
+    stored = _pwd_reset_store.get(user.id)
+    if not stored:
+        raise _bad
+
+    if time.time() > stored["expires_at"]:
+        _pwd_reset_store.pop(user.id, None)
+        raise HTTPException(status_code=400, detail="Código expirado. Solicite um novo.")
+
+    if hashlib.sha256(req.code.encode()).hexdigest() != stored["code_hash"]:
+        raise _bad
+
+    # Valid — update password
+    new_hash = hash_password(req.new_password)
+    if hasattr(_user_repo, "update_password"):
+        _user_repo.update_password(user.id, new_hash, "bcrypt")
+    _pwd_reset_store.pop(user.id, None)
+
+    try:
+        audit_log("pwd_reset_success", user.id, {"email": user.email})
+    except Exception:
+        pass
+
+    return {"success": True, "message": "Senha redefinida com sucesso. Faça login com a nova senha."}

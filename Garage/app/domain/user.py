@@ -88,6 +88,7 @@ class User:
             "full_name": self._full_name,
             "username": self._username,
             "email": self._email,
+            "whatsapp": self._whatsapp,
             "profession": self._profession,
             "email_verified": self._email_verified,
         }
