@@ -8654,8 +8654,19 @@ const Auth = {
                     const res = await API.post('/api/auth/resend-verification', { email });
                     sucEl.textContent = res.message || 'Novo código enviado!';
                     sucEl.hidden = false;
-                    // Brief cooldown 30s
-                    setTimeout(() => { btnResend.style.pointerEvents = ''; btnResend.textContent = 'Reenviar código'; }, 30000);
+                    // Countdown 30s with live update so user knows it's not frozen
+                    let _secs = 30;
+                    btnResend.textContent = `Reenviar (${_secs}s)`;
+                    const _cd = setInterval(() => {
+                        _secs--;
+                        if (_secs <= 0) {
+                            clearInterval(_cd);
+                            btnResend.style.pointerEvents = '';
+                            btnResend.textContent = 'Reenviar código';
+                        } else {
+                            btnResend.textContent = `Reenviar (${_secs}s)`;
+                        }
+                    }, 1000);
                 } catch (err) {
                     errEl.textContent = err.message || 'Erro ao reenviar. Tente novamente.';
                     errEl.hidden = false;
@@ -8779,13 +8790,15 @@ const Auth = {
             } catch (err) {
                 // 409 "aguardando verificacao": pending record already exists → go to OTP screen
                 // User already received the verification code, just redirect them to enter it
-                if (err.status === 409 && err.message && err.message.toLowerCase().includes('aguardando')) {
+                if (err.status === 409 && err.message && (err.message.toLowerCase().includes('aguardando') || err.message.toLowerCase().includes('verificacao'))) {
                     const emailFromInput = document.getElementById('regEmail').value.trim();
                     this._pendingEmail = emailFromInput;
                     this._pendingUsername = document.getElementById('regUsername').value.trim();
+                    // Use masked email from backend (email_hint) or mask locally as fallback
+                    const maskedEmail = err.emailHint || emailFromInput.replace(/(^.{2})[^@]*(@.*)/, '$1***$2');
                     const hintEl = document.getElementById('verifyEmailHint');
                     if (hintEl) {
-                        hintEl.textContent = `Já enviamos um código para ${emailFromInput}. Insira abaixo para concluir o cadastro:`;
+                        hintEl.textContent = `Já enviamos um código para ${maskedEmail}. Insira abaixo para concluir o cadastro:`;
                     }
                     document.querySelectorAll('.otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
                     document.getElementById('verifyError').hidden = true;

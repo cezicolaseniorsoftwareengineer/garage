@@ -115,11 +115,26 @@ def api_register(req: RegisterRequest, background_tasks: BackgroundTasks):
     # while the original requester is still in the verification window)
     if _pending_repo is not None:
         if _pending_repo.exists_username(req.username):
+            # Same person retrying with identical username+email → redirect to OTP screen
+            existing_pending = _pending_repo.find_by_username(req.username)
+            if existing_pending and existing_pending.email == req.email:
+                return JSONResponse(
+                    status_code=409,
+                    content={
+                        "detail": "Cadastro ja aguardando verificacao. Verifique seu e-mail.",
+                        "type": "pending_verification",
+                        "email_hint": _mask_email(req.email),
+                    },
+                )
             raise HTTPException(status_code=409, detail="Nome de usuario ja existe.")
         if _pending_repo.exists_email(req.email):
-            raise HTTPException(
+            return JSONResponse(
                 status_code=409,
-                detail="Email ja cadastrado e aguardando verificacao. Verifique sua caixa de entrada.",
+                content={
+                    "detail": "Email ja cadastrado e aguardando verificacao. Verifique sua caixa de entrada.",
+                    "type": "pending_verification",
+                    "email_hint": _mask_email(req.email),
+                },
             )
 
     pwd_hash = hash_password(req.password)
