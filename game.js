@@ -2302,7 +2302,16 @@ const World = {
         this.canvas.height = this.H;
         const mobileControls = document.querySelector('.mobile-controls');
         const controlsVisible = mobileControls && getComputedStyle(mobileControls).display !== 'none';
-        this.GROUND_Y = controlsVisible ? this.H - 160 : this.H - 80;
+        const ctrlH = controlsVisible ? (mobileControls.offsetHeight || 110) + 24 : 80;
+        this.GROUND_Y = this.H - ctrlH;
+        // Read actual HUD height for book positioning (books must stay below HUD)
+        const hudEl = document.getElementById('worldHUD');
+        this.HUD_H = hudEl ? (hudEl.offsetHeight || 52) : 52;
+        // Safety guard: ensure sufficient vertical play area.
+        const MIN_PLAY_H = 160;
+        if (this.GROUND_Y - this.HUD_H < MIN_PLAY_H) {
+            this.GROUND_Y = this.HUD_H + MIN_PLAY_H;
+        }
     },
 
     generateDecorations() {
@@ -2715,7 +2724,7 @@ const World = {
             BOOKS_DATA.forEach(book => {
                 if (State.collectedBooks.includes(book.id)) return;
                 const dx = Math.abs(pcx - book.worldX);
-                const dy = Math.abs(playerHeight + p.h * 0.4 - book.floatY);
+                const dy = Math.abs(playerHeight + p.h * 0.4 - this._bookFloatY(book.floatY));
                 if (dx < 40 && dy < 40) {
                     State.collectedBooks.push(book.id);
                     SFX.bookCollect();
@@ -3910,6 +3919,18 @@ const World = {
         });
     },
 
+    /**
+     * Returns a safe floatY for a book, clamped so the book is always visible
+     * below the HUD bar on any screen size (desktop, tablet, mobile landscape).
+     * floatY is distance above GROUND_Y. HUD is at top. Book Y = GROUND_Y - floatY.
+     * To be visible: GROUND_Y - floatY > HUD_H + pad => floatY < GROUND_Y - HUD_H - pad
+     */
+    _bookFloatY(baseFloatY) {
+        const pad = 12; // minimum clearance below HUD
+        const max = this.GROUND_Y - (this.HUD_H || 52) - pad;
+        return Math.min(baseFloatY, Math.max(max, 40));
+    },
+
     drawBooks(cam) {
         const ctx = this.ctx;
         const time = performance.now() * 0.001;
@@ -3922,7 +3943,7 @@ const World = {
 
             const bobY = Math.sin(time * 2.5 + book.worldX * 0.02) * 8;
             const rot = Math.sin(time * 1.5 + book.worldX * 0.03) * 0.06;
-            const by = this.GROUND_Y - book.floatY + bobY;
+            const by = this.GROUND_Y - this._bookFloatY(book.floatY) + bobY;
 
             ctx.save();
             ctx.translate(sx, by);
