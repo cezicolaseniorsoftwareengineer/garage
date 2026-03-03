@@ -173,6 +173,10 @@
                 <button class="arcade-btn arcade-btn-logout" onclick="Auth.logout()">
                     SAIR
                 </button>
+                <a href="/account" target="_blank" class="arcade-btn"
+                    style="text-decoration:none; text-align:center; background:#1a1a10; border:1px solid #ffb347; color:#ffb347; font-size:0.65rem; letter-spacing:2px;">
+                    &#9733; MINHA CONTA / ASSINATURA
+                </a>
                 <a id="btnAdminDash" href="/admin" target="_blank" class="arcade-btn arcade-btn-admin"
                     style="display:none; text-decoration:none; text-align:center; background:#1e293b; border:1px solid #fbbf24; color:#fbbf24; font-size:0.65rem; letter-spacing:2px;">
                     PAINEL ADMIN
@@ -279,6 +283,14 @@
                 <span class="hud-icon" style="color:#facc15;">&#9646;&#9646;</span>
                 <div>
                     <div class="hud-label">PAUSA</div>
+                </div>
+            </div>
+            <div class="hud-sep">|</div>
+            <div class="hud-block hud-block-btn" onclick="window.open('/account','_blank')"
+                style="pointer-events:auto;cursor:pointer;">
+                <span class="hud-icon" style="color:#ffb347;">&#9733;</span>
+                <div>
+                    <div class="hud-label">CONTA</div>
                 </div>
             </div>
             <div class="hud-sep">|</div>
@@ -593,6 +605,53 @@
                 </div>
                 <div class="ide-help-content" id="ideHelpContent">---</div>
                 <button class="ide-btn ide-btn-run" onclick="IDE.closeHelp()">ENTENDI, VOU COPIAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== SCREEN: PAYWALL ========== -->
+    <div id="screen-paywall" class="screen">
+        <div class="paywall-bg"></div>
+        <div class="paywall-container">
+            <div class="paywall-badge">&#9733; ATO I CONCLUÍDO &#9733;</div>
+            <div class="paywall-logo">[<span>GARAGE</span>]</div>
+            <h1 class="paywall-title">Xerox PARC Conquistada!</h1>
+            <p class="paywall-subtitle" id="paywallMsg">
+                Você completou a demo gratuita. Assine para continuar sua jornada.
+            </p>
+            <div class="paywall-companies">
+                <p class="paywall-companies-label">&#128275; Empresas que você vai desbloquear</p>
+                <div class="paywall-companies-grid">
+                    <span>Apple</span>
+                    <span>Google</span>
+                    <span>Microsoft</span>
+                    <span>Amazon</span>
+                    <span>Facebook</span>
+                    <span>Netflix</span>
+                    <span>PayPal</span>
+                    <span>Tesla</span>
+                    <span>SpaceX</span>
+                    <span>Nubank</span>
+                    <span>Twitter</span>
+                    <span>Uber</span>
+                    <span>+ 12 mais</span>
+                </div>
+            </div>
+            <div class="paywall-xp-bar">
+                <div class="paywall-xp-label">
+                    <span>Progresso da Jornada</span>
+                    <span class="paywall-xp-pct">4% concluído</span>
+                </div>
+                <div class="paywall-xp-track">
+                    <div class="paywall-xp-fill"></div>
+                </div>
+                <p class="paywall-xp-hint">Assine e desbloqueie os 96% restantes da jornada</p>
+            </div>
+            <div class="paywall-actions">
+                <a href="/#planos" class="auth-btn paywall-cta">&#128179; VER PLANOS E ASSINAR</a>
+                <button class="paywall-back-btn" onclick="UI.showScreen('screen-world')">
+                    &#8592; Continuar explorando a Xerox PARC
+                </button>
             </div>
         </div>
     </div>

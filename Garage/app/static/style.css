@@ -1640,6 +1640,214 @@ body {
     justify-content: flex-end;
 }
 
+/* --- PAYWALL SCREEN --- */
+#screen-paywall {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    overflow-y: auto;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+#screen-paywall.active {
+    display: flex;
+    animation: paywallFadeIn .4s ease;
+}
+
+.paywall-bg {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 50% at 50% 20%, rgba(250, 190, 0, .15) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 80% 80%, rgba(100, 40, 200, .18) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 60% at 20% 70%, rgba(30, 80, 200, .14) 0%, transparent 55%),
+        linear-gradient(160deg, #0a0a14 0%, #0d0d1a 100%);
+    z-index: 0;
+}
+
+.paywall-container {
+    position: relative;
+    z-index: 1;
+    max-width: 520px;
+    width: 92%;
+    margin: auto;
+    padding: 2.5rem 2rem 3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+    text-align: center;
+}
+
+.paywall-badge {
+    font-size: .7rem;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--gold, #fbbf24);
+    border: 1px solid rgba(251, 191, 36, .35);
+    border-radius: 999px;
+    padding: .28rem .9rem;
+    letter-spacing: .12em;
+    background: rgba(251, 191, 36, .08);
+}
+
+.paywall-logo {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text, #e2e8f0);
+    letter-spacing: .06em;
+}
+
+.paywall-logo span {
+    color: var(--gold, #fbbf24);
+}
+
+.paywall-title {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: var(--text, #e2e8f0);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.paywall-subtitle {
+    color: var(--text-muted, #94a3b8);
+    font-size: .94rem;
+    line-height: 1.55;
+    max-width: 400px;
+    margin: 0;
+}
+
+.paywall-unlocks {
+    width: 100%;
+}
+
+.paywall-unlocks-label {
+    font-size: .78rem;
+    color: var(--text-muted, #94a3b8);
+    margin-bottom: .55rem;
+    text-align: left;
+}
+
+.paywall-companies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    justify-content: center;
+}
+
+.paywall-companies span {
+    font-size: .72rem;
+    font-family: 'Share Tech Mono', monospace;
+    background: rgba(59, 130, 246, .15);
+    border: 1px solid rgba(59, 130, 246, .3);
+    color: #93c5fd;
+    border-radius: 4px;
+    padding: .2rem .55rem;
+}
+
+.paywall-chip-gold {
+    background: rgba(251, 191, 36, .15) !important;
+    border-color: rgba(251, 191, 36, .35) !important;
+    color: var(--gold, #fbbf24) !important;
+}
+
+.paywall-xp-bar {
+    width: 100%;
+}
+
+.paywall-xp-label {
+    font-size: .75rem;
+    color: var(--text-muted, #94a3b8);
+    margin-bottom: .4rem;
+    text-align: left;
+}
+
+.paywall-xp-label strong {
+    color: var(--gold, #fbbf24);
+}
+
+.paywall-xp-track {
+    height: 8px;
+    background: rgba(255, 255, 255, .08);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.paywall-xp-fill {
+    height: 100%;
+    width: 4%;
+    background: linear-gradient(90deg, #fbbf24, #f97316);
+    border-radius: 999px;
+    animation: paywallXpGrow .9s .3s cubic-bezier(.4, 0, .2, 1) both;
+}
+
+.paywall-actions {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    width: 100%;
+    margin-top: .3rem;
+}
+
+.paywall-cta {
+    display: block;
+    background: linear-gradient(90deg, #fbbf24, #f97316, #fbbf24);
+    background-size: 200% auto;
+    color: #0a0a0f !important;
+    font-weight: 700;
+    letter-spacing: .06em;
+    border: none;
+    padding: .85rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    animation: paywallCtaShimmer 2.5s linear infinite;
+    transition: opacity .2s;
+}
+
+.paywall-cta:hover {
+    opacity: .85;
+}
+
+.paywall-back-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted, #94a3b8);
+    font-size: .82rem;
+    cursor: pointer;
+    padding: .3rem;
+    transition: color .2s;
+}
+
+.paywall-back-btn:hover {
+    color: var(--text, #e2e8f0);
+}
+
+@keyframes paywallFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes paywallXpGrow {
+    from {
+        width: 0;
+    }
+}
+
+@keyframes paywallCtaShimmer {
+    to {
+        background-position: 200% center;
+    }
+}
+
 /* --- GAME OVER & VICTORY --- */
 #screen-gameover {
     background: linear-gradient(135deg, #1a0000 0%, #0a0a0f 100%);

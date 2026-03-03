@@ -23,13 +23,13 @@ const API = {
     async get(p) {
         let r = await fetch(p, { headers: this._headers() });
         if (r.status === 401) { if (await this._handle401(p)) r = await fetch(p, { headers: this._headers() }); }
-        if (!r.ok) { const e = await r.json().catch(() => ({})); const err = new Error(e.detail || r.statusText); err.status = r.status; throw err; }
+        if (!r.ok) { const e = await r.json().catch(() => ({})); const err = new Error(typeof e.detail === 'string' ? e.detail : (e.message || r.statusText)); err.status = r.status; err.data = e; throw err; }
         return r.json();
     },
     async post(p, b) {
         let r = await fetch(p, { method: 'POST', headers: this._headers(), body: JSON.stringify(b) });
         if (r.status === 401) { if (await this._handle401(p)) r = await fetch(p, { method: 'POST', headers: this._headers(), body: JSON.stringify(b) }); }
-        if (!r.ok) { const e = await r.json().catch(() => ({})); const err = new Error(e.detail || r.statusText); err.status = r.status; throw err; }
+        if (!r.ok) { const e = await r.json().catch(() => ({})); const err = new Error(typeof e.detail === 'string' ? e.detail : (e.message || r.statusText)); err.status = r.status; err.data = e; throw err; }
         return r.json();
     },
 };
@@ -1859,8 +1859,8 @@ const NPC_DATA = [
         look: { hair: '#222', hairStyle: 'short', beard: null, glasses: false, shirt: '#111', pants: '#222', skinTone: '#D2A673', jacket: '#111' }
     },
     {
-        id: 'npc_aurora_labs', name: 'SAM ALTMAN', role: 'CEO - Aurora Labs', region: 'Aurora Labs', stage: 'Staff', worldX: 26000,
-        dialog: 'Sam Altman, CEO da Aurora Labs. Construimos plataformas de software em escala global, com pipelines de dados e servicos distribuidos. Grafos sao estruturas computacionais centrais. Travessia em largura, busca em profundidade e processamento de estruturas conectadas sustentam sistemas criticos. Grafos nao sao teoria, sao a realidade da computacao.',
+        id: 'npc_aurora_labs', name: 'SAM ALTMAN', role: 'CEO - OpenAI', region: 'Aurora Labs', stage: 'Staff', worldX: 26000,
+        dialog: 'Sam Altman, CEO da OpenAI. Construimos a inteligencia artificial de nivel geral — AGI. GPT, o1, sistemas de raciocinio que superam humanos em benchmarks. Para isso, processamos grafos de conhecimento em escala planetaria. Grafos nao sao teoria: sao a espinha dorsal dos modelos de linguagem, dos sistemas de recomendacao e de toda infraestrutura de IA moderna. Domine grafos e voce entende como o futuro foi construido.',
         look: { hair: '#c4733c', hairStyle: 'short', beard: null, glasses: false, shirt: '#444', pants: '#333', skinTone: '#F5D0A9', casual: true }
     },
     // -- PRINCIPAL --
@@ -4619,6 +4619,15 @@ const UI = {
         if (cb) cb();
     },
 
+    showPaywall(data) {
+        const msg = (data && data.message)
+            ? data.message
+            : 'Você completou a Xerox PARC — o Ato I gratuito! Assine agora e desbloqueie as 24 empresas lendárias da história da computação.';
+        const msgEl = document.getElementById('paywallMsg');
+        if (msgEl) msgEl.textContent = msg;
+        UI.showScreen('screen-paywall');
+    },
+
     showGameOver(stats) {
         SFX.stopMusic();
         SFX.gameOver();
@@ -5617,6 +5626,28 @@ const Game = {
             if (opened) return;
         }
 
+        // ── DEMO GATE: check with the server if the player can enter this region.
+        // Free users are limited to Xerox PARC. Attempting to enter any other
+        // company returns HTTP 402 → show the friendly paywall modal and abort.
+        if (State.sessionId && !opts.skipDemoCheck) {
+            try {
+                await API.post('/api/region/enter', {
+                    session_id: State.sessionId,
+                    region: regionId,
+                });
+            } catch (e) {
+                if (e.status === 402 && e.data && e.data.code === 'demo_limit_reached') {
+                    // Close the company door and show paywall
+                    State.lockedRegion = null;
+                    State.enteringDoor = false;
+                    UI.showScreen('screen-world');
+                    UI.showPaywall(e.data);
+                    return;
+                }
+                // Other errors: fail-open, let the session continue
+            }
+        }
+
         // Always refresh player from server before filtering to prevent stale
         // completed_challenges from showing an already-completed challenge again.
         if (State.sessionId) {
@@ -5691,6 +5722,12 @@ const Game = {
                 }
             }
         } catch (e) {
+            // DEMO paywall: user completed Act I (Intern) without a subscription
+            if (e.status === 402 && e.data && e.data.code === 'demo_limit_reached') {
+                UI.hideChallenge();
+                UI.showPaywall(e.data);
+                return;
+            }
             // If the challenge was already completed (stale client state), dismiss silently.
             if (e.message && e.message.includes('already completed')) {
                 UI.hideChallenge();
@@ -8736,8 +8773,14 @@ const Auth = {
                 this._setUser(res.user, res.access_token, res.refresh_token);
                 UI.showScreen('screen-title');
             } catch (err) {
-                // Special case: account exists but email not verified yet
-                if (err.status === 403 || (err.message && err.message.toLowerCase().includes('verificad'))) {
+                // Subscription required (REQUIRE_SUBSCRIPTION=true on server)
+                if (err.status === 402) {
+                    errEl.innerHTML =
+                        'Assinatura inativa. ' +
+                        '<a href="/account" style="color:#fbbf24;font-weight:700;">Ativar / Renovar plano →</a>';
+                    errEl.hidden = false;
+                    // Special case: account exists but email not verified yet
+                } else if (err.status === 403 || (err.message && err.message.toLowerCase().includes('verificad'))) {
                     errEl.innerHTML =
                         'E-mail não verificado. ' +
                         '<a href="#" id="goVerifyFromLogin" style="color:#fbbf24;">Verificar agora</a>';

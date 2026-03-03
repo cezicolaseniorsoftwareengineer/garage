@@ -23,13 +23,13 @@ const API = {
     async get(p) {
         let r = await fetch(p, { headers: this._headers() });
         if (r.status === 401) { if (await this._handle401(p)) r = await fetch(p, { headers: this._headers() }); }
-        if (!r.ok) { const e = await r.json().catch(() => ({})); const msg = typeof e.detail === 'string' ? e.detail : (e.detail?.message || r.statusText); const err = new Error(msg); err.status = r.status; err.email = e.email || null; err.emailHint = e.email_hint || null; throw err; }
+        if (!r.ok) { const e = await r.json().catch(() => ({})); const msg = typeof e.detail === 'string' ? e.detail : (e.detail?.message || e.message || r.statusText); const err = new Error(msg); err.status = r.status; err.data = e; err.email = e.email || null; err.emailHint = e.email_hint || null; throw err; }
         return r.json();
     },
     async post(p, b) {
         let r = await fetch(p, { method: 'POST', headers: this._headers(), body: JSON.stringify(b) });
         if (r.status === 401) { if (await this._handle401(p)) r = await fetch(p, { method: 'POST', headers: this._headers(), body: JSON.stringify(b) }); }
-        if (!r.ok) { const e = await r.json().catch(() => ({})); const msg = typeof e.detail === 'string' ? e.detail : (e.detail?.message || r.statusText); const err = new Error(msg); err.status = r.status; err.email = e.email || null; err.emailHint = e.email_hint || null; throw err; }
+        if (!r.ok) { const e = await r.json().catch(() => ({})); const msg = typeof e.detail === 'string' ? e.detail : (e.detail?.message || e.message || r.statusText); const err = new Error(msg); err.status = r.status; err.data = e; err.email = e.email || null; err.emailHint = e.email_hint || null; throw err; }
         return r.json();
     },
 };
@@ -4664,6 +4664,15 @@ const UI = {
         this._startVictoryCelebration(player);
     },
 
+    showPaywall(data) {
+        const msg = (data && (data.message || data.detail))
+            ? (data.message || data.detail)
+            : 'Você completou a fase gratuita do 404 Garage! Assine para continuar a jornada.';
+        const msgEl = document.getElementById('paywallMsg');
+        if (msgEl) msgEl.textContent = msg;
+        UI.showScreen('screen-paywall');
+    },
+
     _startVictoryCelebration(player) {
         const canvas = document.getElementById('victoryCanvas');
         if (!canvas) return;
@@ -5523,7 +5532,10 @@ const Game = {
             Heartbeat.start();
 
             Learning.showStageBriefingIfNeeded(State.player.stage);
-        } catch (e) { alert('Erro: ' + e.message); }
+        } catch (e) {
+            if (e.status === 402) { UI.showPaywall(e.data); return; }
+            alert('Erro: ' + e.message);
+        }
     },
 
     async loadSession(silent = false) {
@@ -5663,10 +5675,22 @@ const Game = {
             World.showDialog('SISTEMA', regionId, 'Todos os desafios desta região foram completados.');
             return;
         }
+        // Demo gate: pre-flight check before loading challenge
+        if (State.sessionId) {
+            try {
+                await API.post('/api/region/enter', { session_id: State.sessionId, region: regionId });
+            } catch (e) {
+                if (e.status === 402) { UI.showPaywall(e.data); return; }
+                // For other errors (network, etc.), continue and let the challenge load attempt handle it
+            }
+        }
         try {
             State.currentChallenge = await API.get('/api/challenges/' + next.id);
             UI.showChallenge(State.currentChallenge);
-        } catch (e) { alert('Erro: ' + e.message); }
+        } catch (e) {
+            if (e.status === 402) { UI.showPaywall(e.data); return; }
+            alert('Erro: ' + e.message);
+        }
     },
 
     async submitAnswer(challengeId, idx) {
@@ -5717,6 +5741,8 @@ const Game = {
                 }
             }
         } catch (e) {
+            // Demo paywall: player hit the free tier limit
+            if (e.status === 402) { UI.hideChallenge(); UI.showPaywall(e.data); return; }
             // If the challenge was already completed (stale client state), dismiss silently.
             if (e.message && e.message.includes('already completed')) {
                 UI.hideChallenge();
@@ -8663,20 +8689,12 @@ const Auth = {
                 const res = await API.post('/api/auth/forgot-password', { email });
                 this._pendingResetEmail = email;
 
-                // DEV mode: server returns _debug_otp when DEBUG=true in .env
-                let msg = 'Código enviado! Verifique sua caixa de entrada.';
-                if (res && res._debug_otp) {
-                    msg = `[DEV] Código: ${res._debug_otp} — use-o na próxima tela.`;
-                    console.info('[GARAGE DEV] Reset OTP:', res._debug_otp);
-                }
-                sucEl.textContent = msg;
+                sucEl.textContent = 'Código enviado! Verifique sua caixa de entrada.';
                 sucEl.hidden = false;
                 setTimeout(() => {
                     const hint = document.getElementById('resetEmailHint');
                     if (hint) {
-                        hint.textContent = res && res._debug_otp
-                            ? `[DEV] Código: ${res._debug_otp}`
-                            : `Código enviado para ${email}. Insira abaixo.`;
+                        hint.textContent = `Código enviado para ${email}. Insira abaixo.`;
                     }
                     UI.showScreen('screen-reset-password');
                 }, 1200);
@@ -8900,14 +8918,7 @@ const Auth = {
                 btnResend.textContent = 'Enviando...';
                 try {
                     const res = await API.post('/api/auth/resend-verification', { email });
-                    if (res._debug_otp) {
-                        const hintEl = document.getElementById('verifyEmailHint');
-                        if (hintEl) hintEl.textContent = `[DEV] Código: ${res._debug_otp} — cole nas caixas acima.`;
-                        console.info('[GARAGE DEV] Resend OTP:', res._debug_otp);
-                        sucEl.textContent = `[DEV] Novo código: ${res._debug_otp}`;
-                    } else {
-                        sucEl.textContent = res.message || 'Novo código enviado!';
-                    }
+                    sucEl.textContent = res.message || 'Novo código enviado! Verifique sua caixa de entrada.';
                     sucEl.hidden = false;
                     // Countdown 30s with live update so user knows it's not frozen
                     let _secs = 30;
@@ -9021,14 +9032,9 @@ const Auth = {
                     this._pendingUsername = document.getElementById('regUsername').value.trim();
                     const hintEl = document.getElementById('verifyEmailHint');
                     if (hintEl) {
-                        if (res._debug_otp) {
-                            hintEl.textContent = `[DEV] Código: ${res._debug_otp} — cole nas caixas acima.`;
-                            console.info('[GARAGE DEV] Register OTP:', res._debug_otp);
-                        } else {
-                            hintEl.textContent =
-                                `Código enviado para ${res.email_hint || emailVal}. ` +
-                                `Não encontrou? Verifique o spam ou clique em "Reenviar código".`;
-                        }
+                        hintEl.textContent =
+                            `Código enviado para ${res.email_hint || emailVal}. ` +
+                            `Não encontrou? Verifique o spam ou clique em "Reenviar código".`;
                     }
                     // Clear OTP boxes
                     document.querySelectorAll('.otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
