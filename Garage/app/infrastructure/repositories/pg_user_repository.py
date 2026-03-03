@@ -180,6 +180,51 @@ class PgUserRepository:
             return True
 
     # ------------------------------------------------------------------
+    # Subscription (Asaas PIX)
+    # ------------------------------------------------------------------
+
+    def activate_subscription(self, user_id: str, plan: str, expires_at) -> None:
+        """Mark a user subscription as active."""
+        with self._sf() as session:
+            row = session.get(UserModel, user_id)
+            if not row:
+                raise ValueError(f"User not found: {user_id}")
+            row.subscription_status = "active"
+            row.subscription_plan = plan
+            row.subscription_expires_at = expires_at
+            session.commit()
+
+    def revoke_subscription(self, user_id: str) -> None:
+        """Cancel a user's subscription immediately."""
+        from datetime import timedelta
+        with self._sf() as session:
+            row = session.get(UserModel, user_id)
+            if not row:
+                raise ValueError(f"User not found: {user_id}")
+            row.subscription_status = "cancelled"
+            row.subscription_expires_at = datetime.now(timezone.utc) - timedelta(seconds=1)
+            session.commit()
+
+    def get_subscription_status(self, user_id: str) -> dict:
+        """Return the subscription status dict for a user."""
+        from datetime import datetime, timezone
+        with self._sf() as session:
+            row = session.get(UserModel, user_id)
+            if not row:
+                return {"status": "none", "plan": None, "expires_at": None}
+            expires = row.subscription_expires_at
+            # Auto-expire if past expiration date
+            if expires and expires < datetime.now(timezone.utc):
+                status = "expired"
+            else:
+                status = row.subscription_status or "none"
+            return {
+                "status": status,
+                "plan": row.subscription_plan,
+                "expires_at": expires.isoformat() if expires else None,
+            }
+
+    # ------------------------------------------------------------------
     # Mapping
     # ------------------------------------------------------------------
 

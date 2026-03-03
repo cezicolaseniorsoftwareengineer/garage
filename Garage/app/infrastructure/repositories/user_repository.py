@@ -1,6 +1,7 @@
 """User persistence (JSON file + in-memory cache)."""
 import json
 import os
+from datetime import datetime, timezone
 from typing import Dict, Optional
 
 from app.domain.user import User
@@ -12,6 +13,8 @@ class UserRepository:
     def __init__(self, data_path: str = "data/users.json"):
         self._data_path = data_path
         self._users: Dict[str, User] = {}
+        # Subscription data keyed by user_id (not persisted in User domain obj)
+        self._subscriptions: Dict[str, dict] = {}
         self._load()
 
     def save(self, user: User) -> None:
@@ -62,6 +65,41 @@ class UserRepository:
     def update_last_login(self, user_id: str) -> None:
         """No-op for JSON backend (field not tracked)."""
         pass
+
+    # ------------------------------------------------------------------
+    # Subscription (JSON dev mode — mirrors PgUserRepository interface)
+    # ------------------------------------------------------------------
+
+    def activate_subscription(self, user_id: str, plan: str, expires_at) -> None:
+        """Store subscription in memory (JSON dev mode — not persisted to file)."""
+        if isinstance(expires_at, datetime):
+            expires_iso = expires_at.isoformat()
+        else:
+            expires_iso = str(expires_at)
+        self._subscriptions[user_id] = {
+            "status": "active",
+            "plan": plan,
+            "expires_at": expires_iso,
+        }
+
+    def get_subscription_status(self, user_id: str) -> dict:
+        """Return subscription status dict (JSON dev mode)."""
+        sub = self._subscriptions.get(user_id)
+        if not sub:
+            return {"status": "none", "plan": None, "expires_at": None}
+        expires = sub.get("expires_at")
+        if expires:
+            try:
+                exp_dt = datetime.fromisoformat(expires)
+                if exp_dt.tzinfo is None:
+                    exp_dt = exp_dt.replace(tzinfo=timezone.utc)
+                if exp_dt < datetime.now(timezone.utc):
+                    return {"status": "expired", "plan": sub.get("plan"), "expires_at": expires}
+            except Exception:
+                pass
+        return {"status": sub.get("status", "none"), "plan": sub.get("plan"), "expires_at": expires}
+
+    # ------------------------------------------------------------------
 
     def _persist(self) -> None:
         """Write all users to JSON file."""
