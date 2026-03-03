@@ -50,19 +50,18 @@ class SaveWorldStateRequest(BaseModel):
 _player_repo = None
 _challenge_repo = None
 _leaderboard_repo = None
+_user_repo = None  # injected for DEMO subscription check
 _metrics = None
 _events = None
 
 
 def init_routes(player_repo, challenge_repo, leaderboard_repo,
-                metrics_service=None, event_service=None):
-    global _player_repo, _challenge_repo, _leaderboard_repo, _metrics, _events
+               metrics_service=None, event_service=None, user_repo=None):
+    global _player_repo, _challenge_repo, _leaderboard_repo, _user_repo, _metrics, _events
     _player_repo = player_repo
     _challenge_repo = challenge_repo
     _leaderboard_repo = leaderboard_repo
-    _metrics = metrics_service
-    _events = event_service
-
+    _user_repo = user_repo
 
 # ---------------------------------------------------------------------------
 # Helper: ownership check
@@ -72,6 +71,51 @@ def _assert_owner(player, current_user: dict):
     """Raise 403 if the authenticated user does not own the session."""
     if player.user_id and current_user and str(player.user_id).lower() != str(current_user.get("sub", "")).lower():
         raise HTTPException(status_code=403, detail="Access denied.")
+
+
+# ---------------------------------------------------------------------------
+# DEMO gate — Xerox PARC is free (Act I intro). Every other region/company
+# requires an active subscription.
+# ---------------------------------------------------------------------------
+
+# Regions fully available in the free demo (no subscription required).
+# Only Xerox PARC is included: player can read 1 book, talk to the Xerox CEO,
+# complete all 3 MCQ theory questions AND the live-coding IDE challenge.
+# When they try to enter Apple Garage (or any other company) the paywall fires.
+DEMO_FREE_REGIONS = {"Xerox PARC"}
+
+
+def _check_subscription(current_user: Optional[dict]) -> bool:
+    """Return True when the user has an active subscription or is admin."""
+    if not current_user:
+        return False
+    if current_user.get("role") == "admin":
+        return True
+    if not _user_repo or not hasattr(_user_repo, "get_subscription_status"):
+        # No subscription system configured (dev / JSON mode) — allow everything
+        return True
+    try:
+        sub = _user_repo.get_subscription_status(current_user.get("sub", ""))
+        return sub.get("status") in ("active",)
+    except Exception:
+        return True  # fail-open: never block on transient DB error
+
+
+def _demo_paywall_response(region: str = ""):
+    """Build the standard 402 DEMO paywall JSON response."""
+    from fastapi.responses import JSONResponse as _JR
+    return _JR(status_code=402, content={
+        "code": "demo_limit_reached",
+        "message": (
+            "Você completou a Xerox PARC — o Ato I de gratuito! "
+            "Assine agora e desbloqueie as 24 empresas lendárias: "
+            "Apple, Google, Microsoft, Amazon, Facebook e muito mais. "
+            "Sua jornada de Estagiário a Principal Engineer começa de verdade agora."
+        ),
+        "completed_stage": "Xerox PARC demo",
+        "blocked_region": region,
+        "action_url": "/#planos",
+    })
 
 
 # ---------------------------------------------------------------------------
@@ -159,6 +203,39 @@ def api_get_challenge(challenge_id: str):
     return challenge.to_dict_for_player()
 
 
+# ---------------------------------------------------------------------------
+# Region entry gate — called by the frontend BEFORE opening a company.
+# Returns 200 {allowed: true} or 402 {code: demo_limit_reached, ...}
+# ---------------------------------------------------------------------------
+
+class RegionEnterRequest(BaseModel):
+    session_id: str
+    region: str
+
+
+@router.post("/region/enter")
+def api_region_enter(req: RegionEnterRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Pre-flight check: can this user enter the requested region?
+    Free users can only access DEMO_FREE_REGIONS.
+    Subscribed users and admins can access all regions.
+    """
+    player = _player_repo.get(req.session_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Session not found")
+    _assert_owner(player, current_user)
+
+    # Free region — always allowed
+    if req.region in DEMO_FREE_REGIONS:
+        return {"allowed": True, "region": req.region}
+
+    # Paid region — check subscription
+    if _check_subscription(current_user):
+        return {"allowed": True, "region": req.region}
+
+    return _demo_paywall_response(req.region)
+
+
 @router.post("/submit")
 def api_submit_answer(req: SubmitAnswerRequest, current_user: dict = Depends(get_current_user)):
     """Submit an answer to a challenge (owner only)."""
@@ -177,6 +254,14 @@ def api_submit_answer(req: SubmitAnswerRequest, current_user: dict = Depends(get
             challenge=challenge,
             selected_index=req.selected_index,
         )
+
+        # DEMO gate (region-based): challenges from regions NOT in DEMO_FREE_REGIONS
+        # require an active subscription.  We check BEFORE persisting so that
+        # unsubscribed players stay at their last saved free-tier position.
+        if challenge.region.value not in DEMO_FREE_REGIONS:
+            if not _check_subscription(current_user):
+                return _demo_paywall_response(challenge.region.value)
+
         _player_repo.save(player)
 
         user_id = current_user["sub"]
