@@ -245,20 +245,47 @@ def create_tables() -> None:
 
 
 def _ensure_indexes(engine) -> None:
-    """Apply performance indexes that cannot be expressed via create_all."""
+    """Apply performance indexes and schema migrations that cannot be expressed via create_all."""
     ddl_statements = [
+        # ── Performance indexes ──────────────────────────────────────────────
         """
         CREATE INDEX IF NOT EXISTS idx_game_sessions_active
         ON game_sessions (updated_at DESC)
         WHERE status = 'in_progress'
         """,
+        # ── Subscription columns (idempotent ALTER TABLE) ────────────────────
+        # Added in v3.1 — PIX Asaas integration
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(20) NOT NULL DEFAULT 'none'",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_plan VARCHAR(20)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_expires_at TIMESTAMPTZ",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS asaas_customer_id VARCHAR(50)",
+        # ── Landing analytics table (idempotent CREATE) ──────────────────────
+        # Added in v3.2 — landing page event tracking
+        """
+        CREATE TABLE IF NOT EXISTS landing_events (
+            id          BIGSERIAL PRIMARY KEY,
+            visitor_id  VARCHAR(64)  NOT NULL,
+            event_type  VARCHAR(30)  NOT NULL,
+            element     VARCHAR(100),
+            section     VARCHAR(50),
+            scroll_pct  SMALLINT,
+            plan        VARCHAR(20),
+            referrer    TEXT,
+            user_agent  VARCHAR(200),
+            ip_address  VARCHAR(45),
+            created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_landing_events_visitor ON landing_events(visitor_id)",
+        "CREATE INDEX IF NOT EXISTS idx_landing_events_type    ON landing_events(event_type)",
+        "CREATE INDEX IF NOT EXISTS idx_landing_events_created ON landing_events(created_at DESC)",
     ]
     try:
         with engine.begin() as conn:
             for ddl in ddl_statements:
                 conn.execute(text(ddl))
     except Exception as exc:
-        print(f"[GARAGE] WARNING: Could not ensure indexes: {exc}")
+        print(f"[GARAGE] WARNING: Could not ensure indexes/migrations: {exc}")
 
 
 def check_health() -> bool:

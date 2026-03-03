@@ -48,6 +48,16 @@ class UserModel(Base):
     created_at = Column(DateTime(timezone=True), nullable=False, default=_utcnow)
     last_login_at = Column(DateTime(timezone=True), nullable=True)
 
+    # ── Subscription (Asaas PIX payments) ─────────────────────────────────
+    # status: none | active | expired | cancelled
+    subscription_status = Column(String(20), nullable=False, default="none")
+    # plan: monthly | annual | institutional | None
+    subscription_plan = Column(String(20), nullable=True)
+    # when the current subscription expires
+    subscription_expires_at = Column(DateTime(timezone=True), nullable=True)
+    # Asaas customer ID for idempotent customer creation
+    asaas_customer_id = Column(String(50), nullable=True)
+
     sessions = relationship("GameSessionModel", back_populates="user", lazy="select")
     metrics = relationship("UserMetricsModel", back_populates="user", uselist=False, lazy="select")
     email_verifications = relationship("EmailVerificationModel", back_populates="user", lazy="select")
@@ -239,3 +249,34 @@ class GameEventModel(Base):
     event_type = Column(String(50), nullable=False, index=True)
     payload = Column(JSONB, nullable=True)
     timestamp = Column(DateTime(timezone=True), nullable=False, default=_utcnow, index=True)
+
+
+# ---------------------------------------------------------------------------
+# Landing Page Analytics
+# ---------------------------------------------------------------------------
+
+class LandingEventModel(Base):
+    """Immutable event log for the landing page — visits, clicks, checkout intent."""
+    __tablename__ = "landing_events"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    # Anonymous visitor fingerprint (localStorage UUID, rotates per browser)
+    visitor_id = Column(String(64), nullable=False, index=True)
+    # Event type: page_view | click | checkout_click | scroll_depth | section_view
+    event_type = Column(String(30), nullable=False, index=True)
+    # element / button id or name  (e.g. "btn-hero-cta", "btn-plan-monthly")
+    element = Column(String(100), nullable=True)
+    # section in viewport (e.g. "pricing", "hero", "about")
+    section = Column(String(50), nullable=True)
+    # scroll percentage 0–100
+    scroll_pct = Column(SmallInteger, nullable=True)
+    # plan selected (monthly / annual) — populated on checkout_click
+    plan = Column(String(20), nullable=True)
+    # HTTP Referer header
+    referrer = Column(Text, nullable=True)
+    # truncated user-agent (first 200 chars)
+    user_agent = Column(String(200), nullable=True)
+    # visitor IP (GDPR: store only for fraud/bot detection; anonymize in prod)
+    ip_address = Column(String(45), nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=_utcnow, index=True)
+
