@@ -5,11 +5,23 @@ import secrets
 import bcrypt
 
 
+# Default cost factor.  10 = ~100ms; 12 = ~400ms (overkill for a game).
+_BCRYPT_ROUNDS = 10
+
+
 def hash_password(plain: str) -> str:
     """Hash a plain-text password with bcrypt."""
     return bcrypt.hashpw(
-        plain.encode("utf-8"), bcrypt.gensalt(rounds=12)
+        plain.encode("utf-8"), bcrypt.gensalt(rounds=_BCRYPT_ROUNDS)
     ).decode("utf-8")
+
+
+def get_bcrypt_rounds(hashed: str) -> int:
+    """Return the cost factor embedded in a bcrypt hash string."""
+    try:
+        return int(hashed.split("$")[2])
+    except (IndexError, ValueError):
+        return 0
 
 
 def verify_password(plain: str, hashed: str) -> bool:

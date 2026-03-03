@@ -20,6 +20,7 @@ from app.infrastructure.auth.password import (
     hash_password,
     verify_password,
     verify_legacy_sha256,
+    get_bcrypt_rounds,
     is_bcrypt_hash,
 )
 from app.infrastructure.auth.bruteforce import record_failed, is_blocked, clear_failed
@@ -34,6 +35,10 @@ _user_repo = None
 _events = None
 _verification_repo = None
 _pending_repo = None   # PgPendingRepository — set when PostgreSQL is active
+
+# Subscription gate: set REQUIRE_SUBSCRIPTION=true in production .env to block
+# users without an active plan from obtaining JWT tokens. Admins always bypass.
+_REQUIRE_SUBSCRIPTION = os.environ.get("REQUIRE_SUBSCRIPTION", "false").lower() == "true"
 
 # In-memory store for password-reset OTPs  { user_id: {code_hash, expires_at} }
 _pwd_reset_store: dict = {}
@@ -291,6 +296,13 @@ def api_login(req: LoginRequest):
     # Verify with bcrypt or legacy SHA-256
     if is_bcrypt_hash(stored_hash):
         valid = verify_password(req.password, stored_hash)
+        # Transparent upgrade: bcrypt rounds > 10 → re-hash with rounds=10 on next login
+        if valid and get_bcrypt_rounds(stored_hash) > 10:
+            try:
+                new_hash = hash_password(req.password)
+                _user_repo.update_password(user_data["id"], new_hash, "bcrypt")
+            except (AttributeError, Exception):
+                pass
     else:  # pragma: no cover — legacy SHA-256 upgrade path
         valid = verify_legacy_sha256(req.password, user_data["salt"], stored_hash)
         # Transparent upgrade to bcrypt on successful legacy auth
@@ -321,6 +333,27 @@ def api_login(req: LoginRequest):
 
     # Attach role claim if the user is configured as admin (username-based check)
     role = "admin" if is_admin_username(user_data["username"]) else None
+
+    # ── Subscription gate ─────────────────────────────────────────────────
+    # Active only when REQUIRE_SUBSCRIPTION=true (production toggle).
+    # Admins are always allowed through regardless of subscription status.
+    if _REQUIRE_SUBSCRIPTION and role != "admin" and hasattr(_user_repo, "get_subscription_status"):
+        try:
+            sub = _user_repo.get_subscription_status(user_data["id"])
+            if sub.get("status") not in ("active",):
+                return JSONResponse(
+                    status_code=402,
+                    content={
+                        "detail": "Assinatura necessaria. Adquira ou renove seu plano para jogar.",
+                        "subscription_status": sub.get("status", "none"),
+                        "code": "subscription_required",
+                        "action_url": "/account",
+                    },
+                )
+        except Exception:
+            pass  # never block login due to subscription check failure
+    # ──────────────────────────────────────────────────────────────────────
+
     access_token = create_access_token(user_data["id"], user_data["username"], role=role)
     refresh_token = create_refresh_token(user_data["id"])
 
