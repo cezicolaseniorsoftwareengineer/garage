@@ -25,9 +25,13 @@ from app.api.routes.admin_routes import router as admin_router, init_admin_route
 from app.api.routes.study_routes import router as study_router, init_study_routes
 from app.api.routes.code_runner_routes import router as code_runner_router
 from app.api.routes.ai_validator_routes import router as ai_validator_router
+from app.api.routes.payment_routes import router as payment_router, init_payment_routes
+from app.api.routes.analytics_routes import router as analytics_router, init_analytics_routes
+from app.api.routes.account_routes import router as account_router, init_account_routes
 
 DATA_DIR = os.path.join(BASE_DIR, "data")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
+LANDING_DIR = os.path.join(os.path.dirname(PROJECT_DIR), "landing")
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
@@ -98,6 +102,10 @@ app.add_middleware(
 if os.path.exists(STATIC_DIR):
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
+# Landing page static assets  (CSS, JS, screenshots)
+if os.path.exists(LANDING_DIR):
+    app.mount("/landing", StaticFiles(directory=LANDING_DIR), name="landing")
+
 # ---------------------------------------------------------------------------
 # Persistence wiring
 # ---------------------------------------------------------------------------
@@ -118,6 +126,7 @@ if DATABASE_URL:
     from app.infrastructure.repositories.pg_challenge_repository import PgChallengeRepository
     from app.infrastructure.repositories.pg_verification_repository import PgVerificationRepository
     from app.infrastructure.repositories.pg_pending_repository import PgPendingRepository
+    from app.infrastructure.repositories.pg_landing_analytics_repository import PgLandingAnalyticsRepository
     from app.infrastructure.database.seed import seed_challenges
     from app.application.metrics_service import MetricsService
     from app.application.event_service import EventService
@@ -132,6 +141,7 @@ if DATABASE_URL:
     user_repo = PgUserRepository(_sf)
     verification_repo = PgVerificationRepository(_sf)
     pending_repo = PgPendingRepository(_sf)
+    landing_analytics_repo = PgLandingAnalyticsRepository(_sf)
     metrics_service = MetricsService(_sf)
     event_service = EventService(_sf)
 
@@ -185,11 +195,13 @@ else:
     user_repo = UserRepository(
         data_path=os.path.join(DATA_DIR, "users.json")
     )
+    landing_analytics_repo = None  # analytics require PostgreSQL
     _persistence = "json"
 
 # Wire repos + services into route modules
 init_routes(player_repo, challenge_repo, leaderboard_repo,
-            metrics_service=metrics_service, event_service=event_service)
+            metrics_service=metrics_service, event_service=event_service,
+            user_repo=user_repo)
 init_auth_routes(
     user_repo,
     event_service=event_service,
@@ -199,6 +211,12 @@ init_auth_routes(
 init_admin_routes(user_repo, player_repo, leaderboard_repo, challenge_repo,
                   pending_repo=pending_repo if DATABASE_URL else None)
 init_study_routes(player_repo, challenge_repo)
+init_payment_routes(user_repo)
+init_analytics_routes(landing_analytics_repo if DATABASE_URL else None)
+init_account_routes(
+    user_repo,
+    session_factory=dynamic_session_factory if DATABASE_URL else None,
+)
 
 # Register API routes
 app.include_router(auth_router)
@@ -207,11 +225,31 @@ app.include_router(admin_router)
 app.include_router(study_router)
 app.include_router(code_runner_router)
 app.include_router(ai_validator_router)
+app.include_router(payment_router)
+app.include_router(analytics_router)
+app.include_router(account_router)
 
 
 @app.get("/")
-def serve_frontend():
-    """Serve index.html."""
+def serve_landing():
+    """Serve landing page (entry point / marketing page)."""
+    landing_path = os.path.join(LANDING_DIR, "index.html")
+    if os.path.exists(landing_path):
+        return FileResponse(landing_path, headers={
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        })
+    # Fallback: serve the game directly if no landing page
+    index_path = os.path.join(STATIC_DIR, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"message": "GARAGE API is running."}
+
+
+@app.get("/jogo")
+def serve_game():
+    """Serve the game frontend."""
     index_path = os.path.join(STATIC_DIR, "index.html")
     if os.path.exists(index_path):
         return FileResponse(index_path, headers={
@@ -219,7 +257,19 @@ def serve_frontend():
             "Pragma": "no-cache",
             "Expires": "0",
         })
-    return {"message": "GARAGE API is running. No frontend found at /static/index.html."}
+    return {"message": "Game not found."}
+
+
+@app.get("/account")
+def serve_account():
+    """Serve the user account area (subscription + usage stats)."""
+    account_path = os.path.join(STATIC_DIR, "account.html")
+    if os.path.exists(account_path):
+        return FileResponse(account_path, headers={
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+        })
+    return {"message": "Account page not found."}
 
 
 @app.get("/admin")
