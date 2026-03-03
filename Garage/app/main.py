@@ -83,17 +83,22 @@ app.add_middleware(StaticCacheMiddleware)
 
 # CORS (required for browser frontend)
 # CORS configuration: read allowed origins from env (comma-separated).
+# IMPORTANT: allow_credentials=True is INVALID with allow_origins=["*"] per the
+# CORS spec — browsers reject the preflight with 400. Only enable credentials
+# when specific origins are declared (production).
 _allowed = os.environ.get("ALLOWED_ORIGINS", "").strip()
 if _allowed:
     allow_origins = [o.strip() for o in _allowed.split(",") if o.strip()]
+    allow_credentials = True
 else:
-    # Default to wildcard for ease of local development.
+    # Wildcard for local development — credentials MUST be False with "*"
     allow_origins = ["*"]
+    allow_credentials = False
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,
-    allow_credentials=True,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
