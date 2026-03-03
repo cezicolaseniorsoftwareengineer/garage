@@ -59,9 +59,6 @@ Garage/app/data/sessions.json
 Garage/app/data/users.json
 Garage/leaderboard.json
 
-# Landing page — isolated, never commit to main repo
-landing/
-
 # Build artifacts
 node_modules/
 

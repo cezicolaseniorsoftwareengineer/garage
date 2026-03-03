@@ -9088,6 +9088,52 @@ const Auth = {
 
 // ---- boot ----
 document.addEventListener('DOMContentLoaded', async () => {
+    // Detect demo mode from URL (?mode=demo) — set by landing page "Jogar Grátis" button.
+    const _urlParams = new URLSearchParams(window.location.search);
+    const _demoMode = _urlParams.get('mode') === 'demo';
+
+    // Inject demo banner into register card when arriving from the landing page.
+    if (_demoMode) {
+        const regCard = document.querySelector('#screen-register .auth-card');
+        if (regCard && !document.getElementById('demoBanner')) {
+            const banner = document.createElement('div');
+            banner.id = 'demoBanner';
+            banner.style.cssText = [
+                'background:linear-gradient(135deg,rgba(34,197,94,0.18),rgba(34,197,94,0.06))',
+                'border:1px solid rgba(34,197,94,0.45)',
+                'border-radius:10px',
+                'padding:10px 14px',
+                'margin-bottom:18px',
+                'text-align:center',
+                'font-family:"JetBrains Mono",monospace',
+            ].join(';');
+            banner.innerHTML =
+                '<div style="color:#22c55e;font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:4px">ATO I — 100% GRATUITO</div>' +
+                '<div style="color:#94a3b8;font-size:11px;line-height:1.5">Crie sua conta e jogue <strong style="color:#e8e8f0">Xerox PARC</strong> grátis.<br>Sem cartão. Sem prazo.</div>';
+            // Insert banner before the form element
+            const form = regCard.querySelector('form');
+            if (form) regCard.insertBefore(banner, form);
+            else regCard.prepend(banner);
+        }
+        // Also inject login screen hint so users who already have account also see context
+        const loginCard = document.querySelector('#screen-login .auth-card');
+        if (loginCard && !document.getElementById('demoLoginHint')) {
+            const hint = document.createElement('div');
+            hint.id = 'demoLoginHint';
+            hint.style.cssText = [
+                'background:rgba(34,197,94,0.06)',
+                'border:1px solid rgba(34,197,94,0.3)',
+                'border-radius:8px',
+                'padding:8px 12px',
+                'margin-bottom:14px',
+                'text-align:center',
+            ].join(';');
+            hint.innerHTML = '<span style="color:#22c55e;font-size:11px;font-family:monospace">Ato I grátis — entre e jogue Xerox PARC agora</span>';
+            const loginForm = loginCard.querySelector('form');
+            if (loginForm) loginCard.insertBefore(hint, loginForm);
+        }
+    }
+
     Auth.init();
     if (Auth.isLoggedIn()) {
         // Validate token with server before auto-resuming
@@ -9096,7 +9142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (_e) {
             // Token invalid or server unreachable -- force login
             Auth.handleExpired();
-            UI.showScreen('screen-login');
+            UI.showScreen(_demoMode ? 'screen-register' : 'screen-login');
             return;
         }
         // Always try to auto-resume. loadSession() now handles missing localStorage
@@ -9104,14 +9150,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const resumed = await Game.loadSession(true);
         if (!resumed) {
             if (!Auth.isLoggedIn()) {
-                UI.showScreen('screen-login');
+                UI.showScreen(_demoMode ? 'screen-register' : 'screen-login');
             } else {
                 UI.showScreen('screen-title');
                 UI.updateTitleButtons();
             }
         }
     } else {
-        UI.showScreen('screen-login');
+        // Not logged in — demo mode sends to register, otherwise login
+        UI.showScreen(_demoMode ? 'screen-register' : 'screen-login');
     }
 });
 

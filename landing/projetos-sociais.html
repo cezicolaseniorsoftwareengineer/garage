@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tecnologia na Quebrada — Bio Code Technology</title>
+    <style>
+        :root {
+            --amber: #ffc107;
+            --amber-glow: rgba(255, 193, 7, 0.12);
+            --green: #4ade80;
+            --blue: #38bdf8;
+            --purple: #a78bfa;
+            --red: #f87171;
+            --bg-dark: #0a0a0f;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 24px;
+            /* 16px × 1.5 — escala todos os valores rem em +50% */
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* ── PROGRESS BAR ── */
+        #progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--amber), #ff6b35);
+            transition: width 0.4s ease;
+            z-index: 100;
+        }
+
+        /* ── SLIDE COUNTER ── */
+        #slide-counter {
+            position: fixed;
+            top: 14px;
+            right: 18px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            z-index: 100;
+            letter-spacing: 0.05em;
+        }
+
+        /* ── LOGO ── */
+        #logo {
+            position: fixed;
+            top: 12px;
+            left: 18px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            color: var(--amber);
+            text-transform: uppercase;
+            z-index: 100;
+        }
+
+        /* ── NAV ARROWS ── */
+        .nav-btn {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background: var(--amber-glow);
+            color: var(--amber);
+            border-color: var(--amber);
+        }
+
+        #nav-prev {
+            left: 14px;
+        }
+
+        #nav-next {
+            right: 14px;
+        }
+
+        /* ── DOT INDICATORS ── */
+        #dots {
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            z-index: 100;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background: var(--amber);
+            transform: scale(1.4);
+        }
+
+        /* ── SLIDES CONTAINER ── */
+        #slides {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 56px 72px 56px;
+            opacity: 0;
+            transform: translateX(60px);
+            transition: opacity 0.45s ease, transform 0.45s ease;
+            pointer-events: none;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+
+        .slide.exit-left {
+            opacity: 0;
+            transform: translateX(-60px);
+        }
+
+        /* ── SLIDE BACKGROUNDS ── */
+        .slide-cover {
+            background: radial-gradient(ellipse at 20% 50%, rgba(255, 107, 53, 0.18) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(255, 193, 7, 0.1) 0%, transparent 50%), var(--bg-dark);
+        }
+
+        .slide-problem {
+            background: radial-gradient(ellipse at 80% 80%, rgba(248, 113, 113, 0.12) 0%, transparent 55%), var(--bg-dark);
+        }
+
+        .slide-solution {
+            background: radial-gradient(ellipse at 30% 30%, rgba(56, 189, 248, 0.1) 0%, transparent 55%), var(--bg-dark);
+        }
+
+        .slide-audience {
+            background: radial-gradient(ellipse at 70% 60%, rgba(167, 139, 250, 0.1) 0%, transparent 55%), var(--bg-dark);
+        }
+
+        .slide-adult {
+            background: radial-gradient(ellipse at 20% 70%, rgba(74, 222, 128, 0.1) 0%, transparent 55%), var(--bg-dark);
+        }
+
+        .slide-where {
+            background: var(--bg-dark);
+        }
+
+        .slide-how {
+            background: radial-gradient(ellipse at 50% 20%, rgba(255, 193, 7, 0.08) 0%, transparent 55%), var(--bg-dark);
+        }
+
+        .slide-tech {
+            background: radial-gradient(ellipse at 80% 50%, rgba(56, 189, 248, 0.1) 0%, transparent 55%), var(--bg-dark);
+        }
+
+        .slide-budget {
+            background: var(--bg-dark);
+        }
+
+        .slide-company {
+            background: radial-gradient(ellipse at 30% 80%, rgba(255, 193, 7, 0.08) 0%, transparent 55%), var(--bg-dark);
+        }
+
+        .slide-timeline {
+            background: radial-gradient(ellipse at 80% 20%, rgba(167, 139, 250, 0.1) 0%, transparent 55%), var(--bg-dark);
+        }
+
+        .slide-author {
+            background: radial-gradient(ellipse at 20% 30%, rgba(74, 222, 128, 0.08) 0%, transparent 55%), var(--bg-dark);
+        }
+
+        .slide-vision {
+            background: radial-gradient(ellipse at 60% 60%, rgba(56, 189, 248, 0.08) 0%, transparent 55%), var(--bg-dark);
+        }
+
+        .slide-cta {
+            background: radial-gradient(ellipse at 50% 50%, rgba(255, 193, 7, 0.15) 0%, transparent 60%), var(--bg-dark);
+        }
+
+        /* ── TYPOGRAPHY ── */
+        .slide-tag {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--amber);
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .slide-title {
+            font-size: clamp(1.8rem, 4vw, 3.2rem);
+            font-weight: 800;
+            line-height: 1.15;
+            text-align: center;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff 30%, var(--amber));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .slide-subtitle {
+            font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+            color: var(--text-muted);
+            text-align: center;
+            max-width: 680px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .section-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            align-self: flex-start;
+        }
+
+        /* ── COVER ── */
+        .cover-badge {
+            background: linear-gradient(135deg, #ff6b35, var(--amber));
+            color: #000;
+            font-weight: 900;
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .cover-title {
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 900;
+            text-align: center;
+            letter-spacing: -0.02em;
+            line-height: 1.05;
+            background: linear-gradient(135deg, #fff 20%, var(--amber) 60%, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+        }
+
+        .cover-desc {
+            font-size: clamp(1rem, 1.8vw, 1.25rem);
+            color: var(--text-muted);
+            text-align: center;
+            max-width: 700px;
+            line-height: 1.65;
+            margin-bottom: 8px;
+        }
+
+        .cover-policy {
+            font-size: 0.8rem;
+            color: var(--amber);
+            font-style: italic;
+            text-align: center;
+        }
+
+        .cover-brand {
+            margin-top: 30px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+        }
+
+        /* ── STAT CARDS ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(248, 113, 113, 0.4);
+        }
+
+        .stat-num {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: var(--red);
+            line-height: 1;
+        }
+
+        .stat-text {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* ── SOLUTION CARDS ── */
+        .solution-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            width: 100%;
+            max-width: 750px;
+        }
+
+        .sol-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .sol-card h3 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--blue);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .sol-card ul {
+            list-style: none;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sol-card ul li::before {
+            content: "▸ ";
+            color: var(--blue);
+        }
+
+        /* ── AUDIENCE ── */
+        .audience-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 750px;
+        }
+
+        .aud-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px;
+        }
+
+        .aud-num {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--purple);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .aud-card h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .aud-card ul {
+            list-style: none;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .aud-card ul li::before {
+            content: "• ";
+            color: var(--purple);
+        }
+
+        /* ── FEATURE LIST ── */
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 650px;
+        }
+
+        .feature-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--green);
+            border-radius: 8px;
+            padding: 14px 18px;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .feature-item strong {
+            color: var(--text);
+        }
+
+        /* ── TABLE ── */
+        .slide-table {
+            width: 100%;
+            max-width: 820px;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .slide-table th {
+            background: rgba(255, 193, 7, 0.12);
+            color: var(--amber);
+            font-weight: 700;
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 193, 7, 0.2);
+            letter-spacing: 0.05em;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+        }
+
+        .slide-table td {
+            padding: 9px 14px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .slide-table tr:hover td {
+            background: var(--bg-card);
+            color: var(--text);
+        }
+
+        /* ── FLOW STEPS ── */
+        .flow-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            width: 100%;
+            max-width: 860px;
+            background: var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .flow-step {
+            background: var(--bg-dark);
+            padding: 24px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .flow-num {
+            width: 30px;
+            height: 30px;
+            background: var(--amber-glow);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 900;
+            color: var(--amber);
+        }
+
+        .flow-step h4 {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .flow-step p {
+            font-size: 0.73rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* ── TECH GRID ── */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            width: 100%;
+            max-width: 780px;
+        }
+
+        .tech-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .tech-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .tech-card h4 {
+            font-size: 0.82rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .tech-card p {
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* ── BUDGET TABLE ── */
+        .budget-table {
+            width: 100%;
+            max-width: 720px;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+
+        .budget-table th {
+            background: rgba(255, 193, 7, 0.12);
+            color: var(--amber);
+            font-weight: 700;
+            padding: 10px 16px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 193, 7, 0.25);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .budget-table td {
+            padding: 10px 16px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .budget-table .highlight td {
+            color: var(--amber);
+            font-weight: 700;
+            background: var(--amber-glow);
+        }
+
+        .budget-table tr:hover td {
+            background: var(--bg-card);
+            color: var(--text);
+        }
+
+        /* ── COMPANY CARDS ── */
+        .company-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            width: 100%;
+            max-width: 760px;
+        }
+
+        .company-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .company-card h4 {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--amber);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .company-card p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* ── TIMELINE ── */
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            width: 100%;
+            max-width: 720px;
+        }
+
+        .tl-item {
+            display: grid;
+            grid-template-columns: 90px 2px 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .tl-period {
+            text-align: right;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--purple);
+            padding-top: 4px;
+        }
+
+        .tl-line {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tl-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--purple);
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+
+        .tl-connector {
+            width: 2px;
+            flex: 1;
+            background: var(--border);
+            min-height: 36px;
+        }
+
+        .tl-content {
+            padding-bottom: 18px;
+        }
+
+        .tl-content h4 {
+            font-size: 0.86rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .tl-content p {
+            font-size: 0.76rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* ── AUTHOR ── */
+        .author-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            max-width: 760px;
+        }
+
+        .author-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px;
+        }
+
+        .author-num {
+            min-width: 22px;
+            height: 22px;
+            background: rgba(74, 222, 128, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: var(--green);
+        }
+
+        .author-item h4 {
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+            color: var(--text);
+        }
+
+        .author-item p {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        /* ── VISION ── */
+        .vision-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .vision-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .vision-year {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            color: var(--blue);
+            text-transform: uppercase;
+        }
+
+        .vision-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .vision-desc {
+            font-size: 0.73rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* ── CTA ── */
+        .cta-headline {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 900;
+            text-align: center;
+            background: linear-gradient(135deg, #fff 20%, var(--amber));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+
+        .cta-sub {
+            font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+            color: var(--text-muted);
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.65;
+            margin-bottom: 32px;
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--amber), #ff6b35);
+            color: #000;
+            font-weight: 800;
+            font-size: 0.9rem;
+            padding: 14px 28px;
+            border-radius: 50px;
+            text-decoration: none;
+            letter-spacing: 0.04em;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 193, 7, 0.35);
+        }
+
+        .cta-footer {
+            margin-top: 28px;
+            font-size: 0.73rem;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        /* ── DECORATIVE LINE ── */
+        .divider {
+            width: 48px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--amber), transparent);
+            border-radius: 2px;
+            margin: 12px auto;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 900px) {
+            .slide {
+                padding: 50px 40px 50px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .flow-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .vision-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .audience-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .solution-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .company-info {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .slide {
+                padding: 40px 20px 50px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .flow-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .vision-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tech-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="progress-bar"></div>
+    <div id="logo">Bio Code Technology</div>
+    <div id="slide-counter">1 / 14</div>
+
+    <button class="nav-btn" id="nav-prev" onclick="changeSlide(-1)">&#8592;</button>
+    <button class="nav-btn" id="nav-next" onclick="changeSlide(1)">&#8594;</button>
+
+    <div id="dots"></div>
+
+    <div id="slides">
+
+        <!-- SLIDE 1: COVER -->
+        <div class="slide slide-cover active" id="s1">
+            <div class="cover-badge">Projeto de Política Pública</div>
+            <div class="cover-title">Tecnologia<br>na Quebrada</div>
+            <p class="cover-desc">Uma Aventura no Vale do Silício:<br>transformando periferias em polos de formação
+                tecnológica através da gamificação educacional.</p>
+            <p class="cover-policy">Inclusão digital e profissionalização de crianças e adultos</p>
+            <p class="cover-brand">Cezi Cola · Bio Code Technology Ltda</p>
+        </div>
+
+        <!-- SLIDE 2: O PROBLEMA -->
+        <div class="slide slide-problem" id="s2">
+            <div class="slide-tag">O Problema</div>
+            <h2 class="slide-title">A Exclusão Digital no Brasil</h2>
+            <p class="slide-subtitle">A exclusão digital gera um déficit crítico de profissionais e perpetua a
+                desigualdade social nas periferias.</p>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-num">&lt;50k</div>
+                    <div class="stat-text">profissionais de TI formados por ano</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">800k</div>
+                    <div class="stat-text">vagas em aberto — déficit até 2025</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">60%</div>
+                    <div class="stat-text">dos jovens de baixa renda nunca programaram (CETIC.br)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">3×</div>
+                    <div class="stat-text">mais que a média salarial nacional (IBGE/RAIS 2023)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">∞</div>
+                    <div class="stat-text">adultos desempregados por automação sem requalificação acessível</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: A SOLUÇÃO -->
+        <div class="slide slide-solution" id="s3">
+            <div class="slide-tag">A Solução</div>
+            <h2 class="slide-title">Um Jogo que Ensina</h2>
+            <p class="slide-subtitle">O GARAGE é uma aventura 2D que percorre a história real da tecnologia, da garagem
+                da Apple às IAs modernas.</p>
+            <div class="solution-grid">
+                <div class="sol-card">
+                    <h3>Narrativa Histórica Real</h3>
+                    <ul>
+                        <li>Interação com Steve Jobs, Bill Gates e Elon Musk</li>
+                        <li>24 empresas e fundadores reais jogáveis</li>
+                        <li>6 atos — de 1973 a 2026</li>
+                    </ul>
+                </div>
+                <div class="sol-card">
+                    <h3>Progressão de Carreira</h3>
+                    <ul>
+                        <li>Desafios de lógica e algoritmos de Big Techs</li>
+                        <li>Estruturas de dados e sistemas distribuídos</li>
+                        <li>De estagiário a Principal Engineer</li>
+                    </ul>
+                </div>
+                <div class="sol-card">
+                    <h3>Acessível</h3>
+                    <ul>
+                        <li>100% via navegador — sem instalação</li>
+                        <li>Funciona com 1 Mbps de internet</li>
+                        <li>Compatível com PCs de laboratório</li>
+                    </ul>
+                </div>
+                <div class="sol-card">
+                    <h3>Certificação</h3>
+                    <ul>
+                        <li>Certificado com valor de currículo</li>
+                        <li>Reconhecido em processos seletivos reais</li>
+                        <li>Relatório de progresso individual</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: PARA QUEM -->
+        <div class="slide slide-audience" id="s4">
+            <div class="slide-tag">Público-Alvo</div>
+            <h2 class="slide-title">Para Quem é Este Projeto</h2>
+            <p class="slide-subtitle">Atendimento focado em crianças, adolescentes e adultos em situação de
+                vulnerabilidade social nas comunidades.</p>
+            <div class="audience-grid">
+                <div class="aud-card">
+                    <span class="aud-num">1</span>
+                    <h3>Público Infanto-Juvenil</h3>
+                    <ul>
+                        <li>Alunos de escola pública (fundamental e médio)</li>
+                        <li>Moradores de comunidades periféricas</li>
+                        <li>Jovens 8–17 anos em programas sociais</li>
+                    </ul>
+                </div>
+                <div class="aud-card">
+                    <span class="aud-num">2</span>
+                    <h3>Público Adulto</h3>
+                    <ul>
+                        <li>Adultos de 18 a 45 anos desempregados ou autônomos</li>
+                        <li>Participantes do EJA e PRONATEC</li>
+                        <li>Egressos do sistema prisional</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: ADULTOS / TECNOLOGIA NÃO TEM IDADE -->
+        <div class="slide slide-adult" id="s5">
+            <div class="slide-tag">Requalificação</div>
+            <h2 class="slide-title">Tecnologia Não Tem Idade</h2>
+            <p class="slide-subtitle">Uma trilha de requalificação profissional autoguiada para adultos que buscam
+                inserção no mercado de Tecnologia.</p>
+            <div class="feature-list">
+                <div class="feature-item"><strong>Ritmo autoguiado:</strong> adultos jogam no próprio tempo, sem
+                    pré-requisitos ou conhecimento prévio.</div>
+                <div class="feature-item"><strong>Complementa programas existentes:</strong> ProUni, PRONATEC e SINE —
+                    integração natural com políticas públicas já existentes.</div>
+                <div class="feature-item"><strong>Alinhado ao SUAS:</strong> eixo de inclusão produtiva da Secretaria de
+                    Assistência Social.</div>
+                <div class="feature-item"><strong>Certificado com valor:</strong> reconhecido em processos seletivos
+                    reais de empresas parceiras.</div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: ONDE SERÃO ATENDIDOS -->
+        <div class="slide slide-where" id="s6">
+            <div class="slide-tag">Capilaridade</div>
+            <h2 class="slide-title">Onde Cada Público Será Atendido</h2>
+            <p class="slide-subtitle">Estratégia de capilaridade em escolas, centros de assistência social e espaços
+                comunitários municipais.</p>
+            <table class="slide-table">
+                <thead>
+                    <tr>
+                        <th>Cenário</th>
+                        <th>Local</th>
+                        <th>Meta</th>
+                        <th>Vínculo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Escola Fundamental</td>
+                        <td>Lab. Informática</td>
+                        <td>Despertar vocação</td>
+                        <td>Sec. Educação</td>
+                    </tr>
+                    <tr>
+                        <td>Ensino Médio</td>
+                        <td>Lab. Escola</td>
+                        <td>Preparar 1º emprego</td>
+                        <td>Sec. Educação</td>
+                    </tr>
+                    <tr>
+                        <td>Turma de EJA</td>
+                        <td>Telecentro</td>
+                        <td>Empregabilidade TI</td>
+                        <td>Educação + Assistência</td>
+                    </tr>
+                    <tr>
+                        <td>CRAS</td>
+                        <td>Telecentro CRAS</td>
+                        <td>Inserção produtiva</td>
+                        <td>Sec. Assistência Social</td>
+                    </tr>
+                    <tr>
+                        <td>Reintegração Social</td>
+                        <td>Casa de Apoio</td>
+                        <td>Ressocialização</td>
+                        <td>Sec. Justiça</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SLIDE 7: COMO O PROJETO FUNCIONA -->
+        <div class="slide slide-how" id="s7">
+            <div class="slide-tag">Operação</div>
+            <h2 class="slide-title">Como o Projeto Funciona</h2>
+            <p class="slide-subtitle">Fluxo operacional transparente garantindo a aplicação dos recursos e a entrega de
+                impacto social mensurável.</p>
+            <div class="flow-grid">
+                <div class="flow-step">
+                    <div class="flow-num">1</div>
+                    <h4>Emenda Parlamentar</h4>
+                    <p>Destinação do recurso via Vereador ou Deputado para viabilizar o projeto.</p>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-num">2</div>
+                    <h4>ONG Parceira</h4>
+                    <p>Administração local, inscrições e acompanhamento social direto na comunidade.</p>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-num">3</div>
+                    <h4>Bio Code Technology</h4>
+                    <p>Implementação, manutenção da plataforma escalável e suporte técnico.</p>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-num">4</div>
+                    <h4>Beneficiário Final</h4>
+                    <p>Acesso ao jogo GARAGE e desenvolvimento da trilha de profissionalização.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: PLATAFORMA TECNOLÓGICA -->
+        <div class="slide slide-tech" id="s8">
+            <div class="slide-tag">Tecnologia</div>
+            <h2 class="slide-title">A Plataforma Tecnológica</h2>
+            <p class="slide-subtitle">Arquitetura escalável de nível enterprise com foco em segurança de dados e
+                conformidade total com a LGPD.</p>
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="tech-icon">⚡</div>
+                    <div>
+                        <h4>Stack Moderna</h4>
+                        <p>Python 3.13, FastAPI, PostgreSQL — disponível online em nuvem escalável com CI/CD
+                            automatizado.</p>
+                    </div>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">🌐</div>
+                    <div>
+                        <h4>Acesso Universal</h4>
+                        <p>100% via navegador — funciona em qualquer PC com internet de 1 Mbps, sem instalação.</p>
+                    </div>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">🔒</div>
+                    <div>
+                        <h4>Segurança Total</h4>
+                        <p>Proteção de dados de menores conforme a LGPD (Lei 13.709/2018) — JWT, RBAC e auditoria.</p>
+                    </div>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon">📈</div>
+                    <div>
+                        <h4>Escalabilidade</h4>
+                        <p>Suporte a acessos simultâneos ilimitados com backup automático e monitoramento em tempo real.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: TABELA DE EMENDAS -->
+        <div class="slide slide-budget" id="s9">
+            <div class="slide-tag">Investimento</div>
+            <h2 class="slide-title">Tabela de Emendas e Impacto</h2>
+            <p class="slide-subtitle">Diferentes níveis de investimento para escalas variadas de atendimento no
+                município.</p>
+            <table class="budget-table">
+                <thead>
+                    <tr>
+                        <th>Valor da Emenda</th>
+                        <th>Participantes</th>
+                        <th>Unidades</th>
+                        <th>Duração</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>R$ 100.000,00</td>
+                        <td>até 200</td>
+                        <td>até 2</td>
+                        <td>12 meses</td>
+                    </tr>
+                    <tr>
+                        <td>R$ 300.000,00</td>
+                        <td>até 800</td>
+                        <td>até 8</td>
+                        <td>12 meses</td>
+                    </tr>
+                    <tr class="highlight">
+                        <td>R$ 500.000,00</td>
+                        <td>até 1.500</td>
+                        <td>até 15</td>
+                        <td>18 meses</td>
+                    </tr>
+                    <tr>
+                        <td>R$ 1.000.000,00</td>
+                        <td>até 5.000</td>
+                        <td>até 30</td>
+                        <td>24 meses</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SLIDE 10: BIO CODE TECHNOLOGY -->
+        <div class="slide slide-company" id="s10">
+            <div class="slide-tag">A Empresa</div>
+            <h2 class="slide-title">Bio Code Technology Ltda</h2>
+            <p class="slide-subtitle">Empresa de Tecnologia brasileira especializada em Engenharia de Software,
+                gamificação para formação técnica e democratização do conhecimento.</p>
+            <div class="company-info">
+                <div class="company-card">
+                    <h4>Missão</h4>
+                    <p>Democratizar o acesso tecnológico, transformando periferias em celeiros de inovação e criando
+                        oportunidades reais para quem mais precisa.</p>
+                </div>
+                <div class="company-card">
+                    <h4>Visão</h4>
+                    <p>Ser a principal plataforma de formação tecnológica para o público de baixa renda no Brasil até
+                        2028.</p>
+                </div>
+                <div class="company-card">
+                    <h4>Diferenciais</h4>
+                    <p>Arquitetura cloud-native, equipe técnica especializada em educação e suporte enterprise. Melhor
+                        Empresa de Tecnologia do Ano — Câmara de Vereadores de SP, 2025.</p>
+                </div>
+                <div class="company-card">
+                    <h4>CNPJ</h4>
+                    <p>61.425.124/0001-03<br>www.biocodetechnology.com<br>cezicolatecnologia@gmail.com</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: CRONOGRAMA -->
+        <div class="slide slide-timeline" id="s11">
+            <div class="slide-tag">Cronograma</div>
+            <h2 class="slide-title">Plano de Implantação</h2>
+            <p class="slide-subtitle">Plano de ação estruturado em 12 meses, da assinatura do contrato ao evento de
+                formatura.</p>
+            <div class="timeline">
+                <div class="tl-item">
+                    <div class="tl-period">Mês 1</div>
+                    <div class="tl-line">
+                        <div class="tl-dot"></div>
+                        <div class="tl-connector"></div>
+                    </div>
+                    <div class="tl-content">
+                        <h4>Estruturação</h4>
+                        <p>Assinatura de contrato, configuração da plataforma e treinamento de educadores parceiros.</p>
+                    </div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-period">Mês 2</div>
+                    <div class="tl-line">
+                        <div class="tl-dot"></div>
+                        <div class="tl-connector"></div>
+                    </div>
+                    <div class="tl-content">
+                        <h4>Lançamento</h4>
+                        <p>Evento com parlamentar, abertura de cadastros e início das sessões de jogo nas unidades.</p>
+                    </div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-period">Meses 3–11</div>
+                    <div class="tl-line">
+                        <div class="tl-dot"></div>
+                        <div class="tl-connector"></div>
+                    </div>
+                    <div class="tl-content">
+                        <h4>Operação</h4>
+                        <p>Sessões semanais, acompanhamento via dashboard e relatórios mensais de impacto.</p>
+                    </div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-period">Mês 12</div>
+                    <div class="tl-line">
+                        <div class="tl-dot"></div>
+                    </div>
+                    <div class="tl-content">
+                        <h4>Encerramento</h4>
+                        <p>Evento de formatura, premiação, emissão de certificados e relatório final de impacto.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: AUTOR -->
+        <div class="slide slide-author" id="s12">
+            <div class="slide-tag">Autor e Idealizador</div>
+            <h2 class="slide-title">Cezi Cola — Senior Software Engineer</h2>
+            <p class="slide-subtitle">Perfil profissional e legado por trás do projeto.</p>
+            <div class="author-list">
+                <div class="author-item">
+                    <div class="author-num">1</div>
+                    <div>
+                        <h4>+18 anos de experiência</h4>
+                        <p>Atuação em sistemas distribuídos nas áreas financeira, administrativa e automotiva.</p>
+                    </div>
+                </div>
+                <div class="author-item">
+                    <div class="author-num">2</div>
+                    <div>
+                        <h4>Ex-engenheiro Senior na Minebea Mitsumi</h4>
+                        <p>Grupo Honda/Mitsubishi — experiência em ambientes multinacionais e projetos críticos.</p>
+                    </div>
+                </div>
+                <div class="author-item">
+                    <div class="author-num">3</div>
+                    <div>
+                        <h4>Herança familiar</h4>
+                        <p>Membro da Família Cola — fundador Sr. Camilo Cola, legado empreendedor ligado à Viação
+                            Itapemirim.</p>
+                    </div>
+                </div>
+                <div class="author-item">
+                    <div class="author-num">4</div>
+                    <div>
+                        <h4>Especialidades técnicas</h4>
+                        <p>Java, Spring Boot, Quarkus, Python, FastAPI, Django — foco em backend e sistemas
+                            distribuídos.</p>
+                    </div>
+                </div>
+                <div class="author-item">
+                    <div class="author-num">5</div>
+                    <div>
+                        <h4>CEO Fundador — Bio Code Technology</h4>
+                        <p>Melhor Empresa de Tecnologia do Ano — Câmara de Vereadores de SP, 2025.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: VISÃO DE FUTURO -->
+        <div class="slide slide-vision" id="s13">
+            <div class="slide-tag">Visão de Futuro</div>
+            <h2 class="slide-title">O Caminho para o Impacto Nacional</h2>
+            <p class="slide-subtitle">De projeto piloto a política pública de impacto nacional e internacional.</p>
+            <div class="vision-grid">
+                <div class="vision-card">
+                    <div class="vision-year">Piloto · 2026</div>
+                    <div class="vision-title">Municipal</div>
+                    <div class="vision-desc">Plataforma web operacional com 24 empresas e sistema de progressão pronto.
+                    </div>
+                </div>
+                <div class="vision-card">
+                    <div class="vision-year">Expansão · 2027</div>
+                    <div class="vision-title">Estadual</div>
+                    <div class="vision-desc">Parceria com secretarias de educação e lançamento do GARAGE Mobile.</div>
+                </div>
+                <div class="vision-card">
+                    <div class="vision-year">Escala · 2028</div>
+                    <div class="vision-title">Nacional</div>
+                    <div class="vision-desc">Integração com MEC e PRONATEC atendendo 500 mil brasileiros.</div>
+                </div>
+                <div class="vision-card">
+                    <div class="vision-year">Global · 2029+</div>
+                    <div class="vision-title">América Latina</div>
+                    <div class="vision-desc">Internacionalização com suporte de UNESCO e BID para toda a América Latina.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: CTA -->
+        <div class="slide slide-cta" id="s14">
+            <p class="cover-policy" style="margin-bottom:16px;">Bio Code Technology · CNPJ 61.425.124/0001-03</p>
+            <div class="cta-headline">Vamos Juntos<br>Transformar a Periferia</div>
+            <p class="cta-sub">A periferia tem talento. Falta oportunidade.<br>Com sua decisão política, plantamos hoje
+                a semente do engenheiro de amanhã.</p>
+            <a href="https://wa.me/5511956784450?text=Ol%C3%A1%21+Vi+a+apresenta%C3%A7%C3%A3o+do+projeto+Tecnologia+na+Quebrada+e+gostaria+de+saber+mais."
+                class="cta-btn" target="_blank" rel="noopener noreferrer">
+                💬 Falar com a Bio Code Technology
+            </a>
+            <p class="cta-footer">
+                www.biocodetechnology.com · cezicolatecnologia@gmail.com<br>
+                +55 (11) 95678-4450
+            </p>
+        </div>
+
+    </div>
+
+    <script>
+        const TOTAL = 14;
+        let current = 0;
+        let isAnimating = false;
+
+        const slides = document.querySelectorAll('.slide');
+        const counter = document.getElementById('slide-counter');
+        const progressBar = document.getElementById('progress-bar');
+        const dotsContainer = document.getElementById('dots');
+
+        // Build dots
+        for (let i = 0; i < TOTAL; i++) {
+            const d = document.createElement('div');
+            d.className = 'dot' + (i === 0 ? ' active' : '');
+            d.addEventListener('click', () => goTo(i));
+            dotsContainer.appendChild(d);
+        }
+
+        function updateUI() {
+            counter.textContent = `${current + 1} / ${TOTAL}`;
+            progressBar.style.width = `${((current + 1) / TOTAL) * 100}%`;
+            document.querySelectorAll('.dot').forEach((d, i) => {
+                d.classList.toggle('active', i === current);
+            });
+        }
+
+        function goTo(index) {
+            if (isAnimating || index === current || index < 0 || index >= TOTAL) return;
+            isAnimating = true;
+
+            const direction = index > current ? 1 : -1;
+            const prev = slides[current];
+            const next = slides[index];
+
+            prev.classList.remove('active');
+            prev.classList.add(direction > 0 ? 'exit-left' : 'exit-right');
+
+            next.style.transform = `translateX(${direction * 60}px)`;
+            next.style.opacity = '0';
+            next.classList.add('active');
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    next.style.transform = '';
+                    next.style.opacity = '';
+                });
+            });
+
+            setTimeout(() => {
+                prev.classList.remove('exit-left', 'exit-right');
+                isAnimating = false;
+            }, 480);
+
+            current = index;
+            updateUI();
+        }
+
+        function changeSlide(dir) {
+            goTo(current + dir);
+        }
+
+        // Keyboard
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); changeSlide(-1); }
+            if (e.key === 'Home') goTo(0);
+            if (e.key === 'End') goTo(TOTAL - 1);
+        });
+
+        // Touch swipe
+        let touchStartX = 0;
+        document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+        document.addEventListener('touchend', e => {
+            const diff = touchStartX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
+        }, { passive: true });
+
+        updateUI();
+    </script>
+</body>
+
+</html>

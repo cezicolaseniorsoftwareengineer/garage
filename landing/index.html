@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="404 Garage — De Estagiário a Principal Engineer. O jogo que ensina Java, algoritmos e engenharia de software através da história real do Vale do Silício." />
+    <title>404 Garage — Aventura no Vale do Silício</title>
+    <link rel="stylesheet" href="/landing/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;900&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+       NAV
+  ═══════════════════════════════════════════════════════════════ -->
+    <nav class="navbar">
+        <div class="nav-inner">
+            <div class="nav-logo">
+                <span class="logo-bracket">[</span>404<span class="logo-highlight">Garage</span><span
+                    class="logo-bracket">]</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#historia">A História</a></li>
+                <li><a href="#aprender">O que Aprende</a></li>
+                <li><a href="#personagens">Personagens</a></li>
+                <li><a href="#planos">Planos</a></li>
+                <li><a href="#faq">FAQ</a></li>
+            </ul>
+            <a href="#planos" class="nav-cta">Começar →</a>
+            <button class="nav-hamburger" id="hamburger" aria-label="Menu">&#9776;</button>
+        </div>
+        <div class="nav-mobile" id="mobileMenu">
+            <a href="#historia">A História</a>
+            <a href="#aprender">O que Aprende</a>
+            <a href="#personagens">Personagens</a>
+            <a href="#planos">Planos</a>
+            <a href="#faq">FAQ</a>
+            <a href="#planos" class="mobile-cta">Começar →</a>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+       HERO
+  ═══════════════════════════════════════════════════════════════ -->
+    <section class="hero" id="inicio">
+        <div class="hero-bg-grid"></div>
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                Novo · Aventura no Vale do Silício
+            </div>
+            <h1 class="hero-title">
+                De <span class="highlight-amber">Estagiário</span><br>
+                a <span class="highlight-green">Principal Engineer</span>
+            </h1>
+            <p class="hero-subtitle">
+                O único jogo que ensina Java, algoritmos e engenharia de software<br>
+                viajando pela história real da computação — de 1973 aos dias de hoje.
+            </p>
+
+            <div class="terminal-window">
+                <div class="terminal-bar">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                    <span class="terminal-title">garage@404:~$</span>
+                </div>
+                <div class="terminal-body">
+                    <p class="terminal-line"><span class="prompt">$</span> <span id="typedText"></span><span
+                            class="cursor">█</span></p>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="/jogo?mode=demo" class="btn-primary btn-demo-free" data-track="hero-jogar-gratis"
+                    onclick="event.preventDefault(); window.location.href = (typeof DEMO_URL !== 'undefined' ? DEMO_URL : '/jogo?mode=demo');">
+                    <span>▶ Jogar Grátis — Ato I</span>
+                </a>
+                <a href="#planos" class="btn-secondary" data-track="hero-ver-planos">
+                    Assinar e Desbloquear Tudo →
+                </a>
+            </div>
+
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-num">6</span>
+                    <span class="stat-label">Atos históricos</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-num">75+</span>
+                    <span class="stat-label">Desafios de código</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-num">16</span>
+                    <span class="stat-label">NPCs lendários</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-num">53</span>
+                    <span class="stat-label">Anos de história</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="hero-scroll">
+            <span>Role para descobrir</span>
+            <div class="scroll-arrow"></div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+       A HISTÓRIA — TIMELINE
+  ═══════════════════════════════════════════════════════════════ -->
+    <section class="section historia" id="historia">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">// a jornada</span>
+                <h2>Uma aventura de <span class="highlight-amber">53 anos</span> de inovação</h2>
+                <p class="section-desc">Você não lê sobre a história da computação — você a <strong>vive</strong>. Cada
+                    ato é uma era real, cada NPC é uma lenda real.</p>
+            </div>
+
+            <div class="timeline">
+
+                <div class="timeline-item" data-act="I">
+                    <div class="timeline-marker">
+                        <span class="act-label">ATO I</span>
+                        <span class="act-year">1973–1976</span>
+                    </div>
+                    <div class="timeline-card">
+                        <div class="card-location">
+                            <span class="location-icon">🏢</span>
+                            <span>Xerox PARC & Apple Garage</span>
+                        </div>
+                        <h3>O Nascimento da Era Pessoal</h3>
+                        <p>Você chega ao Xerox PARC como estagiário. Alan Kay está inventando a orientação a objetos.
+                            Steve Jobs e Wozniak montam o Apple I numa garagem. Seus primeiros algoritmos e estruturas
+                            de dados são os tijolos desta fundação.</p>
+                        <div class="card-tags">
+                            <span>Algoritmos</span><span>OOP</span><span>Arrays</span><span>Recursão</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item right" data-act="II">
+                    <div class="timeline-marker">
+                        <span class="act-label">ATO II</span>
+                        <span class="act-year">1975–1994</span>
+                    </div>
+                    <div class="timeline-card">
+                        <div class="card-location">
+                            <span class="location-icon">💼</span>
+                            <span>Microsoft & Amazon</span>
+                        </div>
+                        <h3>A Era do Software Comercial</h3>
+                        <p>Bill Gates está licenciando o MS-DOS para a IBM. Jeff Bezos acaba de largar Wall Street para
+                            montar uma livraria online num escritório improvisado. Você aprende a construir software que
+                            escala para milhões.</p>
+                        <div class="card-tags">
+                            <span>Design Patterns</span><span>Escalabilidade</span><span>APIs</span><span>SQL</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-act="III">
+                    <div class="timeline-marker">
+                        <span class="act-label">ATO III</span>
+                        <span class="act-year">1998–2000</span>
+                    </div>
+                    <div class="timeline-card">
+                        <div class="card-location">
+                            <span class="location-icon">🔍</span>
+                            <span>Google & PayPal</span>
+                        </div>
+                        <h3>A Revolução da Web</h3>
+                        <p>Page e Brin rodam o PageRank num cluster de PCs montados com peças de LEGO. Elon Musk funda o
+                            X.com e inventa o pagamento digital. Graph algorithms e sistemas distribuídos viram sua nova
+                            realidade.</p>
+                        <div class="card-tags">
+                            <span>Grafos</span><span>MapReduce</span><span>Segurança</span><span>Distributed
+                                Systems</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item right" data-act="IV">
+                    <div class="timeline-marker">
+                        <span class="act-label">ATO IV</span>
+                        <span class="act-year">2004</span>
+                    </div>
+                    <div class="timeline-card">
+                        <div class="card-location">
+                            <span class="location-icon">🎓</span>
+                            <span>Harvard Dorm</span>
+                        </div>
+                        <h3>A Rede que Conectou o Mundo</h3>
+                        <p>Mark Zuckerberg e Eduardo Saverin codam o Facebook num quarto de dormitório. Você aprende
+                            como um produto passa de 0 a 1 milhão de usuários — e o preço técnico que isso cobra.</p>
+                        <div class="card-tags">
+                            <span>Growth Engineering</span><span>Cache</span><span>Database Sharding</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-act="V">
+                    <div class="timeline-marker">
+                        <span class="act-label">ATO V</span>
+                        <span class="act-year">2009–2015</span>
+                    </div>
+                    <div class="timeline-card">
+                        <div class="card-location">
+                            <span class="location-icon">☁️</span>
+                            <span>MIT & AWS Re:Invent</span>
+                        </div>
+                        <h3>A Era da Nuvem</h3>
+                        <p>Werner Vogels está reinventando como o mundo roda software. Linus Torvalds lança o Git e muda
+                            para sempre como equipes colaboram. Você aprende infraestrutura como código, DevOps e
+                            arquitetura cloud-native.</p>
+                        <div class="card-tags">
+                            <span>Cloud Architecture</span><span>DevOps</span><span>Kubernetes</span><span>SRE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item right" data-act="VI">
+                    <div class="timeline-marker">
+                        <span class="act-label">ATO VI</span>
+                        <span class="act-year">2026</span>
+                    </div>
+                    <div class="timeline-card featured">
+                        <div class="card-location">
+                            <span class="location-icon">🚀</span>
+                            <span>Apple · Nubank · Presente</span>
+                        </div>
+                        <h3>O Principal Engineer do Futuro</h3>
+                        <p>Você chega ao presente com 53 anos de conhecimento destilado. AI, sistemas neurais,
+                            computação quântica e liderança técnica. Aqui você não é mais estudante — você é a
+                            referência que outros buscam.</p>
+                        <div class="card-tags">
+                            <span>AI/ML Engineering</span><span>Staff Leadership</span><span>System Design</span>
+                        </div>
+                        <div class="card-badge">Destino Final</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+       O QUE VOCÊ APRENDE
+  ═══════════════════════════════════════════════════════════════ -->
+    <section class="section aprender" id="aprender">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">// currículo</span>
+                <h2>Do <span class="highlight-amber">print("Hello")</span> ao <span class="highlight-green">System
+                        Design</span></h2>
+                <p class="section-desc">Tudo que um Principal Engineer real precisa dominar, em ordem progressiva, com
+                    código Java real.</p>
+            </div>
+
+            <div class="skills-grid">
+
+                <div class="skill-card">
+                    <div class="skill-icon skill-icon--java">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="16 18 22 12 16 6" />
+                            <polyline points="8 6 2 12 8 18" />
+                        </svg>
+                    </div>
+                    <h3>Java & POO</h3>
+                    <p>Do básico absoluto ao Java 17 moderno. Records, Sealed Classes, Pattern Matching, Streams,
+                        Concurrency.</p>
+                    <div class="skill-level">
+                        <span class="level-tag junior">Júnior</span>
+                        <span class="level-arrow">→</span>
+                        <span class="level-tag principal">Principal</span>
+                    </div>
+                </div>
+
+                <div class="skill-card">
+                    <div class="skill-icon skill-icon--algo">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10" />
+                            <line x1="12" y1="20" x2="12" y2="4" />
+                            <line x1="6" y1="20" x2="6" y2="14" />
+                        </svg>
+                    </div>
+                    <h3>Algoritmos & Estruturas</h3>
+                    <p>Arrays, listas, árvores, grafos, heaps. Big O na prática. Dijkstra, BFS, DFS, DP, Divide &
+                        Conquer.</p>
+                    <div class="skill-level">
+                        <span class="level-tag junior">Júnior</span>
+                        <span class="level-arrow">→</span>
+                        <span class="level-tag principal">Principal</span>
+                    </div>
+                </div>
+
+                <div class="skill-card">
+                    <div class="skill-icon skill-icon--dp">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7" />
+                            <rect x="14" y="3" width="7" height="7" />
+                            <rect x="14" y="14" width="7" height="7" />
+                            <rect x="3" y="14" width="7" height="7" />
+                        </svg>
+                    </div>
+                    <h3>Design Patterns & Clean Code</h3>
+                    <p>GoF 23 patterns, SOLID, Clean Architecture, DDD. O código que você escreve hoje não vai
+                        envergonhar você amanhã.</p>
+                    <div class="skill-level">
+                        <span class="level-tag pleno">Pleno</span>
+                        <span class="level-arrow">→</span>
+                        <span class="level-tag senior">Sênior</span>
+                    </div>
+                </div>
+
+                <div class="skill-card">
+                    <div class="skill-icon skill-icon--tdd">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 11 12 14 22 4" />
+                            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+                        </svg>
+                    </div>
+                    <h3>TDD & Qualidade</h3>
+                    <p>Red-Green-Refactor com Kent Beck. Testes de integração, mocks, cobertura real. Código que não
+                        quebra em produção.</p>
+                    <div class="skill-level">
+                        <span class="level-tag pleno">Pleno</span>
+                        <span class="level-arrow">→</span>
+                        <span class="level-tag senior">Sênior</span>
+                    </div>
+                </div>
+
+                <div class="skill-card">
+                    <div class="skill-icon skill-icon--dist">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="5" r="2" />
+                            <circle cx="5" cy="19" r="2" />
+                            <circle cx="19" cy="19" r="2" />
+                            <line x1="12" y1="7" x2="5" y2="17" />
+                            <line x1="12" y1="7" x2="19" y2="17" />
+                            <line x1="7" y1="19" x2="17" y2="19" />
+                        </svg>
+                    </div>
+                    <h3>Sistemas Distribuídos</h3>
+                    <p>CAP theorem, Paxos, Raft, Event Sourcing, CQRS. Como sistemas gigantes como Google e Amazon
+                        funcionam por dentro.</p>
+                    <div class="skill-level">
+                        <span class="level-tag senior">Sênior</span>
+                        <span class="level-arrow">→</span>
+                        <span class="level-tag principal">Principal</span>
+                    </div>
+                </div>
+
+                <div class="skill-card">
+                    <div class="skill-icon skill-icon--cloud">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="16 16 12 12 8 16" />
+                            <line x1="12" y1="12" x2="12" y2="21" />
+                            <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3" />
+                        </svg>
+                    </div>
+                    <h3>Cloud & DevOps</h3>
+                    <p>AWS, Kubernetes, Docker, CI/CD, Observabilidade, SRE. Você deploya, monitora e opera seu próprio
+                        software.</p>
+                    <div class="skill-level">
+                        <span class="level-tag senior">Sênior</span>
+                        <span class="level-arrow">→</span>
+                        <span class="level-tag principal">Principal</span>
+                    </div>
+                </div>
+
+                <div class="skill-card">
+                    <div class="skill-icon skill-icon--sec">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                    </div>
+                    <h3>Segurança</h3>
+                    <p>OWASP Top 10, criptografia na prática, JWT, OAuth, proteção contra injeções e ataques reais.</p>
+                    <div class="skill-level">
+                        <span class="level-tag pleno">Pleno</span>
+                        <span class="level-arrow">→</span>
+                        <span class="level-tag senior">Sênior</span>
+                    </div>
+                </div>
+
+                <div class="skill-card featured-card">
+                    <div class="skill-icon skill-icon--staff">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon
+                                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                    </div>
+                    <h3>Pensamento de Staff/Principal</h3>
+                    <p>ADRs, System Design, liderança técnica, code review de nível principal. Como pensar em décadas,
+                        não em sprints.</p>
+                    <div class="skill-level">
+                        <span class="level-tag principal">Principal</span>
+                        <span class="level-arrow">→</span>
+                        <span class="level-tag staff">Staff</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="curriculum-note">
+                <span class="note-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+                    </svg>
+                </span>
+                <p>O currículo é baseado nos <strong>24 livros essenciais</strong> da engenharia de software: Clean
+                    Code, DDIA, Pragmatic Programmer, GoF, SICP e muito mais.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+       PERSONAGENS / NPCs
+  ═══════════════════════════════════════════════════════════════ -->
+    <section class="section personagens" id="personagens">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">// npcs lendários</span>
+                <h2>Aprenda com quem <span class="highlight-amber">construiu</span> o mundo digital</h2>
+                <p class="section-desc">Cada personagem é baseado em uma figura real. Cada diálogo tem embasamento
+                    histórico e técnico.</p>
+            </div>
+
+            <div class="chars-grid">
+                <div class="char-card">
+                    <div class="char-avatar">AK</div>
+                    <div class="char-info">
+                        <h4>Alan Kay</h4>
+                        <span class="char-role">Xerox PARC · OOP</span>
+                        <blockquote>"The best way to predict the future is to invent it."</blockquote>
+                    </div>
+                </div>
+                <div class="char-card">
+                    <div class="char-avatar">SJ</div>
+                    <div class="char-info">
+                        <h4>Steve Jobs</h4>
+                        <span class="char-role">Apple Garage · Product</span>
+                        <blockquote>"Design is not just what it looks like. Design is how it works."</blockquote>
+                    </div>
+                </div>
+                <div class="char-card">
+                    <div class="char-avatar">WZ</div>
+                    <div class="char-info">
+                        <h4>Steve Wozniak</h4>
+                        <span class="char-role">Apple Garage · Hardware</span>
+                        <blockquote>"Never trust a computer you can't throw out a window."</blockquote>
+                    </div>
+                </div>
+                <div class="char-card">
+                    <div class="char-avatar">BG</div>
+                    <div class="char-info">
+                        <h4>Bill Gates</h4>
+                        <span class="char-role">Microsoft · Software</span>
+                        <blockquote>"Measuring software productivity by lines of code is like measuring aircraft
+                            building progress by weight."</blockquote>
+                    </div>
+                </div>
+                <div class="char-card">
+                    <div class="char-avatar">JB</div>
+                    <div class="char-info">
+                        <h4>Jeff Bezos</h4>
+                        <span class="char-role">Amazon · Scale</span>
+                        <blockquote>"If you double the number of experiments you do, you double your inventiveness."
+                        </blockquote>
+                    </div>
+                </div>
+                <div class="char-card">
+                    <div class="char-avatar">LP</div>
+                    <div class="char-info">
+                        <h4>Larry Page</h4>
+                        <span class="char-role">Google · Search</span>
+                        <blockquote>"You don't need to have a 100-person company to develop that idea."</blockquote>
+                    </div>
+                </div>
+                <div class="char-card">
+                    <div class="char-avatar">MZ</div>
+                    <div class="char-info">
+                        <h4>Mark Zuckerberg</h4>
+                        <span class="char-role">Facebook · Growth</span>
+                        <blockquote>"Move fast and break things. Unless you are breaking stuff, you are not moving fast
+                            enough."</blockquote>
+                    </div>
+                </div>
+                <div class="char-card">
+                    <div class="char-avatar">WV</div>
+                    <div class="char-info">
+                        <h4>Werner Vogels</h4>
+                        <span class="char-role">AWS · Cloud</span>
+                        <blockquote>"Everything fails, all the time. Build systems that are prepared for failure."
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+       COMO FUNCIONA
+  ═══════════════════════════════════════════════════════════════ -->
+    <section class="section como-funciona">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">// gameplay</span>
+                <h2>Como <span class="highlight-green">funciona</span> na prática</h2>
+            </div>
+            <div class="steps-grid">
+                <div class="step">
+                    <div class="step-num">01</div>
+                    <h3>Você chega ao local histórico</h3>
+                    <p>A cena é exibida no estilo terminal CRT. O NPC te apresenta o contexto histórico e o desafio.</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <div class="step-num">02</div>
+                    <h3>Você aprende o conceito</h3>
+                    <p>Explicação técnica + histórica integrada. O GARAGE AI está disponível para qualquer dúvida — do
+                        básico ao surreal.</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <div class="step-num">03</div>
+                    <h3>Você resolve o desafio</h3>
+                    <p>Código Java real no editor integrado. Compilação e execução reais. Zero teoria sem prática.</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <div class="step-num">04</div>
+                    <h3>Você avança na carreira</h3>
+                    <p>XP, ranking global, desbloqueio do próximo ato. Sua jornada fica registrada com evidências reais
+                        de código.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+       GALERIA / SCREENSHOTS
+  ═══════════════════════════════════════════════════════════════ -->
+    <section class="section gallery-section" id="screenshots">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">// veja o jogo em ação</span>
+                <h2>Não parece um curso.<br><span class="highlight-amber">Parece um jogo.</span></h2>
+                <p class="section-desc">Porque é um jogo. Com código Java real, IA integrada e 24 empresas lendárias
+                    para conquistar.</p>
+            </div>
+
+            <!-- FEATURED: Editor + Garage AI -->
+            <div class="gallery-featured">
+                <div class="screen-chrome">
+                    <div class="screen-chrome-bar">
+                        <span class="chrome-dot chrome-dot--red"></span>
+                        <span class="chrome-dot chrome-dot--yellow"></span>
+                        <span class="chrome-dot chrome-dot--green"></span>
+                        <span class="chrome-title">TwoSum.java — Garage IDE · Principal · Tesla</span>
+                    </div>
+                    <div class="screen-img-wrap">
+                        <img src="/landing/assets/screenshots/img_garage2.png" alt="Editor Java com Garage AI"
+                            loading="lazy" />
+                    </div>
+                </div>
+                <div class="gallery-featured-caption">
+                    <div class="gfc-badge">Garage AI</div>
+                    <h3>Editor Java real com IA no painel direito</h3>
+                    <p>Você escreve código Java, executa no servidor e recebe feedback real do compilador. O
+                        <strong>Garage AI</strong> está disponível no mesmo painel para tirar dúvidas, explicar
+                        conceitos e revisar sua lógica em tempo real.
+                    </p>
+                    <div class="gfc-stats">
+                        <div class="gfc-stat"><span class="gfc-num">75+</span><span>desafios de código</span></div>
+                        <div class="gfc-stat"><span class="gfc-num">Java 17</span><span>compilação real</span></div>
+                        <div class="gfc-stat"><span class="gfc-num">AI</span><span>ilimitada</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRID 4 prints de alto impacto -->
+            <div class="gallery-grid">
+
+                <div class="gallery-item">
+                    <div class="screen-chrome screen-chrome--sm">
+                        <div class="screen-chrome-bar">
+                            <span class="chrome-dot chrome-dot--red"></span>
+                            <span class="chrome-dot chrome-dot--yellow"></span>
+                            <span class="chrome-dot chrome-dot--green"></span>
+                            <span class="chrome-title">Mapa de Progresso</span>
+                        </div>
+                        <div class="screen-img-wrap">
+                            <img src="/landing/assets/screenshots/img_garage3.png" alt="Mapa de progresso — 24 empresas"
+                                loading="lazy" />
+                        </div>
+                    </div>
+                    <div class="gallery-item-caption">
+                        <span class="gic-tag gic-tag--amber">Progresso</span>
+                        <p>24 empresas reais para conquistar — do Xerox PARC ao Cloud Valley.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item">
+                    <div class="screen-chrome screen-chrome--sm">
+                        <div class="screen-chrome-bar">
+                            <span class="chrome-dot chrome-dot--red"></span>
+                            <span class="chrome-dot chrome-dot--yellow"></span>
+                            <span class="chrome-dot chrome-dot--green"></span>
+                            <span class="chrome-title">Desafio Completo</span>
+                        </div>
+                        <div class="screen-img-wrap">
+                            <img src="/landing/assets/screenshots/img_garage4.png" alt="Desafio completo validado"
+                                loading="lazy" />
+                        </div>
+                    </div>
+                    <div class="gallery-item-caption">
+                        <span class="gic-tag gic-tag--green">Real</span>
+                        <p>Feedback real do compilador: “DESAFIO COMPLETO! Código validado com sucesso.”</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item">
+                    <div class="screen-chrome screen-chrome--sm">
+                        <div class="screen-chrome-bar">
+                            <span class="chrome-dot chrome-dot--red"></span>
+                            <span class="chrome-dot chrome-dot--yellow"></span>
+                            <span class="chrome-dot chrome-dot--green"></span>
+                            <span class="chrome-title">NPC — Roberto Setubal</span>
+                        </div>
+                        <div class="screen-img-wrap">
+                            <img src="/landing/assets/screenshots/img_garage7.png" alt="Diálogo com Roberto Setubal"
+                                loading="lazy" />
+                        </div>
+                    </div>
+                    <div class="gallery-item-caption">
+                        <span class="gic-tag gic-tag--blue">NPC</span>
+                        <p>Roberto Setubal (Itaú) apresenta desafios de Staff Engineer em sistemas bancários.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item">
+                    <div class="screen-chrome screen-chrome--sm">
+                        <div class="screen-chrome-bar">
+                            <span class="chrome-dot chrome-dot--red"></span>
+                            <span class="chrome-dot chrome-dot--yellow"></span>
+                            <span class="chrome-dot chrome-dot--green"></span>
+                            <span class="chrome-title">Promoção de Cargo</span>
+                        </div>
+                        <div class="screen-img-wrap">
+                            <img src="/landing/assets/screenshots/img_garage8.png" alt="Promovido a CEO"
+                                loading="lazy" />
+                        </div>
+                    </div>
+                    <div class="gallery-item-caption">
+                        <span class="gic-tag gic-tag--purple">Level Up</span>
+                        <p>Cada empresa concluída promove seu cargo. Estagiário → Júnior → ... → CEO.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- STRIP: 3 prints adicionais -->
+            <div class="gallery-strip">
+                <div class="gallery-strip-item">
+                    <img src="/landing/assets/screenshots/img_garage1.png" alt="Mundo side-scroller com NPCs"
+                        loading="lazy" />
+                    <span class="gsi-label">Mundo side-scroller com NPCs lendários</span>
+                </div>
+                <div class="gallery-strip-item">
+                    <img src="/landing/assets/screenshots/img_garage5.png" alt="Tesla concluída — todos os desafios"
+                        loading="lazy" />
+                    <span class="gsi-label">Tesla concluída · missão completada com sucesso</span>
+                </div>
+                <div class="gallery-strip-item">
+                    <img src="/landing/assets/screenshots/img_garage6.png" alt="Livro Good Strategy Bad Strategy"
+                        loading="lazy" />
+                    <span class="gsi-label">24 livros técnicos coletáveis no mapa</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+       PLANOS E PREÇOS
+  ═══════════════════════════════════════════════════════════════ -->
+    <section class="section planos" id="planos">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">// investimento</span>
+                <h2>Escolha seu <span class="highlight-amber">plano</span></h2>
+                <p class="section-desc">Acesso completo em todos os planos. Cancele quando quiser nos planos mensais.
+                </p>
+            </div>
+
+            <div class="plans-grid">
+
+                <!-- MENSAL -->
+                <div class="plan-card">
+                    <div class="plan-header">
+                        <span class="plan-tag">Mensal</span>
+                        <div class="plan-price">
+                            <span class="price-currency">R$</span>
+                            <span class="price-value">97</span>
+                            <span class="price-period">/mês</span>
+                        </div>
+                        <p class="plan-desc">Comece hoje e cancele quando quiser.</p>
+                    </div>
+                    <ul class="plan-features">
+                        <li>✅ Acesso completo aos 6 Atos</li>
+                        <li>✅ 75+ desafios de código Java</li>
+                        <li>✅ GARAGE AI ilimitado</li>
+                        <li>✅ Editor com compilação real</li>
+                        <li>✅ Ranking global</li>
+                        <li>✅ 1 dispositivo cadastrado</li>
+                        <li>✅ Suporte por e-mail</li>
+                    </ul>
+                    <a href="javascript:void(0)" class="btn-plan" onclick="handlePlanClick('mensal')">
+                        Assinar por R$ 97/mês
+                    </a>
+                    <p class="plan-note">Cobrado mensalmente via Asaas · Cancele a qualquer momento</p>
+                </div>
+
+                <!-- ANUAL — DESTAQUE -->
+                <div class="plan-card featured-plan">
+                    <div class="plan-badge">Mais Popular</div>
+                    <div class="plan-header">
+                        <span class="plan-tag">Anual</span>
+                        <div class="plan-price">
+                            <span class="price-currency">R$</span>
+                            <span class="price-value">997</span>
+                            <span class="price-period">/ano</span>
+                        </div>
+                        <p class="plan-desc">Equivale a R$ 83/mês. Economize R$ 167.</p>
+                    </div>
+                    <ul class="plan-features">
+                        <li>✅ Tudo do plano mensal</li>
+                        <li>✅ Acesso à Jornada 2 — Os Mestres</li>
+                        <li>✅ 29 sessões extras com autores lendários</li>
+                        <li>✅ Uncle Bob, Kent Beck, Knuth e mais</li>
+                        <li>✅ Certificado de conclusão</li>
+                        <li>✅ Troca de dispositivo sem burocracia</li>
+                        <li>✅ Suporte prioritário</li>
+                    </ul>
+                    <a href="javascript:void(0)" class="btn-plan btn-plan-featured" onclick="handlePlanClick('anual')">
+                        Assinar por R$ 997/ano
+                    </a>
+                    <p class="plan-note">Cobrado anualmente via Asaas · Renovação automática</p>
+                </div>
+
+                <!-- INSTITUCIONAL -->
+                <div class="plan-card plan-institutional">
+                    <div class="plan-header">
+                        <span class="plan-tag tag-institutional">Institucional</span>
+                        <div class="plan-price">
+                            <span class="price-value inst-price">Sob consulta</span>
+                        </div>
+                        <p class="plan-desc">Para escolas, prefeituras, empresas, bootcamps e organizações sociais.</p>
+                    </div>
+
+                    <!-- Segmentos -->
+                    <div class="inst-tiers">
+                        <div class="inst-tier-row"><span class="inst-tier-label">Escola / Bootcamp</span><span
+                                class="inst-tier-price">até 50 alunos · mensal ou anual sob consulta</span></div>
+                        <div class="inst-tier-row"><span class="inst-tier-label">Instituição de Ensino</span><span
+                                class="inst-tier-price">até 200 alunos · mensal ou anual sob consulta</span></div>
+                        <div class="inst-tier-row"><span class="inst-tier-label">Empresa / Prefeitura</span><span
+                                class="inst-tier-price">até 1.000 usuários · mensal ou anual sob consulta</span></div>
+                        <div class="inst-tier-row inst-tier-ong"><span class="inst-tier-label">Rotary / ONG /
+                                OS</span><span class="inst-tier-price">desconto social disponível</span></div>
+                    </div>
+
+                    <ul class="plan-features">
+                        <li>✅ Múltiplos alunos / colaboradores</li>
+                        <li>✅ Dashboard administrativo por turma</li>
+                        <li>✅ Relatórios de progresso individuais e coletivos</li>
+                        <li>✅ NF-e, contrato formal e proposta técnica</li>
+                        <li>✅ Personalização de marca (whitelabel opcional)</li>
+                        <li>✅ Onboarding dedicado + treinamento de gestores</li>
+                        <li>✅ Suporte prioritário via WhatsApp</li>
+                        <li>✅ Apto para licitação pública (Lei 14.133/2021)</li>
+                    </ul>
+                    <a href="/landing/projetos-sociais.html" target="_blank" rel="noopener noreferrer"
+                        class="btn-plan btn-plan-institutional btn-whatsapp-inst">
+                        Quero o Projeto
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- MODAL STRIPE (placeholder) -->
+            <div class="stripe-notice">
+                <div class="stripe-logo">
+                    <svg viewBox="0 0 60 25" xmlns="http://www.w3.org/2000/svg" width="60" height="25">
+                        <path fill="#6772e5"
+                            d="M59.64 14.28h-8.06v-1.41h8.06v1.41zm0-3.28h-8.06V9.59h8.06v1.41zm0-3.28h-8.06V6.31h8.06v1.41z" />
+                        <path fill="#6772e5"
+                            d="M40.15 9.3c0-1.4-.94-2.28-2.53-2.28-1.24 0-2.34.7-2.34 2.03 0 2.88 4.83 1.41 4.83 4.74 0 2.05-1.78 3.2-3.77 3.2-1.6 0-2.9-.6-3.7-1.48l.95-.82c.65.77 1.6 1.28 2.76 1.28 1.36 0 2.53-.65 2.53-2.12 0-3.18-4.83-1.6-4.83-4.83 0-1.84 1.53-3.1 3.56-3.1 1.33 0 2.4.5 3.1 1.3l-.56.08z" />
+                    </svg>
+                    <span>Pagamento 100% seguro via Stripe</span>
+                </div>
+                <div class="payment-methods">
+                    <span>💳 Cartão de Crédito</span>
+                    <span>🔵 PIX</span>
+                    <span>📄 Boleto</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+       GARANTIA
+  ═══════════════════════════════════════════════════════════════ -->
+    <section class="garantia">
+        <div class="container garantia-inner">
+            <div class="garantia-icon">🛡️</div>
+            <div class="garantia-text">
+                <h3>7 dias de garantia</h3>
+                <p>Se nos primeiros 7 dias você sentir que o 404 Garage não é para você, devolveremos 100% do seu
+                    investimento. Sem perguntas, sem burocracia.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+       FAQ
+  ═══════════════════════════════════════════════════════════════ -->
+    <section class="section faq" id="faq">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">// dúvidas frequentes</span>
+                <h2>Perguntas <span class="highlight-amber">Frequentes</span></h2>
+            </div>
+
+            <div class="faq-list">
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Preciso saber programar para começar?
+                        <span class="faq-arrow">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Não. O Ato I começa do zero absoluto — variáveis, tipos, condicionais. Se você sabe o que é
+                            um computador, já é suficiente para iniciar. O jogo foi desenhado para evoluir junto com
+                            você.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Por que Java e não Python ou JavaScript?
+                        <span class="faq-arrow">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Java é a linguagem mais usada em enterprises globais, bancos, fintechs e big techs. Ela força
+                            boas práticas de tipagem, POO e arquitetura que outras linguagens permitem ignorar. Quem
+                            domina Java entende Python e JS em dias — o contrário raramente é verdade.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Posso usar no celular?
+                        <span class="faq-arrow">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>A leitura dos atos, diálogos com NPCs e desafios de múltipla escolha funcionam perfeitamente
+                            no celular. Para os desafios de live coding (código Java real), recomendamos notebook — a
+                            experiência do editor de código é melhor em telas maiores.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Posso compartilhar minha conta?
+                        <span class="faq-arrow">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Não. Cada conta é vinculada a um único dispositivo. O sistema detecta automaticamente
+                            tentativas de acesso em outros aparelhos e bloqueia. Para grupos, famílias ou equipes, temos
+                            o <a href="https://wa.me/5511956784450?text=Ol%C3%A1%21+Gostaria+de+saber+mais+sobre+a+licen%C3%A7a+institucional+do+404+Garage."
+                                target="_blank" rel="noopener noreferrer"
+                                style="color:var(--amber);text-decoration:underline;">plano institucional — fale conosco
+                                no WhatsApp</a>.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        O que é o GARAGE AI?
+                        <span class="faq-arrow">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>É o assistente técnico integrado ao jogo. Você pode perguntar qualquer coisa — do "o que é
+                            uma variável" ao "como o Google implementa o Spanner com TrueTime". Não existe pergunta
+                            técnica fora do escopo dele. Disponível a qualquer momento durante o jogo.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Como funciona o pagamento?
+                        <span class="faq-arrow">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Processamos pelo Stripe — a mesma plataforma usada pela OpenAI, Nubank e dezenas de milhares
+                            de empresas globais. Aceitamos cartão de crédito, PIX e boleto. A Bio Code Technology Ltda é
+                            a responsável pelo contrato.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Posso cancelar quando quiser?
+                        <span class="faq-arrow">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Sim. O plano mensal pode ser cancelado a qualquer momento pelo painel do site, sem multa. O
+                            acesso continua até o fim do período pago. O plano anual segue a mesma regra, com acesso até
+                            o vencimento.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+       CTA FINAL
+  ═══════════════════════════════════════════════════════════════ -->
+    <section class="cta-final">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Sua jornada começa<br><span class="highlight-amber">agora</span></h2>
+                <p>53 anos de história. 75+ desafios. Um destino: Principal Engineer.</p>
+                <a href="#planos" class="btn-primary btn-large">
+                    <span>Escolher Meu Plano</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </a>
+                <p class="cta-note">Sem Hotmart. Sem guru. Só engenharia séria.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════════════════════════ -->
+    <footer class="footer">
+        <div class="container footer-inner">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-bracket">[</span>404<span class="logo-highlight">Garage</span><span
+                        class="logo-bracket">]</span>
+                </div>
+                <p>Um produto da <strong>Bio Code Technology Ltda</strong></p>
+                <p class="footer-email">cezicolatecnologia@gmail.com</p>
+            </div>
+            <div class="footer-links">
+                <div class="footer-col">
+                    <h5>Produto</h5>
+                    <a href="#historia">A História</a>
+                    <a href="#aprender">Currículo</a>
+                    <a href="#personagens">Personagens</a>
+                    <a href="#planos">Planos</a>
+                </div>
+                <div class="footer-col">
+                    <h5>Legal</h5>
+                    <a href="#">Termos de Uso</a>
+                    <a href="#">Política de Privacidade</a>
+                    <a href="#">Política de Reembolso</a>
+                </div>
+                <div class="footer-col">
+                    <h5>Contato</h5>
+                    <a href="mailto:cezicolatecnologia@gmail.com">E-mail</a>
+                    <a href="https://www.linkedin.com/in/cezicolaseniorsoftwareengineer/" target="_blank"
+                        rel="noopener">LinkedIn</a>
+                    <a href="https://github.com/cezicolaseniorsoftwareengineer" target="_blank"
+                        rel="noopener">GitHub</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 Bio Code Technology Ltda · Todos os direitos reservados · CNPJ: 61.425.124/0001-03</p>
+        </div>
+    </footer>
+
+    <script src="/landing/script.js"></script>
+</body>
+
+</html>
