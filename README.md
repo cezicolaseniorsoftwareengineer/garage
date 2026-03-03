@@ -59,7 +59,7 @@ mvn spring-boot:run
 | `JAVA_RUNNER_URL` | `http://localhost:8080` | URL interna do Java Execution Service |
 | `ALLOWED_ORIGINS` | `https://seudominio.com` | CORS permitido em produção |
 | `ENV` | `development` ou `production` | Desativa hot-reload em produção |
-| `DEBUG` | `true` | Expõe `_debug_otp` nas respostas de auth |
+| `DEBUG` | `false` | Se `true`, expõe `_debug_otp` nas respostas de auth — **NUNCA ativar em produção** |
 | `PORT` | `8000` | Porta do servidor Python |
 
 ---
@@ -203,5 +203,5 @@ Garage/app/
 
 ## Autor
 
-**CeziCola** · Senior Software Engineer  
+**CeziCola** · Senior Software Engineer
 Bio Code Technology Ltda · cezicolatecnologia@gmail.com
