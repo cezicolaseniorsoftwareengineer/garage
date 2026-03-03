@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minha Conta · 404 Garage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <style>
+        /* ── Reset & tokens ───────────────────────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0a0a0f;
+            --bg-card: #111118;
+            --bg-card2: #1a1a26;
+            --border: #2a2a3a;
+            --amber: #ffb347;
+            --amber-dim: #c47a00;
+            --green: #4caf50;
+            --red: #e74c3c;
+            --blue: #4a9eff;
+            --purple: #9b59b6;
+            --text: #e8e8f0;
+            --text-dim: #888899;
+            --mono: 'JetBrains Mono', monospace;
+            --sans: 'Inter', sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+        }
+
+        html::-webkit-scrollbar {
+            display: none;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            min-height: 100vh;
+        }
+
+        /* ── Navbar ────────────────────────────────────────────────────── */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            height: 60px;
+            background: rgba(10, 10, 15, 0.95);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+        }
+
+        .navbar-brand {
+            font-family: var(--mono);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--amber);
+            text-decoration: none;
+        }
+
+        .navbar-brand span {
+            color: var(--text-dim);
+        }
+
+        .navbar-actions {
+            display: flex;
+            gap: .75rem;
+            align-items: center;
+        }
+
+        .btn-nav {
+            padding: .45rem 1.1rem;
+            border-radius: 8px;
+            border: none;
+            font-family: var(--sans);
+            font-size: .85rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            transition: all .2s;
+        }
+
+        .btn-nav--ghost {
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+        }
+
+        .btn-nav--ghost:hover {
+            color: var(--text);
+            border-color: var(--amber);
+        }
+
+        .btn-nav--primary {
+            background: var(--amber);
+            color: #111;
+        }
+
+        .btn-nav--primary:hover {
+            background: #ffc06a;
+        }
+
+        .btn-nav--danger {
+            background: transparent;
+            color: var(--red);
+            border: 1px solid var(--red);
+        }
+
+        .btn-nav--danger:hover {
+            background: var(--red);
+            color: #fff;
+        }
+
+        /* ── Page Layout ────────────────────────────────────────────────── */
+        .page {
+            padding-top: 80px;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+            padding-bottom: 4rem;
+        }
+
+        .page-title {
+            font-family: var(--mono);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--amber);
+            margin-bottom: 1.75rem;
+            letter-spacing: .03em;
+        }
+
+        /* ── Cards ───────────────────────────────────────────────────────── */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .card--highlight {
+            border-color: var(--amber);
+        }
+
+        .card-title {
+            font-family: var(--mono);
+            font-size: .8rem;
+            font-weight: 700;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin-bottom: 1.25rem;
+        }
+
+        /* ── User profile row ────────────────────────────────────────────── */
+        .profile-row {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--bg-card2);
+            border: 2px solid var(--amber);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--mono);
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--amber);
+            flex-shrink: 0;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: .25rem;
+        }
+
+        .profile-username {
+            font-family: var(--mono);
+            font-size: .85rem;
+            color: var(--amber);
+            margin-bottom: .25rem;
+        }
+
+        .profile-meta {
+            font-size: .8rem;
+            color: var(--text-dim);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: .2rem .65rem;
+            border-radius: 20px;
+            font-family: var(--mono);
+            font-size: .72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .badge--active {
+            background: rgba(76, 175, 80, .18);
+            color: var(--green);
+            border: 1px solid rgba(76, 175, 80, .35);
+        }
+
+        .badge--expired {
+            background: rgba(231, 76, 60, .15);
+            color: var(--red);
+            border: 1px solid rgba(231, 76, 60, .3);
+        }
+
+        .badge--none {
+            background: rgba(136, 136, 153, .12);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+        }
+
+        .badge--cancelled {
+            background: rgba(231, 76, 60, .12);
+            color: #e67e22;
+            border: 1px solid rgba(231, 76, 60, .2);
+        }
+
+        /* ── Subscription card ────────────────────────────────────────────── */
+        .sub-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .sub-plan-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: .4rem;
+        }
+
+        .sub-expires {
+            font-family: var(--mono);
+            font-size: .82rem;
+            color: var(--text-dim);
+        }
+
+        .sub-expires strong {
+            color: var(--amber);
+        }
+
+        .progress-wrap {
+            margin-top: 1.25rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: .78rem;
+            color: var(--text-dim);
+            margin-bottom: .5rem;
+        }
+
+        .progress-label span {
+            font-family: var(--mono);
+            color: var(--amber);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-card2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--amber), #ffd080);
+            transition: width .6s ease;
+        }
+
+        .progress-fill--danger {
+            background: linear-gradient(90deg, var(--red), #ff8080);
+        }
+
+        /* ── Stats grid ────────────────────────────────────────────────────── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            border-color: var(--amber);
+        }
+
+        .stat-num {
+            font-family: var(--mono);
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--amber);
+            line-height: 1;
+            margin-bottom: .4rem;
+        }
+
+        .stat-label {
+            font-size: .78rem;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        /* ── Companies list ─────────────────────────────────────────────────── */
+        .companies-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .6rem;
+        }
+
+        .company-tag {
+            background: var(--bg-card2);
+            border: 1px solid rgba(76, 175, 80, .3);
+            color: var(--green);
+            border-radius: 8px;
+            padding: .3rem .8rem;
+            font-family: var(--mono);
+            font-size: .75rem;
+            font-weight: 600;
+        }
+
+        .no-data {
+            font-size: .85rem;
+            color: var(--text-dim);
+            font-style: italic;
+        }
+
+        /* ── Actions ────────────────────────────────────────────────────────── */
+        .actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: .7rem 1.8rem;
+            border-radius: 10px;
+            border: none;
+            font-family: var(--sans);
+            font-size: .9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .btn--play {
+            background: var(--green);
+            color: #fff;
+        }
+
+        .btn--play:hover {
+            background: #5dbf61;
+            transform: translateY(-1px);
+        }
+
+        .btn--renew {
+            background: var(--amber);
+            color: #111;
+        }
+
+        .btn--renew:hover {
+            background: #ffd080;
+            transform: translateY(-1px);
+        }
+
+        .btn--landing {
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+        }
+
+        .btn--landing:hover {
+            border-color: var(--amber);
+            color: var(--amber);
+        }
+
+        .btn--logout {
+            background: transparent;
+            color: var(--red);
+            border: 1px solid var(--red);
+        }
+
+        .btn--logout:hover {
+            background: var(--red);
+            color: #fff;
+        }
+
+        /* ── Alert banner ───────────────────────────────────────────────────── */
+        .alert {
+            padding: .9rem 1.25rem;
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+            font-size: .88rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        .alert--warn {
+            background: rgba(255, 179, 71, .1);
+            border: 1px solid rgba(255, 179, 71, .3);
+            color: var(--amber);
+        }
+
+        .alert--error {
+            background: rgba(231, 76, 60, .1);
+            border: 1px solid rgba(231, 76, 60, .3);
+            color: var(--red);
+        }
+
+        .alert--success {
+            background: rgba(76, 175, 80, .1);
+            border: 1px solid rgba(76, 175, 80, .3);
+            color: var(--green);
+        }
+
+        /* ── Modal overlay ──────────────────────────────────────────────────── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+            padding: 1.5rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 480px;
+            width: 100%;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.25rem;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.3rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--text);
+        }
+
+        .modal-title {
+            font-family: var(--mono);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--amber);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        .plan-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .plan-option {
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all .2s;
+            text-align: center;
+        }
+
+        .plan-option:hover {
+            border-color: var(--amber);
+        }
+
+        .plan-option.selected {
+            border-color: var(--amber);
+            background: rgba(255, 179, 71, .08);
+        }
+
+        .plan-option-price {
+            font-family: var(--mono);
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--amber);
+        }
+
+        .plan-option-label {
+            font-size: .78rem;
+            color: var(--text-dim);
+            margin-top: .3rem;
+        }
+
+        .plan-option-discount {
+            display: inline-block;
+            margin-top: .4rem;
+            background: rgba(76, 175, 80, .2);
+            color: var(--green);
+            border-radius: 20px;
+            padding: .15rem .5rem;
+            font-size: .7rem;
+            font-weight: 700;
+        }
+
+        /* PIX QR Code area */
+        .pix-area {
+            text-align: center;
+        }
+
+        .pix-qr {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin: 0 auto 1rem;
+            display: block;
+        }
+
+        .pix-code-wrap {
+            background: var(--bg-card2);
+            border-radius: 10px;
+            padding: .75rem 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .pix-code {
+            font-family: var(--mono);
+            font-size: .7rem;
+            color: var(--text-dim);
+            word-break: break-all;
+            flex: 1;
+            max-height: 3.5rem;
+            overflow: hidden;
+        }
+
+        .copy-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--amber);
+            border-radius: 6px;
+            padding: .3rem .6rem;
+            font-size: .75rem;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .copy-btn:hover {
+            background: var(--amber);
+            color: #111;
+        }
+
+        .pix-status {
+            font-family: var(--mono);
+            font-size: .8rem;
+            color: var(--text-dim);
+        }
+
+        .pix-status.confirmed {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .75rem;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border);
+            border-top-color: var(--amber);
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── Skeleton loader ───────────────────────────────────────────────── */
+        .skeleton {
+            background: var(--bg-card2);
+            border-radius: 6px;
+        }
+
+        .skeleton--text {
+            height: 1rem;
+            width: 60%;
+            margin-bottom: .5rem;
+            animation: pulse 1.2s ease infinite;
+        }
+
+        .skeleton--block {
+            height: 80px;
+            margin-bottom: 1rem;
+            animation: pulse 1.2s ease infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .4
+            }
+        }
+
+        /* ── Responsive ─────────────────────────────────────────────────────── */
+        @media (max-width: 640px) {
+            .profile-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .sub-header {
+                flex-direction: column;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .plan-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════════════════════════════ NAVBAR ═══════════════════════════════ -->
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">404<span> // Garage</span></a>
+        <div class="navbar-actions">
+            <a href="/" class="btn-nav btn-nav--primary" id="btn-play-nav">▶ Jogar</a>
+            <button class="btn-nav btn-nav--danger" id="btn-logout-nav">Sair</button>
+        </div>
+    </nav>
+
+    <!-- ══════════════════════════════ PAGE ══════════════════════════════════ -->
+    <main class="page" id="page">
+
+        <p class="page-title">// minha_conta</p>
+
+        <!-- ── Alert banner ── -->
+        <div id="alert-banner" class="alert alert--warn" style="display:none"></div>
+
+        <!-- ── Profile card ── -->
+        <div class="card card--highlight" id="profile-card">
+            <div class="card-title">Identificação</div>
+            <div class="profile-row" id="profile-data">
+                <div class="loading">
+                    <div class="spinner"></div><span>Carregando...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Subscription card ── -->
+        <div class="card" id="sub-card">
+            <div class="card-title">Assinatura</div>
+            <div id="sub-data">
+                <div class="skeleton skeleton--block"></div>
+            </div>
+        </div>
+
+        <!-- ── Usage stats ── -->
+        <div class="card" id="usage-card">
+            <div class="card-title">Estatísticas de Jogo</div>
+            <div id="stats-data">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="skeleton skeleton--text"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="skeleton skeleton--text"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="skeleton skeleton--text"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="skeleton skeleton--text"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Companies completed ── -->
+        <div class="card" id="companies-card">
+            <div class="card-title">Empresas Concluídas</div>
+            <div id="companies-data"><span class="no-data">Carregando...</span></div>
+        </div>
+
+        <!-- ── Actions ── -->
+        <div class="actions" id="actions-bar">
+            <a href="/" class="btn btn--play" id="btn-play">▶ Jogar Agora</a>
+            <button class="btn btn--renew" id="btn-renew" style="display:none">💳 Renovar / Assinar Plano</button>
+            <a href="/static/index_OLD.html" class="btn btn--landing" style="display:none" id="btn-landing">← Landing
+                Page</a>
+            <button class="btn btn--logout" id="btn-logout">Sair da conta</button>
+        </div>
+
+    </main>
+
+    <!-- ══════════════════════════════ RENEWAL MODAL ═════════════════════════ -->
+    <div class="modal-overlay" id="renew-modal">
+        <div class="modal">
+            <button class="modal-close" id="renew-modal-close">✕</button>
+
+            <!-- Step 1: plan selection -->
+            <div id="step-plan">
+                <p class="modal-title">Escolha seu Plano</p>
+                <div class="plan-selector">
+                    <div class="plan-option selected" data-plan="monthly" id="opt-monthly">
+                        <div class="plan-option-price">R$ 97</div>
+                        <div class="plan-option-label">Mensal · 30 dias</div>
+                    </div>
+                    <div class="plan-option" data-plan="annual" id="opt-annual">
+                        <div class="plan-option-price">R$ 997</div>
+                        <div class="plan-option-label">Anual · 365 dias</div>
+                        <span class="plan-option-discount">Economize 14%</span>
+                    </div>
+                </div>
+                <button class="btn btn--renew" style="width:100%" id="btn-gen-pix">Gerar PIX</button>
+            </div>
+
+            <!-- Step 2: QR Code -->
+            <div id="step-pix" style="display:none">
+                <p class="modal-title">Pague com PIX</p>
+                <div class="pix-area">
+                    <img id="pix-qr-img" class="pix-qr" src="" alt="QR Code PIX" />
+                    <div class="pix-code-wrap">
+                        <span class="pix-code" id="pix-code-text"></span>
+                        <button class="copy-btn" id="btn-copy-pix">Copiar</button>
+                    </div>
+                    <p class="pix-status" id="pix-status">⏳ Aguardando confirmação do pagamento...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════ SCRIPT ════════════════════════════════ -->
+    <script>
+        // ── Config ──────────────────────────────────────────────────────────────
+        const API = '';  // same origin
+        const TOKEN_KEY = 'garage_token';
+        const USER_KEY = 'garage_user';
+        const REFRESH_KEY = 'garage_refresh';
+
+        // ── Auth check ──────────────────────────────────────────────────────────
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (!token) {
+            window.location.href = '/';
+        }
+
+        const headers = () => ({
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem(TOKEN_KEY) || ''}`,
+        });
+
+        // ── State ────────────────────────────────────────────────────────────────
+        let accountData = null;
+        let usageData = null;
+        let selectedPlan = 'monthly';
+        let pollInterval = null;
+        let currentPaymentId = null;
+
+        // ── Load all data ────────────────────────────────────────────────────────
+        async function loadAll() {
+            try {
+                const [meRes, usageRes] = await Promise.all([
+                    fetch(`${API}/api/account/me`, { headers: headers() }),
+                    fetch(`${API}/api/account/usage`, { headers: headers() }),
+                ]);
+
+                if (meRes.status === 401 || meRes.status === 403) {
+                    localStorage.removeItem(TOKEN_KEY);
+                    localStorage.removeItem(USER_KEY);
+                    window.location.href = '/';
+                    return;
+                }
+
+                accountData = await meRes.json();
+                usageData = usageRes.ok ? await usageRes.json() : null;
+
+                renderProfile(accountData);
+                renderSubscription(accountData.subscription);
+                renderStats(usageData);
+                renderCompanies(usageData);
+                renderActions(accountData.subscription);
+            } catch (err) {
+                showAlert('Erro ao carregar dados da conta. Tente recarregar a página.', 'error');
+            }
+        }
+
+        // ── Render: profile ──────────────────────────────────────────────────────
+        function renderProfile(data) {
+            const u = data.user || {};
+            const letter = (u.full_name || u.username || '?')[0].toUpperCase();
+            const memberSince = u.created_at
+                ? new Date(u.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+                : '—';
+            const profMap = { autonomo: 'Autônomo', estudante: 'Estudante', empresario: 'Empresário' };
+            document.getElementById('profile-data').innerHTML = `
+      <div class="avatar">${letter}</div>
+      <div class="profile-info">
+        <div class="profile-name">${esc(u.full_name || '—')}</div>
+        <div class="profile-username">@${esc(u.username || '—')}</div>
+        <div class="profile-meta">
+          ${esc(profMap[u.profession] || u.profession || '—')} &nbsp;·&nbsp;
+          ${esc(u.email || '—')} &nbsp;·&nbsp;
+          Membro desde ${memberSince}
+        </div>
+      </div>`;
+        }
+
+        // ── Render: subscription ──────────────────────────────────────────────────
+        function renderSubscription(sub) {
+            const status = sub?.status || 'none';
+            const badge = badgeHtml(status);
+            const plan = esc(sub?.plan_label || 'Sem plano ativo');
+            const expires = sub?.expires_at
+                ? new Date(sub.expires_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+                : null;
+            const days = sub?.days_remaining ?? null;
+
+            // Progress bar (percentage of plan remaining)
+            const totalDays = sub?.plan === 'annual' ? 365 : 30;
+            const pct = days != null ? Math.min(100, Math.round((days / totalDays) * 100)) : 0;
+            const barClass = days != null && days <= 5 ? 'progress-fill--danger' : '';
+
+            let expiresHtml = '';
+            if (expires && status === 'active') {
+                expiresHtml = `<div class="sub-expires">Expira em <strong>${expires}</strong></div>`;
+            } else if (status === 'expired') {
+                expiresHtml = `<div class="sub-expires" style="color:var(--red)">Expirou em ${expires || '—'}</div>`;
+            }
+
+            let progressHtml = '';
+            if (status === 'active' && days != null) {
+                progressHtml = `
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Dias restantes</span><span>${days} / ${totalDays} dias</span></div>
+          <div class="progress-bar"><div class="progress-fill ${barClass}" style="width:${pct}%"></div></div>
+        </div>`;
+            }
+
+            document.getElementById('sub-data').innerHTML = `
+      <div class="sub-header">
+        <div>
+          <div class="sub-plan-name">${plan}</div>
+          ${expiresHtml}
+        </div>
+        ${badge}
+      </div>
+      ${progressHtml}`;
+
+            // Warn if expiring soon
+            if (status === 'active' && days != null && days <= 5) {
+                showAlert(`⚠️ Sua assinatura expira em ${days} dia${days !== 1 ? 's' : ''}. Renove agora para não perder o acesso.`, 'warn');
+            } else if (status === 'expired') {
+                showAlert('❌ Sua assinatura expirou. Renove para continuar jogando.', 'error');
+            } else if (status === 'none') {
+                showAlert('ℹ️ Você ainda não possui uma assinatura ativa. Assine para acessar o jogo completo.', 'warn');
+            }
+        }
+
+        function badgeHtml(status) {
+            const map = {
+                active: ['badge--active', 'Ativo'],
+                expired: ['badge--expired', 'Expirado'],
+                cancelled: ['badge--cancelled', 'Cancelado'],
+                none: ['badge--none', 'Sem plano'],
+            };
+            const [cls, label] = map[status] || ['badge--none', status];
+            return `<span class="badge ${cls}">${label}</span>`;
+        }
+
+        // ── Render: stats ─────────────────────────────────────────────────────────
+        function renderStats(data) {
+            const d = data || {};
+            const stagePt = (s) => {
+                const map = { Intern: 'Estagiário', Junior: 'Júnior', Mid: 'Pleno', Senior: 'Sênior', Staff: 'Staff', Principal: 'Principal', CEO: 'CEO' };
+                return map[s] || s || 'Estagiário';
+            };
+            document.getElementById('stats-data').innerHTML = `
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num">${d.total_score ?? 0}</div>
+          <div class="stat-label">Pontos totais</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">${d.total_challenges_completed ?? 0}</div>
+          <div class="stat-label">Desafios concluídos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">${(d.companies_completed || []).length}</div>
+          <div class="stat-label">Empresas conquistadas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">${(d.books_collected || []).length}</div>
+          <div class="stat-label">Livros coletados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">${stagePt(d.current_stage)}</div>
+          <div class="stat-label">Cargo atual</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">${d.sessions_count ?? 0}</div>
+          <div class="stat-label">Sessões de jogo</div>
+        </div>
+      </div>`;
+        }
+
+        // ── Render: companies ─────────────────────────────────────────────────────
+        function renderCompanies(data) {
+            const companies = data?.companies_completed || [];
+            const el = document.getElementById('companies-data');
+            if (!companies.length) {
+                el.innerHTML = '<span class="no-data">Nenhuma empresa concluída ainda. Vá jogar! 🎮</span>';
+                return;
+            }
+            el.innerHTML = `<div class="companies-grid">${companies.map(c => `<span class="company-tag">✓ ${esc(c)}</span>`).join('')}</div>`;
+        }
+
+        // ── Render: actions ──────────────────────────────────────────────────────
+        function renderActions(sub) {
+            const status = sub?.status || 'none';
+            const renewBtn = document.getElementById('btn-renew');
+            // Show renew: if not active, or if expiring in <= 7 days
+            const showRenew = status !== 'active' || (sub?.days_remaining != null && sub.days_remaining <= 7);
+            renewBtn.style.display = showRenew ? 'inline-flex' : 'none';
+
+            // Disable play if not active
+            const playBtn = document.getElementById('btn-play');
+            const playNavBtn = document.getElementById('btn-play-nav');
+            if (status !== 'active') {
+                playBtn.style.opacity = '.4';
+                playBtn.style.pointerEvents = 'none';
+                playNavBtn.style.opacity = '.4';
+                playNavBtn.style.pointerEvents = 'none';
+            }
+        }
+
+        // ── Alert helper ──────────────────────────────────────────────────────────
+        function showAlert(msg, type = 'warn') {
+            const el = document.getElementById('alert-banner');
+            el.className = `alert alert--${type}`;
+            el.textContent = msg;
+            el.style.display = 'flex';
+        }
+
+        // ── Escape HTML ──────────────────────────────────────────────────────────
+        function esc(str) {
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // ── Renewal flow ─────────────────────────────────────────────────────────
+        document.querySelectorAll('.plan-option').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('.plan-option').forEach(o => o.classList.remove('selected'));
+                el.classList.add('selected');
+                selectedPlan = el.dataset.plan;
+            });
+        });
+
+        document.getElementById('btn-renew').addEventListener('click', () => {
+            document.getElementById('step-plan').style.display = '';
+            document.getElementById('step-pix').style.display = 'none';
+            document.getElementById('renew-modal').classList.add('open');
+        });
+
+        document.getElementById('renew-modal-close').addEventListener('click', () => {
+            closeRenewModal();
+        });
+
+        document.getElementById('renew-modal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeRenewModal();
+        });
+
+        function closeRenewModal() {
+            document.getElementById('renew-modal').classList.remove('open');
+            if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+        }
+
+        document.getElementById('btn-gen-pix').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-gen-pix');
+            btn.textContent = 'Gerando...';
+            btn.disabled = true;
+
+            try {
+                const me = accountData?.user || {};
+                const res = await fetch(`${API}/api/payments/checkout`, {
+                    method: 'POST',
+                    headers: headers(),
+                    body: JSON.stringify({
+                        user_id: me.id,
+                        user_name: me.full_name || me.username,
+                        user_email: me.email,
+                        plan: selectedPlan,
+                        cpf_cnpj: null,
+                    }),
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Erro ao gerar PIX');
+                }
+
+                const data = await res.json();
+                currentPaymentId = data.payment_id;
+
+                // Show QR
+                document.getElementById('step-plan').style.display = 'none';
+                document.getElementById('step-pix').style.display = '';
+                document.getElementById('pix-qr-img').src = `data:image/png;base64,${data.qr_code_base64}`;
+                document.getElementById('pix-code-text').textContent = data.pix_copy_paste;
+
+                // Start polling
+                startPolling(data.payment_id);
+
+            } catch (err) {
+                btn.textContent = 'Gerar PIX';
+                btn.disabled = false;
+                showAlert(`Erro: ${err.message}`, 'error');
+            }
+        });
+
+        document.getElementById('btn-copy-pix').addEventListener('click', () => {
+            const code = document.getElementById('pix-code-text').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.getElementById('btn-copy-pix');
+                btn.textContent = 'Copiado!';
+                setTimeout(() => btn.textContent = 'Copiar', 2000);
+            });
+        });
+
+        function startPolling(paymentId) {
+            const statusEl = document.getElementById('pix-status');
+            pollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`${API}/api/payments/status/${paymentId}`, { headers: headers() });
+                    if (!res.ok) return;
+                    const data = await res.json();
+
+                    if (data.status === 'CONFIRMED' || data.status === 'RECEIVED') {
+                        clearInterval(pollInterval);
+                        pollInterval = null;
+                        statusEl.textContent = '✅ Pagamento confirmado! Sua assinatura está ativa.';
+                        statusEl.className = 'pix-status confirmed';
+                        setTimeout(() => {
+                            closeRenewModal();
+                            loadAll();  // Reload to show new subscription state
+                        }, 2500);
+                    } else {
+                        statusEl.textContent = `⏳ Status: ${data.status} — Aguardando confirmação...`;
+                    }
+                } catch { /* ignore poll errors */ }
+            }, 5000);
+        }
+
+        // ── Logout ────────────────────────────────────────────────────────────────
+        function logout() {
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem(USER_KEY);
+            localStorage.removeItem(REFRESH_KEY);
+            localStorage.removeItem('garage_session_id');
+            window.location.href = '/';
+        }
+        document.getElementById('btn-logout').addEventListener('click', logout);
+        document.getElementById('btn-logout-nav').addEventListener('click', logout);
+
+        // ── Boot ──────────────────────────────────────────────────────────────────
+        loadAll();
+    </script>
+</body>
+
+</html>
