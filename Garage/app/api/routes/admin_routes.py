@@ -204,6 +204,17 @@ def api_admin_users(current_user: dict = Depends(get_current_user)):
             1 for s in user_sessions
             if s.get("status") == "completed" or s.get("stage") == "Distinguished"
         )
+        # Subscription data
+        if hasattr(_user_repo, "get_subscription_status"):
+            try:
+                sub = _user_repo.get_subscription_status(user.id)
+                ud["subscription_status"] = sub.get("status")
+                ud["subscription_plan"] = sub.get("plan")
+                ud["subscription_expires_at"] = sub.get("expires_at")
+            except Exception:
+                ud["subscription_status"] = None
+                ud["subscription_plan"] = None
+                ud["subscription_expires_at"] = None
         result.append(ud)
 
     return result
@@ -490,6 +501,240 @@ def api_admin_delete_user(
         pass
 
     return {"success": True, "message": "Usuario deletado com sucesso."}
+
+
+# ---------------------------------------------------------------------------
+# Grant subscription (test / manual activation by admin)
+# ---------------------------------------------------------------------------
+
+from pydantic import BaseModel as _BaseModel
+
+
+class GrantSubscriptionRequest(_BaseModel):
+    plan: str = "monthly"  # "monthly" | "annual"
+    days: int | None = None  # override duration; None = use plan default
+
+
+@router.post("/users/{user_id}/grant-subscription")
+def api_admin_grant_subscription(
+    user_id: str,
+    body: GrantSubscriptionRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """Manually activate a subscription for a user.
+
+    Used for testing the DEMO paywall flow without a real Asaas payment,
+    and for admin courtesy activations (e.g. early-access, sponsorships).
+    """
+    _assert_admin(current_user)
+
+    if not _user_repo:
+        raise HTTPException(status_code=503, detail="User repository not available.")
+
+    if body.plan not in ("monthly", "annual"):
+        raise HTTPException(status_code=400, detail="plan deve ser 'monthly' ou 'annual'.")
+
+    # Calculate expiry
+    from datetime import timedelta
+    plan_days = {"monthly": 30, "annual": 365}
+    days = body.days if body.days and body.days > 0 else plan_days[body.plan]
+    expires_at = datetime.now(timezone.utc) + timedelta(days=days)
+
+    if not hasattr(_user_repo, "activate_subscription"):
+        raise HTTPException(status_code=501, detail="activate_subscription nao suportado neste backend.")
+
+    try:
+        _user_repo.activate_subscription(user_id=user_id, plan=body.plan, expires_at=expires_at)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Erro ao ativar assinatura: {exc}")
+
+    try:
+        from app.infrastructure.audit import log_event as audit_log
+        audit_log("admin_grant_subscription", current_user["sub"], {
+            "target_user_id": user_id,
+            "plan": body.plan,
+            "days": days,
+            "expires_at": expires_at.isoformat(),
+        })
+    except Exception:
+        pass
+
+    return {
+        "success": True,
+        "user_id": user_id,
+        "plan": body.plan,
+        "days": days,
+        "expires_at": expires_at.isoformat(),
+        "message": f"Assinatura '{body.plan}' ativada por {days} dias.",
+    }
+
+
+# ---------------------------------------------------------------------------
+# Revoke subscription (admin manual deactivation)
+# ---------------------------------------------------------------------------
+
+@router.post("/users/{user_id}/revoke-subscription")
+def api_admin_revoke_subscription(
+    user_id: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """Immediately cancel a user's active subscription."""
+    _assert_admin(current_user)
+
+    if not _user_repo:
+        raise HTTPException(status_code=503, detail="User repository not available.")
+
+    if not hasattr(_user_repo, "revoke_subscription"):
+        raise HTTPException(status_code=501, detail="revoke_subscription nao suportado neste backend.")
+
+    try:
+        _user_repo.revoke_subscription(user_id=user_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Erro ao revogar assinatura: {exc}")
+
+    try:
+        from app.infrastructure.audit import log_event as audit_log
+        audit_log("admin_revoke_subscription", current_user["sub"], {
+            "target_user_id": user_id,
+        })
+    except Exception:
+        pass
+
+    return {
+        "success": True,
+        "user_id": user_id,
+        "message": "Assinatura revogada com sucesso.",
+    }
+
+
+# ---------------------------------------------------------------------------
+# Test helper — create an already-verified user (bypasses email OTP flow)
+# Intended ONLY for integration tests and local dev — requires admin JWT.
+# ---------------------------------------------------------------------------
+
+class CreateVerifiedUserRequest(_BaseModel):
+    full_name: str
+    username: str
+    email: str
+    whatsapp: str = "11999999999"
+    profession: str = "autonomo"
+    password: str
+
+
+@router.post("/test/create-verified-user", status_code=201)
+def api_admin_create_verified_user(
+    body: CreateVerifiedUserRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """Create a fully-verified user account directly, bypassing email OTP.
+
+    Only accessible with an admin JWT. Designed for integration test scripts
+    that need a real user account without going through the email flow.
+    Returns the user's ID and an access token ready to use.
+    """
+    _assert_admin(current_user)
+
+    if not _user_repo:
+        raise HTTPException(status_code=503, detail="User repository unavailable.")
+
+    # Conflict checks
+    if _user_repo.exists_username(body.username):
+        raise HTTPException(status_code=409, detail="Username já existe.")
+    if _user_repo.exists_email(body.email):
+        raise HTTPException(status_code=409, detail="E-mail já cadastrado.")
+
+    # Build verified User domain object
+    from app.infrastructure.auth.password import hash_password
+    from app.infrastructure.auth.jwt_handler import create_access_token
+    from app.infrastructure.auth.admin_utils import is_admin_username
+    from app.domain.user import User
+
+    # bcrypt hash + placeholder salt (bcrypt embeds its own salt in the hash)
+    salt = User.generate_salt()
+    pwd_hash = hash_password(body.password)
+    user = User(
+        full_name=body.full_name,
+        username=body.username,
+        email=body.email,
+        whatsapp=body.whatsapp,
+        profession=body.profession,
+        password_hash=pwd_hash,
+        salt=salt,
+        email_verified=True,
+    )
+    _user_repo.save(user)
+
+    role = "admin" if is_admin_username(user.username) else None
+    token = create_access_token(user.id, user.username, role=role)
+
+    try:
+        from app.infrastructure.audit import log_event as audit_log
+        audit_log("admin_create_verified_user", current_user["sub"], {
+            "new_user_id": user.id,
+            "username": user.username,
+        })
+    except Exception:
+        pass
+
+    return {
+        "success": True,
+        "user_id": user.id,
+        "username": user.username,
+        "access_token": token,
+        "token_type": "bearer",
+        "message": f"Usuário '{user.username}' criado e verificado com sucesso.",
+    }
+
+
+# ---------------------------------------------------------------------------
+# Impersonate — generate JWT for any user (test/support use only)
+# ---------------------------------------------------------------------------
+
+@router.post("/users/{user_id}/impersonate")
+def api_admin_impersonate(
+    user_id: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """Return a short-lived JWT for any user_id, without needing their password.
+
+    Use case: integration tests, customer support, simulation scripts.
+    Requires admin JWT. Audited.
+    """
+    _assert_admin(current_user)
+
+    if not _user_repo:
+        raise HTTPException(status_code=503, detail="User repository unavailable.")
+
+    target = _user_repo.find_by_id(user_id)
+    if not target:
+        raise HTTPException(status_code=404, detail=f"Usuário {user_id} não encontrado.")
+
+    from app.infrastructure.auth.jwt_handler import create_access_token
+    from app.infrastructure.auth.admin_utils import is_admin_username
+
+    role = "admin" if is_admin_username(target.username) else None
+    token = create_access_token(target.id, target.username, role=role)
+
+    try:
+        from app.infrastructure.audit import log_event as audit_log
+        audit_log("admin_impersonate", current_user["sub"], {
+            "target_user_id": user_id,
+            "target_username": target.username,
+        })
+    except Exception:
+        pass
+
+    return {
+        "success": True,
+        "user_id": target.id,
+        "username": target.username,
+        "access_token": token,
+        "token_type": "bearer",
+    }
 
 
 # ---------------------------------------------------------------------------

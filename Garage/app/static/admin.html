@@ -713,6 +713,9 @@
                 <button class="tab-btn" data-tab="users" onclick="switchTab('users')">USUARIOS</button>
                 <button class="tab-btn" data-tab="sessions" onclick="switchTab('sessions')">SESSOES</button>
                 <button class="tab-btn" data-tab="pending" onclick="switchTab('pending')">&#9888; PENDENTES</button>
+                <button class="tab-btn" data-tab="landing" onclick="switchTab('landing')">&#128200; LANDING</button>
+                <button class="tab-btn" data-tab="financeiro" onclick="switchTab('financeiro')">&#128176;
+                    FINANCEIRO</button>
             </div>
 
             <!-- Online tab -->
@@ -855,6 +858,134 @@
                     <tbody id="pendingBody"></tbody>
                 </table>
             </div>
+
+            <!-- LANDING ANALYTICS TAB -->
+            <div id="tab-landing" class="tab-content">
+                <div class="loading" id="landingLoading">Carregando métricas da landing page...</div>
+
+                <!-- Summary cards -->
+                <div id="landingStats" style="display:none;">
+                    <div class="stats-grid" style="margin-bottom:24px;" id="landingStatsGrid"></div>
+
+                    <!-- Row: Checkout + Planos + Conversão -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px;">
+                        <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:20px;">
+                            <div
+                                style="font-size:0.65rem;color:#64748b;letter-spacing:2px;font-weight:700;margin-bottom:14px;">
+                                CLIQUES CHECKOUT POR PLANO</div>
+                            <div id="landingCheckout"></div>
+                        </div>
+                        <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:20px;">
+                            <div
+                                style="font-size:0.65rem;color:#64748b;letter-spacing:2px;font-weight:700;margin-bottom:14px;">
+                                PROFUNDIDADE DE SCROLL</div>
+                            <div id="landingScroll"></div>
+                        </div>
+                    </div>
+
+                    <!-- Visitas 7 dias + Top botões -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px;">
+                        <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:20px;">
+                            <div
+                                style="font-size:0.65rem;color:#64748b;letter-spacing:2px;font-weight:700;margin-bottom:14px;">
+                                VISITAS Últimos 7 DIAS</div>
+                            <div id="landingVisits7d"></div>
+                        </div>
+                        <div style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:20px;">
+                            <div
+                                style="font-size:0.65rem;color:#64748b;letter-spacing:2px;font-weight:700;margin-bottom:14px;">
+                                TOP BOTÕES CLICADOS</div>
+                            <div id="landingTopButtons"></div>
+                        </div>
+                    </div>
+
+                    <!-- Top seções -->
+                    <div
+                        style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:20px;margin-bottom:24px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                            <span style="font-size:0.65rem;color:#64748b;letter-spacing:2px;font-weight:700;">SEÇÕES
+                                MAIS VISTAS</span>
+                            <button onclick="loadLandingAnalytics()"
+                                style="background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:0.68rem;letter-spacing:1px;">ATUALIZAR</button>
+                        </div>
+                        <div id="landingTopSections"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FINANCEIRO tab -->
+            <div id="tab-financeiro" class="tab-content">
+                <div class="loading" id="financeiroLoading">Carregando dados financeiros...</div>
+                <div id="financeiroStats" style="display:none;">
+                    <!-- KPI cards -->
+                    <div class="stats-grid" style="margin-bottom:24px;" id="financeiroKPIs"></div>
+
+                    <!-- Grant subscription form -->
+                    <div
+                        style="background:#0f172a;border:1px solid #f59e0b33;border-radius:12px;padding:20px;margin-bottom:24px;">
+                        <div
+                            style="font-size:0.65rem;color:#f59e0b;letter-spacing:2px;font-weight:700;margin-bottom:16px;">
+                            &#9654; CONCEDER ASSINATURA MANUAL</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">
+                            <div style="flex:1;min-width:200px;">
+                                <label
+                                    style="font-size:0.65rem;color:#64748b;letter-spacing:1px;display:block;margin-bottom:4px;">USUARIO
+                                    (@USERNAME OU E-MAIL)</label>
+                                <input type="text" id="grantUserInput" list="grantUserList"
+                                    placeholder="Buscar usu&#225;rio..."
+                                    style="width:100%;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px 12px;color:#e2e8f0;font-size:0.82rem;outline:none;" />
+                                <datalist id="grantUserList"></datalist>
+                            </div>
+                            <div>
+                                <label
+                                    style="font-size:0.65rem;color:#64748b;letter-spacing:1px;display:block;margin-bottom:4px;">PLANO</label>
+                                <select id="grantPlanSelect"
+                                    style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px 12px;color:#e2e8f0;font-size:0.82rem;">
+                                    <option value="monthly">Mensal (30 dias)</option>
+                                    <option value="annual">Anual (365 dias)</option>
+                                    <option value="lifetime">Vitalício (100 anos)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label
+                                    style="font-size:0.65rem;color:#64748b;letter-spacing:1px;display:block;margin-bottom:4px;">DIAS
+                                    (OPCIONAL)</label>
+                                <input type="number" id="grantDaysInput" placeholder="Auto" min="1" max="36500"
+                                    style="width:110px;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px 12px;color:#e2e8f0;font-size:0.82rem;" />
+                            </div>
+                            <button onclick="grantSubscriptionAdmin()"
+                                style="background:#f59e0b;color:#0f172a;border:none;border-radius:8px;padding:9px 22px;font-size:0.78rem;font-weight:700;letter-spacing:1px;cursor:pointer;white-space:nowrap;">CONCEDER</button>
+                        </div>
+                    </div>
+
+                    <!-- Subscribers table -->
+                    <div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                            <span style="font-size:0.65rem;color:#64748b;letter-spacing:2px;font-weight:700;">ASSINANTES
+                                ATIVOS</span>
+                            <button onclick="loadFinanceiro()"
+                                style="background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:0.68rem;letter-spacing:1px;">ATUALIZAR</button>
+                        </div>
+                        <table id="financeiroTable" style="display:none;">
+                            <thead>
+                                <tr>
+                                    <th>USUARIO</th>
+                                    <th>EMAIL</th>
+                                    <th>PLANO</th>
+                                    <th>EXPIRA EM</th>
+                                    <th>DIAS REST.</th>
+                                    <th style="width:90px;">A&#199;&#213;ES</th>
+                                </tr>
+                            </thead>
+                            <tbody id="financeiroBody"></tbody>
+                        </table>
+                        <div id="financeiroEmpty"
+                            style="display:none;text-align:center;padding:40px;color:#475569;font-size:0.85rem;">Nenhum
+                            assinante ativo no momento.</div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -1335,11 +1466,127 @@
                 const body = document.getElementById('pendingBody');
                 if (!body || body.innerHTML.trim() === '') loadPending();
             }
+            if (tab === 'landing') loadLandingAnalytics();
+            if (tab === 'financeiro') loadFinanceiro();
         }
 
         // -- Delete orphaned sessions (no linked user) --
         // silent=true: chamado automaticamente (sem confirm/alert)
         // silent=false: chamado pelo botao (mostra confirm + resultado)
+        async function loadLandingAnalytics() {
+            const loadEl = document.getElementById('landingLoading');
+            const statsEl = document.getElementById('landingStats');
+            if (loadEl) { loadEl.style.display = 'block'; loadEl.textContent = 'Carregando métricas da landing page...'; }
+            if (statsEl) statsEl.style.display = 'none';
+            try {
+                const d = await apiFetch('/api/analytics/landing/summary');
+                if (loadEl) loadEl.style.display = 'none';
+                if (statsEl) statsEl.style.display = 'block';
+
+                // ── Summary cards ──
+                const cards = [
+                    { label: 'VISITAS TOTAIS', value: d.total_visits, color: '#fbbf24' },
+                    { label: 'VISITANTES ÚNICOS', value: d.unique_visitors, color: '#60a5fa' },
+                    { label: 'HOJE (VISITAS)', value: d.today_visits, color: '#34d399' },
+                    { label: 'HOJE (ÚNICOS)', value: d.today_unique, color: '#34d399' },
+                    { label: 'CLIQUES CHECKOUT', value: d.total_checkout_clicks, color: '#f59e0b' },
+                    { label: 'CONVERSÃO', value: d.conversion_rate, color: '#a78bfa' },
+                ];
+                document.getElementById('landingStatsGrid').innerHTML = cards.map(c =>
+                    `<div class="stat-card" style="border-color:${c.color}33;">
+                        <div class="stat-value" style="color:${c.color};">${esc(String(c.value))}</div>
+                        <div class="stat-label">${esc(c.label)}</div>
+                    </div>`
+                ).join('');
+
+                // ── Checkout por plano ──
+                const cc = d.checkout_clicks || {};
+                const plans = [['monthly', 'R$ 97/mês', '#fbbf24'], ['annual', 'R$ 997/ano', '#a78bfa']];
+                const maxCC = Math.max(...plans.map(([p]) => cc[p] || 0), 1);
+                document.getElementById('landingCheckout').innerHTML = plans.map(([p, lbl, col]) => {
+                    const v = cc[p] || 0;
+                    const pct = Math.round(v / maxCC * 100);
+                    return `<div style="margin-bottom:12px;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#cbd5e1;margin-bottom:4px;">
+                            <span>${lbl}</span><span style="color:${col};font-weight:700;">${v}</span>
+                        </div>
+                        <div style="background:#1e293b;border-radius:4px;height:8px;">
+                            <div style="background:${col};width:${pct}%;height:100%;border-radius:4px;transition:width .4s;"></div>
+                        </div></div>`;
+                }).join('');
+
+                // ── Scroll depth ──
+                const sd = d.scroll_depth || {};
+                const sdData = [['25%', sd.p25, '#60a5fa'], ['50%', sd.p50, '#34d399'], ['75%', sd.p75, '#f59e0b'], ['100%', sd.p100, '#f87171']];
+                const maxSD = Math.max(...sdData.map(s => s[1] || 0), 1);
+                document.getElementById('landingScroll').innerHTML = sdData.map(([lbl, v, col]) => {
+                    const pct = Math.round((v || 0) / maxSD * 100);
+                    return `<div style="margin-bottom:10px;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#cbd5e1;margin-bottom:4px;">
+                            <span>Chegou até ${lbl}</span><span style="color:${col};font-weight:700;">${v || 0}</span>
+                        </div>
+                        <div style="background:#1e293b;border-radius:4px;height:8px;">
+                            <div style="background:${col};width:${pct}%;height:100%;border-radius:4px;transition:width .4s;"></div>
+                        </div></div>`;
+                }).join('');
+
+                // ── Visitas 7 dias ──
+                const days = d.visits_7d || [];
+                const maxDay = Math.max(...days.map(r => r.visits), 1);
+                document.getElementById('landingVisits7d').innerHTML = days.length
+                    ? days.map(r => {
+                        const pct = Math.round(r.visits / maxDay * 100);
+                        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+                            <span style="font-size:0.72rem;color:#64748b;width:68px;flex-shrink:0;">${r.date.slice(5)}</span>
+                            <div style="flex:1;background:#1e293b;border-radius:3px;height:6px;">
+                                <div style="background:#fbbf24;width:${pct}%;height:100%;border-radius:3px;"></div>
+                            </div>
+                            <span style="font-size:0.72rem;color:#fbbf24;width:24px;text-align:right;">${r.visits}</span>
+                        </div>`;
+                    }).join('')
+                    : '<div style="color:#475569;font-size:0.8rem;">Nenhuma visita nos últimos 7 dias.</div>';
+
+                // ── Top botões ──
+                const btns = d.top_buttons || [];
+                const maxBtn = Math.max(...btns.map(b => b.count), 1);
+                document.getElementById('landingTopButtons').innerHTML = btns.length
+                    ? btns.map(b => {
+                        const pct = Math.round(b.count / maxBtn * 100);
+                        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+                            <span style="font-size:0.7rem;color:#94a3b8;width:130px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(b.element)}">${esc(b.element)}</span>
+                            <div style="flex:1;background:#1e293b;border-radius:3px;height:6px;">
+                                <div style="background:#60a5fa;width:${pct}%;height:100%;border-radius:3px;"></div>
+                            </div>
+                            <span style="font-size:0.72rem;color:#60a5fa;width:24px;text-align:right;">${b.count}</span>
+                        </div>`;
+                    }).join('')
+                    : '<div style="color:#475569;font-size:0.8rem;">Nenhum clique registrado ainda.</div>';
+
+                // ── Seções ──
+                const secs = d.top_sections || [];
+                const maxSec = Math.max(...secs.map(s => s.count), 1);
+                document.getElementById('landingTopSections').innerHTML = secs.length
+                    ? `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;">
+                        ${secs.map(s => {
+                        const pct = Math.round(s.count / maxSec * 100);
+                        return `<div style="background:#1e293b;border-radius:8px;padding:10px 14px;">
+                                <div style="font-size:0.78rem;color:#fbbf24;font-weight:700;margin-bottom:4px;">${esc(s.section)}</div>
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <div style="flex:1;background:#0f172a;border-radius:3px;height:4px;">
+                                        <div style="background:#fbbf24;width:${pct}%;height:100%;border-radius:3px;"></div>
+                                    </div>
+                                    <span style="font-size:0.7rem;color:#64748b;">${s.count}</span>
+                                </div></div>`;
+                    }).join('')}
+                    </div>`
+                    : '<div style="color:#475569;font-size:0.8rem;">Nenhuma seção rastreada ainda.</div>';
+
+            } catch (e) {
+                if (loadEl) { loadEl.style.display = 'block'; loadEl.textContent = 'Erro ao carregar métricas: ' + e.message; }
+                showToast('Landing analytics: ' + e.message, 'error');
+            }
+        }
+
         async function purgeOrphanedSessions(silent = false) {
             if (!silent && !confirm('Deletar TODAS as sessoes sem usuario registrado?\nEssas sao sessoes de teste ou anonimas que nao aparecem no ranking.')) return;
             try {
@@ -1548,6 +1795,159 @@
                 }
                 showToast(deleted + ' registro(s) expirado(s) removido(s).', 'ok');
                 loadPending();
+            } catch (e) {
+                showToast('Erro: ' + e.message, 'error');
+            }
+        }
+
+        // ── FINANCEIRO TAB ──────────────────────────────────────────────────────
+        async function loadFinanceiro() {
+            const loadEl = document.getElementById('financeiroLoading');
+            const statsEl = document.getElementById('financeiroStats');
+            if (loadEl) { loadEl.style.display = 'block'; loadEl.textContent = 'Carregando dados financeiros...'; }
+            if (statsEl) statsEl.style.display = 'none';
+            try {
+                const users = await apiFetch('/api/admin/users');
+                if (loadEl) loadEl.style.display = 'none';
+                if (statsEl) statsEl.style.display = 'block';
+
+                // Populate datalist for grant form
+                const dl = document.getElementById('grantUserList');
+                if (dl && users) {
+                    dl.innerHTML = (users || []).map(u =>
+                        `<option value="${esc(u.username)}">${esc(u.full_name)} &mdash; ${esc(u.email)}</option>`
+                    ).join('');
+                }
+                window._allUsersForGrant = users || [];
+
+                // Filter active subscribers
+                const active = (users || []).filter(u => u.subscription_status === 'active');
+                const monthly = active.filter(u => u.subscription_plan === 'monthly').length;
+                const annual = active.filter(u => u.subscription_plan === 'annual').length;
+                const lifetime = active.filter(u =>
+                    u.subscription_plan === 'lifetime' ||
+                    (u.subscription_expires_at && new Date(u.subscription_expires_at).getFullYear() >= 2100)
+                ).length;
+                const regular = active.length - lifetime;
+                const mrrEst = monthly * 97 + annual * Math.round(997 / 12);
+                const arrEst = monthly * 97 * 12 + annual * 997;
+
+                const kpis = [
+                    { label: 'ASSINANTES ATIVOS', value: active.length, color: '#34d399' },
+                    { label: 'PLANO MENSAL', value: monthly, color: '#fbbf24' },
+                    { label: 'PLANO ANUAL', value: annual, color: '#a78bfa' },
+                    { label: 'VITALÍCIOS', value: lifetime, color: '#f87171' },
+                    { label: 'MRR (ESTIMADO)', value: 'R$ ' + mrrEst, color: '#60a5fa' },
+                    { label: 'ARR (ESTIMADO)', value: 'R$ ' + arrEst, color: '#60a5fa' },
+                ];
+                document.getElementById('financeiroKPIs').innerHTML = kpis.map(k =>
+                    `<div class="stat-card" style="border-color:${k.color}33;">
+                        <div class="stat-value" style="color:${k.color};">${esc(String(k.value))}</div>
+                        <div class="stat-label">${esc(k.label)}</div>
+                    </div>`
+                ).join('');
+
+                // Render subscribers table
+                const table = document.getElementById('financeiroTable');
+                const tbody = document.getElementById('financeiroBody');
+                const empty = document.getElementById('financeiroEmpty');
+                tbody.innerHTML = '';
+
+                if (!active.length) {
+                    table.style.display = 'none';
+                    empty.style.display = 'block';
+                    return;
+                }
+                empty.style.display = 'none';
+                table.style.display = '';
+
+                const now = Date.now();
+                active.forEach(u => {
+                    const exp = u.subscription_expires_at ? new Date(u.subscription_expires_at) : null;
+                    const daysLeft = exp ? Math.ceil((exp - now) / 86400000) : null;
+                    const isLifetime = exp && exp.getFullYear() >= 2120;
+                    const planLabel = isLifetime ? '&#11088; Vitalício' :
+                        u.subscription_plan === 'monthly' ? '&#128197; Mensal' :
+                            u.subscription_plan === 'annual' ? '&#127775; Anual' : esc(u.subscription_plan || '---');
+                    const planColor = isLifetime ? '#f87171' :
+                        u.subscription_plan === 'monthly' ? '#fbbf24' :
+                            u.subscription_plan === 'annual' ? '#a78bfa' : '#94a3b8';
+                    const daysHtml = isLifetime ? '<span style="color:#f87171;">&#8734;</span>' :
+                        daysLeft === null ? '---' :
+                            daysLeft <= 0 ? '<span style="color:#f87171;">EXPIRADO</span>' :
+                                daysLeft <= 7 ? '<span style="color:#f87171;">' + daysLeft + 'd</span>' :
+                                    daysLeft <= 30 ? '<span style="color:#fbbf24;">' + daysLeft + 'd</span>' :
+                                        '<span style="color:#34d399;">' + daysLeft + 'd</span>';
+                    const expHtml = isLifetime ? '&#8734;' : (exp ? formatDate(exp.toISOString()) : '---');
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML =
+                        '<td>' + esc(u.full_name) + '<br><small style="color:#64748b;">@' + esc(u.username) + '</small></td>' +
+                        '<td>' + esc(u.email) + '</td>' +
+                        '<td><span style="color:' + planColor + ';font-weight:700;">' + planLabel + '</span></td>' +
+                        '<td>' + expHtml + '</td>' +
+                        '<td>' + daysHtml + '</td>' +
+                        '<td><button onclick="revokeSubscriptionAdmin(\'' + esc(u.id) + '\', \'' + esc(u.username) + '\')" ' +
+                        'style="background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b;border-radius:6px;padding:4px 10px;font-size:0.65rem;font-weight:700;cursor:pointer;letter-spacing:1px;">REVOGAR</button></td>';
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                if (loadEl) { loadEl.style.display = 'block'; loadEl.textContent = 'Erro: ' + e.message; }
+                showToast('Financeiro: ' + e.message, 'error');
+            }
+        }
+
+        async function grantSubscriptionAdmin() {
+            const usernameInput = document.getElementById('grantUserInput').value.trim();
+            const plan = document.getElementById('grantPlanSelect').value;
+            const daysRaw = document.getElementById('grantDaysInput').value.trim();
+            if (!usernameInput) { showToast('Informe o usuário.', 'warn'); return; }
+
+            const allUsers = window._allUsersForGrant || [];
+            const found = allUsers.find(u =>
+                u.username === usernameInput ||
+                u.email === usernameInput ||
+                (u.full_name || '').toLowerCase() === usernameInput.toLowerCase()
+            );
+            if (!found) {
+                showToast('Usuário "' + usernameInput + '" não encontrado. Atualize a aba e tente novamente.', 'warn');
+                return;
+            }
+
+            // lifetime → annual plan + 36500 days (~100 years)
+            const effectivePlan = plan === 'lifetime' ? 'annual' : plan;
+            const defaultDays = plan === 'lifetime' ? 36500 : (plan === 'annual' ? 365 : 30);
+            const body = { plan: effectivePlan, days: daysRaw ? parseInt(daysRaw, 10) : defaultDays };
+
+            if (!confirm('Confirmar concessão de assinatura "' + plan + '" para @' + found.username + '?')) return;
+            try {
+                const res = await fetch('/api/admin/users/' + encodeURIComponent(found.id) + '/grant-subscription', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Falha ao conceder assinatura');
+                showToast('Assinatura concedida para @' + found.username + '!', 'ok');
+                document.getElementById('grantUserInput').value = '';
+                document.getElementById('grantDaysInput').value = '';
+                loadFinanceiro();
+            } catch (e) {
+                showToast('Erro: ' + e.message, 'error');
+            }
+        }
+
+        async function revokeSubscriptionAdmin(userId, username) {
+            if (!confirm('Revogar assinatura de @' + username + '?\nO acesso premium será cancelado imediatamente.')) return;
+            try {
+                const res = await fetch('/api/admin/users/' + encodeURIComponent(userId) + '/revoke-subscription', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Falha ao revogar assinatura');
+                showToast('Assinatura de @' + username + ' revogada.', 'ok');
+                loadFinanceiro();
             } catch (e) {
                 showToast('Erro: ' + e.message, 'error');
             }
