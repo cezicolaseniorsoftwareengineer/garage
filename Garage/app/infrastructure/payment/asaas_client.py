@@ -1,24 +1,48 @@
 """Asaas HTTP client — thin wrapper around the Asaas REST API v3.
 
 Docs: https://docs.asaas.com/reference
-Sandbox base URL: https://sandbox.asaas.com/api/v3
-Production base URL: https://api.asaas.com/api/v3
+Sandbox base URL: https://api-sandbox.asaas.com/v3
+Production base URL: https://api.asaas.com/v3
 """
 import os
+import logging
 import httpx
 from typing import Optional
 
-_API_KEY = os.environ.get("ASAAS_API_KEY", "")
-_BASE_URL = os.environ.get("ASAAS_BASE_URL", "https://sandbox.asaas.com/api/v3").rstrip("/")
+log = logging.getLogger("garage.asaas")
+
 _TIMEOUT = 20  # seconds
+
+
+def _api_key() -> str:
+    return os.environ.get("ASAAS_API_KEY", "")
+
+
+def _base_url() -> str:
+    return os.environ.get("ASAAS_BASE_URL", "https://api-sandbox.asaas.com/v3").rstrip("/")
 
 
 def _headers() -> dict:
     return {
         "accept": "application/json",
         "content-type": "application/json",
-        "access_token": _API_KEY,
+        "access_token": _api_key(),
     }
+
+
+def _raise_with_detail(resp: httpx.Response) -> None:
+    """Raise HTTPStatusError with Asaas response body included in the message."""
+    if resp.is_error:
+        try:
+            body = resp.json()
+        except Exception:
+            body = resp.text
+        log.error("Asaas %s %s → %s %s", resp.request.method, resp.request.url, resp.status_code, body)
+        raise httpx.HTTPStatusError(
+            f"Asaas {resp.status_code}: {body}",
+            request=resp.request,
+            response=resp,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -26,34 +50,22 @@ def _headers() -> dict:
 # ---------------------------------------------------------------------------
 
 def create_or_find_customer(name: str, email: str, cpf_cnpj: Optional[str] = None) -> dict:
-    """Find existing customer by email or create a new one.
-
-    Returns the Asaas customer object (dict).
-    """
-    # Try to find first
+    """Find existing customer by email or create a new one."""
+    base = _base_url()
     with httpx.Client(timeout=_TIMEOUT) as client:
-        resp = client.get(
-            f"{_BASE_URL}/customers",
-            headers=_headers(),
-            params={"email": email},
-        )
-        resp.raise_for_status()
+        resp = client.get(f"{base}/customers", headers=_headers(), params={"email": email})
+        _raise_with_detail(resp)
         data = resp.json()
         customers = data.get("data", [])
         if customers:
             return customers[0]
 
-        # Create
         payload: dict = {"name": name, "email": email}
         if cpf_cnpj:
             payload["cpfCnpj"] = cpf_cnpj.strip().replace(".", "").replace("-", "").replace("/", "")
 
-        resp = client.post(
-            f"{_BASE_URL}/customers",
-            headers=_headers(),
-            json=payload,
-        )
-        resp.raise_for_status()
+        resp = client.post(f"{base}/customers", headers=_headers(), json=payload)
+        _raise_with_detail(resp)
         return resp.json()
 
 
@@ -68,17 +80,11 @@ def create_pix_charge(
     external_reference: str,
     due_date: str,  # "YYYY-MM-DD"
 ) -> dict:
-    """Create a PIX payment charge.
-
-    Returns Asaas payment object containing:
-      - id           : payment ID (save this for webhook matching)
-      - pixQrCode    : base64 QR Code image  (populated via get_pix_qr_code)
-      - encodedImage : base64 PNG
-      - payload      : copia-e-cola string
-    """
+    """Create a PIX payment charge."""
+    base = _base_url()
     with httpx.Client(timeout=_TIMEOUT) as client:
         resp = client.post(
-            f"{_BASE_URL}/payments",
+            f"{base}/payments",
             headers=_headers(),
             json={
                 "customer": customer_id,
@@ -89,33 +95,23 @@ def create_pix_charge(
                 "externalReference": external_reference,
             },
         )
-        resp.raise_for_status()
+        _raise_with_detail(resp)
         return resp.json()
 
 
 def get_pix_qr_code(payment_id: str) -> dict:
-    """Retrieve the PIX QR Code image + payload for a payment.
-
-    Returns:
-      - encodedImage : base64 PNG  (use in <img src="data:image/png;base64,...">)
-      - payload      : copia-e-cola string
-      - expirationDate : ISO datetime
-    """
+    """Retrieve the PIX QR Code image + payload for a payment."""
+    base = _base_url()
     with httpx.Client(timeout=_TIMEOUT) as client:
-        resp = client.get(
-            f"{_BASE_URL}/payments/{payment_id}/pixQrCode",
-            headers=_headers(),
-        )
-        resp.raise_for_status()
+        resp = client.get(f"{base}/payments/{payment_id}/pixQrCode", headers=_headers())
+        _raise_with_detail(resp)
         return resp.json()
 
 
 def get_payment(payment_id: str) -> dict:
     """Retrieve a payment status from Asaas."""
+    base = _base_url()
     with httpx.Client(timeout=_TIMEOUT) as client:
-        resp = client.get(
-            f"{_BASE_URL}/payments/{payment_id}",
-            headers=_headers(),
-        )
-        resp.raise_for_status()
+        resp = client.get(f"{base}/payments/{payment_id}", headers=_headers())
+        _raise_with_detail(resp)
         return resp.json()

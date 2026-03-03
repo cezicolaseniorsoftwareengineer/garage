@@ -243,6 +243,12 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
+// ── CHECKOUT LINKS (Asaas static links — swap for production links after sandbox validation) ──
+const CHECKOUT_LINKS = {
+    mensal: 'https://sandbox.asaas.com/c/n0mtacgn0h8vq5yf',
+    anual: 'https://sandbox.asaas.com/c/n0mtacgn0h8vq5yf',
+};
+
 // ── PLAN CLICK HANDLER ───────────────────────────────────────
 function handlePlanClick(plan) {
     trackCheckout(plan);
@@ -256,11 +262,9 @@ function handlePlanClick(plan) {
         return;
     }
 
-    let user;
-    try { user = JSON.parse(userRaw); } catch { user = {}; }
-
-    // Está logado — abrir checkout PIX via API
-    _startPixCheckout(plan, token, user);
+    // Está logado — redirecionar para checkout Asaas
+    const link = CHECKOUT_LINKS[plan] || CHECKOUT_LINKS.mensal;
+    window.open(link, '_blank', 'noopener');
 }
 
 // ── MODAL: usuário sem conta ──────────────────────────────────
