@@ -191,6 +191,26 @@ a:hover {
     color: var(--text);
 }
 
+.nav-login {
+    background: transparent;
+    color: var(--amber);
+    border: 1px solid var(--border);
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-right: 12px;
+    transition: all 0.2s;
+}
+
+.nav-login:hover {
+    background: var(--amber-glow);
+    border-color: var(--amber);
+    color: var(--amber);
+    transform: translateY(-1px);
+}
+
 .nav-cta {
     background: var(--amber);
     color: var(--bg-black);
@@ -241,9 +261,27 @@ a:hover {
     text-align: center;
 }
 
+.mobile-login {
+    background: transparent;
+    color: var(--amber);
+    border: 1px solid var(--border);
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.mobile-login:hover {
+    background: var(--amber-glow);
+    border-color: var(--amber);
+}
+
 @media (max-width: 768px) {
 
     .nav-links,
+    .nav-login,
     .nav-cta {
         display: none;
     }
