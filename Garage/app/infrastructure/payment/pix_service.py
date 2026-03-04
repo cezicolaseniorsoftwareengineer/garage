@@ -65,16 +65,44 @@ def create_checkout(
     billing_type = "PIX" if payment_method == "pix" else "UNDEFINED"
 
     # 2. Create charge
-    payment = asaas_client.create_charge(
-        customer_id=customer_id,
-        value=cfg["value"],
-        description=cfg["label"],
-        external_reference=f"{user_id}|{plan}",
-        due_date=due_date,
-        billing_type=billing_type,
-    )
+    effective_billing_type = billing_type
+    try:
+        payment = asaas_client.create_charge(
+            customer_id=customer_id,
+            value=cfg["value"],
+            description=cfg["label"],
+            external_reference=f"{user_id}|{plan}",
+            due_date=due_date,
+            billing_type=billing_type,
+        )
+    except Exception as exc:
+        # Some Asaas accounts reject UNDEFINED in /payments depending configuration.
+        # Fallback to PIX so we always generate a payable charge and do not block checkout.
+        if payment_method == "card":
+            log.warning("Card checkout with UNDEFINED failed, falling back to PIX charge: %s", exc)
+            effective_billing_type = "PIX"
+            payment = asaas_client.create_charge(
+                customer_id=customer_id,
+                value=cfg["value"],
+                description=cfg["label"],
+                external_reference=f"{user_id}|{plan}",
+                due_date=due_date,
+                billing_type=effective_billing_type,
+            )
+        else:
+            raise
+
     payment_id = payment["id"]
-    log.info("Charge created: %s method=%s billing=%s", payment_id, payment_method, billing_type)
+    log.info("Charge created: %s method=%s billing=%s", payment_id, payment_method, effective_billing_type)
+
+    checkout_url = payment.get("invoiceUrl", "")
+    if payment_method == "card" and not checkout_url:
+        # Safety net: fetch payment details and retry invoice URL extraction.
+        try:
+            payment_details = asaas_client.get_payment(payment_id)
+            checkout_url = payment_details.get("invoiceUrl", "")
+        except Exception:
+            checkout_url = ""
 
     response = {
         "payment_id": payment_id,
@@ -83,17 +111,16 @@ def create_checkout(
         "value": cfg["value"],
         "qr_code_base64": "",
         "pix_copy_paste": "",
-        "checkout_url": payment.get("invoiceUrl", ""),
+        "checkout_url": checkout_url,
         "expires_at": payment.get("dueDate", ""),
     }
 
-    if payment_method == "pix":
-        # 3. Fetch QR Code
+    if payment_method == "pix" or (payment_method == "card" and not checkout_url):
+        # If card checkout URL is unavailable, provide PIX QR fallback so payment still happens.
         qr = asaas_client.get_pix_qr_code(payment_id)
         response["qr_code_base64"] = qr.get("encodedImage", "")
         response["pix_copy_paste"] = qr.get("payload", "")
         response["expires_at"] = qr.get("expirationDate", "") or response["expires_at"]
-
     return response
 
 
