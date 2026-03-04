@@ -243,10 +243,11 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// ── CHECKOUT LINKS (Asaas static links — swap for production links after sandbox validation) ──
+// ── CHECKOUT LINKS (Asaas production links — R$5 test products for E2E validation) ──
+// NOTE: after E2E validation, swap for real R$97/R$997 product links.
 const CHECKOUT_LINKS = {
     mensal: 'https://sandbox.asaas.com/c/n0mtacgn0h8vq5yf',
-    anual: 'https://sandbox.asaas.com/c/n0mtacgn0h8vq5yf',
+    anual: 'https://www.asaas.com/c/wcc6pckxm4xusbcr',
 };
 
 // ── PLAN CLICK HANDLER ───────────────────────────────────────
