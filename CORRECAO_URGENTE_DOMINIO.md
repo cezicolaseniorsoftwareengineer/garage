@@ -1,4 +1,4 @@
-# CORREÇÃO URGENTE - Domínio garage.onrender.com
+# CORREÇÃO - Domínio garage.onrender.com
 
 ## PROBLEMA
 O domínio `garage.onrender.com` está apontando para um **serviço Django antigo** (não relacionado ao Garage).
