@@ -15,7 +15,10 @@ _TIMEOUT = 20  # seconds
 
 
 def _api_key() -> str:
-    return os.environ.get("ASAAS_API_KEY", "")
+    key = os.environ.get("ASAAS_API_KEY", "")
+    if not key:
+        log.error("ASAAS_API_KEY environment variable is not set. Cannot authenticate with Asaas API.")
+    return key
 
 
 def _base_url() -> str:
@@ -23,11 +26,16 @@ def _base_url() -> str:
 
 
 def _headers() -> dict:
-    return {
+    api_key = _api_key()
+    headers = {
         "accept": "application/json",
         "content-type": "application/json",
-        "access_token": _api_key(),
+        "access_token": api_key,
     }
+    # Debug: warn if token appears empty
+    if not api_key:
+        log.warning("Headers being sent to Asaas with empty access_token. Authentication will fail.")
+    return headers
 
 
 def _raise_with_detail(resp: httpx.Response) -> None:
@@ -37,7 +45,21 @@ def _raise_with_detail(resp: httpx.Response) -> None:
             body = resp.json()
         except Exception:
             body = resp.text
-        log.error("Asaas %s %s → %s %s", resp.request.method, resp.request.url, resp.status_code, body)
+
+        # Special handling for 401 access_token errors
+        if resp.status_code == 401:
+            error_desc = ""
+            if isinstance(body, dict) and "errors" in body:
+                errors = body.get("errors", [])
+                if errors and "description" in errors[0]:
+                    error_desc = errors[0]["description"]
+            log.error(
+                "Asaas 401 Authentication Error: %s | Check that ASAAS_API_KEY environment variable is set correctly.",
+                error_desc or body
+            )
+        else:
+            log.error("Asaas %s %s → %s %s", resp.request.method, resp.request.url, resp.status_code, body)
+
         raise httpx.HTTPStatusError(
             f"Asaas {resp.status_code}: {body}",
             request=resp.request,
