@@ -327,7 +327,8 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 1rem;
-            margin-bottom: 1.25rem;
+            margin: 0 auto 1.25rem;
+            max-width: 100%;
         }
 
         .stat-card {
@@ -711,6 +712,20 @@
 
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+                margin: 0 auto 1rem;
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .stat-num {
+                font-size: 1.5rem;
+            }
+
+            .stat-label {
+                font-size: 0.7rem;
             }
 
             .plan-selector {
@@ -723,6 +738,19 @@
 
             .btn {
                 justify-content: center;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+                max-width: 300px;
+                margin: 0 auto 1rem;
+            }
+
+            .stat-card {
+                padding: 1.25rem;
             }
         }
     </style>
