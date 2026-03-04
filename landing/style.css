@@ -285,7 +285,7 @@ a:hover {
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
-    filter: brightness(0.55);
+    filter: brightness(0.38);
     pointer-events: none;
     will-change: background-position;
 }
@@ -307,9 +307,9 @@ a:hover {
     inset: 0;
     background:
         linear-gradient(180deg,
-            rgba(10, 10, 15, 0.60) 0%,
-            rgba(10, 10, 15, 0.45) 40%,
-            rgba(10, 10, 15, 0.65) 100%),
+            rgba(10, 10, 15, 0.78) 0%,
+            rgba(10, 10, 15, 0.68) 40%,
+            rgba(10, 10, 15, 0.82) 100%),
         radial-gradient(ellipse at 50% 25%, rgba(255, 179, 71, 0.08) 0%, transparent 60%);
     z-index: 1;
     pointer-events: none;
