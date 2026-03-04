@@ -246,7 +246,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // ── CHECKOUT LINKS (Asaas production links — R$5 test products for E2E validation) ──
 // NOTE: after E2E validation, swap for real R$97/R$997 product links.
 const CHECKOUT_LINKS = {
-    mensal: 'https://sandbox.asaas.com/c/n0mtacgn0h8vq5yf',
+    mensal: 'https://www.asaas.com/c/k8xqrulte259faq2',
     anual: 'https://www.asaas.com/c/wcc6pckxm4xusbcr',
 };
 
