@@ -270,3 +270,130 @@ def send_password_reset_email(to_email: str, code: str, full_name: str) -> bool:
     log.warning("[DEV MODE] Reset code for %s: %s", to_email, code)
     print(f"[GARAGE][DEV] Password reset code for {to_email}: {code}")
     return False
+
+
+# ---------------------------------------------------------------------------
+# Subscription welcome email
+# ---------------------------------------------------------------------------
+PLAN_LABELS = {
+    "monthly": "Mensal · R$ 97/mês · 30 dias",
+    "annual":  "Anual · R$ 997/ano · 365 dias",
+}
+
+
+def _app_base_url() -> str:
+    """Return the base URL for the app, configurable via APP_BASE_URL env var."""
+    return os.environ.get("APP_BASE_URL", "https://garage.onrender.com").rstrip("/")
+
+
+def _html_template_welcome(full_name: str, plan: str, expires_at: str) -> str:
+    plan_label = PLAN_LABELS.get(plan, plan)
+    base = _app_base_url()
+    game_url = f"{base}/jogo"
+    return f"""<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0f172a;font-family:'Courier New',monospace;">
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:40px 20px;">
+      <table width="480" style="background:#1e293b;border:1px solid #22c55e;border-radius:12px;">
+        <tr>
+          <td style="padding:32px 40px;text-align:center;">
+            <div style="color:#fbbf24;font-size:22px;font-weight:700;letter-spacing:4px;margin-bottom:4px;">[404 GARAGE]</div>
+            <div style="color:#94a3b8;font-size:11px;letter-spacing:2px;">BIO CODE TECHNOLOGY</div>
+            <hr style="border:none;border-top:1px solid #334155;margin:24px 0;">
+            <p style="color:#e2e8f0;font-size:16px;margin:0 0 8px;">Olá, <strong>{full_name}</strong>.</p>
+            <p style="color:#94a3b8;font-size:13px;margin:0 0 20px;line-height:1.7;">
+              Sua assinatura foi ativada com sucesso.<br>
+              Acesso completo a todos os 6 Atos desbloqueado.
+            </p>
+            <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:16px 24px;margin:0 auto 24px;text-align:left;">
+              <div style="color:#22c55e;font-size:10px;letter-spacing:2px;margin-bottom:8px;">PLANO ATIVO</div>
+              <div style="color:#e2e8f0;font-size:15px;font-weight:700;">{plan_label}</div>
+              <div style="color:#64748b;font-size:11px;margin-top:6px;">Acesso até: {expires_at}</div>
+            </div>
+            <a href="{game_url}" style="display:block;background:#22c55e;color:#0a0a0f;padding:14px 32px;border-radius:8px;font-weight:700;font-size:0.95rem;text-decoration:none;letter-spacing:1px;">
+              ENTRAR NO JOGO
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#0f172a;padding:16px;text-align:center;border-radius:0 0 12px 12px;">
+            <span style="color:#475569;font-size:10px;letter-spacing:1px;">
+              404 GARAGE · DE ESTAGIÁRIO A PRINCIPAL ENGINEER · BIO CODE TECHNOLOGY
+            </span>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+
+def send_subscription_welcome_email(
+    to_email: str,
+    full_name: str,
+    plan: str,
+    expires_at: str,
+) -> bool:
+    """Send a welcome email after subscription activation.
+
+    Priority: Resend → SMTP → dev console.
+    """
+    plan_label = PLAN_LABELS.get(plan, plan)
+    base = _app_base_url()
+    subject = "Acesso ativado - 404 Garage"
+    html_body = _html_template_welcome(full_name, plan, expires_at)
+    plain_body = (
+        f"Olá {full_name},\n\n"
+        f"Sua assinatura no 404 Garage foi ativada.\n\n"
+        f"Plano: {plan_label}\n"
+        f"Acesso até: {expires_at}\n\n"
+        f"Entrar no jogo: {base}/jogo\n\n"
+        f"404 Garage - De Estagiário a Principal Engineer\n"
+        f"Bio Code Technology"
+    )
+
+    resend_key = os.environ.get("RESEND_API_KEY", "")
+    smtp_user  = os.environ.get("SMTP_USER", "")
+
+    if resend_key:
+        try:
+            import resend
+            resend.api_key = resend_key
+            from_addr = os.environ.get("RESEND_FROM", "Garage <onboarding@resend.dev>")
+            resend.Emails.send({"from": from_addr, "to": [to_email],
+                                "subject": subject, "html": html_body, "text": plain_body})
+            log.info("[RESEND WELCOME OK] to=%s plan=%s", to_email, plan)
+            return True
+        except Exception as exc:
+            log.error("[RESEND WELCOME FAIL] %s: %s", to_email, exc)
+
+    if smtp_user:
+        try:
+            cfg = {
+                "host": os.environ.get("SMTP_HOST", "smtp.gmail.com"),
+                "port": int(os.environ.get("SMTP_PORT", "587")),
+                "user": smtp_user,
+                "password": os.environ.get("SMTP_PASSWORD", ""),
+                "from": os.environ.get("SMTP_FROM", smtp_user),
+            }
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = cfg["from"]
+            msg["To"] = to_email
+            msg.attach(MIMEText(plain_body, "plain"))
+            msg.attach(MIMEText(html_body, "html"))
+            with smtplib.SMTP(cfg["host"], cfg["port"], timeout=20) as server:
+                server.ehlo(); server.starttls(); server.ehlo()
+                server.login(cfg["user"], cfg["password"])
+                server.sendmail(cfg["user"], to_email, msg.as_string())
+            log.info("[SMTP WELCOME OK] to=%s plan=%s", to_email, plan)
+            return True
+        except Exception as exc:
+            log.error("[SMTP WELCOME FAIL] %s: %s", to_email, exc)
+
+    log.warning("[DEV MODE] Welcome email for %s (%s) not sent — no provider", to_email, plan)
+    print(f"[GARAGE][DEV] Subscription welcome for {to_email}: plan={plan} expires={expires_at}")
+    return False
