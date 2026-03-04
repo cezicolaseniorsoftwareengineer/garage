@@ -43,23 +43,43 @@ def diagnose():
     key_preview = f"{api_key[:20]}...{api_key[-10:]}"
     print(f"✓ ASAAS_API_KEY is set (preview: {key_preview})")
 
-    # 3. Check key format (should start with $aact_prod_ or $aact_test_)
-    if api_key.startswith("$aact_"):
-        print("✓ API key format looks correct (starts with $aact_)")
+    # 3. Check key type (sandbox vs production)
+    if api_key.startswith("$aact_prod_"):
+        print("✓ API key type: PRODUCTION ($aact_prod_)")
+        key_type = "production"
+    elif api_key.startswith("$aact_test_"):
+        print("⚠ API key type: SANDBOX/TEST ($aact_test_)")
+        key_type = "sandbox"
     else:
         print("⚠ API key format may be incorrect (should start with $aact_ for Asaas)")
+        key_type = "unknown"
 
     # 4. Check ASAAS_BASE_URL
     base_url = os.environ.get("ASAAS_BASE_URL", "")
     if not base_url:
         base_url = "https://api-sandbox.asaas.com/v3"
         print(f"✓ ASAAS_BASE_URL not set, using default sandbox: {base_url}")
+        url_type = "sandbox"
     elif "production" in base_url or "api.asaas.com" in base_url:
         print(f"✓ ASAAS_BASE_URL set to PRODUCTION: {base_url}")
+        url_type = "production"
     else:
-        print(f"✓ ASAAS_BASE_URL set to: {base_url}")
+        print(f"ℹ ASAAS_BASE_URL set to: {base_url}")
+        url_type = "unknown"
 
-    # 5. Test HTTP connection (don't send auth yet)
+    # 5. CRITICAL: Validate key type matches URL environment
+    if key_type != "unknown" and url_type != "unknown":
+        if key_type != url_type:
+            print(f"\n✗ CRITICAL MISMATCH!")
+            print(f"  Key type:  {key_type.upper()} ($aact_{key_type}_...)")
+            print(f"  URL type:  {url_type.upper()} ({base_url})")
+            print(f"\n  This is causing: 'invalid_environment' error!")
+            print(f"  → ACTION: Make sure API_KEY and BASE_URL both match PRODUCTION or both SANDBOX")
+            return False
+        else:
+            print(f"✓ Key and URL environment MATCH ({key_type.upper()})")
+
+    # 6. Test HTTP connection
     try:
         import httpx
         print("\nTesting HTTP connectivity...")
@@ -80,18 +100,27 @@ def diagnose():
             if resp.status_code == 200:
                 print(f"✓ Successfully authenticated with Asaas API")
                 data = resp.json()
-                print(f"  → Response: {data}")
+                total = data.get("totalCount", "?")
+                print(f"  → Account has {total} customer(s)")
                 return True
             elif resp.status_code == 401:
                 try:
                     body = resp.json()
                     errors = body.get("errors", [])
                     if errors:
+                        error_code = errors[0].get('code', '')
+                        error_desc = errors[0].get('description', 'Unknown')
                         print(f"✗ AUTHENTICATION FAILED (401)")
-                        print(f"  → Error: {errors[0].get('description', 'Unknown')}")
+                        print(f"  → Error code: {error_code}")
+                        print(f"  → Error: {error_desc}")
+
+                        if error_code == "invalid_environment":
+                            print(f"\n  This error means:")
+                            print(f"    - You're using a {url_type.upper()} API key with a {url_type.upper()} URL")
+                            print(f"    - OR the key configured in Render doesn't match the local key")
                 except:
                     print(f"✗ AUTHENTICATION FAILED (401)")
-                print("  → ACTION: Verify ASAAS_API_KEY is correct and not expired")
+                print("  → ACTION: Verify ASAAS_API_KEY is correct and environment matches")
                 return False
             else:
                 print(f"⚠ Unexpected response status: {resp.status_code}")
