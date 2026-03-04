@@ -28,6 +28,7 @@ from app.api.routes.ai_validator_routes import router as ai_validator_router
 from app.api.routes.payment_routes import router as payment_router, init_payment_routes
 from app.api.routes.analytics_routes import router as analytics_router, init_analytics_routes
 from app.api.routes.account_routes import router as account_router, init_account_routes
+from app.api.routes.diagnostic_routes import router as diagnostic_router
 
 DATA_DIR = os.path.join(BASE_DIR, "data")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
@@ -233,6 +234,7 @@ app.include_router(ai_validator_router)
 app.include_router(payment_router)
 app.include_router(analytics_router)
 app.include_router(account_router)
+app.include_router(diagnostic_router)
 
 
 @app.get("/")
