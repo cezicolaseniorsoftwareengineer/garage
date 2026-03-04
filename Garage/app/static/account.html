@@ -1226,7 +1226,21 @@
 
                 if (!res.ok) {
                     const err = await res.json();
-                    throw new Error(err.detail || 'Erro ao gerar pagamento');
+                    let errorMsg = err.detail || 'Erro ao gerar pagamento';
+
+                    // Parse Asaas-specific errors and provide better guidance
+                    if (errorMsg.includes('invalid_environment')) {
+                        errorMsg = 'Configuração do Asaas incorreta em produção. ' +
+                            'Verifique se ASAAS_API_KEY e ASAAS_BASE_URL estão ' +
+                            'configurados corretamente em Render Dashboard (Environment).';
+                    } else if (errorMsg.includes('access_token_not_found')) {
+                        errorMsg = 'Chave Asaas não configurada. ' +
+                            'Configure ASAAS_API_KEY em Render → garage-0lw9 → Environment.';
+                    } else if (errorMsg.includes('HTTPStatusError: Asaas 401')) {
+                        errorMsg = 'Erro de autenticação com Asaas. Verifique a configuração de produção em Render.';
+                    }
+
+                    throw new Error(errorMsg);
                 }
 
                 const data = await res.json();
