@@ -286,9 +286,8 @@ a:hover {
     background-size: cover;
     background-repeat: no-repeat;
     filter: brightness(0.55);
-    transform: scale(1.08);
     pointer-events: none;
-    will-change: transform;
+    will-change: background-position;
 }
 
 /* Imagem de fundo removida — usando lazy loading */
