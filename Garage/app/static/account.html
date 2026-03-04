@@ -581,6 +581,38 @@
             font-weight: 700;
         }
 
+        .payment-methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .75rem;
+            margin-bottom: 1rem;
+        }
+
+        .payment-method-option {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .75rem;
+            text-align: center;
+            cursor: pointer;
+            font-family: var(--mono);
+            font-size: .78rem;
+            color: var(--text-dim);
+            transition: all .2s;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .payment-method-option:hover {
+            border-color: var(--amber);
+            color: var(--amber);
+        }
+
+        .payment-method-option.selected {
+            border-color: var(--amber);
+            color: var(--amber);
+            background: rgba(255, 179, 71, .08);
+        }
+
         /* PIX QR Code area */
         .pix-area {
             text-align: center;
@@ -642,6 +674,26 @@
         .pix-status.confirmed {
             color: var(--green);
             font-weight: 700;
+        }
+
+        .card-area {
+            text-align: center;
+            background: var(--bg-card2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .card-note {
+            color: var(--text-dim);
+            font-size: .82rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .btn-card-open {
+            width: 100%;
+            margin-bottom: .75rem;
         }
 
         .loading {
@@ -729,6 +781,10 @@
             }
 
             .plan-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-methods {
                 grid-template-columns: 1fr;
             }
 
@@ -850,7 +906,14 @@
                         <span class="plan-option-discount">Economize 14%</span>
                     </div>
                 </div>
-                <button class="btn btn--renew" style="width:100%" id="btn-gen-pix">Gerar PIX</button>
+
+                <p class="modal-title" style="font-size:.82rem; margin-bottom:.8rem;">Forma de pagamento</p>
+                <div class="payment-methods">
+                    <div class="payment-method-option selected" data-method="pix" id="opt-pay-pix">PIX</div>
+                    <div class="payment-method-option" data-method="card" id="opt-pay-card">Cartão</div>
+                </div>
+
+                <button class="btn btn--renew" style="width:100%" id="btn-gen-pix">Continuar pagamento</button>
             </div>
 
             <!-- Step 2: QR Code -->
@@ -863,6 +926,18 @@
                         <button class="copy-btn" id="btn-copy-pix">Copiar</button>
                     </div>
                     <p class="pix-status" id="pix-status">⏳ Aguardando confirmação do pagamento...</p>
+                </div>
+            </div>
+
+            <!-- Step 3: Card checkout -->
+            <div id="step-card" style="display:none">
+                <p class="modal-title">Pague com Cartão</p>
+                <div class="card-area">
+                    <p class="card-note">Você será redirecionado para o checkout seguro para concluir o pagamento no
+                        cartão.</p>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn--renew btn-card-open"
+                        id="btn-open-card-checkout">Abrir checkout</a>
+                    <p class="pix-status" id="card-status">⏳ Aguardando confirmação do pagamento...</p>
                 </div>
             </div>
         </div>
@@ -891,6 +966,7 @@
         let accountData = null;
         let usageData = null;
         let selectedPlan = 'monthly';
+        let selectedPaymentMethod = 'pix';
         let pollInterval = null;
         let currentPaymentId = null;
 
@@ -1093,9 +1169,24 @@
             });
         });
 
+        document.querySelectorAll('.payment-method-option').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('.payment-method-option').forEach(o => o.classList.remove('selected'));
+                el.classList.add('selected');
+                selectedPaymentMethod = el.dataset.method;
+            });
+        });
+
         document.getElementById('btn-renew').addEventListener('click', () => {
             document.getElementById('step-plan').style.display = '';
             document.getElementById('step-pix').style.display = 'none';
+            document.getElementById('step-card').style.display = 'none';
+            document.getElementById('btn-gen-pix').textContent = 'Continuar pagamento';
+            document.getElementById('btn-gen-pix').disabled = false;
+            document.getElementById('pix-status').className = 'pix-status';
+            document.getElementById('pix-status').textContent = '⏳ Aguardando confirmação do pagamento...';
+            document.getElementById('card-status').className = 'pix-status';
+            document.getElementById('card-status').textContent = '⏳ Aguardando confirmação do pagamento...';
             document.getElementById('renew-modal').classList.add('open');
         });
 
@@ -1110,6 +1201,7 @@
         function closeRenewModal() {
             document.getElementById('renew-modal').classList.remove('open');
             if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+            currentPaymentId = null;
         }
 
         document.getElementById('btn-gen-pix').addEventListener('click', async () => {
@@ -1127,6 +1219,7 @@
                         user_name: me.full_name || me.username,
                         user_email: me.email,
                         plan: selectedPlan,
+                        payment_method: selectedPaymentMethod,
                         cpf_cnpj: null,
                     }),
                 });
@@ -1139,19 +1232,34 @@
                 const data = await res.json();
                 currentPaymentId = data.payment_id;
 
-                // Show QR
                 document.getElementById('step-plan').style.display = 'none';
-                document.getElementById('step-pix').style.display = '';
-                document.getElementById('pix-qr-img').src = `data:image/png;base64,${data.qr_code_base64}`;
-                document.getElementById('pix-code-text').textContent = data.pix_copy_paste;
 
-                // Start polling
-                startPolling(data.payment_id);
+                if (selectedPaymentMethod === 'card') {
+                    document.getElementById('step-pix').style.display = 'none';
+                    document.getElementById('step-card').style.display = '';
+                    const checkoutBtn = document.getElementById('btn-open-card-checkout');
+                    const checkoutUrl = data.checkout_url || '#';
+                    checkoutBtn.href = checkoutUrl;
+                    checkoutBtn.textContent = checkoutUrl && checkoutUrl !== '#'
+                        ? 'Abrir checkout seguro'
+                        : 'Checkout indisponível';
+                    if (checkoutUrl && checkoutUrl !== '#') {
+                        window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+                    }
+                    startPolling(data.payment_id, 'card');
+                } else {
+                    document.getElementById('step-card').style.display = 'none';
+                    document.getElementById('step-pix').style.display = '';
+                    document.getElementById('pix-qr-img').src = `data:image/png;base64,${data.qr_code_base64}`;
+                    document.getElementById('pix-code-text').textContent = data.pix_copy_paste;
+                    startPolling(data.payment_id, 'pix');
+                }
 
             } catch (err) {
-                btn.textContent = 'Gerar PIX';
-                btn.disabled = false;
                 showAlert(`Erro: ${err.message}`, 'error');
+            } finally {
+                btn.textContent = 'Continuar pagamento';
+                btn.disabled = false;
             }
         });
 
@@ -1164,8 +1272,10 @@
             });
         });
 
-        function startPolling(paymentId) {
-            const statusEl = document.getElementById('pix-status');
+        function startPolling(paymentId, method = 'pix') {
+            const statusEl = method === 'card'
+                ? document.getElementById('card-status')
+                : document.getElementById('pix-status');
             pollInterval = setInterval(async () => {
                 try {
                     const res = await fetch(`${API}/api/payments/status/${paymentId}`, { headers: headers() });

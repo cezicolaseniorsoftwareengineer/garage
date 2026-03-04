@@ -1,7 +1,7 @@
-"""Payment routes — PIX checkout + Asaas webhook.
+"""Payment routes — PIX/Card checkout + Asaas webhook.
 
 Endpoints:
-  POST /api/payments/checkout          → generate PIX QR Code for a plan
+    POST /api/payments/checkout          → generate PIX QR Code or card checkout URL
   POST /api/payments/webhook/asaas     → receive Asaas payment notification
   GET  /api/payments/status/{payment_id} → poll payment status (frontend polling)
 """
@@ -36,15 +36,18 @@ class CheckoutRequest(BaseModel):
     user_name: str = Field(..., min_length=2, max_length=100)
     user_email: str
     plan: str = Field(..., pattern="^(monthly|annual)$")
+    payment_method: str = Field("pix", pattern="^(pix|card)$")
     cpf_cnpj: str | None = Field(None, description="Optional CPF/CNPJ for nota fiscal")
 
 
 class CheckoutResponse(BaseModel):
     payment_id: str
     plan: str
+    payment_method: str
     value: float
-    qr_code_base64: str
-    pix_copy_paste: str
+    qr_code_base64: str | None = None
+    pix_copy_paste: str | None = None
+    checkout_url: str | None = None
     expires_at: str
 
 
@@ -61,7 +64,7 @@ class PaymentStatusResponse(BaseModel):
 
 @router.post("/checkout", response_model=CheckoutResponse, status_code=201)
 def checkout(body: CheckoutRequest):
-    """Generate a PIX QR Code for the selected plan.
+    """Generate PIX or card checkout for the selected plan.
 
     The frontend displays the QR Code and polls /status/{payment_id}
     until status == CONFIRMED or RECEIVED, then redirects to the game.
@@ -72,6 +75,7 @@ def checkout(body: CheckoutRequest):
             user_name=body.user_name,
             user_email=body.user_email,
             plan=body.plan,
+            payment_method=body.payment_method,
             cpf_cnpj=body.cpf_cnpj,
         )
         return result

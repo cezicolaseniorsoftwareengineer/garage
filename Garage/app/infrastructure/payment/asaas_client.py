@@ -70,8 +70,38 @@ def create_or_find_customer(name: str, email: str, cpf_cnpj: Optional[str] = Non
 
 
 # ---------------------------------------------------------------------------
-# PIX charge
+# Charges
 # ---------------------------------------------------------------------------
+
+def create_charge(
+    customer_id: str,
+    value: float,
+    description: str,
+    external_reference: str,
+    due_date: str,  # "YYYY-MM-DD"
+    billing_type: str = "PIX",
+) -> dict:
+    """Create a payment charge for the provided billing type.
+
+    billing_type examples: PIX, UNDEFINED.
+    """
+    base = _base_url()
+    with httpx.Client(timeout=_TIMEOUT) as client:
+        resp = client.post(
+            f"{base}/payments",
+            headers=_headers(),
+            json={
+                "customer": customer_id,
+                "billingType": billing_type,
+                "value": value,
+                "dueDate": due_date,
+                "description": description,
+                "externalReference": external_reference,
+            },
+        )
+        _raise_with_detail(resp)
+        return resp.json()
+
 
 def create_pix_charge(
     customer_id: str,
@@ -81,22 +111,14 @@ def create_pix_charge(
     due_date: str,  # "YYYY-MM-DD"
 ) -> dict:
     """Create a PIX payment charge."""
-    base = _base_url()
-    with httpx.Client(timeout=_TIMEOUT) as client:
-        resp = client.post(
-            f"{base}/payments",
-            headers=_headers(),
-            json={
-                "customer": customer_id,
-                "billingType": "PIX",
-                "value": value,
-                "dueDate": due_date,
-                "description": description,
-                "externalReference": external_reference,
-            },
-        )
-        _raise_with_detail(resp)
-        return resp.json()
+    return create_charge(
+        customer_id=customer_id,
+        value=value,
+        description=description,
+        external_reference=external_reference,
+        due_date=due_date,
+        billing_type="PIX",
+    )
 
 
 def get_pix_qr_code(payment_id: str) -> dict:

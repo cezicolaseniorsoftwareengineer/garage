@@ -32,22 +32,27 @@ def create_checkout(
     user_name: str,
     user_email: str,
     plan: str,
+        payment_method: str = "pix",
     cpf_cnpj: Optional[str] = None,
 ) -> dict:
-    """Create a PIX charge and return QR code data for the frontend.
+        """Create a charge and return checkout data for the frontend.
 
     Returns:
       {
         "payment_id": str,
         "plan": str,
+                "payment_method": str,
         "value": float,
-        "qr_code_base64": str,   # base64 PNG — embed as <img src="data:image/png;base64,...">
-        "pix_copy_paste": str,   # copia-e-cola
+                "qr_code_base64": str,   # for PIX
+                "pix_copy_paste": str,   # for PIX
+                "checkout_url": str,     # for card checkout flow
         "expires_at": str,       # ISO datetime
       }
     """
     if plan not in PLAN_CONFIG:
         raise ValueError(f"Invalid plan '{plan}'. Use: {list(PLAN_CONFIG.keys())}")
+        if payment_method not in ("pix", "card"):
+                raise ValueError("Invalid payment_method. Use: pix or card")
 
     cfg = PLAN_CONFIG[plan]
     due_date = (datetime.now(timezone.utc) + timedelta(hours=1)).strftime("%Y-%m-%d")
@@ -57,28 +62,39 @@ def create_checkout(
     customer_id = customer["id"]
     log.info("Asaas customer ready: %s (plan=%s user_id=%s)", customer_id, plan, user_id)
 
-    # 2. Create PIX charge
-    payment = asaas_client.create_pix_charge(
+    billing_type = "PIX" if payment_method == "pix" else "UNDEFINED"
+
+    # 2. Create charge
+    payment = asaas_client.create_charge(
         customer_id=customer_id,
         value=cfg["value"],
         description=cfg["label"],
         external_reference=f"{user_id}|{plan}",
         due_date=due_date,
+        billing_type=billing_type,
     )
     payment_id = payment["id"]
-    log.info("PIX charge created: %s", payment_id)
+    log.info("Charge created: %s method=%s billing=%s", payment_id, payment_method, billing_type)
 
-    # 3. Fetch QR Code
-    qr = asaas_client.get_pix_qr_code(payment_id)
-
-    return {
+    response = {
         "payment_id": payment_id,
         "plan": plan,
+        "payment_method": payment_method,
         "value": cfg["value"],
-        "qr_code_base64": qr.get("encodedImage", ""),
-        "pix_copy_paste": qr.get("payload", ""),
-        "expires_at": qr.get("expirationDate", ""),
+        "qr_code_base64": "",
+        "pix_copy_paste": "",
+        "checkout_url": payment.get("invoiceUrl", ""),
+        "expires_at": payment.get("dueDate", ""),
     }
+
+    if payment_method == "pix":
+        # 3. Fetch QR Code
+        qr = asaas_client.get_pix_qr_code(payment_id)
+        response["qr_code_base64"] = qr.get("encodedImage", "")
+        response["pix_copy_paste"] = qr.get("payload", "")
+        response["expires_at"] = qr.get("expirationDate", "") or response["expires_at"]
+
+    return response
 
 
 def activate_subscription(user_id: str, plan: str, user_repo) -> datetime:
