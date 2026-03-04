@@ -913,6 +913,14 @@
                     <div class="payment-method-option" data-method="card" id="opt-pay-card">Cartão</div>
                 </div>
 
+                <p class="modal-title" style="font-size:.82rem; margin-bottom:.5rem; margin-top:1.5rem;">CPF ou CNPJ
+                    <span style="color:var(--red)">*</span>
+                </p>
+                <input type="text" id="input-cpf" placeholder="000.000.000-00" maxlength="18"
+                    style="width:100%; padding:.7rem 1rem; border-radius:8px; border:1px solid var(--border); background:var(--bg-card2); color:var(--text); font-family:var(--mono); font-size:.9rem; margin-bottom:1rem;" />
+                <p style="font-size:.7rem; color:var(--text-dim); margin-top:-.5rem; margin-bottom:1rem;">Obrigatório
+                    para gerar a cobrança</p>
+
                 <button class="btn btn--renew" style="width:100%" id="btn-gen-pix">Continuar pagamento</button>
             </div>
 
@@ -1204,8 +1212,116 @@
             currentPaymentId = null;
         }
 
+        // ── CPF/CNPJ Validation ──────────────────────────────────────────────────────────────────────
+        function validateCPF(cpf) {
+            cpf = cpf.replace(/[^\d]/g, '');
+            if (cpf.length !== 11) return false;
+            if (/^(\d)\1+$/.test(cpf)) return false; // All same digits
+
+            let sum = 0, remainder;
+            for (let i = 1; i <= 9; i++) sum += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+            remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) remainder = 0;
+            if (remainder !== parseInt(cpf.substring(9, 10))) return false;
+
+            sum = 0;
+            for (let i = 1; i <= 10; i++) sum += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+            remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) remainder = 0;
+            if (remainder !== parseInt(cpf.substring(10, 11))) return false;
+
+            return true;
+        }
+
+        function validateCNPJ(cnpj) {
+            cnpj = cnpj.replace(/[^\d]/g, '');
+            if (cnpj.length !== 14) return false;
+            if (/^(\d)\1+$/.test(cnpj)) return false;
+
+            let size = cnpj.length - 2;
+            let numbers = cnpj.substring(0, size);
+            let digits = cnpj.substring(size);
+            let sum = 0, pos = size - 7;
+
+            for (let i = size; i >= 1; i--) {
+                sum += numbers.charAt(size - i) * pos--;
+                if (pos < 2) pos = 9;
+            }
+
+            let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+            if (result != digits.charAt(0)) return false;
+
+            size = size + 1;
+            numbers = cnpj.substring(0, size);
+            sum = 0;
+            pos = size - 7;
+
+            for (let i = size; i >= 1; i--) {
+                sum += numbers.charAt(size - i) * pos--;
+                if (pos < 2) pos = 9;
+            }
+
+            result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+            if (result != digits.charAt(1)) return false;
+
+            return true;
+        }
+
+        function maskCPForCNPJ(value) {
+            value = value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                // CPF mask: 000.000.000-00
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            } else {
+                // CNPJ mask: 00.000.000/0000-00
+                value = value.replace(/(\d{2})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1/$2');
+                value = value.replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+            }
+            return value;
+        }
+
+        // Apply mask on input
+        const cpfInput = document.getElementById('input-cpf');
+        cpfInput.addEventListener('input', (e) => {
+            e.target.value = maskCPForCNPJ(e.target.value);
+        });
+
         document.getElementById('btn-gen-pix').addEventListener('click', async () => {
             const btn = document.getElementById('btn-gen-pix');
+            const cpfRaw = cpfInput.value.replace(/\D/g, '');
+
+            // Validate CPF/CNPJ
+            if (!cpfRaw) {
+                alert('⚠️ Por favor, preencha seu CPF ou CNPJ.');
+                cpfInput.focus();
+                return;
+            }
+
+            let isValid = false;
+            if (cpfRaw.length === 11) {
+                isValid = validateCPF(cpfRaw);
+                if (!isValid) {
+                    alert('⚠️ CPF inválido. Verifique os dígitos.');
+                    cpfInput.focus();
+                    return;
+                }
+            } else if (cpfRaw.length === 14) {
+                isValid = validateCNPJ(cpfRaw);
+                if (!isValid) {
+                    alert('⚠️ CNPJ inválido. Verifique os dígitos.');
+                    cpfInput.focus();
+                    return;
+                }
+            } else {
+                alert('⚠️ CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos.');
+                cpfInput.focus();
+                return;
+            }
+
             btn.textContent = 'Gerando...';
             btn.disabled = true;
 
@@ -1220,7 +1336,7 @@
                         user_email: me.email,
                         plan: selectedPlan,
                         payment_method: selectedPaymentMethod,
-                        cpf_cnpj: null,
+                        cpf_cnpj: cpfRaw,
                     }),
                 });
 
