@@ -247,7 +247,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // NOTE: after E2E validation, swap for real R$97/R$997 product links.
 const CHECKOUT_LINKS = {
     mensal: 'https://www.asaas.com/c/k8xqrulte259faq2',
-    anual: 'https://www.asaas.com/c/wcc6pckxm4xusbcr',
+    anual: 'https://www.asaas.com/c/6l46uwz5qxlygofc',
 };
 
 // ── PLAN CLICK HANDLER ───────────────────────────────────────
