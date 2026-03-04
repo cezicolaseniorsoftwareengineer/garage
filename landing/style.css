@@ -277,14 +277,26 @@ a:hover {
     pointer-events: none;
 }
 
-/* Imagem de fundo — leve desfoque para profundidade */
+/* Lazy-loaded background image */
+.hero-bg-image {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    filter: brightness(0.55);
+    transform: scale(1.08);
+    pointer-events: none;
+    will-change: transform;
+}
+
+/* Imagem de fundo removida — usando lazy loading */
 .hero::before {
     content: '';
     position: absolute;
-    inset: -4%;
-    background: url('assets/img_garage.png') center / cover no-repeat;
-    filter: blur(5px) brightness(0.55) saturate(1.2);
-    transform: scale(1.08);
+    inset: 0;
+    background: transparent;
     z-index: 0;
     pointer-events: none;
 }

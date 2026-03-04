@@ -50,8 +50,9 @@
     <!-- ═══════════════════════════════════════════════════════════════
        HERO
   ═══════════════════════════════════════════════════════════════ -->
-    <section class="hero" id="inicio">
+    <section class="hero" id="inicio" style="background: linear-gradient(to right, #0a0a0f, #16161f);">
         <div class="hero-bg-grid"></div>
+        <div class="hero-bg-image" style="display:none;" id="heroBg"></div>
         <div class="hero-content">
             <div class="hero-badge">
                 <span class="badge-dot"></span>
@@ -1015,6 +1016,21 @@
     </footer>
 
     <script src="/landing/script.js"></script>
+    <script>
+        // Lazy load background image for hero section
+        document.addEventListener('DOMContentLoaded', function () {
+            const heroBg = document.getElementById('heroBg');
+            if (!heroBg) return;
+
+            // Preload image asynchronously
+            const img = new Image();
+            img.onload = function () {
+                heroBg.style.backgroundImage = "url('/landing/assets/img_garage.png')";
+                heroBg.style.display = 'block';
+            };
+            img.src = '/landing/assets/img_garage.png';
+        });
+    </script>
 </body>
 
 </html>
