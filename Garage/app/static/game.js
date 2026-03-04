@@ -9128,7 +9128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 'margin-bottom:14px',
                 'text-align:center',
             ].join(';');
-            hint.innerHTML = '<span style="color:#22c55e;font-size:11px;font-family:monospace">Ato I grátis — entre e jogue Xerox PARC agora</span>';
+            hint.innerHTML = '<span style="color:#22c55e;font-size:11px;font-family:monospace">Vire estagiário da Xerox PARC e trabalhe na Apple ao lado de Steve Jobs — grátis!</span>';
             const loginForm = loginCard.querySelector('form');
             if (loginForm) loginCard.insertBefore(hint, loginForm);
         }
