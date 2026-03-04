@@ -71,9 +71,13 @@ class PaymentStatusResponse(BaseModel):
 def checkout(body: CheckoutRequest):
     """Generate PIX or card checkout for the selected plan.
 
-    The frontend displays the QR Code and polls /status/{payment_id}
-    until status == CONFIRMED or RECEIVED, then redirects to the game.
+    DEPRECATED: Now handled entirely by Asaas links on the frontend to avoid creating fake clients dynamically.
     """
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Endpoint desativado. Pagamentos agora são feitos exclusivamente via Link Asaas direto.",
+    )
+
     normalized_cpf_cnpj = _normalize_cpf_cnpj(body.cpf_cnpj)
     if len(normalized_cpf_cnpj) not in (11, 14):
         raise HTTPException(

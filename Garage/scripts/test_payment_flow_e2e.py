@@ -232,34 +232,10 @@ else:
 
 
 # ============================================================
-# PASSO 7 — PIX checkout (502 tolerado se Asaas inacessivel)
+# PASSO 7 — PIX checkout (DESATIVADO PARA NÃO GERAR SPAM NO ASAAS)
 # ============================================================
-step(7, "PIX CHECKOUT — cria cobranca Asaas (real API call)")
-if player_token and test_user_id:
-    r = post("/api/payments/checkout",
-             json={
-                 "user_id": test_user_id,
-                 "user_name": f"Test Flow {suffix}",
-                 "user_email": test_email,
-                 "plan": "monthly",
-                     "payment_method": "pix",
-                     "cpf_cnpj": "52998224725",
-             },
-             token=player_token)
-    if r.status_code == 201:
-        body = r.json()
-        check("Checkout 201", True)
-        check("payment_id presente", bool(body.get("payment_id")))
-        check("pix_copy_paste presente", bool(body.get("pix_copy_paste")))
-        check("qr_code_base64 presente", bool(body.get("qr_code_base64")))
-        print(f"  {INFO} payment_id: {body.get('payment_id')}")
-    elif r.status_code == 502:
-        print(f"  {SKIP} PIX checkout {r.status_code} (Asaas inacessivel) — tolerado")
-        print(f"  {INFO} {r.text[:150]}")
-    else:
-        check("Checkout 201 (ou 502 tolerado)", False, f"HTTP {r.status_code}: {r.text[:200]}")
-else:
-    print(f"  {SKIP} Sem player token ou user_id")
+step(7, "PIX CHECKOUT — ignorado para não gerar falsos clientes")
+print(f"  {INFO} Checkout ignorado sob solicitação. Usamos links diretos.")
 
 
 # ============================================================

@@ -907,47 +907,10 @@
                     </div>
                 </div>
 
-                <p class="modal-title" style="font-size:.82rem; margin-bottom:.8rem;">Forma de pagamento</p>
-                <div class="payment-methods">
-                    <div class="payment-method-option selected" data-method="pix" id="opt-pay-pix">PIX</div>
-                    <div class="payment-method-option" data-method="card" id="opt-pay-card">Cartão</div>
-                </div>
-
-                <p class="modal-title" style="font-size:.82rem; margin-bottom:.5rem; margin-top:1.5rem;">CPF ou CNPJ
-                    <span style="color:var(--red)">*</span>
-                </p>
-                <input type="text" id="input-cpf" placeholder="000.000.000-00" maxlength="18"
-                    style="width:100%; padding:.7rem 1rem; border-radius:8px; border:1px solid var(--border); background:var(--bg-card2); color:var(--text); font-family:var(--mono); font-size:.9rem; margin-bottom:1rem;" />
-                <p style="font-size:.7rem; color:var(--text-dim); margin-top:-.5rem; margin-bottom:1rem;">Obrigatório
-                    para gerar a cobrança</p>
-
-                <button class="btn btn--renew" style="width:100%" id="btn-gen-pix">Continuar pagamento</button>
+                <button class="btn btn--renew" style="width:100%" id="btn-gen-pix">Ir para Pagamento Seguro</button>
             </div>
 
-            <!-- Step 2: QR Code -->
-            <div id="step-pix" style="display:none">
-                <p class="modal-title">Pague com PIX</p>
-                <div class="pix-area">
-                    <img id="pix-qr-img" class="pix-qr" src="" alt="QR Code PIX" />
-                    <div class="pix-code-wrap">
-                        <span class="pix-code" id="pix-code-text"></span>
-                        <button class="copy-btn" id="btn-copy-pix">Copiar</button>
-                    </div>
-                    <p class="pix-status" id="pix-status">⏳ Aguardando confirmação do pagamento...</p>
-                </div>
-            </div>
-
-            <!-- Step 3: Card checkout -->
-            <div id="step-card" style="display:none">
-                <p class="modal-title">Pague com Cartão</p>
-                <div class="card-area">
-                    <p class="card-note">Você será redirecionado para o checkout seguro para concluir o pagamento no
-                        cartão.</p>
-                    <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn--renew btn-card-open"
-                        id="btn-open-card-checkout">Abrir checkout</a>
-                    <p class="pix-status" id="card-status">⏳ Aguardando confirmação do pagamento...</p>
-                </div>
-            </div>
+            
         </div>
     </div>
 
@@ -1186,15 +1149,6 @@
         });
 
         document.getElementById('btn-renew').addEventListener('click', () => {
-            document.getElementById('step-plan').style.display = '';
-            document.getElementById('step-pix').style.display = 'none';
-            document.getElementById('step-card').style.display = 'none';
-            document.getElementById('btn-gen-pix').textContent = 'Continuar pagamento';
-            document.getElementById('btn-gen-pix').disabled = false;
-            document.getElementById('pix-status').className = 'pix-status';
-            document.getElementById('pix-status').textContent = '⏳ Aguardando confirmação do pagamento...';
-            document.getElementById('card-status').className = 'pix-status';
-            document.getElementById('card-status').textContent = '⏳ Aguardando confirmação do pagamento...';
             document.getElementById('renew-modal').classList.add('open');
         });
 
@@ -1284,169 +1238,16 @@
             return value;
         }
 
-        // Apply mask on input
-        const cpfInput = document.getElementById('input-cpf');
-        cpfInput.addEventListener('input', (e) => {
-            e.target.value = maskCPForCNPJ(e.target.value);
+                const CHECKOUT_LINKS = {
+            monthly: "https://www.asaas.com/c/k8xqrulte259faq2",
+            annual: "https://www.asaas.com/c/6l46uwz5qxlygofc",
+        };
+
+        document.getElementById('btn-gen-pix').addEventListener('click', () => {
+            const link = CHECKOUT_LINKS[selectedPlan] || CHECKOUT_LINKS.monthly;
+            window.open(link, '_blank', 'noopener');
+            closeRenewModal();
         });
-
-        document.getElementById('btn-gen-pix').addEventListener('click', async () => {
-            const btn = document.getElementById('btn-gen-pix');
-            const cpfRaw = cpfInput.value.replace(/\D/g, '');
-
-            // Validate CPF/CNPJ
-            if (!cpfRaw) {
-                alert('⚠️ Por favor, preencha seu CPF ou CNPJ.');
-                cpfInput.focus();
-                return;
-            }
-
-            let isValid = false;
-            if (cpfRaw.length === 11) {
-                isValid = validateCPF(cpfRaw);
-                if (!isValid) {
-                    alert('⚠️ CPF inválido. Verifique os dígitos.');
-                    cpfInput.focus();
-                    return;
-                }
-            } else if (cpfRaw.length === 14) {
-                isValid = validateCNPJ(cpfRaw);
-                if (!isValid) {
-                    alert('⚠️ CNPJ inválido. Verifique os dígitos.');
-                    cpfInput.focus();
-                    return;
-                }
-            } else {
-                alert('⚠️ CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos.');
-                cpfInput.focus();
-                return;
-            }
-
-            btn.textContent = 'Gerando...';
-            btn.disabled = true;
-
-            try {
-                const me = accountData?.user || {};
-                const res = await fetch(`${API}/api/payments/checkout`, {
-                    method: 'POST',
-                    headers: headers(),
-                    body: JSON.stringify({
-                        user_id: me.id,
-                        user_name: me.full_name || me.username,
-                        user_email: me.email,
-                        plan: selectedPlan,
-                        payment_method: selectedPaymentMethod,
-                        cpf_cnpj: cpfRaw,
-                    }),
-                });
-
-                if (!res.ok) {
-                    const errorText = await res.text();
-                    let err;
-                    try {
-                        err = JSON.parse(errorText);
-                    } catch (e) {
-                        console.error('Erro nao-JSON do backend:', errorText);
-                        throw new Error('Serviço indisponível no momento (Deploy em andamento) ou erro interno persistente.');
-                    }
-
-                    let errorMsg = err.detail || 'Erro ao gerar pagamento';
-
-                    // Se a API retornar um objeto ou array no detail (como erro de schema 422)
-                    if (typeof errorMsg !== 'string') {
-                        errorMsg = JSON.stringify(errorMsg);
-                    }
-
-                    // Parse Asaas-specific errors and provide better guidance
-                    if (errorMsg.includes('invalid_environment')) {
-                        errorMsg = 'Configuração do Asaas incorreta em produção. ' +
-                            'Verifique se ASAAS_API_KEY e ASAAS_BASE_URL estão ' +
-                            'configurados corretamente em Render Dashboard (Environment).';
-                    } else if (errorMsg.includes('access_token_not_found')) {
-                        errorMsg = 'Chave Asaas não configurada. ' +
-                            'Configure ASAAS_API_KEY em Render → garage-0lw9 → Environment.';
-                    } else if (errorMsg.includes('HTTPStatusError: Asaas 401')) {
-                        errorMsg = 'Erro de autenticação com Asaas. Verifique a configuração de produção em Render.';
-                    }
-
-                    throw new Error(errorMsg);
-                }
-
-                const data = await res.json();
-                currentPaymentId = data.payment_id;
-
-                document.getElementById('step-plan').style.display = 'none';
-
-                if (selectedPaymentMethod === 'card') {
-                    const checkoutBtn = document.getElementById('btn-open-card-checkout');
-                    const checkoutUrl = data.checkout_url || '#';
-
-                    if (checkoutUrl && checkoutUrl !== '#') {
-                        document.getElementById('step-pix').style.display = 'none';
-                        document.getElementById('step-card').style.display = '';
-                        checkoutBtn.href = checkoutUrl;
-                        checkoutBtn.textContent = 'Abrir checkout seguro';
-                        window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
-                        startPolling(data.payment_id, 'card');
-                    } else {
-                        // Fallback: show PIX if card checkout URL is not available.
-                        document.getElementById('step-card').style.display = 'none';
-                        document.getElementById('step-pix').style.display = '';
-                        document.getElementById('pix-qr-img').src = `data:image/png;base64,${data.qr_code_base64 || ''}`;
-                        document.getElementById('pix-code-text').textContent = data.pix_copy_paste || '';
-                        showAlert('Cartão indisponível no momento. Use PIX para concluir agora.', 'warn');
-                        startPolling(data.payment_id, 'pix');
-                    }
-                } else {
-                    document.getElementById('step-card').style.display = 'none';
-                    document.getElementById('step-pix').style.display = '';
-                    document.getElementById('pix-qr-img').src = `data:image/png;base64,${data.qr_code_base64}`;
-                    document.getElementById('pix-code-text').textContent = data.pix_copy_paste;
-                    startPolling(data.payment_id, 'pix');
-                }
-
-            } catch (err) {
-                showAlert(`Erro: ${err.message}`, 'error');
-            } finally {
-                btn.textContent = 'Continuar pagamento';
-                btn.disabled = false;
-            }
-        });
-
-        document.getElementById('btn-copy-pix').addEventListener('click', () => {
-            const code = document.getElementById('pix-code-text').textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                const btn = document.getElementById('btn-copy-pix');
-                btn.textContent = 'Copiado!';
-                setTimeout(() => btn.textContent = 'Copiar', 2000);
-            });
-        });
-
-        function startPolling(paymentId, method = 'pix') {
-            const statusEl = method === 'card'
-                ? document.getElementById('card-status')
-                : document.getElementById('pix-status');
-            pollInterval = setInterval(async () => {
-                try {
-                    const res = await fetch(`${API}/api/payments/status/${paymentId}`, { headers: headers() });
-                    if (!res.ok) return;
-                    const data = await res.json();
-
-                    if (data.status === 'CONFIRMED' || data.status === 'RECEIVED') {
-                        clearInterval(pollInterval);
-                        pollInterval = null;
-                        statusEl.textContent = '✅ Pagamento confirmado! Sua assinatura está ativa.';
-                        statusEl.className = 'pix-status confirmed';
-                        setTimeout(() => {
-                            closeRenewModal();
-                            loadAll();  // Reload to show new subscription state
-                        }, 2500);
-                    } else {
-                        statusEl.textContent = `⏳ Status: ${data.status} — Aguardando confirmação...`;
-                    }
-                } catch { /* ignore poll errors */ }
-            }, 5000);
-        }
 
         // ── Logout ────────────────────────────────────────────────────────────────
         function logout() {
