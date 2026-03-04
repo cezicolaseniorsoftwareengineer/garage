@@ -99,6 +99,7 @@ def create_or_find_customer(name: str, email: str, cpf_cnpj: Optional[str] = Non
                     "name": existing.get("name") or name,
                     "email": existing.get("email") or email,
                     "cpfCnpj": normalized_cpf_cnpj,
+                    "notificationDisabled": True
                 }
                 customer_id = existing.get("id")
                 log.info("Updating Asaas customer %s with cpfCnpj for compliance", customer_id)
@@ -109,7 +110,7 @@ def create_or_find_customer(name: str, email: str, cpf_cnpj: Optional[str] = Non
 
             return existing
 
-        payload: dict = {"name": name, "email": email}
+        payload: dict = {"name": name, "email": email, "notificationDisabled": True}
         payload["cpfCnpj"] = normalized_cpf_cnpj
 
         resp = client.post(f"{base}/customers", headers=_headers(), json=payload)
