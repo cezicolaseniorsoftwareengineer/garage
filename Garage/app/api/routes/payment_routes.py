@@ -41,6 +41,11 @@ class CheckoutRequest(BaseModel):
 
 
 class CheckoutResponse(BaseModel):
+
+    def _normalize_cpf_cnpj(value: str | None) -> str:
+        if not value:
+            return ""
+        return "".join(ch for ch in value if ch.isdigit())
     payment_id: str
     plan: str
     payment_method: str
@@ -69,6 +74,12 @@ def checkout(body: CheckoutRequest):
     The frontend displays the QR Code and polls /status/{payment_id}
     until status == CONFIRMED or RECEIVED, then redirects to the game.
     """
+    normalized_cpf_cnpj = _normalize_cpf_cnpj(body.cpf_cnpj)
+    if len(normalized_cpf_cnpj) not in (11, 14):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="CPF/CNPJ obrigatório para gerar cobrança (11 ou 14 dígitos).",
+        )
     try:
         result = pix_service.create_checkout(
             user_id=body.user_id,
@@ -76,7 +87,7 @@ def checkout(body: CheckoutRequest):
             user_email=body.user_email,
             plan=body.plan,
             payment_method=body.payment_method,
-            cpf_cnpj=body.cpf_cnpj,
+            cpf_cnpj=normalized_cpf_cnpj,
         )
         return result
     except ValueError as exc:

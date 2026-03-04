@@ -14,6 +14,12 @@ log = logging.getLogger("garage.asaas")
 _TIMEOUT = 20  # seconds
 
 
+def _normalize_cpf_cnpj(cpf_cnpj: Optional[str]) -> str:
+    if not cpf_cnpj:
+        return ""
+    return "".join(ch for ch in cpf_cnpj if ch.isdigit())
+
+
 def _api_key() -> str:
     key = os.environ.get("ASAAS_API_KEY", "")
     if not key:
@@ -74,17 +80,36 @@ def _raise_with_detail(resp: httpx.Response) -> None:
 def create_or_find_customer(name: str, email: str, cpf_cnpj: Optional[str] = None) -> dict:
     """Find existing customer by email or create a new one."""
     base = _base_url()
+    normalized_cpf_cnpj = _normalize_cpf_cnpj(cpf_cnpj)
+
+    if not normalized_cpf_cnpj:
+        raise ValueError("CPF/CNPJ is required to create Asaas charges.")
+
     with httpx.Client(timeout=_TIMEOUT) as client:
         resp = client.get(f"{base}/customers", headers=_headers(), params={"email": email})
         _raise_with_detail(resp)
         data = resp.json()
         customers = data.get("data", [])
         if customers:
-            return customers[0]
+            existing = customers[0]
+            existing_cpf_cnpj = _normalize_cpf_cnpj(existing.get("cpfCnpj"))
+
+            if existing_cpf_cnpj != normalized_cpf_cnpj:
+                payload = {
+                    "name": existing.get("name") or name,
+                    "email": existing.get("email") or email,
+                    "cpfCnpj": normalized_cpf_cnpj,
+                }
+                customer_id = existing.get("id")
+                log.info("Updating Asaas customer %s with cpfCnpj for compliance", customer_id)
+                resp = client.put(f"{base}/customers/{customer_id}", headers=_headers(), json=payload)
+                _raise_with_detail(resp)
+                return resp.json()
+
+            return existing
 
         payload: dict = {"name": name, "email": email}
-        if cpf_cnpj:
-            payload["cpfCnpj"] = cpf_cnpj.strip().replace(".", "").replace("-", "").replace("/", "")
+        payload["cpfCnpj"] = normalized_cpf_cnpj
 
         resp = client.post(f"{base}/customers", headers=_headers(), json=payload)
         _raise_with_detail(resp)
