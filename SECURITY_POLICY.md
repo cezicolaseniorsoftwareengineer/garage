@@ -1,4 +1,4 @@
-# 🔐 SECURITY POLICY — GARAGE PROJECT
+# SECURITY POLICY — GARAGE PROJECT
 
 ## Critical: Never Expose Secrets
 
@@ -8,7 +8,7 @@ This repository contains production code for 404 Garage. **SENSITIVE DATA MUST N
 
 ## What Is Sensitive?
 
-### 🚨 NEVER Commit These
+###  NEVER Commit These
 
 | Data Type | Examples | Action |
 |-----------|----------|--------|
@@ -19,7 +19,7 @@ This repository contains production code for 404 Garage. **SENSITIVE DATA MUST N
 | **SMTP/Email Passwords** | Gmail password, SendGrid API keys | Use `.env`, keep private |
 | **Admin Credentials** | ADMIN_PASSWORD, ADMIN_USERNAME | Use `.env`, never hardcode |
 
-### ✅ Safe to Commit
+###  Safe to Commit
 
 - Code (Python, JavaScript, Java, HTML, CSS)
 - Configuration templates (`.env.example`)
@@ -88,8 +88,8 @@ git diff    # Search for: sk-, gsk_, $aact_, password=, key=
 git diff --cached  # Final verification before commit
 
 # 4. Commit message MUST NOT contain secrets
-git commit -m "feat: add payment feature"  # ✅ OK
-git commit -m "feat: add payment with key sk-xxx"  # ❌ NEVER
+git commit -m "feat: add payment feature"  #  OK
+git commit -m "feat: add payment with key sk-xxx"  #  NEVER
 
 # 5. Push safely
 git push origin main
@@ -99,7 +99,7 @@ git push origin main
 
 ## If You Accidentally Exposed Secrets
 
-### 🚨 Immediate Actions
+###  Immediate Actions
 
 1. **Revoke the secret immediately**:
    - API keys: Regenerate in provider dashboard (OpenAI, Groq, etc.)
@@ -208,4 +208,4 @@ If you discover exposed secrets:
 ---
 
 **Last Updated**: March 4, 2026
-**Status**: ✅ Active & Enforced
+**Status**:  Active & Enforced
