@@ -150,7 +150,39 @@ async def asaas_webhook(request: Request):
     # Extract user_id and plan from externalReference
     external_ref = payment_data.get("externalReference", "")
     if "|" not in external_ref:
-        log.warning("Webhook missing externalReference: %s", payment_data.get("id"))
+        # Static Asaas link (no externalReference) — try to match by customer email
+        log.info("Webhook: no externalReference — attempting email-based activation for payment %s",
+                 payment_data.get("id"))
+        if _user_repo:
+            try:
+                customer_id = payment_data.get("customer", "")
+                if customer_id:
+                    from app.infrastructure.payment import asaas_client as _asaas
+                    customer = _asaas.get_customer(customer_id)
+                    customer_email = customer.get("email", "")
+                    if customer_email:
+                        user = _user_repo.find_by_email(customer_email)
+                        if user:
+                            user_data = user.to_dict() if hasattr(user, "to_dict") else vars(user)
+                            uid = user_data.get("id") or str(getattr(user, "id", ""))
+                            # Default to monthly for static link (R$97)
+                            plan_guess = "annual" if payment_data.get("value", 0) > 500 else "monthly"
+                            expires_at = pix_service.activate_subscription(uid, plan_guess, _user_repo)
+                            log.info("Static-link sub activated via email match: email=%s plan=%s expires=%s",
+                                     customer_email, plan_guess, expires_at)
+                            return {
+                                "received": True,
+                                "action": "subscription_activated_by_email",
+                                "email": customer_email,
+                                "plan": plan_guess,
+                                "expires_at": expires_at.isoformat(),
+                            }
+                        else:
+                            log.warning("Webhook email-match: no user found for email=%s", customer_email)
+                    else:
+                        log.warning("Webhook: customer %s has no email", customer_id)
+            except Exception as exc:
+                log.error("Webhook email-based fallback failed: %s", exc)
         return {"received": True, "action": "skipped", "reason": "no_external_reference"}
 
     user_id, plan = external_ref.split("|", 1)

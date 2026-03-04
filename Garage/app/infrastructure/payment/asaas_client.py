@@ -108,6 +108,15 @@ def get_pix_qr_code(payment_id: str) -> dict:
         return resp.json()
 
 
+def get_customer(customer_id: str) -> dict:
+    """Retrieve a customer by ID from Asaas."""
+    base = _base_url()
+    with httpx.Client(timeout=_TIMEOUT) as client:
+        resp = client.get(f"{base}/customers/{customer_id}", headers=_headers())
+        _raise_with_detail(resp)
+        return resp.json()
+
+
 def get_payment(payment_id: str) -> dict:
     """Retrieve a payment status from Asaas."""
     base = _base_url()

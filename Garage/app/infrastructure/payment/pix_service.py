@@ -84,7 +84,8 @@ def create_checkout(
 def activate_subscription(user_id: str, plan: str, user_repo) -> datetime:
     """Mark the user's subscription as active for the plan duration.
 
-    Updates the user record in the repository and returns the expiration datetime.
+    Updates the user record in the repository, sends welcome email (fire-and-forget)
+    and returns the expiration datetime.
     """
     cfg = PLAN_CONFIG.get(plan, PLAN_CONFIG["monthly"])
     expires_at = datetime.now(timezone.utc) + timedelta(days=cfg["days"])
@@ -99,6 +100,26 @@ def activate_subscription(user_id: str, plan: str, user_repo) -> datetime:
     except AttributeError:
         # Fallback: repo doesn't have activate_subscription yet (JSON fallback)
         log.warning("user_repo.activate_subscription not available — JSON fallback active")
+
+    # Send welcome email in background thread (fire-and-forget — never blocks payment flow)
+    try:
+        user = user_repo.find_by_id(user_id) if hasattr(user_repo, "find_by_id") else None
+        if user:
+            from app.infrastructure.auth.email_sender import send_subscription_welcome_email
+            import threading
+            threading.Thread(
+                target=send_subscription_welcome_email,
+                kwargs={
+                    "to_email": user.email,
+                    "full_name": getattr(user, "full_name", None) or getattr(user, "username", "Dev"),
+                    "plan": plan,
+                    "expires_at": expires_at.strftime("%d/%m/%Y"),
+                },
+                daemon=True,
+            ).start()
+            log.info("Welcome email queued: user=%s email=%s", user_id, user.email)
+    except Exception as exc:
+        log.warning("Welcome email failed (non-fatal): %s", exc)
 
     return expires_at
 
