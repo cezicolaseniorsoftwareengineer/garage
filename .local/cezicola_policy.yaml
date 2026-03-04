@@ -1,0 +1,6 @@
+preferred_model: GPT-5.3
+model_preferences:
+  - GPT-5.3
+enable_sanitizer: true
+sanitizer_path: tools/sanitize_output.py
+usage_log: .local/cezicola_usage.log

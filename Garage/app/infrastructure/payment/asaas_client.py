@@ -102,7 +102,8 @@ def create_or_find_customer(name: str, email: str, cpf_cnpj: Optional[str] = Non
                 }
                 customer_id = existing.get("id")
                 log.info("Updating Asaas customer %s with cpfCnpj for compliance", customer_id)
-                resp = client.put(f"{base}/customers/{customer_id}", headers=_headers(), json=payload)
+                # Asaas expects POST /customers/{id} for updates, not PUT
+                resp = client.post(f"{base}/customers/{customer_id}", headers=_headers(), json=payload)
                 _raise_with_detail(resp)
                 return resp.json()
 

@@ -1341,8 +1341,21 @@
                 });
 
                 if (!res.ok) {
-                    const err = await res.json();
+                    const errorText = await res.text();
+                    let err;
+                    try {
+                        err = JSON.parse(errorText);
+                    } catch (e) {
+                        console.error('Erro nao-JSON do backend:', errorText);
+                        throw new Error('Serviço indisponível no momento (Deploy em andamento) ou erro interno persistente.');
+                    }
+
                     let errorMsg = err.detail || 'Erro ao gerar pagamento';
+
+                    // Se a API retornar um objeto ou array no detail (como erro de schema 422)
+                    if (typeof errorMsg !== 'string') {
+                        errorMsg = JSON.stringify(errorMsg);
+                    }
 
                     // Parse Asaas-specific errors and provide better guidance
                     if (errorMsg.includes('invalid_environment')) {

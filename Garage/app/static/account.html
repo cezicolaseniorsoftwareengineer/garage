@@ -914,7 +914,8 @@
                 </div>
 
                 <p class="modal-title" style="font-size:.82rem; margin-bottom:.5rem; margin-top:1.5rem;">CPF ou CNPJ
-                    <span style="color:var(--red)">*</span></p>
+                    <span style="color:var(--red)">*</span>
+                </p>
                 <input type="text" id="input-cpf" placeholder="000.000.000-00" maxlength="18"
                     style="width:100%; padding:.7rem 1rem; border-radius:8px; border:1px solid var(--border); background:var(--bg-card2); color:var(--text); font-family:var(--mono); font-size:.9rem; margin-bottom:1rem;" />
                 <p style="font-size:.7rem; color:var(--text-dim); margin-top:-.5rem; margin-bottom:1rem;">Obrigatório
@@ -1340,8 +1341,21 @@
                 });
 
                 if (!res.ok) {
-                    const err = await res.json();
+                    const errorText = await res.text();
+                    let err;
+                    try {
+                        err = JSON.parse(errorText);
+                    } catch (e) {
+                        console.error('Erro nao-JSON do backend:', errorText);
+                        throw new Error('Serviço indisponível no momento (Deploy em andamento) ou erro interno persistente.');
+                    }
+
                     let errorMsg = err.detail || 'Erro ao gerar pagamento';
+
+                    // Se a API retornar um objeto ou array no detail (como erro de schema 422)
+                    if (typeof errorMsg !== 'string') {
+                        errorMsg = JSON.stringify(errorMsg);
+                    }
 
                     // Parse Asaas-specific errors and provide better guidance
                     if (errorMsg.includes('invalid_environment')) {

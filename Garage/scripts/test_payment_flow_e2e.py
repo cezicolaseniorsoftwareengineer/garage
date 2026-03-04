@@ -24,6 +24,9 @@ import sys
 import time
 import uuid
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ---------------------------------------------------------------------------
 # Config
@@ -33,7 +36,7 @@ parser.add_argument("--base", default=os.environ.get("APP_BASE_URL", "http://loc
 args = parser.parse_args()
 BASE = args.base.rstrip("/")
 
-ADMIN_USER = os.environ.get("ADMIN_USER", "biocode")
+ADMIN_USER = os.environ.get("ADMIN_USER", os.environ.get("ADMIN_USERNAME", "biocode"))
 ADMIN_PASS = os.environ.get("ADMIN_PASS", os.environ.get("ADMIN_PASSWORD", ""))
 
 OK   = "\033[92m[OK]\033[0m  "
@@ -239,6 +242,8 @@ if player_token and test_user_id:
                  "user_name": f"Test Flow {suffix}",
                  "user_email": test_email,
                  "plan": "monthly",
+                     "payment_method": "pix",
+                     "cpf_cnpj": "52998224725",
              },
              token=player_token)
     if r.status_code == 201:
@@ -248,8 +253,8 @@ if player_token and test_user_id:
         check("pix_copy_paste presente", bool(body.get("pix_copy_paste")))
         check("qr_code_base64 presente", bool(body.get("qr_code_base64")))
         print(f"  {INFO} payment_id: {body.get('payment_id')}")
-    elif r.status_code in (502, 400):
-        print(f"  {SKIP} PIX checkout {r.status_code} (Asaas inacessivel ou dados invalidos) — tolerado")
+    elif r.status_code == 502:
+        print(f"  {SKIP} PIX checkout {r.status_code} (Asaas inacessivel) — tolerado")
         print(f"  {INFO} {r.text[:150]}")
     else:
         check("Checkout 201 (ou 502 tolerado)", False, f"HTTP {r.status_code}: {r.text[:200]}")
