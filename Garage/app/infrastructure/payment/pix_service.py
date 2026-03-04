@@ -32,27 +32,27 @@ def create_checkout(
     user_name: str,
     user_email: str,
     plan: str,
-        payment_method: str = "pix",
+    payment_method: str = "pix",
     cpf_cnpj: Optional[str] = None,
 ) -> dict:
-        """Create a charge and return checkout data for the frontend.
+    """Create a charge and return checkout data for the frontend.
 
     Returns:
       {
         "payment_id": str,
         "plan": str,
-                "payment_method": str,
+        "payment_method": str,
         "value": float,
-                "qr_code_base64": str,   # for PIX
-                "pix_copy_paste": str,   # for PIX
-                "checkout_url": str,     # for card checkout flow
+        "qr_code_base64": str,   # for PIX
+        "pix_copy_paste": str,   # for PIX
+        "checkout_url": str,     # for card checkout flow
         "expires_at": str,       # ISO datetime
       }
     """
     if plan not in PLAN_CONFIG:
         raise ValueError(f"Invalid plan '{plan}'. Use: {list(PLAN_CONFIG.keys())}")
-        if payment_method not in ("pix", "card"):
-                raise ValueError("Invalid payment_method. Use: pix or card")
+    if payment_method not in ("pix", "card"):
+        raise ValueError("Invalid payment_method. Use: pix or card")
 
     cfg = PLAN_CONFIG[plan]
     due_date = (datetime.now(timezone.utc) + timedelta(hours=1)).strftime("%Y-%m-%d")
