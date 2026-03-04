@@ -550,6 +550,25 @@ def api_admin_grant_subscription(
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Erro ao ativar assinatura: {exc}")
 
+    # Send welcome email (fire-and-forget — thread separada para nao bloquear a resposta)
+    try:
+        target_user = _user_repo.find_by_id(user_id) if hasattr(_user_repo, "find_by_id") else None
+        if target_user:
+            from app.infrastructure.auth.email_sender import send_subscription_welcome_email
+            import threading
+            threading.Thread(
+                target=send_subscription_welcome_email,
+                kwargs={
+                    "to_email": target_user.email,
+                    "full_name": getattr(target_user, "full_name", None) or getattr(target_user, "username", "Dev"),
+                    "plan": body.plan,
+                    "expires_at": expires_at.strftime("%d/%m/%Y"),
+                },
+                daemon=True,
+            ).start()
+    except Exception as exc:
+        log.warning("Welcome email failed (non-fatal): %s", exc)
+
     try:
         from app.infrastructure.audit import log_event as audit_log
         audit_log("admin_grant_subscription", current_user["sub"], {
