@@ -57,6 +57,18 @@ services:
       - key: RESEND_FROM
         # From address -- verified domain biocodetechnology.com (SPF/DKIM active)
         value: "404 Garage <noreply@biocodetechnology.com>"
+      - key: ASAAS_API_KEY
+        sync: false
+      - key: ASAAS_BASE_URL
+        value: "https://api.asaas.com/v3"
+      - key: PRICE_MONTHLY
+        value: "97.00"
+      - key: PRICE_ANNUAL
+        value: "997.00"
+      - key: REQUIRE_SUBSCRIPTION
+        value: "true"
+      - key: APP_BASE_URL
+        value: "https://garage.onrender.com"
 
   # ── 2. Java 17 code runner (Spring Boot) ───────────────────────────────
   - type: web
