@@ -16,16 +16,6 @@ services:
         sync: false
       - key: OPENAI_API_KEY
         sync: false
-      - key: OPENAI_MODEL
-        value: "gpt-4.1-mini"
-      - key: OPENAI_FALLBACK_MODELS
-        value: "gpt-4.1-mini,gpt-4.1,gpt-4o"
-      - key: GROQ_API_KEY
-        sync: false
-      - key: GROQ_MODEL
-        value: "llama-3.3-70b-versatile"
-      - key: AI_GROQ_PRIORITY
-        value: "true"
       - key: AI_CHAT_MAX_TOKENS
         value: "1000"
       - key: OPENROUTER_API_KEY
