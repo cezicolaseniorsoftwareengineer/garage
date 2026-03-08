@@ -310,12 +310,15 @@ def health():
     except Exception as exc:
         result["challenges_loaded"] = f"ERROR: {type(exc).__name__}"
     if DATABASE_URL:
-        from app.infrastructure.database.connection import check_health, get_db_status
+        # Use in-memory circuit-breaker state — avoids a live TCP probe that
+        # would block for up to connect_timeout seconds when Neon is hibernating,
+        # which would cause Render's health check to time out and restart the
+        # service in a loop.  For live DB probes use GET /api/diagnostic/db.
+        from app.infrastructure.database.connection import get_db_circuit_state
         try:
-            result["database"] = "connected" if check_health() else "disconnected"
-            result["db_circuit"] = get_db_status()
+            result["db_circuit"] = get_db_circuit_state()
         except Exception as exc:
-            result["database"] = f"ERROR: {type(exc).__name__}"
+            result["db_circuit"] = f"ERROR: {type(exc).__name__}"
     return result
 
 

@@ -85,6 +85,13 @@ def _build_engine(url: str, label: str):
         pool_timeout=15,
         pool_recycle=1800,
         pool_pre_ping=True,
+        # TCP-level connection timeout: tells psycopg2 to abort if the server
+        # does not accept the connection within N seconds.  Without this,
+        # SQLAlchemy/psycopg2 blocks indefinitely when Neon is in hibernation,
+        # which can exceed Render's startup health-check window and cause the
+        # process to be killed and restarted repeatedly (causing the 10-15 min
+        # "Deploying..." gap visible in Render deploy logs).
+        connect_args={"connect_timeout": 10},
         echo=False,
     )
 
@@ -293,8 +300,26 @@ def check_health() -> bool:
     return _check_engine_health(_engine)
 
 
+def get_db_circuit_state() -> dict:
+    """Return circuit-breaker state from memory — no live DB probe.
+
+    Use this in health-check endpoints so they respond instantly even when
+    Neon is in hibernation (avoids health-check timeout on Render free tier).
+    """
+    return {
+        "circuit_open":         _circuit_open,
+        "active":               "fallback" if _circuit_open else "primary",
+        "consecutive_failures": _consecutive_failures,
+    }
+
+
 def get_db_status() -> dict:
-    """Return a status dict useful for admin/health endpoints."""
+    """Return a status dict with live DB probes — use in admin endpoints only.
+
+    WARNING: each call opens a real TCP connection to each configured engine.
+    Calling from a health-check endpoint can block for up to connect_timeout
+    seconds per engine when Neon is in hibernation.
+    """
     return {
         "primary_healthy":  _check_engine_health(_primary_engine),
         "fallback_healthy": _check_engine_health(_fallback_engine),

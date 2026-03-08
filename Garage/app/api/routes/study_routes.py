@@ -123,10 +123,10 @@ def _unsupported_parameter_name(detail: str) -> Optional[str]:
 
 
 def _candidate_models() -> list[str]:
-    primary = os.environ.get("OPENAI_MODEL", "gpt-5").strip() or "gpt-5"
+    primary = os.environ.get("OPENAI_MODEL", "gpt-5.4").strip() or "gpt-5.4"
     fallback_raw = os.environ.get(
         "OPENAI_FALLBACK_MODELS",
-        "gpt-5,gpt-4.1,gpt-4.1-mini",
+        "gpt-5.4,gpt-5,gpt-4.1",
     )
     models: list[str] = [primary]
     for item in fallback_raw.split(","):
@@ -368,7 +368,7 @@ _AI_CHAT_MAX_TOKENS = int(os.environ.get("AI_CHAT_MAX_TOKENS", "1200") or "1200"
 def _call_gemini(system_prompt: str, user_prompt: str) -> tuple[str, str, str]:  # pragma: no cover
     """Non-streaming call to Google Gemini. Returns (text, response_id, model)."""
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
-    model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
+    model = os.environ.get("GEMINI_MODEL", "gemini-3.1-pro").strip() or "gemini-3.1-pro"
     max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "1200") or "1200")
     timeout = int(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     endpoint = (
@@ -413,7 +413,7 @@ async def _stream_gemini_sse(system_prompt: str, user_prompt: str):  # pragma: n
     if not api_key:
         yield 'data: {"err": "Study chat unavailable: missing GEMINI_API_KEY."}\n\n'
         return
-    model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
+    model = os.environ.get("GEMINI_MODEL", "gemini-3.1-pro").strip() or "gemini-3.1-pro"
     max_tokens = int(os.environ.get("AI_CHAT_MAX_TOKENS", "1200") or "1200")
     timeout = float(os.environ.get("OPENAI_TIMEOUT_SECONDS", "30") or "30")
     endpoint = (
@@ -697,7 +697,7 @@ def _candidate_anthropic_models() -> list[str]:  # pragma: no cover
     primary = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6").strip() or "claude-sonnet-4-6"
     fallback_raw = os.environ.get(
         "ANTHROPIC_FALLBACK_MODELS",
-        "claude-sonnet-4-6,claude-opus-4-6,claude-sonnet-4-5",
+        "claude-sonnet-4-6,claude-opus-4-6,claude-sonnet-4-5,claude-opus-4-5",
     )
     models: list[str] = [primary]
     for item in fallback_raw.split(","):

@@ -264,7 +264,7 @@
                 <div class="arcade-insert blink">&gt;&gt;&gt; PRESSIONE START &lt;&lt;&lt;</div>
                 <button class="arcade-btn" id="btnContinueGame" style="display:none"
                     onclick="SFX.menuConfirm(); Game.loadSession()">
-                    <span class="arcade-btn-icon">&#9654;</span> CONTINUAR JOGO
+                    <span class="arcade-btn-icon">&#9654;</span> VOLTAR AO JOGO
                 </button>
                 <button class="arcade-btn" onclick="SFX.menuConfirm(); UI.showScreen('screen-onboarding')">
                     <span class="arcade-btn-icon">&#9654;</span> NOVO JOGO
@@ -384,11 +384,11 @@
                 </div>
             </div>
             <div class="hud-sep">|</div>
-            <div class="hud-block hud-block-btn" id="hudBtnSair" onclick="Auth.logout()"
+            <div class="hud-block hud-block-btn" id="hudBtnSair" onclick="Game.exitToTitle()"
                 style="pointer-events:auto;cursor:pointer;">
                 <span class="hud-icon" style="color:#ef4444;">&#10005;</span>
                 <div>
-                    <div class="hud-label">SAIR</div>
+                    <div class="hud-label">MENU</div>
                 </div>
             </div>
         </div>
@@ -567,7 +567,7 @@
             <p class="pause-hint">Pressione <strong>P</strong> ou <strong>ESC</strong> para retomar</p>
             <div class="pause-actions">
                 <button class="btn-primary" onclick="Game.resume()">RETOMAR</button>
-                <button class="btn-secondary" onclick="Auth.logout()">SAIR DO JOGO</button>
+                <button class="btn-secondary" onclick="Game.exitToTitle()">VOLTAR AO MENU</button>
             </div>
         </div>
     </div>

@@ -9,13 +9,15 @@ const API = {
         }
         return h;
     },
+    _isBackgroundSync(p) {
+        return p.includes('/save-world-state') || p.includes('/heartbeat') || p.includes('/beacon');
+    },
     async _handle401(p) {
         if (p.includes('/auth/')) return false;
-        // Background state-sync calls must NEVER redirect to login mid-flow
-        // (user may be on register/verify screen; the save will just fail silently)
-        if (p.includes('/save-world-state') || p.includes('/heartbeat') || p.includes('/beacon')) return false;
+        const isBackgroundSync = this._isBackgroundSync(p);
         const refreshed = await Auth.tryRefresh();
         if (refreshed) return true;
+        if (isBackgroundSync) return false;
         Auth.handleExpired();
         UI.showScreen('screen-login');
         throw new Error('Sessao expirada. Faca login novamente.');
@@ -39,6 +41,7 @@ const WorldStatePersistence = {
     _saveTimeout: null,
     _lastSavedState: null,
     _saveIntervalId: null,
+    _lastTrackedPositionX: null,
 
     /**
      * Save world state to the backend.
@@ -75,6 +78,7 @@ const WorldStatePersistence = {
                 ...currentState,
             });
             this._lastSavedState = stateStr;
+            this._lastTrackedPositionX = currentState.player_world_x;
             console.log('[WorldStatePersistence] State saved:', currentState);
         } catch (e) {
             console.error('[WorldStatePersistence] Failed to save state:', e);
@@ -118,6 +122,7 @@ const WorldStatePersistence = {
             current_region: State.lockedRegion,
             player_world_x: playerData.player_world_x || 100,
         });
+        this._lastTrackedPositionX = playerData.player_world_x || 100;
 
         console.log('[WorldStatePersistence] State restored:', {
             books: State.collectedBooks.length,
@@ -127,10 +132,25 @@ const WorldStatePersistence = {
         });
     },
 
+    savePositionIfNeeded() {
+        if (!State.sessionId || !World.player || State.paused) return;
+
+        const currentX = Math.round(World.player.x);
+        if (this._lastTrackedPositionX === null) {
+            this._lastTrackedPositionX = currentX;
+            return;
+        }
+
+        if (Math.abs(currentX - this._lastTrackedPositionX) < 120) return;
+
+        this._lastTrackedPositionX = currentX;
+        this.save(false);
+    },
+
     /**
      * Start periodic saves to persist player position.
      */
-    startPeriodicSave(intervalMs = 30000) {
+    startPeriodicSave(intervalMs = 10000) {
         this.stopPeriodicSave();
         this._saveIntervalId = setInterval(() => {
             if (State.sessionId && !State.paused) {
@@ -151,6 +171,7 @@ const WorldStatePersistence = {
      */
     reset() {
         this._lastSavedState = null;
+        this._lastTrackedPositionX = null;
         if (this._saveTimeout) {
             clearTimeout(this._saveTimeout);
             this._saveTimeout = null;
@@ -2761,6 +2782,7 @@ const World = {
 
         // NPC check
         this.checkInteraction();
+        WorldStatePersistence.savePositionIfNeeded();
     },
 
     /* --- RENDERING --- */
@@ -4153,6 +4175,8 @@ const World = {
 
 // ---- UI ----
 const UI = {
+    _resumeButtonCheckId: 0,
+
     showScreen(id) {
         if (typeof StudyChat !== 'undefined' && StudyChat.isOpen() && id !== 'screen-world') {
             StudyChat.close();
@@ -4169,19 +4193,38 @@ const UI = {
         if (id === 'screen-title') this.updateTitleButtons();
     },
 
-    updateTitleButtons() {
+    async updateTitleButtons() {
         const continueBtn = document.getElementById('btnContinueGame');
-        if (continueBtn) {
-            // Show CONTINUAR whenever the user is logged in.
-            // loadSession() handles both localStorage and server-side fallback,
-            // so the button is safe to show even without a local session_id.
-            continueBtn.style.display = Auth.isLoggedIn() ? '' : 'none';
-        }
         // Show admin dashboard link for users with admin role on JWT
         const adminBtn = document.getElementById('btnAdminDash');
         if (adminBtn) {
             adminBtn.style.display = Auth.isAdmin() ? '' : 'none';
         }
+        if (!continueBtn) return;
+
+        if (!Auth.isLoggedIn()) {
+            continueBtn.style.display = 'none';
+            return;
+        }
+
+        const knownSessionId = State.sessionId || localStorage.getItem('garage_session_id');
+        if (knownSessionId) {
+            continueBtn.style.display = '';
+            return;
+        }
+
+        continueBtn.style.display = 'none';
+        const checkId = ++this._resumeButtonCheckId;
+        const serverSessionId = await Game.findResumeSessionId();
+        if (checkId !== this._resumeButtonCheckId) return;
+
+        if (serverSessionId) {
+            localStorage.setItem('garage_session_id', serverSessionId);
+            continueBtn.style.display = '';
+            return;
+        }
+
+        continueBtn.style.display = 'none';
     },
 
     _drawOnboardingChar() {
@@ -5463,6 +5506,42 @@ function _allCompaniesComplete() {
 
 // ---- game controller ----
 const Game = {
+    async findResumeSessionId() {
+        if (!Auth.isLoggedIn()) return null;
+        try {
+            const sessions = await API.get('/api/me/sessions');
+            if (!Array.isArray(sessions) || sessions.length === 0) return null;
+            const active = sessions.find(s => s.status === 'in_progress') || sessions[0];
+            return active ? String(active.session_id) : null;
+        } catch (_e) {
+            return null;
+        }
+    },
+
+    async exitToTitle() {
+        if (State.paused) {
+            State.paused = false;
+            const pauseOverlay = document.getElementById('pauseOverlay');
+            if (pauseOverlay) pauseOverlay.style.display = 'none';
+        }
+        if (typeof StudyChat !== 'undefined' && StudyChat.isOpen()) {
+            StudyChat.close();
+        }
+        if (typeof Learning !== 'undefined' && Learning.isOpen()) {
+            Learning.cancel();
+        }
+        if (State.sessionId) {
+            try {
+                await WorldStatePersistence.save(true);
+            } catch (_e) {
+            }
+        }
+        Heartbeat.stop();
+        WorldStatePersistence.stopPeriodicSave();
+        UI.showScreen('screen-title');
+        UI.updateTitleButtons();
+    },
+
     async start() {
         const name = document.getElementById('playerName').value.trim();
         if (!name) { alert('Digite seu nome.'); return; }
@@ -5500,7 +5579,7 @@ const Game = {
             UI.showScreen('screen-world');
 
             // Start periodic save for position persistence
-            WorldStatePersistence.startPeriodicSave(30000);
+            WorldStatePersistence.startPeriodicSave(10000);
 
             // Start heartbeat for online tracking
             Heartbeat.start();
@@ -5538,7 +5617,7 @@ const Game = {
 
             UI.updateHUD(State.player);
             UI.showScreen('screen-world');
-            WorldStatePersistence.startPeriodicSave(30000);
+            WorldStatePersistence.startPeriodicSave(10000);
             Heartbeat.start();
             if (!silent) Learning.showStageBriefingIfNeeded(State.player.stage);
             if (_allCompaniesComplete()) {
@@ -5549,14 +5628,7 @@ const Game = {
 
         // Ask the server for the user's most recent session (by user_id).
         // Returns a session_id string or null.
-        const _findServerSession = async () => {
-            try {
-                const sessions = await API.get('/api/me/sessions');
-                if (!Array.isArray(sessions) || sessions.length === 0) return null;
-                const active = sessions.find(s => s.status === 'in_progress') || sessions[0];
-                return active ? String(active.session_id) : null;
-            } catch (_e) { return null; }
-        };
+        const _findServerSession = async () => Game.findResumeSessionId();
 
         const _clearStored = () => {
             localStorage.removeItem('garage_session_id');
@@ -5828,7 +5900,7 @@ const Game = {
             UI.showScreen('screen-world');
 
             // Restart periodic save
-            WorldStatePersistence.startPeriodicSave(30000);
+            WorldStatePersistence.startPeriodicSave(10000);
 
             // Restart heartbeat for online tracking
             Heartbeat.start();
