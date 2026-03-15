@@ -204,4 +204,4 @@ Garage/app/
 ## Autor
 
 **CeziCola** · Senior Software Engineer
-Bio Code Technology Ltda · cezicolatecnologia@gmail.com
+Bio Code Technology Ltda · www.biocodetechnology.com
