@@ -9177,9 +9177,9 @@ const Auth = {
                     this._pendingUsername = document.getElementById('regUsername').value.trim();
                     const hintEl = document.getElementById('verifyEmailHint');
                     if (hintEl) {
-                        hintEl.textContent =
-                            `Código enviado para ${res.email_hint || emailVal}. ` +
-                            `Não encontrou? Verifique o spam ou clique em "Reenviar código".`;
+                        hintEl.textContent = res.email_was_sent
+                            ? `Código enviado para ${res.email_hint || emailVal}. Não encontrou? Verifique o spam ou clique em "Reenviar código".`
+                            : `Cadastro criado. O código está no log do servidor (modo dev). Clique em "Reenviar código" após configurar e-mail.`;
                     }
                     // Clear OTP boxes
                     document.querySelectorAll('.otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });

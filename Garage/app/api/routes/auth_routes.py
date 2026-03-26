@@ -210,14 +210,20 @@ def api_register(req: RegisterRequest, background_tasks: BackgroundTasks):
         except Exception:
             pass
 
+        _has_email_provider = bool(
+            os.environ.get("RESEND_API_KEY", "") or os.environ.get("SMTP_USER", "")
+        )
         reg_response: dict = {
             "success": True,
             "requires_verification": True,
             "email_hint": _mask_email(req.email),
-            "email_was_sent": True,
+            "email_was_sent": _has_email_provider,
             "message": (
                 "Cadastro iniciado! Enviamos um codigo de 6 digitos para o seu e-mail. "
                 "Insira o codigo para concluir o cadastro e entrar no jogo."
+            ) if _has_email_provider else (
+                "Cadastro iniciado! O codigo de verificacao foi gerado. "
+                "Verifique o log do servidor (modo dev sem provedor de e-mail)."
             ),
         }
         if _DEBUG_MODE:
@@ -563,11 +569,15 @@ def api_resend_verification(req: ResendVerificationRequest, background_tasks: Ba
                     pass
         background_tasks.add_task(_resend_with_audit, req.email, code, full_name)
 
+        _has_email_provider = bool(
+            os.environ.get("RESEND_API_KEY", "") or os.environ.get("SMTP_USER", "")
+        )
         resend_response: dict = {
             "success": True,
             "email_hint": _mask_email(req.email),
-            "email_was_sent": True,
-            "message": "Novo codigo enviado para o seu e-mail.",
+            "email_was_sent": _has_email_provider,
+            "message": "Novo codigo enviado para o seu e-mail." if _has_email_provider
+                       else "Novo codigo gerado. Verifique o log do servidor.",
         }
         if _DEBUG_MODE:
             resend_response["_debug_otp"] = code

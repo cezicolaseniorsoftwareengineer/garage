@@ -25,13 +25,13 @@ const API = {
     async get(p) {
         let r = await fetch(p, { headers: this._headers() });
         if (r.status === 401) { if (await this._handle401(p)) r = await fetch(p, { headers: this._headers() }); }
-        if (!r.ok) { const e = await r.json().catch(() => ({})); const err = new Error(typeof e.detail === 'string' ? e.detail : (e.message || r.statusText)); err.status = r.status; err.data = e; throw err; }
+        if (!r.ok) { const e = await r.json().catch(() => ({})); const msg = typeof e.detail === 'string' ? e.detail : (e.detail?.message || e.message || r.statusText); const err = new Error(msg); err.status = r.status; err.data = e; err.email = e.email || null; err.emailHint = e.email_hint || null; throw err; }
         return r.json();
     },
     async post(p, b) {
         let r = await fetch(p, { method: 'POST', headers: this._headers(), body: JSON.stringify(b) });
         if (r.status === 401) { if (await this._handle401(p)) r = await fetch(p, { method: 'POST', headers: this._headers(), body: JSON.stringify(b) }); }
-        if (!r.ok) { const e = await r.json().catch(() => ({})); const err = new Error(typeof e.detail === 'string' ? e.detail : (e.message || r.statusText)); err.status = r.status; err.data = e; throw err; }
+        if (!r.ok) { const e = await r.json().catch(() => ({})); const msg = typeof e.detail === 'string' ? e.detail : (e.detail?.message || e.message || r.statusText); const err = new Error(msg); err.status = r.status; err.data = e; err.email = e.email || null; err.emailHint = e.email_hint || null; throw err; }
         return r.json();
     },
 };
@@ -1880,8 +1880,8 @@ const NPC_DATA = [
         look: { hair: '#222', hairStyle: 'short', beard: null, glasses: false, shirt: '#111', pants: '#222', skinTone: '#D2A673', jacket: '#111' }
     },
     {
-        id: 'npc_aurora_labs', name: 'SAM ALTMAN', role: 'CEO - OpenAI', region: 'Aurora Labs', stage: 'Staff', worldX: 26000,
-        dialog: 'Sam Altman, CEO da OpenAI. Construimos a inteligencia artificial de nivel geral — AGI. GPT, o1, sistemas de raciocinio que superam humanos em benchmarks. Para isso, processamos grafos de conhecimento em escala planetaria. Grafos nao sao teoria: sao a espinha dorsal dos modelos de linguagem, dos sistemas de recomendacao e de toda infraestrutura de IA moderna. Domine grafos e voce entende como o futuro foi construido.',
+        id: 'npc_aurora_labs', name: 'SAM ALTMAN', role: 'CEO - Aurora Labs', region: 'Aurora Labs', stage: 'Staff', worldX: 26000,
+        dialog: 'Sam Altman, CEO da Aurora Labs. Construimos plataformas de software em escala global, com pipelines de dados e servicos distribuidos. Grafos sao estruturas computacionais centrais. Travessia em largura, busca em profundidade e processamento de estruturas conectadas sustentam sistemas criticos. Grafos nao sao teoria, sao a realidade da computacao.',
         look: { hair: '#c4733c', hairStyle: 'short', beard: null, glasses: false, shirt: '#444', pants: '#333', skinTone: '#F5D0A9', casual: true }
     },
     // -- PRINCIPAL --
@@ -1969,138 +1969,138 @@ const COMPANY_LOGOS = {
 };
 
 // ---- collectible books ----
-// Layout: 1 book BEFORE each company -> book -> company -> book -> company -> ...
+// Layout: 1 book BEFORE each company → book → company → book → company → ...
 // 24 companies, 24 books (each ~600 units before building start)
 const BOOKS_DATA = [
     {
         id: 'b01', title: 'Clean Code', author: 'Robert C. Martin', color: '#22c55e',
-        summary: 'Codigo eh um ativo de longo prazo. Legibilidade > esperteza. Funcoes pequenas, nomes claros, responsabilidade unica e testes automatizados.',
-        lesson: 'Codigo eh para humanos primeiro; manutencao custa mais que escrever.',
+        summary: 'Código é um ativo de longo prazo. Legibilidade > esperteza. Funções pequenas, nomes claros, responsabilidade única e testes automatizados.',
+        lesson: 'Código é para humanos primeiro; manutenção custa mais que escrever.',
         worldX: 200, floatY: 130   // before XEROX PARC (x=500)
     },
     {
         id: 'b02', title: 'The Clean Coder', author: 'Robert C. Martin', color: '#16a34a',
-        summary: 'Profissionalismo em engenharia. Disciplina, estimativas realistas, dizer nao, foco, pratica deliberada e responsabilidade pessoal pela qualidade.',
-        lesson: 'Ser senior nao eh saber mais tecnologia, eh assumir compromisso com entrega previsivel e qualidade.',
+        summary: 'Profissionalismo em engenharia. Disciplina, estimativas realistas, dizer "não", foco, prática deliberada e responsabilidade pessoal pela qualidade.',
+        lesson: 'Ser sênior não é saber mais tecnologia, é assumir compromisso com entrega previsível e qualidade.',
         worldX: 1350, floatY: 150  // before APPLE GARAGE (x=1900)
     },
     {
         id: 'b03', title: 'Clean Architecture', author: 'Robert C. Martin', color: '#15803d',
-        summary: 'Arquitetura orientada a independencia: do framework, do banco, da UI e de detalhes externos. Dependencias apontam para o dominio.',
-        lesson: 'O negocio eh o nucleo; tecnologia eh detalhe substituivel.',
+        summary: 'Arquitetura orientada a independência: do framework, do banco, da UI e de detalhes externos. Dependências apontam para o domínio.',
+        lesson: 'O negócio é o núcleo; tecnologia é detalhe substituível.',
         worldX: 2700, floatY: 140  // before MICROSOFT (x=3300)
     },
     {
         id: 'b04', title: 'Design Patterns', author: 'GoF (Gang of Four)', color: '#3b82f6',
-        summary: 'Catalogo de solucoes recorrentes para problemas classicos de design orientado a objetos. Ensina quando abstrair, desacoplar e reutilizar.',
-        lesson: 'Nao reinventar a roda; use padroes para reduzir complexidade e acoplamento.',
+        summary: 'Catálogo de soluções recorrentes para problemas clássicos de design orientado a objetos. Ensina quando abstrair, desacoplar e reutilizar.',
+        lesson: 'Não reinventar a roda; use padrões para reduzir complexidade e acoplamento.',
         worldX: 4150, floatY: 160  // before NUBANK (x=4700)
     },
     {
         id: 'b05', title: 'Refactoring', author: 'Martin Fowler', color: '#6366f1',
-        summary: 'Melhorar codigo sem alterar comportamento. Pequenas mudancas continuas mantem o sistema saudavel.',
-        lesson: 'Divida tecnica cresce em silencio; refatorar eh manutencao estrategica, nao luxo.',
+        summary: 'Melhorar código sem alterar comportamento. Pequenas mudanças contínuas mantém o sistema saudável.',
+        lesson: 'Dívida técnica cresce em silêncio; refatorar é manutenção estratégica, não luxo.',
         worldX: 5500, floatY: 130  // before DISNEY (x=6100)
     },
     {
         id: 'b06', title: 'Domain-Driven Design', author: 'Eric Evans', color: '#8b5cf6',
-        summary: 'Modelar software a partir do dominio do negocio, usando linguagem ubiqua e limites claros (Bounded Contexts).',
-        lesson: 'Software complexo falha quando a tecnologia ignora o negocio.',
+        summary: 'Modelar software a partir do domínio do negócio, usando linguagem ubíqua e limites claros (Bounded Contexts).',
+        lesson: 'Software complexo falha quando a tecnologia ignora o negócio.',
         worldX: 6900, floatY: 150  // before GOOGLE (x=7500)
     },
     {
         id: 'b07', title: 'Implementing DDD', author: 'Vaughn Vernon', color: '#7c3aed',
-        summary: 'Versao pratica do DDD: agregados, eventos de dominio, consistencia, microsservicos orientados a contexto.',
-        lesson: 'Limites bem definidos evitam sistemas distribuidos caoticos.',
+        summary: 'Versão prática do DDD: agregados, eventos de domínio, consistência, microsserviços orientados a contexto.',
+        lesson: 'Limites bem definidos evitam sistemas distribuídos caóticos.',
         worldX: 8350, floatY: 140  // before FACEBOOK (x=8900)
     },
     {
         id: 'b08', title: 'Designing Data-Intensive Apps', author: 'Martin Kleppmann', color: '#ef4444',
-        summary: 'Biblia de sistemas distribuidos: consistencia, replicacao, particionamento, tolerancia a falhas, trade-offs CAP.',
-        lesson: 'Escala eh sobre trade-offs; nao existe sistema distribuido perfeito.',
+        summary: 'Bíblia de sistemas distribuídos: consistência, replicação, particionamento, tolerância a falhas, trade-offs CAP.',
+        lesson: 'Escala é sobre trade-offs; não existe sistema distribuído perfeito.',
         worldX: 9700, floatY: 160  // before IBM (x=10300)
     },
     {
         id: 'b09', title: 'Building Microservices', author: 'Sam Newman', color: '#f97316',
-        summary: 'Como decompor sistemas, evitar acoplamento e gerenciar comunicacao, deploy e governanca.',
-        lesson: 'Microsservicos so funcionam com autonomia, observabilidade e cultura madura.',
+        summary: 'Como decompor sistemas, evitar acoplamento e gerenciar comunicação, deploy e governança.',
+        lesson: 'Microsserviços só funcionam com autonomia, observabilidade e cultura madura.',
         worldX: 11100, floatY: 130 // before AMAZON (x=11700)
     },
     {
         id: 'b10', title: 'Release It!', author: 'Michael Nygard', color: '#dc2626',
-        summary: 'Sistemas falham em producao por causas previsiveis. Circuit breaker, bulkhead, retry, timeout e padroes de resiliencia.',
-        lesson: 'Projetar para falhar eh o unico caminho para estabilidade.',
+        summary: 'Sistemas falham em produção por causas previsíveis. Circuit breaker, bulkhead, retry, timeout e padrões de resiliência.',
+        lesson: 'Projetar para falhar é o único caminho para estabilidade.',
         worldX: 12500, floatY: 150 // before MERCADO LIVRE (x=13100)
     },
     {
         id: 'b11', title: 'Site Reliability Engineering', author: 'Google SRE Team', color: '#fbbf24',
-        summary: 'Operar sistemas como engenharia: SLO, error budget, automacao, reducao de toil.',
-        lesson: 'Confiabilidade eh uma metrica de negocio, nao apenas tecnica.',
+        summary: 'Operar sistemas como engenharia: SLO, error budget, automação, redução de toil.',
+        lesson: 'Confiabilidade é uma métrica de negócio, não apenas técnica.',
         worldX: 13900, floatY: 140 // before JP MORGAN (x=14500)
     },
     {
         id: 'b12', title: 'The Phoenix Project', author: 'Gene Kim', color: '#f59e0b',
-        summary: 'Romance sobre transformacao DevOps. Mostra gargalos, fluxo, dependencias e melhoria continua.',
-        lesson: 'TI eh sistema de producao; otimizar o fluxo gera resultado real.',
+        summary: 'Romance sobre transformação DevOps. Mostra gargalos, fluxo, dependências e melhoria contínua.',
+        lesson: 'TI é sistema de produção; otimizar o fluxo gera resultado real.',
         worldX: 15300, floatY: 160 // before PAYPAL (x=15900)
     },
     {
         id: 'b13', title: 'The DevOps Handbook', author: 'Gene Kim', color: '#eab308',
-        summary: 'Manual pratico: CI/CD, infraestrutura como codigo, feedback rapido, cultura colaborativa.',
-        lesson: 'Velocidade com qualidade so vem com automacao e integracao continua.',
+        summary: 'Manual prático: CI/CD, infraestrutura como código, feedback rápido, cultura colaborativa.',
+        lesson: 'Velocidade com qualidade só vem com automação e integração contínua.',
         worldX: 16700, floatY: 130 // before NETFLIX (x=17300)
     },
     {
         id: 'b14', title: 'The Lean Startup', author: 'Eric Ries', color: '#ec4899',
-        summary: 'Construir, medir, aprender. Validar hipoteses antes de escalar.',
-        lesson: 'Nao construa mais; aprenda mais rapido com o mercado.',
+        summary: 'Construir, medir, aprender. Validar hipóteses antes de escalar.',
+        lesson: 'Não construa mais; aprenda mais rápido com o mercado.',
         worldX: 18100, floatY: 150 // before SPACEX (x=18700)
     },
     {
         id: 'b15', title: 'Measure What Matters', author: 'John Doerr', color: '#d946ef',
-        summary: 'OKRs para alinhar estrategia e execucao. Foco em resultados mensuráveis e prioridades claras.',
-        lesson: 'O que nao eh medido nao eh gerenciado.',
+        summary: 'OKRs para alinhar estratégia e execução. Foco em resultados mensuráveis e prioridades claras.',
+        lesson: 'O que não é medido não é gerenciado.',
         worldX: 19500, floatY: 140 // before TESLA (x=20100)
     },
     {
         id: 'b16', title: 'Good Strategy Bad Strategy', author: 'Richard Rumelt', color: '#a855f7',
-        summary: 'Estrategia real eh diagnostico + escolha clara + acoes coerentes. Evita metas genericas e slogans.',
-        lesson: 'Estrategia eh foco e renuncia, nao ambicao vaga.',
+        summary: 'Estratégia real é diagnóstico + escolha clara + ações coerentes. Evita metas genéricas e slogans.',
+        lesson: 'Estratégia é foco e renúncia, não ambição vaga.',
         worldX: 20900, floatY: 160 // before ITAU (x=21500)
     },
     {
         id: 'b17', title: 'Cracking the Coding Interview', author: 'Gayle Laakmann McDowell', color: '#06b6d4',
-        summary: 'Preparacao para entrevistas tecnicas: arrays, strings, arvores, grafos, recursao e complexidade algoritmica.',
-        lesson: 'Entrevistas medem raciocinio, nao decoreba. Pratique decomposicao de problemas.',
+        summary: 'Preparação para entrevistas técnicas: arrays, strings, árvores, grafos, recursão e complexidade algorítmica.',
+        lesson: 'Entrevistas medem raciocínio, não decoreba. Pratique decomposição de problemas.',
         worldX: 22300, floatY: 130 // before UBER (x=22900)
     },
     {
         id: 'b18', title: 'Introduction to Algorithms', author: 'Cormen, Leiserson, Rivest, Stein', color: '#0891b2',
-        summary: 'CLRS: a referencia academica em algoritmos. Ordenacao, grafos, programacao dinamica, NP-completude.',
-        lesson: 'Complexidade computacional define os limites do que eh possivel.',
+        summary: 'CLRS: a referência acadêmica em algoritmos. Ordenação, grafos, programação dinâmica, NP-completude.',
+        lesson: 'Complexidade computacional define os limites do que é possível.',
         worldX: 23700, floatY: 150 // before NVIDIA (x=24300)
     },
     {
         id: 'b19', title: 'System Design Interview', author: 'Alex Xu', color: '#14b8a6',
-        summary: 'Como projetar sistemas escalaveis: load balancer, cache, CDN, sharding, message queue, rate limiter.',
-        lesson: 'Design de sistemas eh sobre trade-offs mensuraveis, nao escolhas absolutas.',
+        summary: 'Como projetar sistemas escaláveis: load balancer, cache, CDN, sharding, message queue, rate limiter.',
+        lesson: 'Design de sistemas é sobre trade-offs mensuráveis, não escolhas absolutas.',
         worldX: 25100, floatY: 140 // before AURORA LABS (x=25700)
     },
     {
         id: 'b20', title: 'Grokking Algorithms', author: 'Aditya Bhargava', color: '#10b981',
-        summary: 'Algoritmos explicados visualmente: busca binaria, BFS, Dijkstra, programacao dinamica, KNN.',
-        lesson: 'Pensar algoritmicamente eh mais importante que decorar implementacoes.',
+        summary: 'Algoritmos explicados visualmente: busca binária, BFS, Dijkstra, programação dinâmica, KNN.',
+        lesson: 'Pensar algoritmicamente é mais importante que decorar implementações.',
         worldX: 26500, floatY: 160 // before SANTANDER (x=27100)
     },
     {
         id: 'b21', title: 'Accelerate', author: 'Forsgren, Humble, Kim', color: '#84cc16',
-        summary: 'Metricas DORA: frequencia de deploy, lead time, MTTR, taxa de falha. Evidencia cientifica para DevOps.',
-        lesson: 'Performance de engenharia se mede com dados, nao opiniao.',
+        summary: 'Métricas DORA: frequência de deploy, lead time, MTTR, taxa de falha. Evidência científica para DevOps.',
+        lesson: 'Performance de engenharia se mede com dados, não opinião.',
         worldX: 27900, floatY: 130 // before BRADESCO (x=28500)
     },
     {
         id: 'b22', title: 'Staff Engineer', author: 'Will Larson', color: '#a3e635',
-        summary: 'Alem de senior: influencia tecnica, mentoria, decisoes arquiteturais, navegacao organizacional.',
+        summary: 'Além de sênior: influência técnica, mentoria, decisões arquiteturais, navegação organizacional.',
         lesson: 'Staff Engineer resolve problemas que nenhum time sozinho consegue.',
         worldX: 29300, floatY: 150 // before GEMINI (x=29900)
     },
@@ -2112,9 +2112,81 @@ const BOOKS_DATA = [
     },
     {
         id: 'b24', title: 'The Pragmatic Programmer', author: 'Andrew Hunt & David Thomas', color: '#f59e0b',
-        summary: 'O manual do engenheiro completo: ortogonalidade, tracer bullets, DRY, automacao, testes, comunicacao e responsabilidade profissional. Cobre toda a carreira, do codigo ao impacto organizacional.',
-        lesson: 'Engenheiros pragmaticos adaptam ferramentas ao problema - nunca o contrario. Pense grande, entregue incremental.',
+        summary: 'O manual do engenheiro completo: ortogonalidade, tracer bullets, DRY, automação, testes, comunicação e responsabilidade profissional. Cobre toda a carreira, do código ao impacto organizacional.',
+        lesson: 'Engenheiros pragmáticos adaptam ferramentas ao problema — nunca o contrário. Pense grande, entregue incremental.',
         worldX: 32100, floatY: 150 // before CLOUD VALLEY (x=32700)
+    },
+    {
+        id: 'b25', title: 'The Art of Computer Programming', author: 'Donald E. Knuth', color: '#1d4ed8',
+        summary: 'A obra monumental sobre análise de algoritmos, estruturas de dados e rigor matemático. Ensina a provar custo, correção e limites computacionais.',
+        lesson: 'Engenharia madura mede, modela e prova; não confia em intuição solta.',
+        worldX: 1100, floatY: 135 // between XEROX PARC and APPLE GARAGE
+    },
+    {
+        id: 'b26', title: 'Structure and Interpretation of Computer Programs', author: 'Abelson & Sussman', color: '#0f766e',
+        summary: 'SICP ensina abstração, composição, linguagens, interpretadores e a essência de pensar como cientista da computação.',
+        lesson: 'Aprender a modelar processos é mais valioso que decorar sintaxe.',
+        worldX: 2500, floatY: 145 // between APPLE GARAGE and MICROSOFT
+    },
+    {
+        id: 'b27', title: 'A Discipline of Programming', author: 'Edsger W. Dijkstra', color: '#7c2d12',
+        summary: 'Corretude, invariantes e raciocínio formal aplicados ao código. Um antídoto contra programação baseada em tentativa e erro.',
+        lesson: 'Código robusto nasce de invariantes explícitas e pensamento preciso.',
+        worldX: 3900, floatY: 150 // between MICROSOFT and NUBANK
+    },
+    {
+        id: 'b28', title: 'Code Complete', author: 'Steve McConnell', color: '#0f172a',
+        summary: 'Construção de software em nível profissional: nomes, funções, testes, depuração, revisões e práticas de equipe.',
+        lesson: 'Boas decisões pequenas, repetidas por meses, viram sistemas grandes e confiáveis.',
+        worldX: 5300, floatY: 135 // between NUBANK and DISNEY
+    },
+    {
+        id: 'b29', title: 'The Mythical Man-Month', author: 'Frederick P. Brooks Jr.', color: '#92400e',
+        summary: 'Clássico sobre coordenação, comunicação, atrasos e complexidade acidental em projetos de software.',
+        lesson: 'Escalar pessoas sem escalar coordenação piora o atraso em vez de resolvê-lo.',
+        worldX: 6700, floatY: 150 // between DISNEY and GOOGLE
+    },
+    {
+        id: 'b30', title: 'Extreme Programming Explained', author: 'Kent Beck', color: '#be123c',
+        summary: 'XP como disciplina de feedback curto: TDD, refatoração, simplicidade, integração contínua e entrega frequente.',
+        lesson: 'Qualidade e velocidade aumentam juntas quando o ciclo de feedback encurta.',
+        worldX: 8100, floatY: 140 // between GOOGLE and FACEBOOK
+    },
+    {
+        id: 'b31', title: 'Working Effectively with Legacy Code', author: 'Michael Feathers', color: '#374151',
+        summary: 'Guia prático para mexer em sistemas sem testes, criando pontos de segurança antes de refatorar.',
+        lesson: 'Antes de melhorar legado, primeiro crie alavancas para alterá-lo com segurança.',
+        worldX: 9500, floatY: 155 // between FACEBOOK and IBM
+    },
+    {
+        id: 'b32', title: 'Patterns of Enterprise Application Architecture', author: 'Martin Fowler', color: '#4338ca',
+        summary: 'Catálogo de padrões para camadas, mapeamento, identidade, transações e integração em sistemas corporativos.',
+        lesson: 'Arquitetura enterprise boa reduz acoplamento entre domínio, persistência e integração.',
+        worldX: 10900, floatY: 140 // between IBM and AMAZON
+    },
+    {
+        id: 'b33', title: 'The Site Reliability Workbook', author: 'Google SRE Team', color: '#ca8a04',
+        summary: 'Playbooks práticos para SLO, alertas, incidentes, lançamento seguro e redução de toil.',
+        lesson: 'Confiabilidade melhora quando princípios viram rotina operacional concreta.',
+        worldX: 12300, floatY: 150 // between AMAZON and MERCADO LIVRE
+    },
+    {
+        id: 'b34', title: 'Programming Pearls', author: 'Jon Bentley', color: '#b45309',
+        summary: 'Problemas elegantes de programação, heurísticas, análise e clareza algorítmica para pensar melhor antes de codar.',
+        lesson: 'Algoritmos bons nascem de observação cuidadosa, não de força bruta.',
+        worldX: 13700, floatY: 135 // between MERCADO LIVRE and JP MORGAN
+    },
+    {
+        id: 'b35', title: 'Computer Systems: A Programmer\'s Perspective', author: 'Bryant & O\'Hallaron', color: '#0369a1',
+        summary: 'Do código C ao processador, memória, cache, concorrência e rede. Mostra como software realmente executa.',
+        lesson: 'Quem entende a máquina projeta software mais rápido, seguro e previsível.',
+        worldX: 15100, floatY: 145 // between JP MORGAN and PAYPAL
+    },
+    {
+        id: 'b36', title: 'Database Internals', author: 'Alex Petrov', color: '#166534',
+        summary: 'B-Trees, LSM-Trees, transações, WAL, storage engines e trade-offs de bancos modernos.',
+        lesson: 'Persistência em escala depende de estruturas e escolhas físicas, não só de SQL bonito.',
+        worldX: 16500, floatY: 150 // between PAYPAL and NETFLIX
     },
 ];
 
@@ -2331,12 +2403,14 @@ const World = {
         this.canvas.height = this.H;
         const mobileControls = document.querySelector('.mobile-controls');
         const controlsVisible = mobileControls && getComputedStyle(mobileControls).display !== 'none';
+        // Use actual rendered height of controls + buffer instead of hardcoded 160
         const ctrlH = controlsVisible ? (mobileControls.offsetHeight || 110) + 24 : 80;
         this.GROUND_Y = this.H - ctrlH;
         // Read actual HUD height for book positioning (books must stay below HUD)
         const hudEl = document.getElementById('worldHUD');
         this.HUD_H = hudEl ? (hudEl.offsetHeight || 52) : 52;
-        // Safety guard: ensure sufficient vertical play area.
+        // Safety guard: ensure sufficient vertical play area. If playable zone is too thin,
+        // shrink ctrlH to protect minimum 160px between HUD and ground.
         const MIN_PLAY_H = 160;
         if (this.GROUND_Y - this.HUD_H < MIN_PLAY_H) {
             this.GROUND_Y = this.HUD_H + MIN_PLAY_H;
@@ -2461,18 +2535,33 @@ const World = {
             this.keys[e.code] = false;
         });
 
-        // Mobile buttons -- hold-to-move with touchcancel safety
+        // Mobile buttons -- PointerEvent API: multi-touch + setPointerCapture
+        // Solves: (1) keys stuck when finger slides off button,
+        //         (2) simultaneous left+jump not working,
+        //         (3) touchcancel race conditions on iOS.
         const hold = (id, code) => {
             const el = document.getElementById(id);
             if (!el) return;
-            const on = () => { if (State.paused || State.isInPrep || State.isInChallenge || IDE.isOpen()) return; this.keys[code] = true; el.classList.add('pressed'); };
-            const off = () => { this.keys[code] = false; el.classList.remove('pressed'); };
-            el.addEventListener('mousedown', on);
-            el.addEventListener('mouseup', off);
-            el.addEventListener('mouseleave', off);
-            el.addEventListener('touchstart', e => { e.preventDefault(); on(); }, { passive: false });
-            el.addEventListener('touchend', e => { e.preventDefault(); off(); }, { passive: false });
-            el.addEventListener('touchcancel', e => { e.preventDefault(); off(); }, { passive: false });
+            const on = () => {
+                if (State.paused || State.isInPrep || State.isInChallenge || IDE.isOpen()) return;
+                this.keys[code] = true;
+                el.classList.add('pressed');
+            };
+            const off = () => {
+                this.keys[code] = false;
+                el.classList.remove('pressed');
+            };
+            // pointerdown + setPointerCapture: all pointer events routed to this element
+            // even if the finger moves outside -- ensures pointerup/pointercancel always fires
+            el.addEventListener('pointerdown', e => {
+                e.preventDefault();
+                try { el.setPointerCapture(e.pointerId); } catch (_) { }
+                on();
+            });
+            el.addEventListener('pointerup', e => { e.preventDefault(); off(); });
+            el.addEventListener('pointercancel', e => { e.preventDefault(); off(); });
+            // lostpointercapture: last-resort cleanup (fires on finger lift, browser steal, etc.)
+            el.addEventListener('lostpointercapture', () => off());
         };
         hold('btnLeft', 'ArrowLeft');
         hold('btnRight', 'ArrowRight');
@@ -2490,12 +2579,22 @@ const World = {
                 else if (State.isInDialog) this.closeDialog();
                 else if (!State.isInChallenge) this.tryInteract();
             };
-            actBtn.addEventListener('click', doAction);
-            actBtn.addEventListener('touchstart', e => { e.preventDefault(); doAction(); }, { passive: false });
+            actBtn.addEventListener('pointerdown', e => {
+                e.preventDefault();
+                try { actBtn.setPointerCapture(e.pointerId); } catch (_) { }
+                doAction();
+            });
         }
 
         // Prevent body scroll and bounce on iOS when touching the game canvas
         document.getElementById('gameCanvas').addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+        // Safety net: if any movement key gets stuck (e.g. focus loss), release all on visibilitychange
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                ['ArrowLeft', 'ArrowRight', 'ArrowUp'].forEach(k => { this.keys[k] = false; });
+                document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('pressed'));
+            }
+        });
     },
 
     /* --- INTERACTION (NPC proximity) --- */
@@ -4662,15 +4761,6 @@ const UI = {
         if (cb) cb();
     },
 
-    showPaywall(data) {
-        const msg = (data && data.message)
-            ? data.message
-            : 'Você completou a Xerox PARC — o Ato I gratuito! Assine agora e desbloqueie as 24 empresas lendárias da história da computação.';
-        const msgEl = document.getElementById('paywallMsg');
-        if (msgEl) msgEl.textContent = msg;
-        UI.showScreen('screen-paywall');
-    },
-
     showGameOver(stats) {
         SFX.stopMusic();
         SFX.gameOver();
@@ -4688,6 +4778,15 @@ const UI = {
             `Engenheiro: ${player.name}<br>Cargo: ${STAGE_PT[player.stage] || player.stage}<br>Pontuacao: ${player.score}<br>Desafios: ${player.completed_challenges.length}<br>Tentativas: ${player.total_attempts}`;
         UI.showScreen('screen-victory');
         this._startVictoryCelebration(player);
+    },
+
+    showPaywall(data) {
+        const msg = (data && (data.message || data.detail))
+            ? (data.message || data.detail)
+            : 'Você completou a fase gratuita do 404 Garage! Assine para continuar a jornada.';
+        const msgEl = document.getElementById('paywallMsg');
+        if (msgEl) msgEl.textContent = msg;
+        UI.showScreen('screen-paywall');
     },
 
     _startVictoryCelebration(player) {
@@ -5585,7 +5684,10 @@ const Game = {
             Heartbeat.start();
 
             Learning.showStageBriefingIfNeeded(State.player.stage);
-        } catch (e) { alert('Erro: ' + e.message); }
+        } catch (e) {
+            if (e.status === 402) { UI.showPaywall(e.data); return; }
+            alert('Erro: ' + e.message);
+        }
     },
 
     async loadSession(silent = false) {
@@ -5698,28 +5800,6 @@ const Game = {
             if (opened) return;
         }
 
-        // ── DEMO GATE: check with the server if the player can enter this region.
-        // Free users are limited to Xerox PARC. Attempting to enter any other
-        // company returns HTTP 402 → show the friendly paywall modal and abort.
-        if (State.sessionId && !opts.skipDemoCheck) {
-            try {
-                await API.post('/api/region/enter', {
-                    session_id: State.sessionId,
-                    region: regionId,
-                });
-            } catch (e) {
-                if (e.status === 402 && e.data && e.data.code === 'demo_limit_reached') {
-                    // Close the company door and show paywall
-                    State.lockedRegion = null;
-                    State.enteringDoor = false;
-                    UI.showScreen('screen-world');
-                    UI.showPaywall(e.data);
-                    return;
-                }
-                // Other errors: fail-open, let the session continue
-            }
-        }
-
         // Always refresh player from server before filtering to prevent stale
         // completed_challenges from showing an already-completed challenge again.
         if (State.sessionId) {
@@ -5740,10 +5820,22 @@ const Game = {
             World.showDialog('SISTEMA', regionId, 'Todos os desafios desta região foram completados.');
             return;
         }
+        // Demo gate: pre-flight check before loading challenge
+        if (State.sessionId) {
+            try {
+                await API.post('/api/region/enter', { session_id: State.sessionId, region: regionId });
+            } catch (e) {
+                if (e.status === 402) { UI.showPaywall(e.data); return; }
+                // For other errors (network, etc.), continue and let the challenge load attempt handle it
+            }
+        }
         try {
             State.currentChallenge = await API.get('/api/challenges/' + next.id);
             UI.showChallenge(State.currentChallenge);
-        } catch (e) { alert('Erro: ' + e.message); }
+        } catch (e) {
+            if (e.status === 402) { UI.showPaywall(e.data); return; }
+            alert('Erro: ' + e.message);
+        }
     },
 
     async submitAnswer(challengeId, idx) {
@@ -5794,12 +5886,8 @@ const Game = {
                 }
             }
         } catch (e) {
-            // DEMO paywall: user completed Act I (Intern) without a subscription
-            if (e.status === 402 && e.data && e.data.code === 'demo_limit_reached') {
-                UI.hideChallenge();
-                UI.showPaywall(e.data);
-                return;
-            }
+            // Demo paywall: player hit the free tier limit
+            if (e.status === 402) { UI.hideChallenge(); UI.showPaywall(e.data); return; }
             // If the challenge was already completed (stale client state), dismiss silently.
             if (e.message && e.message.includes('already completed')) {
                 UI.hideChallenge();
@@ -7603,6 +7691,12 @@ const IDE = {
     _scaleLastCode: '',
     _baseChallengeDesc: '',
 
+    /** Returns true when the coding IDE overlay is visible on screen. */
+    isOpen() {
+        const ideOverlay = document.getElementById('ideOverlay');
+        return !!(ideOverlay && ideOverlay.classList.contains('visible'));
+    },
+
     _selectChallenge(stage, region) {
         // Find a challenge matching the NPC's region (1 unique challenge per company)
         let challenge = region ? CODE_CHALLENGES.find(c => c.region === region) : null;
@@ -8542,7 +8636,9 @@ const Auth = {
     _token: null,
     _refreshToken: null,
     _refreshing: null,
-    _pendingEmail: null,  // email awaiting OTP verification
+    _pendingEmail: null,     // email awaiting OTP verification
+    _pendingResetEmail: null,  // email awaiting password reset
+    _pendingUsername: null,  // username pre-fill for login screen after OTP
 
     init() {
         const stored = localStorage.getItem('garage_user');
@@ -8579,6 +8675,8 @@ const Auth = {
         this._bindForms();
         this._bindNavigation();
         this._bindVerification();
+        this._bindForgotPassword();
+        this._bindResetPassword();
     },
 
     isLoggedIn() {
@@ -8703,10 +8801,157 @@ const Auth = {
 
         const verifyGoLogin = document.getElementById('verifyGoToLogin');
         if (verifyGoLogin) verifyGoLogin.addEventListener('click', (e) => { e.preventDefault(); UI.showScreen('screen-login'); });
+
+        const goForgot = document.getElementById('goToForgotPassword');
+        if (goForgot) goForgot.addEventListener('click', (e) => { e.preventDefault(); UI.showScreen('screen-forgot-password'); });
+
+        const forgotGoLogin = document.getElementById('forgotGoToLogin');
+        if (forgotGoLogin) forgotGoLogin.addEventListener('click', (e) => { e.preventDefault(); UI.showScreen('screen-login'); });
+
+        const resetGoLogin = document.getElementById('resetGoToLogin');
+        if (resetGoLogin) resetGoLogin.addEventListener('click', (e) => { e.preventDefault(); UI.showScreen('screen-login'); });
+    },
+
+    _bindForgotPassword() {
+        const btn = document.getElementById('btnSendReset');
+        if (!btn) return;
+        btn.addEventListener('click', async () => {
+            const emailInput = document.getElementById('forgotEmail');
+            const errEl = document.getElementById('forgotError');
+            const sucEl = document.getElementById('forgotSuccess');
+            errEl.hidden = true;
+            sucEl.hidden = true;
+
+            const email = (emailInput?.value || '').trim();
+            if (!email) {
+                errEl.textContent = 'Informe seu e-mail.';
+                errEl.hidden = false;
+                return;
+            }
+            btn.disabled = true;
+            btn.textContent = 'ENVIANDO...';
+            try {
+                const res = await API.post('/api/auth/forgot-password', { email });
+                this._pendingResetEmail = email;
+
+                sucEl.textContent = 'Código enviado! Verifique sua caixa de entrada.';
+                sucEl.hidden = false;
+                setTimeout(() => {
+                    const hint = document.getElementById('resetEmailHint');
+                    if (hint) {
+                        hint.textContent = `Código enviado para ${email}. Insira abaixo.`;
+                    }
+                    UI.showScreen('screen-reset-password');
+                }, 1200);
+            } catch (err) {
+                console.error('[GARAGE] forgot-password error:', err);
+                if (!err.status) {
+                    // Erro de rede — servidor inacessível
+                    errEl.textContent = 'Servidor indisponível. Verifique se o servidor está rodando e tente novamente.';
+                    errEl.hidden = false;
+                } else {
+                    // Erro HTTP do servidor — anti-enumeração (4xx/5xx)
+                    sucEl.textContent = 'Se este e-mail está cadastrado, você receberá o código em breve.';
+                    sucEl.hidden = false;
+                    this._pendingResetEmail = email;
+                    setTimeout(() => {
+                        UI.showScreen('screen-reset-password');
+                    }, 1600);
+                }
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'ENVIAR CÓDIGO';
+            }
+        });
+    },
+
+    _bindResetPassword() {
+        const container = document.getElementById('resetOtpContainer');
+        if (!container) return;
+        const rBoxes = Array.from(container.querySelectorAll('.otp-box'));
+
+        rBoxes.forEach((box, idx) => {
+            box.addEventListener('input', () => {
+                box.value = box.value.replace(/\D/g, '').slice(-1);
+                box.classList.toggle('filled', box.value.length === 1);
+                if (box.value && idx < rBoxes.length - 1) rBoxes[idx + 1].focus();
+            });
+            box.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !box.value && idx > 0) {
+                    rBoxes[idx - 1].focus();
+                    rBoxes[idx - 1].value = '';
+                    rBoxes[idx - 1].classList.remove('filled');
+                }
+            });
+            if (idx === 0) {
+                box.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+                    pasted.split('').slice(0, 6).forEach((ch, i) => {
+                        if (rBoxes[i]) { rBoxes[i].value = ch; rBoxes[i].classList.add('filled'); }
+                    });
+                    const nextEmpty = rBoxes.find(b => !b.value);
+                    (nextEmpty || rBoxes[5]).focus();
+                });
+            }
+        });
+
+        const btnReset = document.getElementById('btnDoReset');
+        if (!btnReset) return;
+        btnReset.addEventListener('click', async () => {
+            const errEl = document.getElementById('resetError');
+            const sucEl = document.getElementById('resetSuccess');
+            errEl.hidden = true;
+            sucEl.hidden = true;
+
+            const code = rBoxes.map(b => b.value).join('');
+            if (code.length < 6) {
+                errEl.textContent = 'Insira todos os 6 dígitos do código.';
+                errEl.hidden = false;
+                return;
+            }
+            const newPass = document.getElementById('resetNewPassword')?.value || '';
+            const confPass = document.getElementById('resetConfirmPassword')?.value || '';
+            if (newPass.length < 6) {
+                errEl.textContent = 'A nova senha deve ter no mínimo 6 caracteres.';
+                errEl.hidden = false;
+                return;
+            }
+            if (newPass !== confPass) {
+                errEl.textContent = 'As senhas não conferem.';
+                errEl.hidden = false;
+                return;
+            }
+            const email = this._pendingResetEmail;
+            if (!email) {
+                errEl.textContent = 'Sessão expirada. Solicite um novo código.';
+                errEl.hidden = false;
+                return;
+            }
+            btnReset.disabled = true;
+            btnReset.textContent = 'REDEFININDO...';
+            try {
+                const res = await API.post('/api/auth/reset-password', { email, code, new_password: newPass });
+                this._pendingResetEmail = null;
+                sucEl.textContent = res.message || 'Senha redefinida com sucesso!';
+                sucEl.hidden = false;
+                setTimeout(() => UI.showScreen('screen-login'), 1800);
+            } catch (err) {
+                console.error('[GARAGE] reset-password error:', err);
+                errEl.textContent = err.message || 'Código inválido, expirado ou e-mail incorreto.';
+                errEl.hidden = false;
+                rBoxes.forEach(b => b.classList.add('filled'));
+                setTimeout(() => rBoxes.forEach(b => { b.value = ''; b.classList.remove('filled'); }), 600);
+                setTimeout(() => rBoxes[0].focus(), 650);
+            } finally {
+                btnReset.disabled = false;
+                btnReset.textContent = 'REDEFINIR SENHA';
+            }
+        });
     },
 
     _bindVerification() {
-        const boxes = Array.from(document.querySelectorAll('.otp-box'));
+        const boxes = Array.from(document.querySelectorAll('#otpContainer .otp-box'));
         if (!boxes.length) return;
 
         // Auto-advance focus and mark filled
@@ -8772,11 +9017,18 @@ const Auth = {
                 btnVerify.textContent = 'VERIFICANDO...';
                 try {
                     const res = await API.post('/api/auth/verify-email', { email, code });
-                    this._setUser(res.user, res.access_token, res.refresh_token);
-                    sucEl.textContent = res.message || 'E-mail verificado! Entrando...';
-                    sucEl.hidden = false;
+                    // Verification successful — go to login screen (user enters credentials explicitly)
+                    const uname = this._pendingUsername || '';
                     this._pendingEmail = null;
-                    setTimeout(() => UI.showScreen('screen-title'), 1400);
+                    this._pendingUsername = null;
+                    sucEl.textContent = 'E-mail verificado! Agora faça seu login para entrar no jogo.';
+                    sucEl.hidden = false;
+                    setTimeout(() => {
+                        const loginField = document.getElementById('loginUsername');
+                        if (loginField && uname) loginField.value = uname;
+                        document.getElementById('loginPassword')?.focus();
+                        UI.showScreen('screen-login');
+                    }, 1800);
                 } catch (err) {
                     errEl.textContent = err.message || 'Código inválido ou expirado.';
                     errEl.hidden = false;
@@ -8811,10 +9063,21 @@ const Auth = {
                 btnResend.textContent = 'Enviando...';
                 try {
                     const res = await API.post('/api/auth/resend-verification', { email });
-                    sucEl.textContent = res.message || 'Novo código enviado!';
+                    sucEl.textContent = res.message || 'Novo código enviado! Verifique sua caixa de entrada.';
                     sucEl.hidden = false;
-                    // Brief cooldown
-                    setTimeout(() => { btnResend.style.pointerEvents = ''; btnResend.textContent = 'Reenviar código'; }, 30000);
+                    // Countdown 30s with live update so user knows it's not frozen
+                    let _secs = 30;
+                    btnResend.textContent = `Reenviar (${_secs}s)`;
+                    const _cd = setInterval(() => {
+                        _secs--;
+                        if (_secs <= 0) {
+                            clearInterval(_cd);
+                            btnResend.style.pointerEvents = '';
+                            btnResend.textContent = 'Reenviar código';
+                        } else {
+                            btnResend.textContent = `Reenviar (${_secs}s)`;
+                        }
+                    }, 1000);
                 } catch (err) {
                     errEl.textContent = err.message || 'Erro ao reenviar. Tente novamente.';
                     errEl.hidden = false;
@@ -8845,14 +9108,8 @@ const Auth = {
                 this._setUser(res.user, res.access_token, res.refresh_token);
                 UI.showScreen('screen-title');
             } catch (err) {
-                // Subscription required (REQUIRE_SUBSCRIPTION=true on server)
-                if (err.status === 402) {
-                    errEl.innerHTML =
-                        'Assinatura inativa. ' +
-                        '<a href="/account" style="color:#fbbf24;font-weight:700;">Ativar / Renovar plano →</a>';
-                    errEl.hidden = false;
-                    // Special case: account exists but email not verified yet
-                } else if (err.status === 403 || (err.message && err.message.toLowerCase().includes('verificad'))) {
+                // Special case: account exists but email not verified yet
+                if (err.status === 403 || (err.message && err.message.toLowerCase().includes('verificad'))) {
                     errEl.innerHTML =
                         'E-mail não verificado. ' +
                         '<a href="#" id="goVerifyFromLogin" style="color:#fbbf24;">Verificar agora</a>';
@@ -8860,17 +9117,22 @@ const Auth = {
                     const link = document.getElementById('goVerifyFromLogin');
                     if (link) link.addEventListener('click', (ev) => {
                         ev.preventDefault();
-                        // Pre-fill pending email from username if it's an email, otherwise ask user
+                        // Use email returned by backend (403 body) — works even when user typed username
                         const usernameVal = document.getElementById('loginUsername').value.trim();
-                        if (usernameVal.includes('@')) this._pendingEmail = usernameVal;
+                        const emailFromErr = err.email || (usernameVal.includes('@') ? usernameVal : null);
+                        if (emailFromErr) this._pendingEmail = emailFromErr;
+                        // Always store username for pre-fill after OTP success
+                        this._pendingUsername = usernameVal.includes('@') ? '' : usernameVal;
                         const hintEl = document.getElementById('verifyEmailHint');
-                        if (hintEl && this._pendingEmail) {
-                            hintEl.textContent = `Insira o código enviado para ${this._pendingEmail}:`;
+                        const hintDisplay = err.emailHint || emailFromErr || 'seu e-mail';
+                        if (hintEl) {
+                            hintEl.textContent = `Código já enviado para ${hintDisplay}. Verifique sua caixa de entrada ou clique em "Reenviar código".`;
                         }
                         document.querySelectorAll('.otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
                         document.getElementById('verifyError').hidden = true;
                         document.getElementById('verifySuccess').hidden = true;
                         UI.showScreen('screen-verify-email');
+                        setTimeout(() => { const first = document.querySelector('.otp-box[data-idx="0"]'); if (first) first.focus(); }, 120);
                     });
                 } else {
                     errEl.textContent = err.message || 'Erro ao fazer login.';
@@ -8910,12 +9172,14 @@ const Auth = {
 
                 // --- Email verification required ---
                 if (res.requires_verification) {
-                    // Store email for subsequent verify/resend requests
+                    // Store email and username for OTP screen
                     this._pendingEmail = emailVal;
+                    this._pendingUsername = document.getElementById('regUsername').value.trim();
                     const hintEl = document.getElementById('verifyEmailHint');
                     if (hintEl) {
-                        hintEl.textContent =
-                            `Enviamos um código de 6 dígitos para ${res.email_hint || emailVal}. Insira abaixo:`;
+                        hintEl.textContent = res.email_was_sent
+                            ? `Código enviado para ${res.email_hint || emailVal}. Não encontrou? Verifique o spam ou clique em "Reenviar código".`
+                            : `Cadastro criado. O código está no log do servidor (modo dev). Clique em "Reenviar código" após configurar e-mail.`;
                     }
                     // Clear OTP boxes
                     document.querySelectorAll('.otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
@@ -8937,12 +9201,15 @@ const Auth = {
             } catch (err) {
                 // 409 "aguardando verificacao": pending record already exists → go to OTP screen
                 // User already received the verification code, just redirect them to enter it
-                if (err.status === 409 && err.message && err.message.toLowerCase().includes('aguardando')) {
+                if (err.status === 409 && err.message && (err.message.toLowerCase().includes('aguardando') || err.message.toLowerCase().includes('verificacao'))) {
                     const emailFromInput = document.getElementById('regEmail').value.trim();
                     this._pendingEmail = emailFromInput;
+                    this._pendingUsername = document.getElementById('regUsername').value.trim();
+                    // Use masked email from backend (email_hint) or mask locally as fallback
+                    const maskedEmail = err.emailHint || emailFromInput.replace(/(^.{2})[^@]*(@.*)/, '$1***$2');
                     const hintEl = document.getElementById('verifyEmailHint');
                     if (hintEl) {
-                        hintEl.textContent = `Já enviamos um código para ${emailFromInput}. Insira abaixo para concluir o cadastro:`;
+                        hintEl.textContent = `Já enviamos um código para ${maskedEmail}. Insira abaixo para concluir o cadastro:`;
                     }
                     document.querySelectorAll('.otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
                     document.getElementById('verifyError').hidden = true;
@@ -8966,6 +9233,52 @@ const Auth = {
 
 // ---- boot ----
 document.addEventListener('DOMContentLoaded', async () => {
+    // Detect demo mode from URL (?mode=demo) — set by landing page "Jogar Grátis" button.
+    const _urlParams = new URLSearchParams(window.location.search);
+    const _demoMode = _urlParams.get('mode') === 'demo';
+
+    // Inject demo banner into register card when arriving from the landing page.
+    if (_demoMode) {
+        const regCard = document.querySelector('#screen-register .auth-card');
+        if (regCard && !document.getElementById('demoBanner')) {
+            const banner = document.createElement('div');
+            banner.id = 'demoBanner';
+            banner.style.cssText = [
+                'background:linear-gradient(135deg,rgba(34,197,94,0.18),rgba(34,197,94,0.06))',
+                'border:1px solid rgba(34,197,94,0.45)',
+                'border-radius:10px',
+                'padding:10px 14px',
+                'margin-bottom:18px',
+                'text-align:center',
+                'font-family:"JetBrains Mono",monospace',
+            ].join(';');
+            banner.innerHTML =
+                '<div style="color:#22c55e;font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:4px">ATO I — 100% GRATUITO</div>' +
+                '<div style="color:#94a3b8;font-size:11px;line-height:1.5">Crie sua conta e jogue <strong style="color:#e8e8f0">Xerox PARC</strong> grátis.<br>Sem cartão. Sem prazo.</div>';
+            // Insert banner before the form element
+            const form = regCard.querySelector('form');
+            if (form) regCard.insertBefore(banner, form);
+            else regCard.prepend(banner);
+        }
+        // Also inject login screen hint so users who already have account also see context
+        const loginCard = document.querySelector('#screen-login .auth-card');
+        if (loginCard && !document.getElementById('demoLoginHint')) {
+            const hint = document.createElement('div');
+            hint.id = 'demoLoginHint';
+            hint.style.cssText = [
+                'background:rgba(34,197,94,0.06)',
+                'border:1px solid rgba(34,197,94,0.3)',
+                'border-radius:8px',
+                'padding:8px 12px',
+                'margin-bottom:14px',
+                'text-align:center',
+            ].join(';');
+            hint.innerHTML = '<span style="color:#22c55e;font-size:11px;font-family:monospace">Vire estagiário da Xerox PARC e trabalhe na Apple ao lado de Steve Jobs — grátis!</span>';
+            const loginForm = loginCard.querySelector('form');
+            if (loginForm) loginCard.insertBefore(hint, loginForm);
+        }
+    }
+
     Auth.init();
     if (Auth.isLoggedIn()) {
         // Validate token with server before auto-resuming
@@ -8974,7 +9287,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (_e) {
             // Token invalid or server unreachable -- force login
             Auth.handleExpired();
-            UI.showScreen('screen-login');
+            UI.showScreen(_demoMode ? 'screen-register' : 'screen-login');
             return;
         }
         // Always try to auto-resume. loadSession() now handles missing localStorage
@@ -8982,14 +9295,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const resumed = await Game.loadSession(true);
         if (!resumed) {
             if (!Auth.isLoggedIn()) {
-                UI.showScreen('screen-login');
+                UI.showScreen(_demoMode ? 'screen-register' : 'screen-login');
             } else {
                 UI.showScreen('screen-title');
                 UI.updateTitleButtons();
             }
         }
     } else {
-        UI.showScreen('screen-login');
+        // Not logged in — demo mode sends to register, otherwise login
+        UI.showScreen(_demoMode ? 'screen-register' : 'screen-login');
     }
 });
 

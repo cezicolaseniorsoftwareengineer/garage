@@ -5,11 +5,36 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Garage - Aventura no Vale do Silício</title>
+    <title>404 Garage — De Estagiário a Principal Engineer</title>
+    <meta name="description"
+        content="Um RPG de carreira que cobre a história da computação de 1973 a 2026. Codifique em Java, resolva desafios reais e suba de estagiário a Principal Engineer.">
+
+    <!-- ── Favicon ── -->
+    <link rel="icon" type="image/svg+xml" href="/static/assets/favicon.svg">
+    <link rel="alternate icon" href="/static/assets/favicon.svg">
+    <link rel="apple-touch-icon" href="/static/assets/logo.svg">
+
+    <!-- ── Open Graph / Social ── -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="404 Garage — De Estagiário a Principal Engineer">
+    <meta property="og:description" content="Um RPG de carreira que cobre a história da computação de 1973 a 2026.">
+    <meta property="og:image" content="/static/assets/logo.svg">
+    <meta property="og:image:width" content="180">
+    <meta property="og:image:height" content="180">
+
+    <!-- ── Twitter Card ── -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="404 Garage">
+    <meta name="twitter:description" content="Codifique em Java e suba de estagiário a Principal Engineer.">
+    <meta name="twitter:image" content="/static/assets/logo.svg">
+
+    <!-- ── Theme color (mobile browser chrome) ── -->
+    <meta name="theme-color" content="#0f172a">
+
     <link
         href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css?v=20260302-ide-scroll-v11">
+    <link rel="stylesheet" href="/static/style.css?v=20260302-hud-sair-mobile-v12">
 </head>
 
 <body>
@@ -37,6 +62,10 @@
                     </div>
                     <div id="loginError" class="auth-error" hidden></div>
                     <button type="submit" class="auth-btn auth-btn-primary">ENTRAR</button>
+                    <div style="text-align:center;margin-top:12px;">
+                        <a href="#" id="goToForgotPassword"
+                            style="color:#ef4444;font-size:12px;letter-spacing:1px;">Esqueci minha senha</a>
+                    </div>
                 </form>
                 <div class="auth-switch">
                     Não tem conta? <a href="#" id="goToRegister">Cadastre-se</a>
@@ -143,6 +172,76 @@
                 </div>
                 <div class="auth-switch" style="margin-top:12px;">
                     Voltou a ter acesso? <a href="#" id="verifyGoToLogin">Fazer login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== SCREEN: FORGOT PASSWORD ========== -->
+    <div id="screen-forgot-password" class="screen">
+        <div class="auth-bg">
+            <img src="/static/login_bg.png" alt="Garage Characters" class="auth-bg-img">
+            <div class="auth-bg-overlay"></div>
+        </div>
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-logo">[<span>GARAGE</span>]</div>
+                <p class="auth-subtitle">Redefinir senha</p>
+                <p class="auth-hint" style="text-align:center;color:#94a3b8;font-size:13px;margin-bottom:20px;">
+                    Informe seu e-mail cadastrado. Enviaremos um código de 6 dígitos.
+                </p>
+                <div class="auth-field">
+                    <label for="forgotEmail">E-mail</label>
+                    <input type="email" id="forgotEmail" placeholder="seu@email.com" required>
+                </div>
+                <div id="forgotError" class="auth-error" hidden></div>
+                <div id="forgotSuccess" class="auth-success" hidden></div>
+                <button id="btnSendReset" class="auth-btn auth-btn-primary">ENVIAR CÓDIGO</button>
+                <div class="auth-switch" style="margin-top:12px;">
+                    Lembrou? <a href="#" id="forgotGoToLogin">Fazer login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== SCREEN: RESET PASSWORD ========== -->
+    <div id="screen-reset-password" class="screen">
+        <div class="auth-bg">
+            <img src="/static/login_bg.png" alt="Garage Characters" class="auth-bg-img">
+            <div class="auth-bg-overlay"></div>
+        </div>
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-logo" style="color:#ef4444;">[<span style="color:#ef4444;">GARAGE</span>]</div>
+                <p class="auth-subtitle">Redefinir senha</p>
+                <p id="resetEmailHint" class="auth-hint"
+                    style="text-align:center;color:#94a3b8;font-size:13px;margin-bottom:20px;">
+                    Insira o código de 6 dígitos recebido por e-mail.
+                </p>
+                <div id="resetOtpContainer" style="display:flex;justify-content:center;gap:8px;margin-bottom:24px;">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-ridx="0"
+                        autocomplete="one-time-code">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-ridx="1">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-ridx="2">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-ridx="3">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-ridx="4">
+                    <input class="otp-box" type="text" inputmode="numeric" maxlength="1" data-ridx="5">
+                </div>
+                <div class="auth-field">
+                    <label for="resetNewPassword">Nova senha</label>
+                    <input type="password" id="resetNewPassword" placeholder="Mínimo 6 caracteres" required
+                        minlength="6" maxlength="128">
+                </div>
+                <div class="auth-field">
+                    <label for="resetConfirmPassword">Confirmar nova senha</label>
+                    <input type="password" id="resetConfirmPassword" placeholder="Repita a nova senha" required
+                        minlength="6">
+                </div>
+                <div id="resetError" class="auth-error" hidden></div>
+                <div id="resetSuccess" class="auth-success" hidden></div>
+                <button id="btnDoReset" class="auth-btn auth-btn-primary">REDEFINIR SENHA</button>
+                <div class="auth-switch" style="margin-top:12px;">
+                    Lembrou? <a href="#" id="resetGoToLogin">Fazer login</a>
                 </div>
             </div>
         </div>
@@ -285,15 +384,7 @@
                 </div>
             </div>
             <div class="hud-sep">|</div>
-            <div class="hud-block hud-block-btn" onclick="window.open('/account','_blank')"
-                style="pointer-events:auto;cursor:pointer;">
-                <span class="hud-icon" style="color:#ffb347;">&#9733;</span>
-                <div>
-                    <div class="hud-label">CONTA</div>
-                </div>
-            </div>
-            <div class="hud-sep">|</div>
-            <div class="hud-block hud-block-btn" onclick="Game.exitToTitle()"
+            <div class="hud-block hud-block-btn" id="hudBtnSair" onclick="Game.exitToTitle()"
                 style="pointer-events:auto;cursor:pointer;">
                 <span class="hud-icon" style="color:#ef4444;">&#10005;</span>
                 <div>
@@ -609,54 +700,41 @@
         </div>
     </div>
 
-    <!-- ========== SCREEN: PAYWALL ========== -->
+    <!-- PAYWALL SCREEN -->
     <div id="screen-paywall" class="screen">
         <div class="paywall-bg"></div>
         <div class="paywall-container">
-            <div class="paywall-badge">&#9733; ATO I CONCLUÍDO &#9733;</div>
-            <div class="paywall-logo">[<span>GARAGE</span>]</div>
+            <div class="paywall-badge">★ ATO I CONCLUÍDO ★</div>
+            <div class="paywall-logo">[<span>404 GARAGE</span>]</div>
             <h1 class="paywall-title">Xerox PARC Conquistada!</h1>
-            <p class="paywall-subtitle" id="paywallMsg">
-                Você completou a demo gratuita. Assine para continuar sua jornada.
-            </p>
-            <div class="paywall-companies">
-                <p class="paywall-companies-label">&#128275; Empresas que você vai desbloquear</p>
-                <div class="paywall-companies-grid">
-                    <span>Apple</span>
-                    <span>Google</span>
-                    <span>Microsoft</span>
-                    <span>Amazon</span>
-                    <span>Facebook</span>
-                    <span>Netflix</span>
-                    <span>PayPal</span>
-                    <span>Tesla</span>
-                    <span>SpaceX</span>
-                    <span>Nubank</span>
-                    <span>Twitter</span>
-                    <span>Uber</span>
-                    <span>+ 12 mais</span>
+            <p class="paywall-subtitle" id="paywallMsg">Você completou a fase gratuita do 404 Garage! Assine para
+                continuar a jornada.</p>
+
+            <div class="paywall-unlocks">
+                <p class="paywall-unlocks-label">Desbloqueie todas as empresas:</p>
+                <div class="paywall-companies">
+                    <span>Apple Garage</span><span>Microsoft</span><span>Amazon</span>
+                    <span>Google</span><span>PayPal</span><span>Facebook</span>
+                    <span>AWS</span><span>Nubank</span><span class="paywall-chip-gold">+ 12 mais</span>
                 </div>
             </div>
+
             <div class="paywall-xp-bar">
-                <div class="paywall-xp-label">
-                    <span>Progresso da Jornada</span>
-                    <span class="paywall-xp-pct">4% concluído</span>
-                </div>
+                <div class="paywall-xp-label">Progresso desbloqueado: <strong>4%</strong></div>
                 <div class="paywall-xp-track">
                     <div class="paywall-xp-fill"></div>
                 </div>
-                <p class="paywall-xp-hint">Assine e desbloqueie os 96% restantes da jornada</p>
             </div>
+
             <div class="paywall-actions">
-                <a href="/#planos" class="auth-btn paywall-cta">&#128179; VER PLANOS E ASSINAR</a>
-                <button class="paywall-back-btn" onclick="UI.showScreen('screen-world')">
-                    &#8592; Continuar explorando a Xerox PARC
-                </button>
+                <a href="/#planos" class="auth-btn paywall-cta">VER PLANOS E ASSINAR</a>
+                <button class="paywall-back-btn" onclick="UI.showScreen('screen-world')">← Continuar explorando a Xerox
+                    PARC</button>
             </div>
         </div>
     </div>
 
-    <script src="/static/game.js?v=20260302-add-b24-pragmatic-v19"></script>
+    <script src="/static/game.js?v=20260302-debug-otp-verify-register-v23"></script>
 </body>
 
 </html>
