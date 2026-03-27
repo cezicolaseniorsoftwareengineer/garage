@@ -1,8 +1,8 @@
 """Email sender for OTP verification codes.
 
 Priority chain:
-  1. Resend API   (RESEND_API_KEY set)  — transactional, SPF/DKIM verified, no spam
-  2. SMTP         (SMTP_USER set)       — Gmail fallback, may land in spam
+  1. SMTP         (SMTP_USER set)       — Gmail, free, reliable, fast
+  2. Resend API   (RESEND_API_KEY set, verified domain)  — only when SMTP unavailable
   3. Dev console  (nothing set)         — prints code to server log
 
 Environment variables:
@@ -157,50 +157,32 @@ def _is_resend_sandbox() -> bool:
 def send_verification_email(to_email: str, code: str, full_name: str) -> bool:
     """Send a 6-digit OTP to the given address.
 
-    Priority: SMTP (when Resend is sandbox) → Resend → SMTP → dev console.
+    Priority: SMTP (primary, free) -> Resend (verified domain only) -> dev console.
     Returns True if delivered via email, False if only printed to console.
     """
     resend_key = os.environ.get("RESEND_API_KEY", "")
     smtp_user  = os.environ.get("SMTP_USER", "")
     is_sandbox = resend_key and _is_resend_sandbox()
 
-    # ── 0. Sandbox guard: ALWAYS skip Resend when using sandbox from-address ─
-    # Resend sandbox silently accepts API calls (200 OK) but never delivers to
-    # non-owner recipients. We must never trust it for real delivery.
-    if is_sandbox and smtp_user:
-        log.warning("[RESEND SANDBOX] Detected sandbox from-address — skipping Resend, using SMTP")
-        print("[GARAGE][RESEND SANDBOX] Skipping Resend (sandbox mode) — sending via SMTP")
-        try:
-            return _send_via_smtp(to_email, code, full_name)
-        except Exception as exc:
-            log.error("[SMTP FAIL after sandbox skip] %s: %s", to_email, exc)
-            print(f"[GARAGE][SMTP FAIL] {exc}")
-            # Fall through to dev console below
-
-    elif is_sandbox:
-        # Sandbox detected but NO SMTP configured — cannot send real email
-        log.error("[RESEND SANDBOX] Sandbox detected and no SMTP configured — email NOT sent to %s", to_email)
-        print(f"[GARAGE][RESEND SANDBOX] WARNING: Cannot send email to {to_email} — Resend is sandbox and SMTP is not configured")
-        # Fall through to dev console below
-
-    # ── 1. Resend (preferred: SPF/DKIM, no spam — only when NOT sandbox) ─────
-    elif resend_key:
-        try:
-            return _send_via_resend(to_email, code, full_name)
-        except Exception as exc:
-            log.error("[RESEND FAIL] %s — falling back to SMTP: %s", to_email, exc)
-            print(f"[GARAGE][RESEND FAIL] {exc} — trying SMTP fallback")
-            # Fall through to SMTP below
-
-    # ── 2. SMTP fallback (Gmail) ─────────────────────────────────────────────
+    # ── 1. SMTP (primary — free, reliable, no domain verification needed) ────
     if smtp_user:
         try:
             return _send_via_smtp(to_email, code, full_name)
         except Exception as exc:
             log.error("[SMTP FAIL] %s: %s", to_email, exc)
-            print(f"[GARAGE][SMTP FAIL] {exc}")
+            print(f"[GARAGE][SMTP FAIL] {exc} — trying Resend fallback")
 
-    # ── 3. Dev console (no provider configured) ──────────────────────────────
+    # ── 2. Resend (fallback — only when NOT sandbox, needs verified domain) ──
+    if resend_key and not is_sandbox:
+        try:
+            return _send_via_resend(to_email, code, full_name)
+        except Exception as exc:
+            log.error("[RESEND FAIL] %s: %s", to_email, exc)
+            print(f"[GARAGE][RESEND FAIL] {exc}")
+    elif is_sandbox:
+        log.warning("[RESEND SANDBOX] Skipping Resend — sandbox cannot deliver to %s", to_email)
+
+    # ── 3. Dev console (no provider delivered) ────────────────────────────────
     log.warning("[NO EMAIL PROVIDER] Code for %s: %s", to_email, code)
     print(f"[GARAGE][DEV] Verification code for {to_email}: {code}")
     return False
@@ -229,8 +211,7 @@ def send_verification_email_timed(
     resend_key = os.environ.get("RESEND_API_KEY", "")
     smtp_user = os.environ.get("SMTP_USER", "")
     is_sandbox = resend_key and _is_resend_sandbox()
-    # No provider at all, or sandbox without SMTP = cannot send real email
-    has_provider = (resend_key and not is_sandbox) or smtp_user
+    has_provider = smtp_user or (resend_key and not is_sandbox)
     if not has_provider:
         log.warning("[NO USABLE PROVIDER] Code for %s: %s (sandbox=%s smtp=%s)",
                     to_email, code, is_sandbox, bool(smtp_user))
@@ -343,7 +324,7 @@ def _send_reset_via_smtp(to_email: str, code: str, full_name: str) -> bool:
 def send_password_reset_email(to_email: str, code: str, full_name: str) -> bool:
     """Send a password-reset OTP.
 
-    Priority: SMTP (when Resend is sandbox) -> Resend -> SMTP -> dev console.
+    Priority: SMTP (primary, free) -> Resend (verified domain only) -> dev console.
     Returns True if delivered via email, False if only printed to console.
     """
     resend_key = os.environ.get("RESEND_API_KEY", "")
@@ -359,22 +340,16 @@ def send_password_reset_email(to_email: str, code: str, full_name: str) -> bool:
         f"— Bio Code Technology"
     )
 
-    # -- 0. Sandbox guard: ALWAYS skip Resend when sandbox detected ------------
-    if is_sandbox and smtp_user:
-        log.warning("[RESEND SANDBOX] Detected sandbox from-address — skipping Resend for reset, using SMTP")
-        print("[GARAGE][RESEND SANDBOX] Skipping Resend (sandbox mode) — sending reset via SMTP")
+    # -- 1. SMTP (primary — free, reliable) ------------------------------------
+    if smtp_user:
         try:
             return _send_reset_via_smtp(to_email, code, full_name)
         except Exception as exc:
-            log.error("[SMTP RESET FAIL after sandbox skip] %s: %s", to_email, exc)
-            print(f"[GARAGE][SMTP RESET FAIL] {exc}")
+            log.error("[SMTP RESET FAIL] %s: %s", to_email, exc)
+            print(f"[GARAGE][SMTP RESET FAIL] {exc} — trying Resend fallback")
 
-    elif is_sandbox:
-        log.error("[RESEND SANDBOX] Sandbox detected and no SMTP configured — reset email NOT sent to %s", to_email)
-        print(f"[GARAGE][RESEND SANDBOX] WARNING: Cannot send reset email to {to_email} — Resend is sandbox and SMTP is not configured")
-
-    # -- 1. Resend (preferred: SPF/DKIM — only when NOT sandbox) ---------------
-    elif resend_key:
+    # -- 2. Resend (fallback — only when NOT sandbox) --------------------------
+    if resend_key and not is_sandbox:
         try:
             import resend
             resend.api_key = resend_key
@@ -384,18 +359,12 @@ def send_password_reset_email(to_email: str, code: str, full_name: str) -> bool:
             log.info("[RESEND RESET OK] to=%s", to_email)
             return True
         except Exception as exc:
-            log.error("[RESEND RESET FAIL] %s — falling back to SMTP: %s", to_email, exc)
-            print(f"[GARAGE][RESEND RESET FAIL] {exc} — trying SMTP fallback")
+            log.error("[RESEND RESET FAIL] %s: %s", to_email, exc)
+            print(f"[GARAGE][RESEND RESET FAIL] {exc}")
+    elif is_sandbox:
+        log.warning("[RESEND SANDBOX] Skipping Resend for reset — sandbox cannot deliver to %s", to_email)
 
-    # -- 2. SMTP fallback (Gmail) ----------------------------------------------
-    if smtp_user:
-        try:
-            return _send_reset_via_smtp(to_email, code, full_name)
-        except Exception as exc:
-            log.error("[SMTP RESET FAIL] %s: %s", to_email, exc)
-            print(f"[GARAGE][SMTP RESET FAIL] {exc}")
-
-    # -- 3. Dev console (no provider configured) --------------------------------
+    # -- 3. Dev console (no provider delivered) ---------------------------------
     log.warning("[NO EMAIL PROVIDER] Reset code for %s: %s", to_email, code)
     print(f"[GARAGE][DEV] Password reset code for {to_email}: {code}")
     return False
@@ -416,7 +385,7 @@ def send_password_reset_email_timed(
     resend_key = os.environ.get("RESEND_API_KEY", "")
     smtp_user = os.environ.get("SMTP_USER", "")
     is_sandbox = resend_key and _is_resend_sandbox()
-    has_provider = (resend_key and not is_sandbox) or smtp_user
+    has_provider = smtp_user or (resend_key and not is_sandbox)
     if not has_provider:
         log.warning("[NO USABLE PROVIDER] Reset code for %s: %s (sandbox=%s smtp=%s)",
                     to_email, code, is_sandbox, bool(smtp_user))
@@ -523,21 +492,7 @@ def send_subscription_welcome_email(
     smtp_user  = os.environ.get("SMTP_USER", "")
     is_sandbox = resend_key and _is_resend_sandbox()
 
-    # Resend (only when NOT sandbox — sandbox silently drops)
-    if resend_key and not is_sandbox:
-        try:
-            import resend
-            resend.api_key = resend_key
-            from_addr = os.environ.get("RESEND_FROM", "Garage <onboarding@resend.dev>")
-            resend.Emails.send({"from": from_addr, "to": [to_email],
-                                "subject": subject, "html": html_body, "text": plain_body})
-            log.info("[RESEND WELCOME OK] to=%s plan=%s", to_email, plan)
-            return True
-        except Exception as exc:
-            log.error("[RESEND WELCOME FAIL] %s: %s", to_email, exc)
-    elif is_sandbox:
-        log.warning("[RESEND SANDBOX] Skipping Resend for welcome email to %s", to_email)
-
+    # 1. SMTP (primary — free, reliable)
     if smtp_user:
         try:
             cfg = {
@@ -561,7 +516,24 @@ def send_subscription_welcome_email(
             return True
         except Exception as exc:
             log.error("[SMTP WELCOME FAIL] %s: %s", to_email, exc)
+            print(f"[GARAGE][SMTP WELCOME FAIL] {exc} — trying Resend fallback")
 
+    # 2. Resend (fallback — only when NOT sandbox)
+    if resend_key and not is_sandbox:
+        try:
+            import resend
+            resend.api_key = resend_key
+            from_addr = os.environ.get("RESEND_FROM", "Garage <onboarding@resend.dev>")
+            resend.Emails.send({"from": from_addr, "to": [to_email],
+                                "subject": subject, "html": html_body, "text": plain_body})
+            log.info("[RESEND WELCOME OK] to=%s plan=%s", to_email, plan)
+            return True
+        except Exception as exc:
+            log.error("[RESEND WELCOME FAIL] %s: %s", to_email, exc)
+    elif is_sandbox:
+        log.warning("[RESEND SANDBOX] Skipping Resend for welcome email to %s", to_email)
+
+    # 3. Dev console (no provider delivered)
     log.warning("[DEV MODE] Welcome email for %s (%s) not sent — no provider", to_email, plan)
     print(f"[GARAGE][DEV] Subscription welcome for {to_email}: plan={plan} expires={expires_at}")
     return False
