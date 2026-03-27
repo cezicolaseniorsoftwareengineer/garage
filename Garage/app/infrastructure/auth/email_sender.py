@@ -162,11 +162,12 @@ def send_verification_email(to_email: str, code: str, full_name: str) -> bool:
     """
     resend_key = os.environ.get("RESEND_API_KEY", "")
     smtp_user  = os.environ.get("SMTP_USER", "")
+    is_sandbox = resend_key and _is_resend_sandbox()
 
-    # ── 0. Sandbox guard: skip Resend when using sandbox from-address ────────
-    # Resend sandbox silently accepts API calls but never delivers to
-    # non-owner recipients. Prefer SMTP when sandbox is detected.
-    if resend_key and _is_resend_sandbox() and smtp_user:
+    # ── 0. Sandbox guard: ALWAYS skip Resend when using sandbox from-address ─
+    # Resend sandbox silently accepts API calls (200 OK) but never delivers to
+    # non-owner recipients. We must never trust it for real delivery.
+    if is_sandbox and smtp_user:
         log.warning("[RESEND SANDBOX] Detected sandbox from-address — skipping Resend, using SMTP")
         print("[GARAGE][RESEND SANDBOX] Skipping Resend (sandbox mode) — sending via SMTP")
         try:
@@ -176,7 +177,13 @@ def send_verification_email(to_email: str, code: str, full_name: str) -> bool:
             print(f"[GARAGE][SMTP FAIL] {exc}")
             # Fall through to dev console below
 
-    # ── 1. Resend (preferred: SPF/DKIM, no spam — only if NOT sandbox) ───────
+    elif is_sandbox:
+        # Sandbox detected but NO SMTP configured — cannot send real email
+        log.error("[RESEND SANDBOX] Sandbox detected and no SMTP configured — email NOT sent to %s", to_email)
+        print(f"[GARAGE][RESEND SANDBOX] WARNING: Cannot send email to {to_email} — Resend is sandbox and SMTP is not configured")
+        # Fall through to dev console below
+
+    # ── 1. Resend (preferred: SPF/DKIM, no spam — only when NOT sandbox) ─────
     elif resend_key:
         try:
             return _send_via_resend(to_email, code, full_name)
@@ -194,7 +201,7 @@ def send_verification_email(to_email: str, code: str, full_name: str) -> bool:
             print(f"[GARAGE][SMTP FAIL] {exc}")
 
     # ── 3. Dev console (no provider configured) ──────────────────────────────
-    log.warning("[DEV MODE] No email provider. Code for %s: %s", to_email, code)
+    log.warning("[NO EMAIL PROVIDER] Code for %s: %s", to_email, code)
     print(f"[GARAGE][DEV] Verification code for {to_email}: {code}")
     return False
 
@@ -218,11 +225,15 @@ def send_verification_email_timed(
     """
     from concurrent.futures import TimeoutError as FutureTimeout
 
-    # Quick check: any provider available at all?
+    # Quick check: any usable provider available?
     resend_key = os.environ.get("RESEND_API_KEY", "")
     smtp_user = os.environ.get("SMTP_USER", "")
-    if not resend_key and not smtp_user:
-        log.warning("[DEV MODE] No email provider. Code for %s: %s", to_email, code)
+    is_sandbox = resend_key and _is_resend_sandbox()
+    # No provider at all, or sandbox without SMTP = cannot send real email
+    has_provider = (resend_key and not is_sandbox) or smtp_user
+    if not has_provider:
+        log.warning("[NO USABLE PROVIDER] Code for %s: %s (sandbox=%s smtp=%s)",
+                    to_email, code, is_sandbox, bool(smtp_user))
         print(f"[GARAGE][DEV] Verification code for {to_email}: {code}")
         return False
 
@@ -337,6 +348,7 @@ def send_password_reset_email(to_email: str, code: str, full_name: str) -> bool:
     """
     resend_key = os.environ.get("RESEND_API_KEY", "")
     smtp_user  = os.environ.get("SMTP_USER", "")
+    is_sandbox = resend_key and _is_resend_sandbox()
 
     subject = f"[{code}] Redefinição de senha — Garage"
     html_body = _html_template_reset(full_name, code)
@@ -347,8 +359,8 @@ def send_password_reset_email(to_email: str, code: str, full_name: str) -> bool:
         f"— Bio Code Technology"
     )
 
-    # -- 0. Sandbox guard: skip Resend when using sandbox from-address --------
-    if resend_key and _is_resend_sandbox() and smtp_user:
+    # -- 0. Sandbox guard: ALWAYS skip Resend when sandbox detected ------------
+    if is_sandbox and smtp_user:
         log.warning("[RESEND SANDBOX] Detected sandbox from-address — skipping Resend for reset, using SMTP")
         print("[GARAGE][RESEND SANDBOX] Skipping Resend (sandbox mode) — sending reset via SMTP")
         try:
@@ -357,7 +369,11 @@ def send_password_reset_email(to_email: str, code: str, full_name: str) -> bool:
             log.error("[SMTP RESET FAIL after sandbox skip] %s: %s", to_email, exc)
             print(f"[GARAGE][SMTP RESET FAIL] {exc}")
 
-    # -- 1. Resend (preferred: SPF/DKIM — only if NOT sandbox) -----------------
+    elif is_sandbox:
+        log.error("[RESEND SANDBOX] Sandbox detected and no SMTP configured — reset email NOT sent to %s", to_email)
+        print(f"[GARAGE][RESEND SANDBOX] WARNING: Cannot send reset email to {to_email} — Resend is sandbox and SMTP is not configured")
+
+    # -- 1. Resend (preferred: SPF/DKIM — only when NOT sandbox) ---------------
     elif resend_key:
         try:
             import resend
@@ -380,7 +396,7 @@ def send_password_reset_email(to_email: str, code: str, full_name: str) -> bool:
             print(f"[GARAGE][SMTP RESET FAIL] {exc}")
 
     # -- 3. Dev console (no provider configured) --------------------------------
-    log.warning("[DEV MODE] Reset code for %s: %s", to_email, code)
+    log.warning("[NO EMAIL PROVIDER] Reset code for %s: %s", to_email, code)
     print(f"[GARAGE][DEV] Password reset code for {to_email}: {code}")
     return False
 
@@ -399,8 +415,11 @@ def send_password_reset_email_timed(
 
     resend_key = os.environ.get("RESEND_API_KEY", "")
     smtp_user = os.environ.get("SMTP_USER", "")
-    if not resend_key and not smtp_user:
-        log.warning("[DEV MODE] No email provider. Reset code for %s: %s", to_email, code)
+    is_sandbox = resend_key and _is_resend_sandbox()
+    has_provider = (resend_key and not is_sandbox) or smtp_user
+    if not has_provider:
+        log.warning("[NO USABLE PROVIDER] Reset code for %s: %s (sandbox=%s smtp=%s)",
+                    to_email, code, is_sandbox, bool(smtp_user))
         print(f"[GARAGE][DEV] Password reset code for {to_email}: {code}")
         return False
 
@@ -502,8 +521,10 @@ def send_subscription_welcome_email(
 
     resend_key = os.environ.get("RESEND_API_KEY", "")
     smtp_user  = os.environ.get("SMTP_USER", "")
+    is_sandbox = resend_key and _is_resend_sandbox()
 
-    if resend_key:
+    # Resend (only when NOT sandbox — sandbox silently drops)
+    if resend_key and not is_sandbox:
         try:
             import resend
             resend.api_key = resend_key
@@ -514,6 +535,8 @@ def send_subscription_welcome_email(
             return True
         except Exception as exc:
             log.error("[RESEND WELCOME FAIL] %s: %s", to_email, exc)
+    elif is_sandbox:
+        log.warning("[RESEND SANDBOX] Skipping Resend for welcome email to %s", to_email)
 
     if smtp_user:
         try:
