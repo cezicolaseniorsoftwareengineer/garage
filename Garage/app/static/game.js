@@ -5641,16 +5641,23 @@ const Game = {
         UI.updateTitleButtons();
     },
 
+    _starting: false,
+
     async start() {
+        if (this._starting) { console.warn('[Game.start] already in progress, ignoring'); return; }
+        this._starting = true;
+        console.log('[Game.start] CALLED');
         const name = document.getElementById('playerName').value.trim();
-        if (!name) { alert('Digite seu nome.'); return; }
+        if (!name) { alert('Digite seu nome.'); this._starting = false; return; }
         const av = UI.getSelectedAvatar();
+        console.log('[Game.start] avatar:', av, 'name:', name);
         SFX.menuConfirm();
 
         try {
             // Reset any previous world state tracking
             WorldStatePersistence.reset();
 
+            console.log('[Game.start] calling /api/start ...');
             const data = await API.post('/api/start', {
                 player_name: name,
                 gender: av.gender,
@@ -5658,6 +5665,7 @@ const Game = {
                 avatar_index: av.index,
                 language: document.getElementById('playerLang').value,
             });
+            console.log('[Game.start] /api/start OK:', data);
             State.sessionId = data.session_id;
             State.player = data.player;
             State.avatarIndex = av.index;
@@ -5670,11 +5678,15 @@ const Game = {
             State.lockedNpc = null;
             State.doorAnimBuilding = null;
 
+            console.log('[Game.start] calling /api/challenges ...');
             State.challenges = await API.get('/api/challenges');
+            console.log('[Game.start] challenges loaded:', State.challenges.length);
             Learning.syncSessionState(State.player, State.challenges);
 
+            console.log('[Game.start] World.init ...');
             World.init(av.index, 100);
             UI.updateHUD(State.player);
+            console.log('[Game.start] UI.showScreen(screen-world) ...');
             UI.showScreen('screen-world');
 
             // Start periodic save for position persistence
@@ -5684,9 +5696,13 @@ const Game = {
             Heartbeat.start();
 
             Learning.showStageBriefingIfNeeded(State.player.stage);
+            console.log('[Game.start] DONE — world should be visible');
         } catch (e) {
+            console.error('[Game.start] ERROR:', e);
             if (e.status === 402) { UI.showPaywall(e.data); return; }
             alert('Erro: ' + e.message);
+        } finally {
+            this._starting = false;
         }
     },
 
