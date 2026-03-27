@@ -103,7 +103,7 @@ def _send_via_resend(to_email: str, code: str, full_name: str) -> bool:
 # Provider 2: SMTP  (fallback — Gmail)
 # ---------------------------------------------------------------------------
 def _send_via_smtp(to_email: str, code: str, full_name: str) -> bool:
-    """Send via SMTP with 3 retries. Returns True on success, raises on failure."""
+    """Send via SMTP with 2 retries. Returns True on success, raises on failure."""
     cfg = {
         "host":     os.environ.get("SMTP_HOST", "smtp.gmail.com"),
         "port":     int(os.environ.get("SMTP_PORT", "587")),
@@ -119,11 +119,11 @@ def _send_via_smtp(to_email: str, code: str, full_name: str) -> bool:
     msg.attach(MIMEText(_html_template(full_name, code), "html"))
 
     last_exc = None
-    for attempt in range(3):
+    for attempt in range(2):
         if attempt > 0:
-            log.warning("[SMTP] retry %d/3 for %s", attempt + 1, to_email)
+            log.warning("[SMTP] retry %d/2 for %s", attempt + 1, to_email)
         try:
-            with smtplib.SMTP(cfg["host"], cfg["port"], timeout=20) as server:
+            with smtplib.SMTP(cfg["host"], cfg["port"], timeout=10) as server:
                 server.ehlo(); server.starttls(); server.ehlo()
                 server.login(cfg["user"], cfg["password"])
                 server.sendmail(cfg["user"], to_email, msg.as_string())
@@ -137,28 +137,53 @@ def _send_via_smtp(to_email: str, code: str, full_name: str) -> bool:
             last_exc = exc
             log.warning("[SMTP] attempt %d failed: %s", attempt + 1, exc)
 
-    raise RuntimeError(f"SMTP: all 3 retries exhausted. Last: {last_exc}")
+    raise RuntimeError(f"SMTP: all 2 retries exhausted. Last: {last_exc}")
 
 
 # ---------------------------------------------------------------------------
 # Public interface
 # ---------------------------------------------------------------------------
+def _is_resend_sandbox() -> bool:
+    """Detect if Resend is in sandbox mode (onboarding@resend.dev from address).
+
+    In sandbox mode, Resend API accepts the call and returns 200 with an email ID,
+    but silently drops delivery for any recipient that is not the sandbox owner.
+    This makes the fallback chain think the email was sent when it was not.
+    """
+    from_addr = os.environ.get("RESEND_FROM", "Garage <onboarding@resend.dev>")
+    return "resend.dev" in from_addr.lower()
+
+
 def send_verification_email(to_email: str, code: str, full_name: str) -> bool:
     """Send a 6-digit OTP to the given address.
 
-    Priority: Resend → SMTP → dev console (stdout).
+    Priority: SMTP (when Resend is sandbox) → Resend → SMTP → dev console.
     Returns True if delivered via email, False if only printed to console.
     """
     resend_key = os.environ.get("RESEND_API_KEY", "")
     smtp_user  = os.environ.get("SMTP_USER", "")
 
-    # ── 1. Resend (preferred: SPF/DKIM, no spam) ────────────────────────────
-    if resend_key:
+    # ── 0. Sandbox guard: skip Resend when using sandbox from-address ────────
+    # Resend sandbox silently accepts API calls but never delivers to
+    # non-owner recipients. Prefer SMTP when sandbox is detected.
+    if resend_key and _is_resend_sandbox() and smtp_user:
+        log.warning("[RESEND SANDBOX] Detected sandbox from-address — skipping Resend, using SMTP")
+        print("[GARAGE][RESEND SANDBOX] Skipping Resend (sandbox mode) — sending via SMTP")
+        try:
+            return _send_via_smtp(to_email, code, full_name)
+        except Exception as exc:
+            log.error("[SMTP FAIL after sandbox skip] %s: %s", to_email, exc)
+            print(f"[GARAGE][SMTP FAIL] {exc}")
+            # Fall through to dev console below
+
+    # ── 1. Resend (preferred: SPF/DKIM, no spam — only if NOT sandbox) ───────
+    elif resend_key:
         try:
             return _send_via_resend(to_email, code, full_name)
         except Exception as exc:
             log.error("[RESEND FAIL] %s — falling back to SMTP: %s", to_email, exc)
             print(f"[GARAGE][RESEND FAIL] {exc} — trying SMTP fallback")
+            # Fall through to SMTP below
 
     # ── 2. SMTP fallback (Gmail) ─────────────────────────────────────────────
     if smtp_user:
@@ -172,6 +197,47 @@ def send_verification_email(to_email: str, code: str, full_name: str) -> bool:
     log.warning("[DEV MODE] No email provider. Code for %s: %s", to_email, code)
     print(f"[GARAGE][DEV] Verification code for {to_email}: {code}")
     return False
+
+
+# Shared executor for email sending — never shut down so threads can finish
+# in background after the HTTP response is returned.
+from concurrent.futures import ThreadPoolExecutor as _TPE, Future as _Future
+
+_email_executor = _TPE(max_workers=2, thread_name_prefix="email")
+
+
+def send_verification_email_timed(
+    to_email: str, code: str, full_name: str, timeout_secs: float = 8.0
+) -> bool | None:
+    """Send OTP email with a time limit for synchronous confirmation.
+
+    Returns:
+        True  — email confirmed sent within timeout
+        False — no provider configured (dev console only)
+        None  — sending started but not confirmed within timeout (still running in background)
+    """
+    from concurrent.futures import TimeoutError as FutureTimeout
+
+    # Quick check: any provider available at all?
+    resend_key = os.environ.get("RESEND_API_KEY", "")
+    smtp_user = os.environ.get("SMTP_USER", "")
+    if not resend_key and not smtp_user:
+        log.warning("[DEV MODE] No email provider. Code for %s: %s", to_email, code)
+        print(f"[GARAGE][DEV] Verification code for {to_email}: {code}")
+        return False
+
+    future = _email_executor.submit(send_verification_email, to_email, code, full_name)
+    try:
+        result = future.result(timeout=timeout_secs)
+        return result
+    except FutureTimeout:
+        log.info("[EMAIL TIMEOUT] %s: email send did not complete in %.1fs — continuing in background", to_email, timeout_secs)
+        print(f"[GARAGE][EMAIL TIMEOUT] Sending to {to_email} continues in background (>{timeout_secs}s)")
+        # Thread continues running — email will be sent, just not confirmed yet
+        return None
+    except Exception as exc:
+        log.error("[EMAIL TIMED EXCEPTION] %s: %s", to_email, exc)
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -217,8 +283,58 @@ def _html_template_reset(full_name: str, code: str) -> str:
 </html>"""
 
 
+def _send_reset_via_smtp(to_email: str, code: str, full_name: str) -> bool:
+    """Send password-reset OTP via SMTP with 2 retries. Returns True on success, raises on failure."""
+    subject = f"[{code}] Redefinição de senha — Garage"
+    html_body = _html_template_reset(full_name, code)
+    plain_body = (
+        f"Olá {full_name},\n\n"
+        f"Seu código para redefinição de senha do Garage é: {code}\n\n"
+        f"Ele expira em 30 minutos. Se não foi você, ignore este e-mail.\n\n"
+        f"— Bio Code Technology"
+    )
+    cfg = {
+        "host":     os.environ.get("SMTP_HOST", "smtp.gmail.com"),
+        "port":     int(os.environ.get("SMTP_PORT", "587")),
+        "user":     os.environ.get("SMTP_USER", ""),
+        "password": os.environ.get("SMTP_PASSWORD", ""),
+        "from":     os.environ.get("SMTP_FROM", os.environ.get("SMTP_USER", "")),
+    }
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = cfg["from"] or cfg["user"]
+    msg["To"] = to_email
+    msg.attach(MIMEText(plain_body, "plain"))
+    msg.attach(MIMEText(html_body, "html"))
+
+    last_exc = None
+    for attempt in range(2):
+        if attempt > 0:
+            log.warning("[SMTP RESET] retry %d/2 for %s", attempt + 1, to_email)
+        try:
+            with smtplib.SMTP(cfg["host"], cfg["port"], timeout=10) as server:
+                server.ehlo(); server.starttls(); server.ehlo()
+                server.login(cfg["user"], cfg["password"])
+                server.sendmail(cfg["user"], to_email, msg.as_string())
+            log.info("[SMTP RESET OK] attempt=%d to=%s", attempt + 1, to_email)
+            print(f"[GARAGE][SMTP RESET OK] Sent to {to_email} (attempt {attempt + 1})")
+            return True
+        except smtplib.SMTPAuthenticationError as exc:
+            log.error("[SMTP RESET AUTH FAIL] user=%s: %s", cfg["user"], exc)
+            raise
+        except Exception as exc:
+            last_exc = exc
+            log.warning("[SMTP RESET] attempt %d failed: %s", attempt + 1, exc)
+
+    raise RuntimeError(f"SMTP RESET: all 2 retries exhausted. Last: {last_exc}")
+
+
 def send_password_reset_email(to_email: str, code: str, full_name: str) -> bool:
-    """Send a password-reset OTP.  Same provider priority as send_verification_email."""
+    """Send a password-reset OTP.
+
+    Priority: SMTP (when Resend is sandbox) -> Resend -> SMTP -> dev console.
+    Returns True if delivered via email, False if only printed to console.
+    """
     resend_key = os.environ.get("RESEND_API_KEY", "")
     smtp_user  = os.environ.get("SMTP_USER", "")
 
@@ -231,45 +347,74 @@ def send_password_reset_email(to_email: str, code: str, full_name: str) -> bool:
         f"— Bio Code Technology"
     )
 
-    if resend_key:
+    # -- 0. Sandbox guard: skip Resend when using sandbox from-address --------
+    if resend_key and _is_resend_sandbox() and smtp_user:
+        log.warning("[RESEND SANDBOX] Detected sandbox from-address — skipping Resend for reset, using SMTP")
+        print("[GARAGE][RESEND SANDBOX] Skipping Resend (sandbox mode) — sending reset via SMTP")
+        try:
+            return _send_reset_via_smtp(to_email, code, full_name)
+        except Exception as exc:
+            log.error("[SMTP RESET FAIL after sandbox skip] %s: %s", to_email, exc)
+            print(f"[GARAGE][SMTP RESET FAIL] {exc}")
+
+    # -- 1. Resend (preferred: SPF/DKIM — only if NOT sandbox) -----------------
+    elif resend_key:
         try:
             import resend
             resend.api_key = resend_key
             from_addr = os.environ.get("RESEND_FROM", "Garage <onboarding@resend.dev>")
-            result = resend.Emails.send({"from": from_addr, "to": [to_email],
-                                         "subject": subject, "html": html_body, "text": plain_body})
+            resend.Emails.send({"from": from_addr, "to": [to_email],
+                                "subject": subject, "html": html_body, "text": plain_body})
             log.info("[RESEND RESET OK] to=%s", to_email)
             return True
         except Exception as exc:
-            log.error("[RESEND RESET FAIL] %s: %s", to_email, exc)
+            log.error("[RESEND RESET FAIL] %s — falling back to SMTP: %s", to_email, exc)
+            print(f"[GARAGE][RESEND RESET FAIL] {exc} — trying SMTP fallback")
 
+    # -- 2. SMTP fallback (Gmail) ----------------------------------------------
     if smtp_user:
         try:
-            cfg = {
-                "host": os.environ.get("SMTP_HOST", "smtp.gmail.com"),
-                "port": int(os.environ.get("SMTP_PORT", "587")),
-                "user": smtp_user,
-                "password": os.environ.get("SMTP_PASSWORD", ""),
-                "from": os.environ.get("SMTP_FROM", smtp_user),
-            }
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = subject
-            msg["From"] = cfg["from"]
-            msg["To"] = to_email
-            msg.attach(MIMEText(plain_body, "plain"))
-            msg.attach(MIMEText(html_body, "html"))
-            with smtplib.SMTP(cfg["host"], cfg["port"], timeout=20) as server:
-                server.ehlo(); server.starttls(); server.ehlo()
-                server.login(cfg["user"], cfg["password"])
-                server.sendmail(cfg["user"], to_email, msg.as_string())
-            log.info("[SMTP RESET OK] to=%s", to_email)
-            return True
+            return _send_reset_via_smtp(to_email, code, full_name)
         except Exception as exc:
             log.error("[SMTP RESET FAIL] %s: %s", to_email, exc)
+            print(f"[GARAGE][SMTP RESET FAIL] {exc}")
 
+    # -- 3. Dev console (no provider configured) --------------------------------
     log.warning("[DEV MODE] Reset code for %s: %s", to_email, code)
     print(f"[GARAGE][DEV] Password reset code for {to_email}: {code}")
     return False
+
+
+def send_password_reset_email_timed(
+    to_email: str, code: str, full_name: str, timeout_secs: float = 8.0
+) -> bool | None:
+    """Send password-reset OTP with a time limit for synchronous confirmation.
+
+    Returns:
+        True  — email confirmed sent within timeout
+        False — no provider configured (dev console only)
+        None  — sending started but not confirmed within timeout (still running in background)
+    """
+    from concurrent.futures import TimeoutError as FutureTimeout
+
+    resend_key = os.environ.get("RESEND_API_KEY", "")
+    smtp_user = os.environ.get("SMTP_USER", "")
+    if not resend_key and not smtp_user:
+        log.warning("[DEV MODE] No email provider. Reset code for %s: %s", to_email, code)
+        print(f"[GARAGE][DEV] Password reset code for {to_email}: {code}")
+        return False
+
+    future = _email_executor.submit(send_password_reset_email, to_email, code, full_name)
+    try:
+        result = future.result(timeout=timeout_secs)
+        return result
+    except FutureTimeout:
+        log.info("[EMAIL RESET TIMEOUT] %s: reset email send did not complete in %.1fs — continuing in background", to_email, timeout_secs)
+        print(f"[GARAGE][EMAIL RESET TIMEOUT] Sending to {to_email} continues in background (>{timeout_secs}s)")
+        return None
+    except Exception as exc:
+        log.error("[EMAIL RESET TIMED EXCEPTION] %s: %s", to_email, exc)
+        return False
 
 
 # ---------------------------------------------------------------------------

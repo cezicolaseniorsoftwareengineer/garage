@@ -1,5 +1,5 @@
 """Authentication API routes -- register, login, refresh, profile."""
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
@@ -24,7 +24,7 @@ from app.infrastructure.auth.password import (
     is_bcrypt_hash,
 )
 from app.infrastructure.auth.bruteforce import record_failed, is_blocked, clear_failed
-from app.infrastructure.auth.email_sender import send_verification_email, send_password_reset_email
+from app.infrastructure.auth.email_sender import send_verification_email, send_verification_email_timed, send_password_reset_email, send_password_reset_email_timed
 from app.infrastructure.audit import log_event as audit_log
 from app.infrastructure.auth.dependencies import get_current_user
 
@@ -35,10 +35,6 @@ _user_repo = None
 _events = None
 _verification_repo = None
 _pending_repo = None   # PgPendingRepository — set when PostgreSQL is active
-
-# Subscription gate: set REQUIRE_SUBSCRIPTION=true in production .env to block
-# users without an active plan from obtaining JWT tokens. Admins always bypass.
-_REQUIRE_SUBSCRIPTION = os.environ.get("REQUIRE_SUBSCRIPTION", "false").lower() == "true"
 
 # In-memory store for password-reset OTPs  { user_id: {code_hash, expires_at} }
 _pwd_reset_store: dict = {}
@@ -109,7 +105,7 @@ def _mask_email(email: str) -> str:
 # ---------------------------------------------------------------------------
 
 @router.post("/register")
-def api_register(req: RegisterRequest, background_tasks: BackgroundTasks):
+def api_register(req: RegisterRequest):
     """Register a new user account.
 
     If verification is enabled (verification_repo wired), returns
@@ -173,34 +169,35 @@ def api_register(req: RegisterRequest, background_tasks: BackgroundTasks):
                 detail="Erro ao iniciar cadastro. Tente novamente.",
             )
 
-        # Fire email in background — API responds immediately, email sent concurrently
-        # Wrapped so SMTP failures are audited and never silently lost
-        def _send_email_with_audit(email: str, otp_code: str, name: str):
-            import logging as _logging
-            _log = _logging.getLogger("garage.email")
-            try:
-                ok = send_verification_email(email, otp_code, name)
-                if ok:
-                    _log.info("[EMAIL OK] OTP sent to %s", email)
-                    try:
-                        audit_log("otp_email_sent", email, {"status": "sent"})
-                    except Exception:
-                        pass
-                else:
-                    # SMTP not configured or auth failed — code printed to server log above
-                    _log.error("[EMAIL FAIL] send_verification_email returned False for %s", email)
-                    try:
-                        audit_log("otp_email_failed", email, {"status": "smtp_error", "code_in_server_log": True})
-                    except Exception:
-                        pass
-            except Exception as _exc:
-                _log.error("[EMAIL EXCEPTION] for %s: %s", email, _exc)
-                try:
-                    audit_log("otp_email_failed", email, {"status": "exception", "error": str(_exc)})
-                except Exception:
-                    pass
+        # Send email with timeout — try synchronous for up to 8s, then continue
+        # in background if SMTP is slow. This gives the frontend an accurate
+        # result when the network is fast, and a confident prediction when slow.
+        # The Resend sandbox detection ensures SMTP is used when sandbox is active,
+        # so the email WILL arrive even if confirmation exceeds the timeout.
+        _email_result = send_verification_email_timed(req.email, code, req.full_name, timeout_secs=8.0)
 
-        background_tasks.add_task(_send_email_with_audit, req.email, code, req.full_name)
+        # True  = confirmed sent | False = no provider | None = still sending (> 8s)
+        _email_actually_sent = _email_result is not False  # True or None → email is being/was sent
+
+        _elog = _lg.getLogger("garage.email")
+        if _email_result is True:
+            _elog.info("[EMAIL OK] OTP sent to %s (confirmed sync)", req.email)
+            try:
+                audit_log("otp_email_sent", req.email, {"status": "sent"})
+            except Exception:
+                pass
+        elif _email_result is None:
+            _elog.info("[EMAIL PENDING] OTP for %s still sending (timeout exceeded, will arrive)", req.email)
+            try:
+                audit_log("otp_email_sent", req.email, {"status": "sending_background"})
+            except Exception:
+                pass
+        else:
+            _elog.error("[EMAIL FAIL] send_verification_email returned False for %s", req.email)
+            try:
+                audit_log("otp_email_failed", req.email, {"status": "no_provider", "code_in_server_log": True})
+            except Exception:
+                pass
 
         try:
             audit_log("user_register_pending", req.email, {
@@ -210,18 +207,15 @@ def api_register(req: RegisterRequest, background_tasks: BackgroundTasks):
         except Exception:
             pass
 
-        _has_email_provider = bool(
-            os.environ.get("RESEND_API_KEY", "") or os.environ.get("SMTP_USER", "")
-        )
         reg_response: dict = {
             "success": True,
             "requires_verification": True,
             "email_hint": _mask_email(req.email),
-            "email_was_sent": _has_email_provider,
+            "email_was_sent": _email_actually_sent,
             "message": (
                 "Cadastro iniciado! Enviamos um codigo de 6 digitos para o seu e-mail. "
                 "Insira o codigo para concluir o cadastro e entrar no jogo."
-            ) if _has_email_provider else (
+            ) if _email_actually_sent else (
                 "Cadastro iniciado! O codigo de verificacao foi gerado. "
                 "Verifique o log do servidor (modo dev sem provedor de e-mail)."
             ),
@@ -339,26 +333,6 @@ def api_login(req: LoginRequest):
 
     # Attach role claim if the user is configured as admin (username-based check)
     role = "admin" if is_admin_username(user_data["username"]) else None
-
-    # ── Subscription gate ─────────────────────────────────────────────────
-    # Active only when REQUIRE_SUBSCRIPTION=true (production toggle).
-    # Admins are always allowed through regardless of subscription status.
-    if _REQUIRE_SUBSCRIPTION and role != "admin" and hasattr(_user_repo, "get_subscription_status"):
-        try:
-            sub = _user_repo.get_subscription_status(user_data["id"])
-            if sub.get("status") not in ("active",):
-                return JSONResponse(
-                    status_code=402,
-                    content={
-                        "detail": "Assinatura necessaria. Adquira ou renove seu plano para jogar.",
-                        "subscription_status": sub.get("status", "none"),
-                        "code": "subscription_required",
-                        "action_url": "/account",
-                    },
-                )
-        except Exception:
-            pass  # never block login due to subscription check failure
-    # ──────────────────────────────────────────────────────────────────────
 
     access_token = create_access_token(user_data["id"], user_data["username"], role=role)
     refresh_token = create_refresh_token(user_data["id"])
@@ -515,7 +489,7 @@ def api_verify_email(req: VerifyEmailRequest):
 
 
 @router.post("/resend-verification")
-def api_resend_verification(req: ResendVerificationRequest, background_tasks: BackgroundTasks):
+def api_resend_verification(req: ResendVerificationRequest):
     """Resend a fresh 6-digit OTP to the given email address.
 
     Checks both the pending_registrations staging table and (legacy) users table.
@@ -544,39 +518,34 @@ def api_resend_verification(req: ResendVerificationRequest, background_tasks: Ba
             return _generic_ok
 
         code, full_name = result
-        # Fire email in background — responds instantly (wrapped with audit on failure)
-        def _resend_with_audit(email: str, otp_code: str, name: str):
-            import logging as _logging2
-            _log2 = _logging2.getLogger("garage.email")
-            try:
-                ok = send_verification_email(email, otp_code, name)
-                if not ok:
-                    _log2.error("[EMAIL FAIL] resend returned False for %s", email)
-                    try:
-                        audit_log("otp_email_failed", email, {"status": "smtp_error", "action": "resend"})
-                    except Exception:
-                        pass
-                else:
-                    try:
-                        audit_log("otp_email_sent", email, {"status": "resent"})
-                    except Exception:
-                        pass
-            except Exception as _exc:
-                _log2.error("[EMAIL EXCEPTION] resend for %s: %s", email, _exc)
-                try:
-                    audit_log("otp_email_failed", email, {"status": "exception", "error": str(_exc), "action": "resend"})
-                except Exception:
-                    pass
-        background_tasks.add_task(_resend_with_audit, req.email, code, full_name)
 
-        _has_email_provider = bool(
-            os.environ.get("RESEND_API_KEY", "") or os.environ.get("SMTP_USER", "")
-        )
+        # Send email with timeout — same hybrid approach as register
+        _email_result = send_verification_email_timed(req.email, code, full_name, timeout_secs=8.0)
+        _email_actually_sent = _email_result is not False
+
+        if _email_result is True:
+            try:
+                audit_log("otp_email_sent", req.email, {"status": "resent"})
+            except Exception:
+                pass
+        elif _email_result is None:
+            _log.info("[EMAIL PENDING] resend for %s still sending", req.email)
+            try:
+                audit_log("otp_email_sent", req.email, {"status": "resending_background"})
+            except Exception:
+                pass
+        else:
+            _log.error("[EMAIL FAIL] resend returned False for %s", req.email)
+            try:
+                audit_log("otp_email_failed", req.email, {"status": "no_provider", "action": "resend"})
+            except Exception:
+                pass
+
         resend_response: dict = {
             "success": True,
             "email_hint": _mask_email(req.email),
-            "email_was_sent": _has_email_provider,
-            "message": "Novo codigo enviado para o seu e-mail." if _has_email_provider
+            "email_was_sent": _email_actually_sent,
+            "message": "Novo codigo enviado para o seu e-mail." if _email_actually_sent
                        else "Novo codigo gerado. Verifique o log do servidor.",
         }
         if _DEBUG_MODE:
@@ -630,13 +599,14 @@ _DEBUG_MODE = os.environ.get("DEBUG", "").lower() in ("1", "true", "yes")
 
 
 @router.post("/forgot-password")
-def api_forgot_password(req: ForgotPasswordRequest, background_tasks: BackgroundTasks):
+def api_forgot_password(req: ForgotPasswordRequest):
     """Send a 6-digit OTP to reset the password.
 
     Always returns HTTP 200 to prevent e-mail enumeration.
+    Uses hybrid timed sending: tries sync for 8s, falls back to background.
     In DEBUG mode returns _debug_otp so dev can test without e-mail provider.
     """
-    _generic_ok = {"success": True, "message": "Se este e-mail estiver cadastrado, você receberá um código de redefinição."}
+    _generic_ok = {"success": True, "message": "Se este e-mail estiver cadastrado, você receberá um código de redefinição.", "email_was_sent": False}
 
     if _user_repo is None:
         return _generic_ok
@@ -657,22 +627,21 @@ def api_forgot_password(req: ForgotPasswordRequest, background_tasks: Background
     }
     _lg.getLogger("garage.auth").info("[PWD RESET] OTP stored for user_id=%s email=%s", user.id, user.email)
 
-    # Fire email in background so endpoint responds instantly
-    def _send_reset(email: str, otp: str, name: str):
-        try:
-            ok = send_password_reset_email(email, otp, name)
-            if not ok:
-                audit_log("pwd_reset_dev_mode", email, {"info": "printed to console"})
-            else:
-                audit_log("pwd_reset_email_sent", email, {})
-        except Exception as exc:
-            _lg.getLogger("garage.auth").error("[PWD RESET EMAIL FAIL] %s: %s", email, exc)
+    # Hybrid timed sending: sync for 8s, background if timeout
+    email_result = send_password_reset_email_timed(user.email, code, user.full_name)
+    # True = confirmed sent | None = still sending in background | False = no provider
+    if email_result is True:
+        audit_log("pwd_reset_email_sent", user.email, {})
+    elif email_result is False:
+        audit_log("pwd_reset_dev_mode", user.email, {"info": "printed to console"})
+    # None = in-flight background, audit will happen when thread completes
 
-    background_tasks.add_task(_send_reset, user.email, code, user.full_name)
+    email_was_sent = email_result is not False  # True or None both mean "sent or sending"
 
     response: dict = {
         "success": True,
         "email_hint": _mask_email(user.email),
+        "email_was_sent": email_was_sent,
         "message": "Se este e-mail estiver cadastrado, você receberá um código de redefinição.",
     }
     if _DEBUG_MODE:

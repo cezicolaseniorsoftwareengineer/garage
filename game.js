@@ -8834,12 +8834,22 @@ const Auth = {
                 const res = await API.post('/api/auth/forgot-password', { email });
                 this._pendingResetEmail = email;
 
-                sucEl.textContent = 'Código enviado! Verifique sua caixa de entrada.';
+                const emailSent = res.email_was_sent !== false;
+                const emailHintText = res.email_hint
+                    ? `Código enviado para ${res.email_hint}.`
+                    : `Código enviado para ${email}.`;
+                const hintSuffix = emailSent
+                    ? ' Verifique sua caixa de entrada (e spam).'
+                    : ' Verifique o console do servidor (modo dev).';
+
+                sucEl.textContent = emailSent
+                    ? 'Código enviado! Verifique sua caixa de entrada.'
+                    : 'Código exibido no console do servidor (dev mode).';
                 sucEl.hidden = false;
                 setTimeout(() => {
                     const hint = document.getElementById('resetEmailHint');
                     if (hint) {
-                        hint.textContent = `Código enviado para ${email}. Insira abaixo.`;
+                        hint.textContent = emailHintText + hintSuffix;
                     }
                     UI.showScreen('screen-reset-password');
                 }, 1200);
