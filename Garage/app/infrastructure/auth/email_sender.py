@@ -37,16 +37,19 @@ def _html_template(full_name: str, code: str) -> str:
         <tr>
           <td style="padding:32px 40px;text-align:center;">
             <div style="color:#fbbf24;font-size:24px;font-weight:700;letter-spacing:4px;">[GARAGE]</div>
-            <div style="color:#94a3b8;font-size:11px;margin-top:4px;letter-spacing:2px;">BIO CODE TECHNOLOGY</div>
+            <div style="color:#94a3b8;font-size:11px;margin-top:4px;letter-spacing:2px;">BEM-VINDO AO JOGO</div>
             <hr style="border:none;border-top:1px solid #334155;margin:24px 0;">
-            <p style="color:#e2e8f0;font-size:15px;margin:0 0 8px;">Olá, <strong>{full_name}</strong>!</p>
+            <p style="color:#fbbf24;font-size:18px;font-weight:700;margin:0 0 16px;">Bem-vindo, {full_name}! 🎮</p>
+            <p style="color:#e2e8f0;font-size:14px;margin:0 0 12px;">Você está prestes a ingressar no <strong>Garage</strong>, a aventura no Silicon Valley onde você sairá como um <strong>Principal Engineer</strong>.</p>
             <p style="color:#94a3b8;font-size:13px;margin:0 0 28px;">
-              Para confirmar seu e-mail e entrar no Vale do Silício,<br>
-              use o código abaixo. Ele expira em <strong style="color:#fbbf24;">30 minutos</strong>.
+              Confirme seu e-mail usando o código abaixo. Ele expira em <strong style="color:#fbbf24;">30 minutos</strong>.
             </p>
             <div style="background:#0f172a;border:2px solid #fbbf24;border-radius:8px;padding:20px 0;margin:0 auto 28px;">
               <span style="color:#fbbf24;font-size:38px;font-weight:700;letter-spacing:12px;">{code}</span>
             </div>
+            <p style="color:#10b981;font-size:12px;margin:0 0 8px;">
+              <strong>Próximo passo:</strong> Verifique seu e-mail e comece sua jornada!
+            </p>
             <p style="color:#64748b;font-size:11px;margin:0;">
               Se você não se cadastrou no Garage, ignore este e-mail.
             </p>
@@ -68,10 +71,15 @@ def _html_template(full_name: str, code: str) -> str:
 
 def _plain_text(full_name: str, code: str) -> str:
     return (
+        f"BEM-VINDO AO GARAGE!\n\n"
         f"Olá {full_name},\n\n"
-        f"Seu código de verificação do Garage é: {code}\n\n"
-        f"Ele expira em 30 minutos. Se não foi você, ignore este e-mail.\n\n"
-        f"— Bio Code Technology"
+        f"Você está prestes a ingressar no Garage, a aventura no Silicon Valley.\n"
+        f"Aqui você sairá como um Principal Engineer.\n\n"
+        f"Código de verificação: {code}\n"
+        f"Expira em: 30 minutos\n\n"
+        f"Se não foi você que se cadastrou, ignore este e-mail.\n\n"
+        f"Boa sorte na jornada!\n"
+        f"— Bio Code Technology / Garage"
     )
 
 
