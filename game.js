@@ -672,7 +672,7 @@ const StudyChat = {
         if (this._messages.length === 0) {
             this._append(
                 'assistant',
-                'Olá! Sou **Cezi Cola**, Senior Software Engineer e CEO da Bio Code Technology — o mesmo que você encontra no jogo.\n\nCriei o Garage — Uma aventura no Vale do Silício para transformar desenvolvedores em engenheiros que as maiores Big Techs do mundo disputam. Estou aqui para te ensinar Java, algoritmos, estruturas de dados, arquitetura de sistemas e tudo que um Principal Engineer domina.\n\nPergunte à vontade. Vamos começar?',
+                'Meu Nome é Cezi Cola sou Senior Software Engineer CEO da Bio Code Technology, e desenvolvi este jogo em forma de curso para compartilhar e dividir conhecimentos com outros programadores e desenvolvedores para que nosso legado Tec nunca morra, e só cresça de forma perpétua!',
                 'inicio'
             );
         } else {
@@ -1902,7 +1902,7 @@ const NPC_DATA = [
     },
     {
         id: 'npc_biocode', name: 'CEZI COLA', role: 'CEO - Bio Code Technology', region: 'Bio Code Technology', stage: 'Principal', worldX: 31600,
-        dialog: 'Ol\u00e1! Sou Cezi Cola, Senior Software Engineer e CEO da Bio Code Technology. Desenvolvi este jogo para ajudar desenvolvedores e programadores a aperfei\u00e7oar suas habilidades com estrutura de dados e algoritmos. Aqui, conhecimento \u00e9 compartilhado em comunidade -- n\u00e3o guardamos segredos. Programa\u00e7\u00e3o din\u00e2mica \u00e9 o cora\u00e7\u00e3o do racioc\u00ednio: decompor problemas grandes em subproblemas menores, memorizar resultados e construir a solu\u00e7\u00e3o de baixo para cima. Continue estudando, evoluindo, e lembre-se: o melhor investimento \u00e9 em voc\u00ea mesmo.',
+        dialog: 'Meu Nome é Cezi Cola sou Senior Software Engineer CEO da Bio Code Technology, e desenvolvi este jogo em forma de curso para compartilhar e dividir conhecimentos com outros programadores e desenvolvedores para que nosso legado Tec nunca morra, e só cresça de forma perpétua!',
         look: { hair: '#FFD700', hairStyle: 'pompadour', shirt: '#111111', pants: '#1a5fb4', shoes: '#f0f0f0', skinTone: '#c68642' }
     },
     {
