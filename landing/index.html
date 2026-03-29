@@ -8,7 +8,7 @@
     <meta name="description"
         content="404 Garage — De Estagiário a Principal Engineer. O jogo que ensina Java, algoritmos e engenharia de software através da história real do Vale do Silício." />
     <title>404 Garage — Aventura no Vale do Silício</title>
-    <link rel="stylesheet" href="/landing/style.css" />
+    <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;900&display=swap"
@@ -590,8 +590,7 @@
                         <span class="chrome-title">TwoSum.java — Garage IDE · Principal · Tesla</span>
                     </div>
                     <div class="screen-img-wrap">
-                        <img src="/landing/assets/screenshots/img_garage2.png" alt="Editor Java com Garage AI"
-                            loading="lazy" />
+                        <img src="assets/screenshots/img_garage2.png" alt="Editor Java com Garage AI" loading="lazy" />
                     </div>
                 </div>
                 <div class="gallery-featured-caption">
@@ -621,7 +620,7 @@
                             <span class="chrome-title">Mapa de Progresso</span>
                         </div>
                         <div class="screen-img-wrap">
-                            <img src="/landing/assets/screenshots/img_garage3.png" alt="Mapa de progresso — 24 empresas"
+                            <img src="assets/screenshots/img_garage3.png" alt="Mapa de progresso — 24 empresas"
                                 loading="lazy" />
                         </div>
                     </div>
@@ -640,7 +639,7 @@
                             <span class="chrome-title">Desafio Completo</span>
                         </div>
                         <div class="screen-img-wrap">
-                            <img src="/landing/assets/screenshots/img_garage4.png" alt="Desafio completo validado"
+                            <img src="assets/screenshots/img_garage4.png" alt="Desafio completo validado"
                                 loading="lazy" />
                         </div>
                     </div>
@@ -659,7 +658,7 @@
                             <span class="chrome-title">NPC — Roberto Setubal</span>
                         </div>
                         <div class="screen-img-wrap">
-                            <img src="/landing/assets/screenshots/img_garage7.png" alt="Diálogo com Roberto Setubal"
+                            <img src="assets/screenshots/img_garage7.png" alt="Diálogo com Roberto Setubal"
                                 loading="lazy" />
                         </div>
                     </div>
@@ -678,8 +677,7 @@
                             <span class="chrome-title">Promoção de Cargo</span>
                         </div>
                         <div class="screen-img-wrap">
-                            <img src="/landing/assets/screenshots/img_garage8.png" alt="Promovido a CEO"
-                                loading="lazy" />
+                            <img src="assets/screenshots/img_garage8.png" alt="Promovido a CEO" loading="lazy" />
                         </div>
                     </div>
                     <div class="gallery-item-caption">
@@ -693,17 +691,16 @@
             <!-- STRIP: 3 prints adicionais -->
             <div class="gallery-strip">
                 <div class="gallery-strip-item">
-                    <img src="/landing/assets/screenshots/img_garage1.png" alt="Mundo side-scroller com NPCs"
-                        loading="lazy" />
+                    <img src="assets/screenshots/img_garage1.png" alt="Mundo side-scroller com NPCs" loading="lazy" />
                     <span class="gsi-label">Mundo side-scroller com NPCs lendários</span>
                 </div>
                 <div class="gallery-strip-item">
-                    <img src="/landing/assets/screenshots/img_garage5.png" alt="Tesla concluída — todos os desafios"
+                    <img src="assets/screenshots/img_garage5.png" alt="Tesla concluída — todos os desafios"
                         loading="lazy" />
                     <span class="gsi-label">Tesla concluída · missão completada com sucesso</span>
                 </div>
                 <div class="gallery-strip-item">
-                    <img src="/landing/assets/screenshots/img_garage6.png" alt="Livro Good Strategy Bad Strategy"
+                    <img src="assets/screenshots/img_garage6.png" alt="Livro Good Strategy Bad Strategy"
                         loading="lazy" />
                     <span class="gsi-label">24 livros técnicos coletáveis no mapa</span>
                 </div>
@@ -811,7 +808,7 @@
                         <li>✅ Suporte prioritário via WhatsApp</li>
                         <li>✅ Apto para licitação pública (Lei 14.133/2021)</li>
                     </ul>
-                    <a href="/landing/projetos-sociais.html" target="_blank" rel="noopener noreferrer"
+                    <a href="projetos-sociais.html" target="_blank" rel="noopener noreferrer"
                         class="btn-plan btn-plan-institutional btn-whatsapp-inst">
                         Quero o Projeto
                     </a>
@@ -1024,14 +1021,14 @@
             try {
                 if (typeof window !== 'undefined' && typeof window.__ENV__ === 'undefined') {
                     var s = document.createElement('script');
-                    s.src = '/landing/env.js';
+                    s.src = 'env.js';
                     s.async = false;
                     document.head.appendChild(s);
                 }
             } catch (e) { console.warn('env loader error', e); }
         })();
     </script>
-    <script src="/landing/script.js"></script>
+    <script src="script.js"></script>
     <script>
         // Lazy load background image for hero section
         document.addEventListener('DOMContentLoaded', function () {
@@ -1041,10 +1038,10 @@
             // Preload image asynchronously
             const img = new Image();
             img.onload = function () {
-                heroBg.style.backgroundImage = "url('/landing/assets/img_garage.png')";
+                heroBg.style.backgroundImage = "url('assets/img_garage.png')";
                 heroBg.style.display = 'block';
             };
-            img.src = '/landing/assets/img_garage.png';
+            img.src = 'assets/img_garage.png';
         });
     </script>
 </body>
