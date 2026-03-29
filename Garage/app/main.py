@@ -29,6 +29,7 @@ from app.api.routes.payment_routes import router as payment_router, init_payment
 from app.api.routes.analytics_routes import router as analytics_router, init_analytics_routes
 from app.api.routes.account_routes import router as account_router, init_account_routes
 from app.api.routes.diagnostic_routes import router as diagnostic_router
+from app.infrastructure.middleware.idempotency import IdempotencyMiddleware
 
 DATA_DIR = os.path.join(BASE_DIR, "data")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
@@ -81,6 +82,10 @@ class StaticCacheMiddleware(BaseHTTPMiddleware):
 
 
 app.add_middleware(StaticCacheMiddleware)
+
+# Server-side idempotency middleware — deduplicate mutating requests with
+# `Idempotency-Key` header when provided by the client.
+app.add_middleware(IdempotencyMiddleware)
 
 # CORS (required for browser frontend)
 # CORS configuration: read allowed origins from env (comma-separated).

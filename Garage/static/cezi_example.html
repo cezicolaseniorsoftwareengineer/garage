@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Cezi Example — Register</title>
+    <style>
+        body {
+            font-family: Inter, system-ui, Arial;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 24px
+        }
+
+        .card {
+            background: #111827;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 640px;
+            margin: 24px auto
+        }
+
+        label {
+            display: block;
+            margin: 8px 0 4px;
+            color: #94a3b8;
+            font-size: 13px
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background: #0b1220;
+            color: #e2e8f0
+        }
+
+        button {
+            margin-top: 12px;
+            padding: 10px 16px;
+            border-radius: 6px;
+            border: none;
+            background: #fbbf24;
+            color: #0b1220;
+            font-weight: 700;
+            cursor: pointer
+        }
+
+        pre {
+            background: #071022;
+            padding: 12px;
+            border-radius: 6px;
+            color: #9ca3af;
+            overflow: auto
+        }
+
+        .meta {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 8px
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h2>Cezi — Teste de Registro (Idempotency + Retry)</h2>
+        <p class="meta">Demonstração local: idempotency key, x-trace-id, retry/backoff e UI otimista.</p>
+
+        <label for="full_name">Nome completo</label>
+        <input id="full_name" placeholder="Seu nome completo" />
+
+        <label for="email">E-mail</label>
+        <input id="email" placeholder="seu+teste@example.com" />
+
+        <button id="register">Registrar</button>
+
+        <div style="margin-top:18px">
+            <strong>Status</strong>
+            <div id="status" style="margin-top:8px">Pronto.</div>
+        </div>
+
+        <h4 style="margin-top:18px">Logs</h4>
+        <pre id="log">—</pre>
+
+        <h4 style="margin-top:18px">Headers gerados</h4>
+        <pre id="headers">—</pre>
+    </div>
+
+    <script src="/static/cezi_example.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,29 @@
+{
+    "name": "Cezi Cola S.S.E.",
+    "model": "gemini-2.5-pro",
+    "temperature": 0.1,
+    "promptFile": ".copilot/prompts/cezicola.md",
+    "permissions": {
+        "filesystem": "ask",
+        "terminal": "ask"
+    },
+    "tools": [
+        "git",
+        "docker",
+        "http",
+        "shell",
+        "maven",
+        "sonarqube"
+    ],
+    "context": [
+        "src/",
+        "AuroraLedger/src/",
+        "README.md",
+        ".copilot/cezicola.md",
+        ".github/copilot-instructions.md",
+        "pom.xml",
+        "docker-compose.yml"
+    ],
+    "maxTokens": 8192,
+    "systemPrompt": "Você é Cezi Cola, Engenheiro de Software Sênior para sistemas bancários regulados. PROIBIDO emojis. OBRIGATÓRIO: respostas em português brasileiro, código em inglês. Mentalidade compliance-first. DDD + CQRS + Arquitetura Hexagonal. Zero Trust security. Raciocínio explícito com evidências e trade-offs. NUNCA crie documentos sem autorização."
+}

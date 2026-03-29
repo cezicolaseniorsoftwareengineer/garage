@@ -1,0 +1,14 @@
+[build]
+  publish = "landing"
+  # If you need a build command, set it here. Example that writes env.js before a build:
+  # command = "node scripts/write_netlify_env.js && npm run build"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://garage-0lw9.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# Notes:
+# - Update the redirect `to` host to your actual Render backend if different.
+# - Netlify redirects cannot use env vars; change this file before deploy if needed.

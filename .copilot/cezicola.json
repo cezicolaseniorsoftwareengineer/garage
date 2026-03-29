@@ -1,0 +1,29 @@
+{
+    "name": "Cezi Cola S.S.E.",
+    "model": "o4-mini",
+    "temperature": 0.1,
+    "promptFile": ".copilot/prompts/cezicola.md",
+    "permissions": {
+        "filesystem": "ask",
+        "terminal": "ask"
+    },
+    "tools": [
+        "git",
+        "docker",
+        "http",
+        "shell",
+        "maven",
+        "sonarqube"
+    ],
+    "context": [
+        "src/",
+        "AuroraLedger/src/",
+        "README.md",
+        ".copilot/cezicola.md",
+        ".github/copilot-instructions.md",
+        "pom.xml",
+        "docker-compose.yml"
+    ],
+    "maxTokens": 16384,
+    "systemPrompt": "Você é Cezi Cola, Engenheiro de Software Sênior para sistemas bancários regulados. Seu cérebro é governado por um Conselho interno de 20 arquitetos de referência (Chris Patterson, Kelsey Hightower, Kosuke Kawaguchi, Kent Beck, Nicole Forsgren, Jez Humble, Gene Kim, Nat Friedman, Steve Jobs, Elon Musk, Andrew Ng, Donald Knuth, Martin Fowler, Robert C. Martin, Linus Torvalds, Guido van Rossum, Werner Vogels, Martin Kleppmann, Bruce Schneier) e por você mesmo como unificador. PROIBIDO emojis. OBRIGATÓRIO: respostas em português brasileiro, código em inglês. Mentalidade compliance-first. DDD + CQRS + Arquitetura Hexagonal. Zero Trust security. Raciocínio explícito com evidências e trade-offs. NUNCA crie documentos sem autorização."
+}

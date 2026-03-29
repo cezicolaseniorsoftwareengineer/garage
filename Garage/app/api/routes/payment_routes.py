@@ -7,12 +7,19 @@ Endpoints:
 """
 import logging
 import os
+import json
+import hmac
+import hashlib
+import base64
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
+from sqlalchemy import text
+
 from app.infrastructure.payment import asaas_client, pix_service
+from app.infrastructure.database.connection import dynamic_session_factory
 
 log = logging.getLogger("garage.payment")
 
@@ -25,6 +32,15 @@ _user_repo = None
 def init_payment_routes(user_repo) -> None:
     global _user_repo
     _user_repo = user_repo
+
+
+# Feature flag + webhook secrets
+ENABLE_ASAAS_WEBHOOK = os.environ.get("ENABLE_ASAAS_WEBHOOK", "false").lower() == "true"
+ASAAS_WEBHOOK_SECRET = os.environ.get("ASAAS_WEBHOOK_SECRET", "")
+ASAAS_SIGNATURE_HEADER = os.environ.get("ASAAS_SIGNATURE_HEADER", "X-Asaas-Signature")
+
+# In-memory fallback store for webhook idempotency when DB is unavailable
+_webhook_in_memory_store: dict = {}
 
 
 # ---------------------------------------------------------------------------
@@ -146,32 +162,73 @@ def payment_status(payment_id: str):
 async def asaas_webhook(request: Request):
     """Receive payment events from Asaas.
 
-    Asaas sends a POST with JSON payload when payment status changes.
-    We handle PAYMENT_CONFIRMED and PAYMENT_RECEIVED to activate access.
-
-    Security: webhook token validation recommended for production.
+    Security: gated by `ENABLE_ASAAS_WEBHOOK`. Validates HMAC signature and
+    applies idempotency to avoid replay processing.
     """
+    if not ENABLE_ASAAS_WEBHOOK:
+        log.info("Asaas webhook received but disabled by feature flag.")
+        # Return 200 to acknowledge but do nothing when disabled.
+        return {"received": True, "action": "disabled"}
+
+    # Read raw body for signature validation
     try:
-        body = await request.json()
+        body_bytes = await request.body()
+        body = json.loads(body_bytes.decode("utf-8"))
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    # Signature validation (HMAC SHA256)
+    sig_header = request.headers.get(ASAAS_SIGNATURE_HEADER)
+    if not ASAAS_WEBHOOK_SECRET:
+        log.error("ASAAS_WEBHOOK_SECRET not configured — rejecting webhook")
+        raise HTTPException(status_code=403, detail="Webhook not configured")
+
+    expected_hex = hmac.new(ASAAS_WEBHOOK_SECRET.encode(), body_bytes, hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(expected_hex, (sig_header or "")):
+        # Try base64 variant
+        expected_b64 = base64.b64encode(hmac.new(ASAAS_WEBHOOK_SECRET.encode(), body_bytes, hashlib.sha256).digest()).decode()
+        if not hmac.compare_digest(expected_b64, (sig_header or "")):
+            log.warning("Invalid webhook signature: header=%s expected_hex=%s", sig_header, expected_hex)
+            raise HTTPException(status_code=403, detail="Invalid signature")
 
     event = body.get("event", "")
     payment_data = body.get("payment", {})
 
-    log.info("Asaas webhook received: event=%s payment_id=%s",
-             event, payment_data.get("id"))
+    log.info("Asaas webhook received: event=%s payment_id=%s", event, payment_data.get("id"))
 
     # Only act on confirmed/received events
     if event not in ("PAYMENT_CONFIRMED", "PAYMENT_RECEIVED"):
         return {"received": True, "action": "ignored", "event": event}
 
+    # Idempotency key for webhook processing
+    webhook_key = payment_data.get("id") or body.get("id")
+    if webhook_key:
+        try:
+            with dynamic_session_factory() as session:
+                sel = text("SELECT status_code FROM idempotency_keys WHERE id = :id")
+                row = session.execute(sel, {"id": webhook_key}).fetchone()
+                if row and row[0] is not None:
+                    log.info("Webhook %s already processed (db).", webhook_key)
+                    return {"received": True, "action": "already_processed"}
+
+                ins = text(
+                    "INSERT INTO idempotency_keys (id, method, path, created_at) VALUES (:id, 'POST', '/api/payments/webhook/asaas', NOW()) ON CONFLICT (id) DO NOTHING"
+                )
+                session.execute(ins, {"id": webhook_key})
+                session.commit()
+        except Exception:
+            # DB unavailable — consult fallback store
+            entry = _webhook_in_memory_store.get(webhook_key)
+            if entry and entry.get("processed"):
+                log.info("Webhook %s already processed (in-memory).", webhook_key)
+                return {"received": True, "action": "already_processed_fallback"}
+            _webhook_in_memory_store[webhook_key] = {"processed": False}
+
     # Extract user_id and plan from externalReference
     external_ref = payment_data.get("externalReference", "")
     if "|" not in external_ref:
         # Static Asaas link (no externalReference) — try to match by customer email
-        log.info("Webhook: no externalReference — attempting email-based activation for payment %s",
-                 payment_data.get("id"))
+        log.info("Webhook: no externalReference — attempting email-based activation for payment %s", payment_data.get("id"))
         if _user_repo:
             try:
                 customer_id = payment_data.get("customer", "")
@@ -187,8 +244,20 @@ async def asaas_webhook(request: Request):
                             # Default to monthly for static link (R$97)
                             plan_guess = "annual" if payment_data.get("value", 0) > 500 else "monthly"
                             expires_at = pix_service.activate_subscription(uid, plan_guess, _user_repo)
-                            log.info("Static-link sub activated via email match: email=%s plan=%s expires=%s",
-                                     customer_email, plan_guess, expires_at)
+                            log.info("Static-link sub activated via email match: email=%s plan=%s expires=%s", customer_email, plan_guess, expires_at)
+
+                            # Mark as processed in idempotency store
+                            if webhook_key:
+                                try:
+                                    with dynamic_session_factory() as session:
+                                        upd = text(
+                                            "UPDATE idempotency_keys SET status_code = :status, response_body = :body, expires_at = (NOW() + interval '24 hours') WHERE id = :id"
+                                        )
+                                        session.execute(upd, {"status": 200, "body": json.dumps({"action": "subscription_activated_by_email", "email": customer_email}), "id": webhook_key})
+                                        session.commit()
+                                except Exception:
+                                    _webhook_in_memory_store[webhook_key]["processed"] = True
+
                             return {
                                 "received": True,
                                 "action": "subscription_activated_by_email",
@@ -212,8 +281,20 @@ async def asaas_webhook(request: Request):
 
     try:
         expires_at = pix_service.activate_subscription(user_id, plan, _user_repo)
-        log.info("Subscription activated via webhook: user=%s plan=%s expires=%s",
-                 user_id, plan, expires_at)
+        log.info("Subscription activated via webhook: user=%s plan=%s expires=%s", user_id, plan, expires_at)
+
+        # Mark as processed in idempotency store
+        if webhook_key:
+            try:
+                with dynamic_session_factory() as session:
+                    upd = text(
+                        "UPDATE idempotency_keys SET status_code = :status, response_body = :body, expires_at = (NOW() + interval '24 hours') WHERE id = :id"
+                    )
+                    session.execute(upd, {"status": 200, "body": json.dumps({"action": "subscription_activated", "user_id": user_id, "plan": plan}), "id": webhook_key})
+                    session.commit()
+            except Exception:
+                _webhook_in_memory_store[webhook_key]["processed"] = True
+
         return {
             "received": True,
             "action": "subscription_activated",
@@ -223,5 +304,5 @@ async def asaas_webhook(request: Request):
         }
     except Exception as exc:
         log.exception("Failed to activate subscription: %s", exc)
-        # Return 200 to avoid Asaas retrying — log the error instead
+        # Do not let Asaas keep retrying uncontrolled failures — return 200 but log
         return {"received": True, "action": "error", "reason": str(exc)}
