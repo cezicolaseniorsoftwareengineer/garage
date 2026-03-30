@@ -46,6 +46,18 @@
   force = true
 
 [[redirects]]
+  from = "/account"
+  to = "https://garage-0lw9.onrender.com/account"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/account/*"
+  to = "https://garage-0lw9.onrender.com/account/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/admin/*"
   to = "https://garage-0lw9.onrender.com/admin/:splat"
   status = 200
