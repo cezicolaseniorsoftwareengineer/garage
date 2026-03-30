@@ -154,8 +154,9 @@ a:hover {
     align-items: center;
     gap: 32px;
     padding: 0 24px;
-    height: 88px; /* reduced 50% per request */
-    max-width: 1200px;
+    height: 88px;
+    /* reduced 50% per request */
+    max-width: 600px;
     margin: 0 auto;
 }
 
@@ -169,7 +170,8 @@ a:hover {
 }
 
 .brand-img {
-    width: 80px; /* 50% of 160px */
+    width: 80px;
+    /* 50% of 160px */
     height: 80px;
     object-fit: contain;
     border-radius: 6px;
@@ -191,7 +193,7 @@ a:hover {
 .nav-links {
     display: flex;
     list-style: none;
-    gap: 28px;
+    gap: 14px;
     flex: 1;
 }
 
