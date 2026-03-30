@@ -367,6 +367,14 @@ a:hover {
 
 .hero-badge {
     display: inline-flex;
+.hero-logo {
+    display: block;
+    margin: 10px auto 18px auto;
+    width: 160px;
+    height: auto;
+    filter: drop-shadow(0 6px 18px rgba(0,0,0,0.6));
+}
+.hero-logo svg { width: 100%; height: auto; display: block; }
     align-items: center;
     gap: 8px;
     background: var(--amber-glow);
