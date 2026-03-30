@@ -160,10 +160,24 @@ a:hover {
 }
 
 .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-family: var(--font-mono);
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    white-space: nowrap;
+}
+
+.brand-img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border-radius: 6px;
+    display: block;
+}
+
+.logo-text {
+    display: inline-block;
 }
 
 .logo-bracket {
@@ -367,14 +381,21 @@ a:hover {
 
 .hero-badge {
     display: inline-flex;
-.hero-logo {
-    display: block;
-    margin: 10px auto 18px auto;
-    width: 160px;
-    height: auto;
-    filter: drop-shadow(0 6px 18px rgba(0,0,0,0.6));
-}
-.hero-logo svg { width: 100%; height: auto; display: block; }
+
+    .hero-logo {
+        display: block;
+        margin: 10px auto 18px auto;
+        width: 160px;
+        height: auto;
+        filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.6));
+    }
+
+    .hero-logo svg {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
     align-items: center;
     gap: 8px;
     background: var(--amber-glow);
