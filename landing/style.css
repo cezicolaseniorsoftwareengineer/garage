@@ -318,7 +318,8 @@ a:hover {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 120px 24px 80px;
+    padding: 100px 24px 80px;
+    /* reduced top padding to align with taller nav */
     position: relative;
     overflow: hidden;
 }
