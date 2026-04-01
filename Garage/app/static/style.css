@@ -1823,6 +1823,38 @@ body {
     opacity: .85;
 }
 
+.paywall-verify-btn {
+    background: transparent;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    color: #22c55e;
+    font-family: var(--font, 'JetBrains Mono', monospace);
+    font-size: .8rem;
+    letter-spacing: .06em;
+    cursor: pointer;
+    padding: .65rem 1rem;
+    border-radius: 8px;
+    width: 100%;
+    transition: background .2s, border-color .2s;
+}
+
+.paywall-verify-btn:hover {
+    background: rgba(34, 197, 94, 0.08);
+    border-color: rgba(34, 197, 94, 0.7);
+}
+
+.paywall-verify-btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.paywall-check-status {
+    font-size: .78rem;
+    text-align: center;
+    min-height: 1.1rem;
+    margin: 0;
+    transition: color .2s;
+}
+
 .paywall-back-btn {
     background: transparent;
     border: none;

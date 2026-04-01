@@ -727,7 +727,10 @@
             </div>
 
             <div class="paywall-actions">
-                <a href="/#planos" class="auth-btn paywall-cta">VER PLANOS E ASSINAR</a>
+                <a href="/#planos" class="auth-btn paywall-cta" target="_blank" rel="noopener">VER PLANOS E ASSINAR</a>
+                <button id="paywallCheckBtn" class="paywall-verify-btn" onclick="UI.checkSubscriptionNow()">Ja paguei
+                    &mdash; verificar acesso</button>
+                <p id="paywallCheckStatus" class="paywall-check-status"></p>
                 <button class="paywall-back-btn" onclick="UI.showScreen('screen-world')">← Continuar explorando a Xerox
                     PARC</button>
             </div>

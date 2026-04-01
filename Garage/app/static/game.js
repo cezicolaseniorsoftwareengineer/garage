@@ -4275,6 +4275,8 @@ const World = {
 // ---- UI ----
 const UI = {
     _resumeButtonCheckId: 0,
+    _paywallCheckTimer: null,
+    _paywallVisibilityHandler: null,
 
     showScreen(id) {
         if (typeof StudyChat !== 'undefined' && StudyChat.isOpen() && id !== 'screen-world') {
@@ -4283,6 +4285,7 @@ const UI = {
         if (typeof Learning !== 'undefined' && Learning.isOpen() && id !== 'screen-world') {
             Learning.cancel();
         }
+        if (id !== 'screen-paywall') this._stopPaywallSubscriptionCheck();
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         const el = document.getElementById(id);
         if (el) el.classList.add('active');
@@ -4785,8 +4788,96 @@ const UI = {
             ? (data.message || data.detail)
             : 'Você completou a fase gratuita do 404 Garage! Assine para continuar a jornada.';
         const msgEl = document.getElementById('paywallMsg');
-        if (msgEl) msgEl.textContent = msg;
+        if (msgEl) { msgEl.textContent = msg; msgEl.style.color = ''; }
+        const statusEl = document.getElementById('paywallCheckStatus');
+        if (statusEl) statusEl.textContent = '';
+        const btn = document.getElementById('paywallCheckBtn');
+        if (btn) { btn.disabled = false; btn.textContent = 'Ja paguei \u2014 verificar acesso'; }
         UI.showScreen('screen-paywall');
+        UI._startPaywallSubscriptionCheck();
+    },
+
+    _startPaywallSubscriptionCheck() {
+        this._stopPaywallSubscriptionCheck();
+        const _onVisibility = () => {
+            if (document.visibilityState === 'visible') {
+                const screen = document.getElementById('screen-paywall');
+                if (screen && screen.classList.contains('active')) {
+                    UI._doPaywallCheck();
+                }
+            }
+        };
+        document.addEventListener('visibilitychange', _onVisibility);
+        this._paywallVisibilityHandler = _onVisibility;
+        this._paywallCheckTimer = setInterval(() => UI._doPaywallCheck(), 5000);
+    },
+
+    _stopPaywallSubscriptionCheck() {
+        if (this._paywallCheckTimer) {
+            clearInterval(this._paywallCheckTimer);
+            this._paywallCheckTimer = null;
+        }
+        if (this._paywallVisibilityHandler) {
+            document.removeEventListener('visibilitychange', this._paywallVisibilityHandler);
+            this._paywallVisibilityHandler = null;
+        }
+    },
+
+    async _doPaywallCheck() {
+        if (!Auth.isLoggedIn()) return;
+        const screen = document.getElementById('screen-paywall');
+        if (!screen || !screen.classList.contains('active')) {
+            this._stopPaywallSubscriptionCheck();
+            return;
+        }
+        try {
+            const data = await API.get('/api/account/me');
+            const sub = data && data.subscription;
+            if (sub && sub.status === 'active') {
+                this._stopPaywallSubscriptionCheck();
+                this._paywallUnlocked();
+            }
+        } catch (_e) { /* silent — network errors should not surface */ }
+    },
+
+    _paywallUnlocked() {
+        const msgEl = document.getElementById('paywallMsg');
+        if (msgEl) { msgEl.textContent = 'Acesso ativado! Carregando jogo...'; msgEl.style.color = '#22c55e'; }
+        const btn = document.getElementById('paywallCheckBtn');
+        if (btn) btn.disabled = true;
+        const statusEl = document.getElementById('paywallCheckStatus');
+        if (statusEl) { statusEl.textContent = 'Assinatura confirmada.'; statusEl.style.color = '#22c55e'; }
+        setTimeout(async () => {
+            const resumed = await Game.loadSession(false);
+            if (!resumed && Auth.isLoggedIn()) {
+                try { await Game.start(); } catch (_e) { UI.showScreen('screen-title'); }
+            }
+        }, 1200);
+    },
+
+    async checkSubscriptionNow() {
+        if (!Auth.isLoggedIn()) return;
+        const btn = document.getElementById('paywallCheckBtn');
+        const statusEl = document.getElementById('paywallCheckStatus');
+        if (btn) { btn.disabled = true; btn.textContent = 'Verificando...'; }
+        if (statusEl) { statusEl.textContent = ''; statusEl.style.color = ''; }
+        try {
+            const data = await API.get('/api/account/me');
+            const sub = data && data.subscription;
+            if (sub && sub.status === 'active') {
+                this._stopPaywallSubscriptionCheck();
+                this._paywallUnlocked();
+            } else {
+                if (btn) { btn.disabled = false; btn.textContent = 'Ja paguei \u2014 verificar acesso'; }
+                if (statusEl) {
+                    statusEl.textContent = 'Pagamento ainda nao identificado. Aguarde alguns segundos e tente novamente.';
+                    statusEl.style.color = '#f59e0b';
+                }
+            }
+        } catch (_e) {
+            if (btn) { btn.disabled = false; btn.textContent = 'Ja paguei \u2014 verificar acesso'; }
+            if (statusEl) { statusEl.textContent = 'Erro de conexao. Tente novamente.'; statusEl.style.color = '#ef4444'; }
+        }
     },
 
     _startVictoryCelebration(player) {
