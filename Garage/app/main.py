@@ -30,6 +30,7 @@ from app.api.routes.analytics_routes import router as analytics_router, init_ana
 from app.api.routes.account_routes import router as account_router, init_account_routes
 from app.api.routes.diagnostic_routes import router as diagnostic_router
 from app.infrastructure.middleware.idempotency import IdempotencyMiddleware
+from app.infrastructure.middleware.rate_limit import IpRateLimitMiddleware
 
 DATA_DIR = os.path.join(BASE_DIR, "data")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
@@ -108,6 +109,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# IP rate limiter — must be the last add_middleware call so it becomes the
+# outermost wrapper and runs FIRST for every incoming request.
+app.add_middleware(IpRateLimitMiddleware)
 
 # Static files (frontend visualisation layer)
 if os.path.exists(STATIC_DIR):

@@ -4,10 +4,10 @@ services:
     name: garage
     runtime: python
     region: oregon
-    plan: free
+    plan: starter
     rootDir: Garage
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2
     healthCheckPath: /health
     envVars:
       - key: JWT_SECRET_KEY
@@ -65,7 +65,7 @@ services:
     name: garage-java-runner
     runtime: docker
     region: oregon
-    plan: free
+    plan: starter
     rootDir: java-runner
     dockerfilePath: Dockerfile
     dockerContext: .

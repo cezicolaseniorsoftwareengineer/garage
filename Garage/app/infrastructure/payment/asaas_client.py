@@ -195,3 +195,48 @@ def get_payment(payment_id: str) -> dict:
         resp = client.get(f"{base}/payments/{payment_id}", headers=_headers())
         _raise_with_detail(resp)
         return resp.json()
+
+
+def list_confirmed_payments_by_email(email: str) -> list[dict]:
+    """Return all CONFIRMED or RECEIVED payments linked to a customer email.
+
+    Used by the reconciliation endpoint to recover missed webhooks.
+    Returns an empty list if no customer or no payments are found.
+    """
+    base = _base_url()
+    headers = _headers()
+
+    with httpx.Client(timeout=_TIMEOUT) as client:
+        # Step 1 — find customer by e-mail
+        resp = client.get(
+            f"{base}/customers",
+            params={"email": email},
+            headers=headers,
+        )
+        if not resp.is_success:
+            log.warning("Asaas customer lookup failed for email=%s: %s", email, resp.status_code)
+            return []
+
+        customers = resp.json().get("data", [])
+        if not customers:
+            log.info("No Asaas customer found for email=%s", email)
+            return []
+
+        customer_id = customers[0].get("id")
+        if not customer_id:
+            return []
+
+        # Step 2 — list confirmed/received payments for that customer
+        confirmed: list[dict] = []
+        for status in ("CONFIRMED", "RECEIVED"):
+            resp2 = client.get(
+                f"{base}/payments",
+                params={"customer": customer_id, "status": status},
+                headers=headers,
+            )
+            if resp2.is_success:
+                confirmed.extend(resp2.json().get("data", []))
+
+        # Sort descending by value so the most recent / highest is first
+        confirmed.sort(key=lambda p: p.get("value", 0), reverse=True)
+        return confirmed

@@ -80,10 +80,10 @@ def _build_engine(url: str, label: str):
     print(f"[GARAGE] Initialising {label} engine -> {masked}")
     return create_engine(
         url,
-        pool_size=3,
-        max_overflow=5,
-        pool_timeout=15,
-        pool_recycle=1800,
+        pool_size=10,
+        max_overflow=15,
+        pool_timeout=30,
+        pool_recycle=900,
         pool_pre_ping=True,
         # TCP-level connection timeout: tells psycopg2 to abort if the server
         # does not accept the connection within N seconds.  Without this,

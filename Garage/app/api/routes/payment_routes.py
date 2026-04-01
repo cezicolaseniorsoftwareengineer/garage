@@ -13,13 +13,15 @@ import hashlib
 import base64
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
 from sqlalchemy import text
 
 from app.infrastructure.payment import asaas_client, pix_service
 from app.infrastructure.database.connection import dynamic_session_factory
+from app.infrastructure.auth.dependencies import get_current_user
+from app.infrastructure.auth.admin_utils import is_admin_username
 
 log = logging.getLogger("garage.payment")
 
@@ -306,3 +308,76 @@ async def asaas_webhook(request: Request):
         log.exception("Failed to activate subscription: %s", exc)
         # Do not let Asaas keep retrying uncontrolled failures — return 200 but log
         return {"received": True, "action": "error", "reason": str(exc)}
+
+
+# ---------------------------------------------------------------------------
+# POST /api/payments/reconcile
+# ---------------------------------------------------------------------------
+
+class ReconcileRequest(BaseModel):
+    email: str = Field(..., description="E-mail do usuario a reconciliar")
+
+
+@router.post("/reconcile", status_code=200)
+def reconcile_subscription(
+    body: ReconcileRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """Admin-only: query Asaas for confirmed payments by e-mail and activate
+    the subscription if one is found.  Recovers users whose webhook was missed
+    (e.g. service was hibernating or Asaas delivery failed).
+    """
+    if current_user.get("role") != "admin" and not is_admin_username(current_user.get("username")):
+        raise HTTPException(status_code=403, detail="Access denied. Admin only.")
+
+    if not _user_repo:
+        raise HTTPException(status_code=503, detail="Repository not available.")
+
+    email = body.email.strip().lower()
+
+    # Find the user in our DB
+    user = _user_repo.find_by_email(email)
+    if not user:
+        raise HTTPException(status_code=404, detail=f"No user found with email: {email}")
+
+    user_data = user.to_dict() if hasattr(user, "to_dict") else vars(user)
+    user_id = str(user_data.get("id", ""))
+    if not user_id:
+        raise HTTPException(status_code=500, detail="User ID could not be resolved.")
+
+    # Query Asaas for confirmed payments
+    try:
+        payments = asaas_client.list_confirmed_payments_by_email(email)
+    except Exception as exc:
+        log.exception("Asaas query failed during reconcile for email=%s: %s", email, exc)
+        raise HTTPException(status_code=502, detail="Failed to query Asaas.")
+
+    if not payments:
+        return {
+            "reconciled": False,
+            "reason": "no_confirmed_payments",
+            "email": email,
+        }
+
+    # Use the first (highest value) payment to determine plan
+    best = payments[0]
+    plan_guess = "annual" if best.get("value", 0) > 500 else "monthly"
+
+    try:
+        expires_at = pix_service.activate_subscription(user_id, plan_guess, _user_repo)
+    except Exception as exc:
+        log.exception("reconcile: activate_subscription failed user=%s: %s", user_id, exc)
+        raise HTTPException(status_code=500, detail="Subscription activation failed.")
+
+    log.info(
+        "Reconcile: activated subscription user=%s email=%s plan=%s expires=%s",
+        user_id, email, plan_guess, expires_at,
+    )
+    return {
+        "reconciled": True,
+        "email": email,
+        "user_id": user_id,
+        "plan": plan_guess,
+        "expires_at": expires_at.isoformat(),
+        "asaas_payments_found": len(payments),
+    }
