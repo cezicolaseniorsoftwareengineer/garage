@@ -4,6 +4,8 @@ Endpoints:
     POST /api/payments/checkout          → generate PIX QR Code or card checkout URL
   POST /api/payments/webhook/asaas     → receive Asaas payment notification
   GET  /api/payments/status/{payment_id} → poll payment status (frontend polling)
+  POST /api/payments/self-reconcile    → authenticated user verifies own payment in Asaas
+  POST /api/payments/reconcile         → admin: activate subscription by email
 """
 import logging
 import os
@@ -308,6 +310,70 @@ async def asaas_webhook(request: Request):
         log.exception("Failed to activate subscription: %s", exc)
         # Do not let Asaas keep retrying uncontrolled failures — return 200 but log
         return {"received": True, "action": "error", "reason": str(exc)}
+
+
+# ---------------------------------------------------------------------------
+# POST /api/payments/self-reconcile
+# ---------------------------------------------------------------------------
+
+@router.post("/self-reconcile", status_code=200)
+def self_reconcile(current_user: dict = Depends(get_current_user)):
+    """Authenticated user: query Asaas directly for confirmed payments and
+    activate their subscription if one is found.
+
+    Called by the frontend 'Ja paguei' button so the user never needs admin
+    intervention when the webhook delivery failed.
+    """
+    if not _user_repo:
+        raise HTTPException(status_code=503, detail="Repository not available.")
+
+    user_id = current_user["sub"]
+
+    user = _user_repo.find_by_id(user_id) if hasattr(_user_repo, "find_by_id") else None
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    # Check DB first — avoid unnecessary Asaas call if already active
+    if hasattr(_user_repo, "get_subscription_status"):
+        sub = _user_repo.get_subscription_status(user_id)
+        if sub.get("status") == "active":
+            return {"activated": False, "already_active": True, "subscription": sub}
+
+    email = getattr(user, "email", None)
+    if not email:
+        raise HTTPException(status_code=400, detail="User has no e-mail configured.")
+
+    try:
+        payments = asaas_client.list_confirmed_payments_by_email(email)
+    except Exception as exc:
+        log.exception("self-reconcile: Asaas query failed user=%s: %s", user_id, exc)
+        raise HTTPException(status_code=502, detail="Failed to reach payment provider. Try again in a moment.")
+
+    if not payments:
+        return {"activated": False, "already_active": False, "reason": "no_confirmed_payments"}
+
+    best = payments[0]
+    plan_guess = "annual" if best.get("value", 0) > 500 else "monthly"
+
+    try:
+        expires_at = pix_service.activate_subscription(user_id, plan_guess, _user_repo)
+    except Exception as exc:
+        log.exception("self-reconcile: activate_subscription failed user=%s: %s", user_id, exc)
+        raise HTTPException(status_code=500, detail="Subscription activation failed.")
+
+    log.info(
+        "self-reconcile: activated user=%s email=%s plan=%s expires=%s",
+        user_id, email, plan_guess, expires_at,
+    )
+
+    sub = _user_repo.get_subscription_status(user_id) if hasattr(_user_repo, "get_subscription_status") else {}
+    return {
+        "activated": True,
+        "already_active": False,
+        "plan": plan_guess,
+        "expires_at": expires_at.isoformat(),
+        "subscription": sub,
+    }
 
 
 # ---------------------------------------------------------------------------

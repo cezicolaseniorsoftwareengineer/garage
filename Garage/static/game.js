@@ -4905,15 +4905,17 @@ const UI = {
         if (btn) { btn.disabled = true; btn.textContent = 'Verificando...'; }
         if (statusEl) { statusEl.textContent = ''; statusEl.style.color = ''; }
         try {
-            const data = await API.get('/api/account/me');
-            const sub = data && data.subscription;
-            if (sub && sub.status === 'active') {
+            // Call self-reconcile: checks Asaas directly and activates subscription if confirmed
+            const result = await API.post('/api/payments/self-reconcile', {});
+            const isActive = result && (result.activated || result.already_active);
+            const sub = result && result.subscription;
+            if (isActive || (sub && sub.status === 'active')) {
                 this._stopPaywallSubscriptionCheck();
                 this._paywallUnlocked();
             } else {
                 if (btn) { btn.disabled = false; btn.textContent = 'Ja paguei \u2014 verificar acesso'; }
                 if (statusEl) {
-                    statusEl.textContent = 'Pagamento ainda nao identificado. Aguarde alguns segundos e tente novamente.';
+                    statusEl.textContent = 'Pagamento ainda nao identificado na Asaas. Se acabou de pagar, aguarde 30 segundos e tente novamente.';
                     statusEl.style.color = '#f59e0b';
                 }
             }

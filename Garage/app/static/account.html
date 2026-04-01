@@ -1302,10 +1302,26 @@
                 step += 1;
                 schedTimer = setTimeout(async () => {
                     try {
-                        const res = await fetch(`${API}/api/account/me`, { headers: headers() });
-                        if (res.ok) {
-                            const data = await res.json();
-                            const sub = data.subscription || {};
+                        // First: try self-reconcile — queries Asaas and activates if confirmed
+                        const recRes = await fetch(`${API}/api/payments/self-reconcile`, {
+                            method: 'POST',
+                            headers: { ...headers(), 'Content-Type': 'application/json' },
+                            body: JSON.stringify({}),
+                        });
+                        if (recRes.ok) {
+                            const recData = await recRes.json();
+                            if (recData.activated || recData.already_active) {
+                                cancel();
+                                statusEl.textContent = 'Pagamento confirmado — redirecionando...';
+                                setTimeout(() => { modal.style.display = 'none'; window.location.href = '/jogo'; }, 900);
+                                return;
+                            }
+                        }
+                        // Fallback: also check /api/account/me (covers webhook-activated case)
+                        const meRes = await fetch(`${API}/api/account/me`, { headers: headers() });
+                        if (meRes.ok) {
+                            const meData = await meRes.json();
+                            const sub = meData.subscription || {};
                             if (sub.status === 'active' && (sub.plan === selectedPlan || !selectedPlan)) {
                                 cancel();
                                 statusEl.textContent = 'Pagamento confirmado — redirecionando...';
