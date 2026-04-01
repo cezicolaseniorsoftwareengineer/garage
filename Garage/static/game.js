@@ -4590,6 +4590,30 @@ const UI = {
         // Sync company counter
         const compEl = document.getElementById('hudCompanies');
         if (compEl) compEl.textContent = State.completedRegions.length + ' / ' + BUILDINGS.length;
+        // Subscription expiry badge (cached for 5 minutes to avoid per-frame requests)
+        const expiryEl = document.getElementById('hudPlanExpiry');
+        if (expiryEl) {
+            const cached = UI._subExpiryCache;
+            const now = Date.now();
+            if (!cached || now - cached.ts > 5 * 60 * 1000) {
+                API.get('/api/account/me').then(d => {
+                    const days = d && d.subscription && d.subscription.days_remaining;
+                    UI._subExpiryCache = { ts: Date.now(), days };
+                    UI._applyExpiryBadge(expiryEl, days);
+                }).catch(() => { });
+            } else {
+                UI._applyExpiryBadge(expiryEl, cached.days);
+            }
+        }
+    },
+
+    _subExpiryCache: null,
+
+    _applyExpiryBadge(el, days) {
+        if (days == null || days > 7) { el.style.display = 'none'; return; }
+        el.style.display = '';
+        el.textContent = days <= 0 ? 'PLANO EXPIRADO' : ('PLANO: ' + days + 'd');
+        el.style.color = days <= 2 ? '#ef4444' : '#f97316';
     },
 
     // --- Metrics Panel ---
@@ -4799,6 +4823,25 @@ const UI = {
 
     _startPaywallSubscriptionCheck() {
         this._stopPaywallSubscriptionCheck();
+        const BACKOFF_MS = [5000, 8000, 13000, 21000, 30000];
+        const MAX_RUNTIME_MS = 15 * 60 * 1000;
+        const startedAt = Date.now();
+        let step = 0;
+
+        const schedule = () => {
+            if (Date.now() - startedAt >= MAX_RUNTIME_MS) {
+                this._stopPaywallSubscriptionCheck();
+                return;
+            }
+            const delay = BACKOFF_MS[Math.min(step, BACKOFF_MS.length - 1)];
+            step += 1;
+            this._paywallCheckTimer = setTimeout(async () => {
+                if (document.visibilityState === 'hidden') { schedule(); return; }
+                await UI._doPaywallCheck();
+                schedule();
+            }, delay);
+        };
+
         const _onVisibility = () => {
             if (document.visibilityState === 'visible') {
                 const screen = document.getElementById('screen-paywall');
@@ -4809,12 +4852,12 @@ const UI = {
         };
         document.addEventListener('visibilitychange', _onVisibility);
         this._paywallVisibilityHandler = _onVisibility;
-        this._paywallCheckTimer = setInterval(() => UI._doPaywallCheck(), 5000);
+        schedule();
     },
 
     _stopPaywallSubscriptionCheck() {
         if (this._paywallCheckTimer) {
-            clearInterval(this._paywallCheckTimer);
+            clearTimeout(this._paywallCheckTimer);
             this._paywallCheckTimer = null;
         }
         if (this._paywallVisibilityHandler) {
